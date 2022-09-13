@@ -1,3 +1,123 @@
+## Release 6.4.51  -- _September 06, 2022_ 
+**Changes**
+
+>**Cambiata implementazione xml provider, rimosso artefatto com.sun.xml.messaging.saaj:saaj-impl per Interceptor for {http://comp.docamm00.contab.cnr.it/}FatturaAttivaComponentWSService has thrown exception, unwinding now: java.lang.ClassCastException: com.sun.org.apache.xerces.internal.dom.ElementNSImpl cannot be cast to javax.xml.soap.SOAPElement**
+>
+>[6842afea8105c75](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6842afea8105c75) marco.spasiano *September 06, 2022*
+
+>**Add index on pluriennali**
+>
+>[f3daecca0a79fbb](https://github.com/consiglionazionaledellericerche/sigla-main/commit/f3daecca0a79fbb) marco.spasiano *September 05, 2022*
+
+
+## Release 6.4.50  -- _September 03, 2022_ 
+**Changes**
+
+>**Cambiata implementazione xml provider, rimosso artefatto com.sun.xml.ws:rt per Interceptor for {http://comp.docamm00.contab.cnr.it/}FatturaAttivaComponentWSService has thrown exception, unwinding now: java.lang.ClassCastException: com.sun.org.apache.xerces.internal.dom.ElementNSImpl cannot be cast to javax.xml.soap.SOAPElement**
+>
+>[29629e48c10e2e3](https://github.com/consiglionazionaledellericerche/sigla-main/commit/29629e48c10e2e3) marco.spasiano *September 03, 2022*
+
+
+## Release 6.4.49  -- _September 02, 2022_ 
+**Changes**
+
+>**Cambiata implementazione xml provider**
+>
+>[b0198507138d404](https://github.com/consiglionazionaledellericerche/sigla-main/commit/b0198507138d404) marco.spasiano *September 02, 2022*
+
+
+## Release 6.4.48  -- _September 02, 2022_ 
+**Changes**
+
+>**Gestito messaggio di errore sulla firma remota**
+>
+>[0106ea8ff37dcfa](https://github.com/consiglionazionaledellericerche/sigla-main/commit/0106ea8ff37dcfa) marco.spasiano *September 02, 2022*
+
+
+## Release 6.4.47  -- _August 05, 2022_ 
+**Changes**
+
+>**É consentito inserire solo importi positii sui pluriennali**
+>
+>[d21be700b259e87](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d21be700b259e87) marco.spasiano *August 05, 2022*
+
+>**clone Accertamenti Pluriennali**
+>
+>[4dc284e80d68e28](https://github.com/consiglionazionaledellericerche/sigla-main/commit/4dc284e80d68e28) cirosalvio *August 05, 2022*
+
+>**Aggiunto il controllo del Privilegio su Impegni e Accertamenti pluriennali**
+>
+>[5211e82f450c878](https://github.com/consiglionazionaledellericerche/sigla-main/commit/5211e82f450c878) marco.spasiano *August 05, 2022*
+
+
+## Release 6.4.46  -- _August 04, 2022_ 
+**Changes**
+
+>**Aggiunto campo Codice Univoco Ufficio Ordine per Fattura Elettronica**
+>
+>[7d2e25445490b1c](https://github.com/consiglionazionaledellericerche/sigla-main/commit/7d2e25445490b1c) gianfranco.gasparro *August 04, 2022*
+
+>**Aggiunto il controllo del Privilegio su Impegni e Accertamenti pluriennali**
+>
+>[50fd894550e83fd](https://github.com/consiglionazionaledellericerche/sigla-main/commit/50fd894550e83fd) marco.spasiano *August 04, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[974ec43906c88de](https://github.com/consiglionazionaledellericerche/sigla-main/commit/974ec43906c88de) marco.spasiano *August 02, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[6308dfdceb057e9](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6308dfdceb057e9) marco.spasiano *August 02, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[113272bf5e60da4](https://github.com/consiglionazionaledellericerche/sigla-main/commit/113272bf5e60da4) cirosalvio *August 02, 2022*
+
+>**Obbligazione pluriennale : clone**
+>
+>[8cddea285c60e3a](https://github.com/consiglionazionaledellericerche/sigla-main/commit/8cddea285c60e3a) tomada_valentina *August 02, 2022*
+
+>**Accertamento Pluriennale - inserimento dati obbligazione di riferimento**
+>
+>[d7311b37d29198e](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d7311b37d29198e) tomada_valentina *August 02, 2022*
+
+>**FIX riga pluriennale senza anno valorizzato**
+>
+>[fe5888cca9e5dc0](https://github.com/consiglionazionaledellericerche/sigla-main/commit/fe5888cca9e5dc0) marco.spasiano *August 02, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[cef173b1fbd5cc2](https://github.com/consiglionazionaledellericerche/sigla-main/commit/cef173b1fbd5cc2) marco.spasiano *August 02, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[f81f5af32a55131](https://github.com/consiglionazionaledellericerche/sigla-main/commit/f81f5af32a55131) tomada_valentina *August 01, 2022*
+
+>**Obbligazione Pluriennale - cancellazione**
+>
+>[3b600abf5184116](https://github.com/consiglionazionaledellericerche/sigla-main/commit/3b600abf5184116) tomada_valentina *August 01, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[d88c4b4f574a047](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d88c4b4f574a047) tomada_valentina *August 01, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[a1ef066509ff16f](https://github.com/consiglionazionaledellericerche/sigla-main/commit/a1ef066509ff16f) marco.spasiano *August 01, 2022*
+
+>**Progetto Anagrafico**
+>
+>[d6edff190be7338](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d6edff190be7338) tomada_valentina *August 01, 2022*
+
+>**New feature: Impegni e Accertamenti pluriennali**
+>
+>[f43fdefe7b525cc](https://github.com/consiglionazionaledellericerche/sigla-main/commit/f43fdefe7b525cc) tomada_valentina *August 01, 2022*
+
+>**Change arubaRemoteSignService.url for test**
+>
+>[40ed6c3c27d5740](https://github.com/consiglionazionaledellericerche/sigla-main/commit/40ed6c3c27d5740) marco.spasiano *July 19, 2022*
+
+
 ## Release 6.4.45  -- _July 12, 2022_ 
 **Changes**
 
