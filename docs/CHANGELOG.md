@@ -1,3 +1,207 @@
+## Release 6.4.60  -- _October 14, 2022_ 
+**Changes**
+
+>**Rimosso controllo sul doppio terzo associato alla UO**
+>
+>[6fc64df47e40426](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6fc64df47e40426) marco.spasiano *October 14, 2022*
+
+>**Fix conguagli su CUNEODL320. Non gestiva il caso previsto dalla norametiva per i redditi superiori a 15000 euro.**
+>
+>[d95c03551a091b0](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d95c03551a091b0) PAGANO RAFFAELE *October 13, 2022*
+
+
+## Release 6.4.59  -- _October 10, 2022_ 
+**Changes**
+
+>**FIX: User alredy logged in**
+>
+>[7582bf297bd047d](https://github.com/consiglionazionaledellericerche/sigla-main/commit/7582bf297bd047d) marco.spasiano *October 10, 2022*
+
+
+## Release 6.4.58  -- _October 04, 2022_ 
+**Changes**
+
+>**FIX: Se una persona risulta come dipendente in ACE non viene aggiornato il Tipo Rapporto**
+>
+>[811f1f213e02567](https://github.com/consiglionazionaledellericerche/sigla-main/commit/811f1f213e02567) marco.spasiano *September 13, 2022*
+
+>**Economica: risoluzioni anomalie varie**
+>
+>[99c8a6afd047488](https://github.com/consiglionazionaledellericerche/sigla-main/commit/99c8a6afd047488) raffaelepagano *August 10, 2022*
+
+>**clone Accertamenti Pluriennali**
+>
+>[4dc284e80d68e28](https://github.com/consiglionazionaledellericerche/sigla-main/commit/4dc284e80d68e28) cirosalvio *August 05, 2022*
+
+>**Aggiunto il controllo del Privilegio su Impegni e Accertamenti pluriennali**
+>
+>[5211e82f450c878](https://github.com/consiglionazionaledellericerche/sigla-main/commit/5211e82f450c878) marco.spasiano *August 05, 2022*
+
+>**Progetti: disabilitato ulteriore controllo in caso di motivazione "Trasferimento Esigenze Finanziarie" sulle variazioni di competenza e residuo**
+>
+>[0e3d3b9a66b7e5e](https://github.com/consiglionazionaledellericerche/sigla-main/commit/0e3d3b9a66b7e5e) raffaelepagano *August 01, 2022*
+
+>**Variaizoni per trasferimenti finanziari: anomalie**
+>
+>[6f5e2ed6db03954](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6f5e2ed6db03954) raffaelepagano *July 06, 2022*
+
+>**Economica: risoluzioni anomalie segnalate dall'ufficio ragioneria**
+>
+>[e4be6febbc9e998](https://github.com/consiglionazionaledellericerche/sigla-main/commit/e4be6febbc9e998) raffaelepagano *July 01, 2022*
+
+>**Modifiche per gestione variazione Trasferimento Esigenze Finanziarie**
+>
+>[6849360e3bb5aa2](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6849360e3bb5aa2) raffaelepagano *June 24, 2022*
+
+>**Economica: aggiunta parametro fl_ricevi_quote_progetti_attivi su tipo finanziamento**
+>
+>[cc6d3965578a8a4](https://github.com/consiglionazionaledellericerche/sigla-main/commit/cc6d3965578a8a4) raffaelepagano *June 24, 2022*
+
+>**Fix dbchangelog**
+>
+>[f691eb77fffdb55](https://github.com/consiglionazionaledellericerche/sigla-main/commit/f691eb77fffdb55) gianfranco.gasparro *June 24, 2022*
+
+>**Inviato alla fatturazione elettronica riferimento mail dell'utente che ha creato la fattura**
+>
+>[6120ddf63fdbee1](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6120ddf63fdbee1) gianfranco.gasparro *June 23, 2022*
+
+>**Fix anomalie varie Gestione ordini e magazzino**
+>
+>[34fd1c0dcdeab3d](https://github.com/consiglionazionaledellericerche/sigla-main/commit/34fd1c0dcdeab3d) gianfranco.gasparro *June 13, 2022*
+
+>**Fix Pannellino Economica: non caricava la partita in fase di contabilizzazione del mandato**
+>
+>[ebd3387bb29bc73](https://github.com/consiglionazionaledellericerche/sigla-main/commit/ebd3387bb29bc73) raffaelepagano *June 13, 2022*
+
+>**Fix anomalie varie Gestione ordini e magazzino**
+>
+>[ebdac326221d37c](https://github.com/consiglionazionaledellericerche/sigla-main/commit/ebdac326221d37c) gianfranco.gasparro *June 13, 2022*
+
+>**Fix varie su progetti**
+>
+>[e7699fbf8b16562](https://github.com/consiglionazionaledellericerche/sigla-main/commit/e7699fbf8b16562) raffaelepagano *June 10, 2022*
+
+>**Economica: rimozione parametro doppione in Configurazione Cnr**
+>
+>[1b6c891fd9e0fa7](https://github.com/consiglionazionaledellericerche/sigla-main/commit/1b6c891fd9e0fa7) raffaelepagano *June 08, 2022*
+
+>**Progetti: Aggiunta motivazione "Trasferimento Esigenze Finanziarie" sulle variazioni di competenza e residuo**
+>
+>[8ab6900d353114d](https://github.com/consiglionazionaledellericerche/sigla-main/commit/8ab6900d353114d) raffaelepagano *June 08, 2022*
+
+>**Progetti: modifiche varie**
+> * 1) E’ stato reso obbligatorio l’allegato di tipo “Provvedimento di costituzione” all’atto dell’inserimento di un progetto di tipologia “Autofinanziamento”;
+> * 2) Nuova gestione Limite giorni durata progetto e Limite giorni proroga progetto;
+> * 3) Aggiunto nuovo allegato di tipo “Valutazione utilizzo risorse”;
+> * 4) Aggiunta la possibilità di caricare un tipo finanziamento di tipo “Gestionale”.
+>
+>[929070740a249b8](https://github.com/consiglionazionaledellericerche/sigla-main/commit/929070740a249b8) raffaelepagano *June 06, 2022*
+
+
+## Release 6.4.57  -- _October 01, 2022_ 
+**Changes**
+
+>**new feature: Add Rest for info anagrafica by tax code.**
+>
+>[c80bfd69fbb187b](https://github.com/consiglionazionaledellericerche/sigla-main/commit/c80bfd69fbb187b) marco.spasiano *October 01, 2022*
+
+
+## Release 6.4.56  -- _September 30, 2022_ 
+**Changes**
+
+>**new feature: Add Rest for info anagrafica by tax code.**
+>
+>[a60b585db725d74](https://github.com/consiglionazionaledellericerche/sigla-main/commit/a60b585db725d74) marco.spasiano *September 30, 2022*
+
+>**new feature: Add Rest for info anagrafica by tax code.**
+>
+>[9ee272f8720e9da](https://github.com/consiglionazionaledellericerche/sigla-main/commit/9ee272f8720e9da) marco.spasiano *September 30, 2022*
+
+>**Bump poi from 3.17 to 4.1.1 in /sigla-ejb**
+>
+>[db2e276e12b1f83](https://github.com/consiglionazionaledellericerche/sigla-main/commit/db2e276e12b1f83) marco.spasiano *September 19, 2022*
+
+>**Bump gson from 2.8.5 to 2.8.9 in /sigla-web #93**
+>
+>[db6dfc4cdcf8c29](https://github.com/consiglionazionaledellericerche/sigla-main/commit/db6dfc4cdcf8c29) marco.spasiano *September 19, 2022*
+
+>**Bump gson from 2.8.5 to 2.8.9 in /sigla-ejb #94**
+>
+>[7056dc5c3eec802](https://github.com/consiglionazionaledellericerche/sigla-main/commit/7056dc5c3eec802) marco.spasiano *September 19, 2022*
+
+>**Bump poi from 3.17 to 4.1.1 in /sigla-ejb #96**
+>
+>[279a961e5f34465](https://github.com/consiglionazionaledellericerche/sigla-main/commit/279a961e5f34465) marco.spasiano *September 19, 2022*
+
+>**Bump poi from 3.17 to 4.1.1 in /sigla-web #97**
+>
+>[21c6a6a52408cb5](https://github.com/consiglionazionaledellericerche/sigla-main/commit/21c6a6a52408cb5) marco.spasiano *September 19, 2022*
+
+>**Bump commons-email from 1.3.3 to 1.5 in /sigla-web #98**
+>
+>[706b174c625b65c](https://github.com/consiglionazionaledellericerche/sigla-main/commit/706b174c625b65c) marco.spasiano *September 19, 2022*
+
+>**Bump commons-email from 1.4 to 1.5 in /sigla-ejb #99**
+>
+>[3b4cbffb35112d3](https://github.com/consiglionazionaledellericerche/sigla-main/commit/3b4cbffb35112d3) marco.spasiano *September 19, 2022*
+
+>**Bump postgresql from 42.3.3 to 42.4.1 in /sigla-backend #101**
+>
+>[70e09af06e5c5bf](https://github.com/consiglionazionaledellericerche/sigla-main/commit/70e09af06e5c5bf) marco.spasiano *September 19, 2022*
+
+
+## Release 6.4.55  -- _September 16, 2022_ 
+**Changes**
+
+>**FIX: controllo sulla data di registrazione delle fatture attive**
+>
+>[4614b9328de94fb](https://github.com/consiglionazionaledellericerche/sigla-main/commit/4614b9328de94fb) marco.spasiano *September 16, 2022*
+
+
+## Release 6.4.54  -- _September 16, 2022_ 
+**Changes**
+
+>**FIX: controllo sulla data di registrazione delle fatture attive**
+>
+>[22c44dd07ca03e1](https://github.com/consiglionazionaledellericerche/sigla-main/commit/22c44dd07ca03e1) marco.spasiano *September 16, 2022*
+
+
+## Release 6.4.53  -- _September 12, 2022_ 
+**Changes**
+
+>**FIX loop on righe di fattura on REST service**
+>
+>[149ce2b4d8d7ac9](https://github.com/consiglionazionaledellericerche/sigla-main/commit/149ce2b4d8d7ac9) marco.spasiano *September 09, 2022*
+
+>**Aggiunto il messaggio corretto per il codice di errore ERRORE_FA_999 on FatturaAttiva REST service**
+>
+>[0f9cb5fe9660707](https://github.com/consiglionazionaledellericerche/sigla-main/commit/0f9cb5fe9660707) marco.spasiano *September 09, 2022*
+
+>**FIX "Tipologia bene/servizio non coerente con il bene/servizio” on REST service**
+>
+>[396fc617b3bda99](https://github.com/consiglionazionaledellericerche/sigla-main/commit/396fc617b3bda99) marco.spasiano *September 09, 2022*
+
+>**FIX "Cliente selezionato NON coerente con i campi intra_ue e/o extra_ue e/o san_marino” on REST service**
+>
+>[2fc0be487a83daa](https://github.com/consiglionazionaledellericerche/sigla-main/commit/2fc0be487a83daa) marco.spasiano *September 08, 2022*
+
+>**Change UNAUTHORIZED to FORBIDDEN when user doesn't have a access to REST service**
+>
+>[8bb380e1be24a2b](https://github.com/consiglionazionaledellericerche/sigla-main/commit/8bb380e1be24a2b) marco.spasiano *September 08, 2022*
+
+
+## Release 6.4.52  -- _September 07, 2022_ 
+**Changes**
+
+>**Add log message for user doesn't have the roles and access**
+>
+>[05adbfb8fe954a0](https://github.com/consiglionazionaledellericerche/sigla-main/commit/05adbfb8fe954a0) marco.spasiano *September 07, 2022*
+
+>**Add UnauthorizedException for REST service**
+>
+>[0650b1cce37fc4f](https://github.com/consiglionazionaledellericerche/sigla-main/commit/0650b1cce37fc4f) marco.spasiano *September 07, 2022*
+
+
 ## Release 6.4.51  -- _September 06, 2022_ 
 **Changes**
 
@@ -40,14 +244,6 @@
 >**É consentito inserire solo importi positii sui pluriennali**
 >
 >[d21be700b259e87](https://github.com/consiglionazionaledellericerche/sigla-main/commit/d21be700b259e87) marco.spasiano *August 05, 2022*
-
->**clone Accertamenti Pluriennali**
->
->[4dc284e80d68e28](https://github.com/consiglionazionaledellericerche/sigla-main/commit/4dc284e80d68e28) cirosalvio *August 05, 2022*
-
->**Aggiunto il controllo del Privilegio su Impegni e Accertamenti pluriennali**
->
->[5211e82f450c878](https://github.com/consiglionazionaledellericerche/sigla-main/commit/5211e82f450c878) marco.spasiano *August 05, 2022*
 
 
 ## Release 6.4.46  -- _August 04, 2022_ 
@@ -149,30 +345,6 @@
 >
 >[7b6eeb7109966b4](https://github.com/consiglionazionaledellericerche/sigla-main/commit/7b6eeb7109966b4) marco.spasiano *July 04, 2022*
 
->**Fix dbchangelog**
->
->[f691eb77fffdb55](https://github.com/consiglionazionaledellericerche/sigla-main/commit/f691eb77fffdb55) gianfranco.gasparro *June 24, 2022*
-
->**Inviato alla fatturazione elettronica riferimento mail dell'utente che ha creato la fattura**
->
->[6120ddf63fdbee1](https://github.com/consiglionazionaledellericerche/sigla-main/commit/6120ddf63fdbee1) gianfranco.gasparro *June 23, 2022*
-
->**Fix anomalie varie Gestione ordini e magazzino**
->
->[34fd1c0dcdeab3d](https://github.com/consiglionazionaledellericerche/sigla-main/commit/34fd1c0dcdeab3d) gianfranco.gasparro *June 13, 2022*
-
->**Fix Pannellino Economica: non caricava la partita in fase di contabilizzazione del mandato**
->
->[ebd3387bb29bc73](https://github.com/consiglionazionaledellericerche/sigla-main/commit/ebd3387bb29bc73) raffaelepagano *June 13, 2022*
-
->**Fix anomalie varie Gestione ordini e magazzino**
->
->[ebdac326221d37c](https://github.com/consiglionazionaledellericerche/sigla-main/commit/ebdac326221d37c) gianfranco.gasparro *June 13, 2022*
-
->**Economica: rimozione parametro doppione in Configurazione Cnr**
->
->[1b6c891fd9e0fa7](https://github.com/consiglionazionaledellericerche/sigla-main/commit/1b6c891fd9e0fa7) raffaelepagano *June 08, 2022*
-
 
 ## Release 6.4.42  -- _June 04, 2022_ 
 **Changes**
@@ -208,6 +380,10 @@
 >**Conditioned the integration with PAGOPA to the "pagopa" spring profile**
 >
 >[1117518c5f8ce3f](https://github.com/consiglionazionaledellericerche/sigla-main/commit/1117518c5f8ce3f) marco.spasiano *June 03, 2022*
+
+
+## Release 6.4.38  -- _May 27, 2022_ 
+**Changes**
 
 >**Aggiunti i dettagli del mandato al messaggio "Impossibile generare il flusso, ripartizione per siope errata"**
 >
