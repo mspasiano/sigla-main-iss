@@ -4551,7 +4551,7 @@ public class DistintaCassiereComponent extends
                 siopeBilancio.forEach(m -> {
                     Bilancio b = objectFactory.createBilancio();
                     b.setGestione(m.getGestione().toString());
-                    b.setImportoBilancio(m.getImporto());
+                    b.setImportoBilancio(m.getImporto().setScale(2, BigDecimal.ROUND_HALF_UP));
 
                     try{
                         b.setCodificaBilancio(Integer.parseInt(m.getVoceBilancio()));
