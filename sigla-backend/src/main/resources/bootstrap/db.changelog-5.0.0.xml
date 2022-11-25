@@ -5920,4 +5920,10 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
 
     <include file="bootstrap/insert_configurazioneCnr_invia_tag_bilancio.xml"/>
     <include file="bootstrap/modify_length_ds_elemento_voce.xml"/>
+    <!-- Autore : VALENTINA TOMADA-in Bene Inventario inserito flag dismesso, data e causale dismissione -->
+    <include file="bootstrap/add_column_servizio_inventario_flag_dismesso.xml"/>
+    <!-- Autore : VALENTINA TOMADA-Configurazione gestione bene dismesso -->
+    <include file="bootstrap/add_conf_gestione_bene_dismesso_inventario.xml"/>
+    <!-- Autore : VALENTINA TOMADA - Configurazione modulo pagamento estero -->
+    <include file="bootstrap/add_conf_pagamento_estero_iss.xml"/>
 </databaseChangeLog>

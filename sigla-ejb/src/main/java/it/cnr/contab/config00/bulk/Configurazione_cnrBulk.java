@@ -205,6 +205,10 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
 
     public final static String PK_INVENTARIO = "INVENTARIO";
     public final static String SK_GESTIONE_ETICHETTA_BENE = "GESTIONE_ETICHETTA_BENE";
+    public final static String SK_GESTIONE_BENE_DISMESSO_INVENTARIO = "GESTIONE_BENE_DISMESSO";
+
+    public final static String PK_PAGAMENTO_ESTERO = "PAGAMENTO_ESTERO";
+    public final static String SK_PAGAMENTO_ESTERO_ISS = "MODULO_PAGAMENTO_ISS";
 
     public Configurazione_cnrBulk() {
         super();

@@ -87,4 +87,9 @@
     <include file="iss/update_configurazioneCnr_invia_tag_bilancio.xml"/>
     <!-- Autore : RAFFAELE PAGANO-Configurazione liquidazione iva -->
     <include file="iss/update_conf_liquidazione_iva.xml"/>
+    <!-- Autore : VALENTINA TOMADA-Configurazione gestione bene dismesso inventario -->
+    <include file="iss/update_conf_bene_dismesso_inventario_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - Configurazione modulo pagamento estero -->
+    <include file="iss/update_conf_pagamento_estero_iss.xml"/>
+
 </databaseChangeLog>

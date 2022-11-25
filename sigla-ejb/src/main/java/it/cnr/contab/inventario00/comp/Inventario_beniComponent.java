@@ -1468,12 +1468,35 @@ private void validaBene (UserContext aUC, Inventario_beniBulk bene)
 		if (bene.getImponibile_ammortamento() != null  && bene.getValore_ammortizzato()!=null && bene.getImponibile_ammortamento().compareTo(bene.getValore_ammortizzato())<0){
 			throw new it.cnr.jada.comp.ApplicationException("Attenzione: il valore da ammortizzare non è valido\n Il valore da ammortizzare di un bene non può essere inferiore al valore già ammortizzato.");
 		}
+		if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(aUC)){
+			validaDismessioneBene(bene);
+		}
 	
 	}catch(Throwable t){
 		throw handleException(bene, t);		
 	}
 }
 /**
+ * Validazione check dismesso
+ */
+private void  validaDismessioneBene(Inventario_beniBulk bene) throws ApplicationException {
+	if(bene.getFl_dismesso()){
+		if(bene.getDt_dismesso()== null){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: Indicare la data di dismissione");
+		}
+		if(bene.getCausale_dismissione()== null || bene.getCausale_dismissione().isEmpty()){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: Indicare la causale di dismissione");
+		}
+	}else{
+		if(bene.getDt_dismesso()!= null){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione è stata indicata una data di dismissione senza aver selezionato il flag dismesso");
+		}
+		if(bene.getCausale_dismissione()!= null && !bene.getCausale_dismissione().isEmpty()){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione è stata indicata una causale di dismissione senza aver selezionato il flag dismesso");
+		}
+	}
+}
+	/**
  * Validazione dell'oggetto in fase di stampa
  *
 */

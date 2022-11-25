@@ -5,8 +5,12 @@
 		it.cnr.contab.inventario01.bp.*,
 		it.cnr.contab.inventario01.bulk.*"
 %>
+<%@page import="it.cnr.jada.UserContext"%>
+<%@page import="it.cnr.contab.util.Utility"%>
+
 <% CRUDScaricoInventarioBP bp = (CRUDScaricoInventarioBP)BusinessProcess.getBusinessProcess(request); 
-   Buono_carico_scaricoBulk buonoCarico = (Buono_carico_scaricoBulk)bp.getModel(); %>
+   Buono_carico_scaricoBulk buonoCarico = (Buono_carico_scaricoBulk)bp.getModel();
+    UserContext uc = HttpActionContext.getUserContext(session);%>
   <div class="Group">
 	<table>
 	  <tr>
@@ -80,4 +84,44 @@
 	  </tr>
 	  <%} %>
 	</table>
+	<%if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(uc)){%>
+	    <table>
+          <tr>
+            <td><% bp.getDettController().writeFormLabel(out,"fl_dismesso"); %></td>
+            <td><% bp.getDettController().writeFormInput(out,null,"fl_dismesso",true,null,null); %></td>
+            <td><% bp.getDettController().writeFormLabel(out,"dt_dismesso"); %></td>
+            <td><% bp.getDettController().writeFormInput(out,null,"dt_dismesso",true,null,null); %></td>
+          </tr>
+          <tr>
+              <td><% bp.getDettController().writeFormLabel(out,"causale_dismissione"); %></td>
+              <td><% bp.getDettController().writeFormInput(out,null,"causale_dismissione",true,null,null); %></td>
+
+          </tr>
+        </table>
+        <table>
+            <tr>
+                <td>
+                    <% bp.getController().writeFormLabel(out,"fl_dismesso"); %>
+                </td>
+                <td>
+                    <% bp.getController().writeFormInput(out,null,"fl_dismesso",bp.isInserting(),null,null); %>
+                </td>
+                <td>
+                    <% bp.getController().writeFormLabel(out,"dt_dismesso"); %>
+                </td>
+                <td>
+                    <% bp.getController().writeFormInput(out,null,"dt_dismesso",bp.isInserting(),null,null); %>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <% bp.getController().writeFormLabel(out,"causale_dismissione"); %>
+                </td>
+                <td>
+                    <% bp.getController().writeFormInput(out,null,"causale_dismissione",bp.isInserting(),null,null); %>
+
+                </td>
+            </tr>
+        </table>
+	<%}%>
   </div>

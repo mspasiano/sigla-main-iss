@@ -7,6 +7,8 @@
 		it.cnr.contab.inventario00.docs.bulk.*,
 		it.cnr.contab.inventario00.bp.*"
 %>
+<%@page import="it.cnr.jada.UserContext"%>
+<%@page import="it.cnr.contab.util.Utility"%>
 
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 
@@ -21,7 +23,9 @@
 
 <% CRUDInventarioBeniBP bp = (CRUDInventarioBeniBP)BusinessProcess.getBusinessProcess(request);
    Inventario_beniBulk bene = (Inventario_beniBulk)bp.getModel(); 
-   bp.openFormWindow(pageContext); %>
+   bp.openFormWindow(pageContext);
+   UserContext uc = HttpActionContext.getUserContext(session);
+ %>
 
   <div class="Group">
 	<table>			
@@ -42,7 +46,9 @@
    				    <span class="FormLabel" style="color:blue">
 					<% if (bene.isTotalmenteScaricato()){ %>
 						totalmente scaricato
-					<% } else { %>
+					<% } else if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(uc) && bene.getFl_dismesso()){ %>
+					    dismesso
+					<%}else{%>
 						normale
 					<% } 
 					   if (bene.isMigrato()){ %>

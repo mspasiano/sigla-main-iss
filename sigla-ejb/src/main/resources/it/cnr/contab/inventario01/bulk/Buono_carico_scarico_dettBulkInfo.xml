@@ -139,7 +139,26 @@
 		inputType="TEXT"
 		inputSize="30"
 		label="Codice" />
-		
+
+	<fieldProperty
+			name="fl_dismesso"
+			property="bene.fl_dismesso"
+			inputType="CHECKBOX"
+			label="Dismesso" />
+	<fieldProperty
+			name="dt_dismesso"
+			property="bene.dt_dismesso"
+			inputType="TEXT"
+			formatName="date_short"
+			label="Data Dismissione"/>
+	<fieldProperty
+			name="causale_dismissione"
+			property="bene.causale_dismissione"
+			inputType="TEXT"
+			inputSize="100"
+			label="Causale Dismissione" />
+
+
 
 	/********** Condizione ******************************/
 	<fieldProperty
@@ -430,7 +449,15 @@
 	<formFieldProperty
 		name="stato_coge" />
 	<formFieldProperty
-		name="stato_coge_quote" />	
+		name="stato_coge_quote" />
+	<formFieldProperty
+			name="fl_dismesso" />
+	<formFieldProperty
+			name="dt_dismesso" />
+	<formFieldProperty
+			name="causale_dismissione" />
+
+
 	/************** Assegnatario ************************/
 	<formFieldProperty
 		name="find_assegnatario" />

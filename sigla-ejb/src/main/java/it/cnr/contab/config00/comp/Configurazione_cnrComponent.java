@@ -1039,4 +1039,79 @@ public class Configurazione_cnrComponent extends it.cnr.jada.comp.GenericCompone
             throw handleException(e);
         }
     }
+
+    public Boolean isGestioneBeneDismessoInventarioAttivo(UserContext userContext) throws ComponentException {
+        final Configurazione_cnrBulk configurazione =
+                Optional.ofNullable(
+                        getConfigurazione(
+                                userContext,
+                                CNRUserContext.getEsercizio(userContext),
+                                ASTERISCO,
+                                Configurazione_cnrBulk.PK_INVENTARIO,
+                                Configurazione_cnrBulk.SK_GESTIONE_BENE_DISMESSO_INVENTARIO)
+                ).orElseGet(() -> {
+                            try {
+                                return getConfigurazione(
+                                        userContext,
+                                        0,
+                                        ASTERISCO,
+                                        Configurazione_cnrBulk.PK_INVENTARIO,
+                                        Configurazione_cnrBulk.SK_GESTIONE_BENE_DISMESSO_INVENTARIO);
+                            } catch (ComponentException e) {
+                                throw new DetailedRuntimeException(e);
+                            }
+                        }
+                );
+        final boolean gestioneBeneDismessoInventarioAttiva = Optional.ofNullable(configurazione)
+                .flatMap(configurazione_cnrBulk -> Optional.ofNullable(configurazione_cnrBulk.getVal01()))
+                .filter(val -> val.equals("Y"))
+                .isPresent();
+        final Optional<String> ruolo = Optional.ofNullable(configurazione.getVal02());
+        if (gestioneBeneDismessoInventarioAttiva && ruolo.isPresent()){
+            try {
+                return ((RuoloComponentSession) EJBCommonServices.createEJB("CNRUTENZE00_EJB_RuoloComponentSession"))
+                        .controlloAbilitazione(userContext, ruolo.get());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return gestioneBeneDismessoInventarioAttiva;
+    }
+    public Boolean isPagamentoEsteroISSAttivo(UserContext userContext) throws ComponentException {
+        final Configurazione_cnrBulk configurazione =
+                Optional.ofNullable(
+                        getConfigurazione(
+                                userContext,
+                                CNRUserContext.getEsercizio(userContext),
+                                ASTERISCO,
+                                Configurazione_cnrBulk.PK_PAGAMENTO_ESTERO,
+                                Configurazione_cnrBulk.SK_PAGAMENTO_ESTERO_ISS)
+                ).orElseGet(() -> {
+                            try {
+                                return getConfigurazione(
+                                        userContext,
+                                        0,
+                                        ASTERISCO,
+                                        Configurazione_cnrBulk.PK_PAGAMENTO_ESTERO,
+                                        Configurazione_cnrBulk.SK_PAGAMENTO_ESTERO_ISS);
+                            } catch (ComponentException e) {
+                                throw new DetailedRuntimeException(e);
+                            }
+                        }
+                );
+        final boolean gestioneModuloPagamentoEsteroIssAttiva = Optional.ofNullable(configurazione)
+                .flatMap(configurazione_cnrBulk -> Optional.ofNullable(configurazione_cnrBulk.getVal01()))
+                .filter(val -> val.equals("Y"))
+                .isPresent();
+        final Optional<String> ruolo = Optional.ofNullable(configurazione.getVal02());
+        if (gestioneModuloPagamentoEsteroIssAttiva && ruolo.isPresent()){
+            try {
+                return ((RuoloComponentSession) EJBCommonServices.createEJB("CNRUTENZE00_EJB_RuoloComponentSession"))
+                        .controlloAbilitazione(userContext, ruolo.get());
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return gestioneModuloPagamentoEsteroIssAttiva;
+    }
 }
