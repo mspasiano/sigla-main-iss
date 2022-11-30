@@ -36,6 +36,7 @@ import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.ejb.EsercizioComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -4666,7 +4667,72 @@ public class DistintaCassiereComponent extends
 
     }
 
-
+    private String getCodiceA2A(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]");
+    }
+    private String getCodiceEnteBT(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]");
+    }
+    private String getCodiceIstatEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]");
+    }
     public StorageObject generaFlussoSiopeplus(UserContext userContext, Distinta_cassiereBulk distinta) throws ComponentException,
             RemoteException {
         try {
@@ -4687,29 +4753,16 @@ public class DistintaCassiereComponent extends
                             null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
                             Configurazione_cnrBulk.SK_CODICE_ABI_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ABI_BT]"));
-            String codiceA2A = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_A2A
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]"));
+            String codiceA2A = getCodiceA2A( userContext,distinta,sess);
 
-            String codiceEnte = Optional.ofNullable(
+            String codiceEnte =  Optional.ofNullable(
                     sess.getVal01(
                             userContext,
                             CNRUserContext.getEsercizio(userContext),
                             null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
                             Configurazione_cnrBulk.SK_CODICE_ENTE
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]"));
-
-            String codiceEnteBT = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]"));
+            String codiceEnteBT = getCodiceEnteBT(userContext,distinta,sess);
 
             String codiceTramiteBT = Optional.ofNullable(
                     sess.getVal01(
@@ -4719,13 +4772,7 @@ public class DistintaCassiereComponent extends
                             Configurazione_cnrBulk.SK_CODICE_TRAMITE_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_TRAMITE_BT]"));
 
-            String codiceIstatEnte = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]"));
+            String codiceIstatEnte = getCodiceIstatEnte(userContext,distinta,sess);
 
             final CtTestataFlusso testataFlusso = objectFactory.createCtTestataFlusso();
             testataFlusso.setCodiceABIBT(codiceAbi);
@@ -4917,10 +4964,10 @@ public class DistintaCassiereComponent extends
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, reversaleHome.getSiopeBilancio(userContext, reversaleBulk));
                 if ( bilancioTag.isEmpty())
                     throw new ApplicationMessageFormatException("La reversale {0} non ha le voci di Bilancio",
-                            reversaleBulk.getCds().getDs_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()));
+                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()));
                 if ( bilancioTag.size()>numMaxVociBilancio)
                     throw new ApplicationMessageFormatException("Per la reversale  {0} ci sono più voci di {1} voce/i bilancio",
-                            reversaleBulk.getCds().getDs_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()),
+                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()),
                             numMaxVociBilancio);
                 reversale.getBilancio().addAll(bilancioTag);
 
@@ -5168,6 +5215,7 @@ public class DistintaCassiereComponent extends
 
     private void completeMandato(UserContext userContext, MandatoBulk mandato) throws ComponentException, PersistencyException {
         //Se le righe del mandato non sono valorizzate le riempio io
+        //CdsBulk cds = (CdsBulk)getHome(userContext,CdsBulk.class).findByPrimaryKey(new CdsBulk(mandato.getCd_cds()));
         if (!Optional.ofNullable(mandato.getMandato_rigaColl()).filter(el->!el.isEmpty()).isPresent()) {
             mandato.setMandato_rigaColl(new BulkList(((MandatoHome) getHome(
                     userContext, mandato.getClass())).findMandato_riga(userContext, mandato, false)));
@@ -5226,10 +5274,10 @@ public class DistintaCassiereComponent extends
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, mandatoHome.getSiopeBilancio(userContext, mandatoBulk));
                 if ( bilancioTag.isEmpty())
                     throw new ApplicationMessageFormatException("Per il mandato  {0} non ha le voci di Bilancio",
-                            mandatoBulk.getCds().getDs_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()));
+                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()));
                 if ( bilancioTag.size()>numMaxVociBilancio)
                     throw new ApplicationMessageFormatException("Per il mandato  {0} ci sono più voci di {1} voce/i bilancio",
-                            mandatoBulk.getCds().getDs_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()),
+                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()),
                             numMaxVociBilancio);
                 mandato.getBilancio().addAll(bilancioTag);
 
