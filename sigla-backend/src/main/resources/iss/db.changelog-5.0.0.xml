@@ -91,5 +91,6 @@
     <include file="iss/update_conf_bene_dismesso_inventario_iss.xml"/>
     <!-- Autore : VALENTINA TOMADA - Configurazione modulo pagamento estero -->
     <include file="iss/update_conf_pagamento_estero_iss.xml"/>
-
+    <!-- Autore : CIRO SAçVIO-Configurazione Banca D'Italia per invio Siope+ -->
+    <include file="iss/update_configurazioneCnr_FlussiSiope_BI.xml"/>
 </databaseChangeLog>
