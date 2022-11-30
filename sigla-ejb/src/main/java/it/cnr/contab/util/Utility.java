@@ -57,6 +57,7 @@ import it.cnr.contab.utente00.ejb.UtenteComponentSession;
 import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
 
 import it.cnr.jada.ejb.CRUDComponentSession;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -298,6 +299,17 @@ public final class Utility {
 			return "zero/" + parteDecimale;
 		} else {
 			return NumberToTextRicorsiva(parteIntera) + "/" + parteDecimale;
+		}
+	}
+	public static String NumberToTextPadDecimal(BigDecimal importo) {
+		int parteIntera = importo.intValue();
+		String parteDecimale = importo.remainder(BigDecimal.ONE).abs().toPlainString();
+		if (parteDecimale.length() > 1)
+			parteDecimale = parteDecimale.substring(2);
+		if (parteIntera == 0) {
+			return "zero/" + parteDecimale;
+		} else {
+			return NumberToTextRicorsiva(parteIntera) + "/" + StringUtils.rightPad(parteDecimale, 2, "0");
 		}
 	}
 
