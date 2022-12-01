@@ -857,17 +857,21 @@
         <formFieldProperty
               name="cd_cds" 
               inputSize="10"
+			  inputCssClass="w-10"
               enabledOnSearch="true"/>
         <formFieldProperty
               name="esercizio" 
               inputSize="5"
+			  inputCssClass="w-10"
               enabledOnSearch="true"/>
         <formFieldProperty
-              name="esercizio_originale" 
+              name="esercizio_originale"
+			  inputCssClass="w-10"
               enabledOnSearch="true"/>
         <formFieldProperty
-              name="pg_obbligazione" 
-              enabledOnSearch="true"/>   
+              name="pg_obbligazione"
+			  inputCssClass="w-10"
+              enabledOnSearch="true"/>
     </form>
 
 	<findFieldProperty

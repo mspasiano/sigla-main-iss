@@ -422,7 +422,6 @@ public abstract class Fattura_passivaBulk
         nuovoRigo.setCessionario(this.getCessionario());
 
         fattura_passiva_dettColl.add(nuovoRigo);
-        setToBeCreated();
 
         return fattura_passiva_dettColl.size() - 1;
     }

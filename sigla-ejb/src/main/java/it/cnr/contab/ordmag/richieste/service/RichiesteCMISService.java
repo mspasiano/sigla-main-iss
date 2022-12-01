@@ -52,7 +52,10 @@ public class RichiesteCMISService extends StoreService {
     public static final String F_ORDINI_RICHIESTE_DETTAGLIO_MAIN = "F:ordini_richieste_dettaglio:main";
 
     public List<StorageObject> getFilesRichiesta(RichiestaUopBulk richiesta) throws BusinessProcessException{
-        return getChildren(recuperoFolderRichiestaSigla(richiesta).getKey());
+        return Optional.ofNullable(recuperoFolderRichiestaSigla(richiesta))
+                    .map(StorageObject::getKey)
+                    .map(s -> getChildren(s))
+                    .orElse(Collections.emptyList());
 	}
 
 	private List<StorageObject> getDocuments(String storageObjectKey, String tipoAllegato) throws ApplicationException {

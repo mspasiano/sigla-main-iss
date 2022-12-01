@@ -8286,7 +8286,6 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                         (codiciNaturaSqu.length() > 0 ? "i codici natura : " + codiciNaturaSqu : "") + "!");
             }
         }
-
     }
 
     public void aggiornaObblSuCancPerCompenso(
@@ -8494,7 +8493,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             throws ComponentException, it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException {
         if (!Optional.ofNullable(fattura_passiva).isPresent())
             return Collections.emptyList();
-        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(userContext, FatturaOrdineBulk.class, null, "default"))
+        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(userContext, FatturaOrdineBulk.class, "FATTURA_P", "default"))
                 .filter(FatturaOrdineHome.class::isInstance)
                 .map(FatturaOrdineHome.class::cast)
                 .orElseThrow(() -> new ComponentException("Home di FatturaOrdineBulk non trovata!"));

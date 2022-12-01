@@ -11,6 +11,8 @@ import it.cnr.jada.comp.ComponentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Optional;
+
 public class StampaPartitarioMagJsonDataSource extends AbstractDataSourceOffline {
     private final static Logger _log = LoggerFactory.getLogger(StampaPartitarioMagJsonDataSource.class);
 
@@ -24,10 +26,11 @@ public class StampaPartitarioMagJsonDataSource extends AbstractDataSourceOffline
     }
 
     public String getDataSourceOffline(UserContext userContext, Print_spoolerBulk print_spoolerBulk, BulkHome bulkHome) throws ComponentException {
-        StampaPartitarioMagHome home = ( StampaPartitarioMagHome) bulkHome;
-        String json= home.getJsonDataSource(userContext,print_spoolerBulk);
-        _log.info("json:"+json);
-        return json;
-
+        return Optional.ofNullable(bulkHome)
+                .filter(StampaPartitarioMagHome.class::isInstance)
+                .map(StampaPartitarioMagHome.class::cast)
+                .map(stampaPartitarioMagHome -> {
+                    return stampaPartitarioMagHome.getJsonDataSource(userContext,print_spoolerBulk);
+                }).orElse(null);
     }
 }

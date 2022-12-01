@@ -472,7 +472,7 @@
             name="imponibileErrato"
             property="imponibileErrato"
             headerLabel="Rettifiche"
-            label="Imponibile per Nota Credito"/>
+            label="Imp. NC"/>
     <columnFieldProperty
             name="imImponibile"/>
     <columnFieldProperty

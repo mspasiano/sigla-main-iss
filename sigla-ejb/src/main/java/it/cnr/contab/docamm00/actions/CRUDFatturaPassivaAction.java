@@ -5523,6 +5523,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             Fattura_passivaBulk fattura_passivaBulk = (Fattura_passivaBulk) bp.getModel();
             if (!fattura_passivaBulk.isDaOrdini() && Optional.ofNullable(fattura_passivaBulk.getDocumentoEleTestata()).isPresent()  && fattura_passivaBulk.getFattura_passiva_dettColl().isEmpty()) {
                 bp.caricaRigheFatturaDaFatturazioneElettronica(context, fattura_passivaBulk, this, fattura_passivaBulk.getDocumentoEleTestata());
+            } else {
+                bp.getDettaglio().remove(context);
             }
             return context.findDefaultForward();
         } catch (Throwable t) {

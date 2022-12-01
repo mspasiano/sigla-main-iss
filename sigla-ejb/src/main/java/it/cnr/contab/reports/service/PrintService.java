@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class PrintService implements InitializingBean {
 
@@ -157,28 +158,31 @@ public class PrintService implements InitializingBean {
     }
 
     public void executeReportWithJsonDataSource() throws Exception {
-        Print_spoolerBulk printSpooler = null;
+        AtomicReference<Print_spoolerBulk> printSpooler = new AtomicReference<>();
         try {
             logger.trace("Start executeReportWithJsonDataSource");
             UserContext userContextCal = new CNRUserContext("JOB_STAMPADS", "JOB_STAMPADS"
                     , null, null, null, null);
-            printSpooler = offlineReportComponent.getJobWaitToJsoDS(userContextCal);
+            printSpooler.set(offlineReportComponent.getJobWaitToJsoDS(userContextCal));
 
-            if (Optional.ofNullable(printSpooler).isPresent()) {
-                Print_priorityBulk print_priorityBulk = offlineReportComponent.findPrintPriority(userContextCal,printSpooler.getReport());
-                PrintDataSourceOffline jsonDataSource = this.getPrintDsOfflineImplemented().get(print_priorityBulk.getReportName());
-                //printSpooler = jsonDataSource.getPrintSpooler(userContextCal,printSpooler);
-                printSpooler = offlineReportComponent.getPrintSpoolerDsOffLine( userContextCal,printSpooler,jsonDataSource);
-                executeReportDs(userContextCal, printSpooler);
+            if (Optional.ofNullable(printSpooler.get()).isPresent()) {
+                Optional.ofNullable(this.getPrintDsOfflineImplemented().get(printSpooler.get().getReport()))
+                        .ifPresent(printDataSourceOffline -> {
+                            try {
+                                printSpooler.set(offlineReportComponent.getPrintSpoolerDsOffLine(userContextCal, printSpooler.get(), printDataSourceOffline));
+                                executeReportDs(userContextCal, printSpooler.get());
+                            } catch (ComponentException|IOException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+
             }
         } catch (Exception e) {
-            String error = "Error executeReportWithDsJsonDataSource";
-            if (Optional.ofNullable(Optional.ofNullable(printSpooler).
-                    map(Print_spoolerBulk::getPgStampa).orElse(null)).isPresent()) {
-                error.concat("for pg_stampa=" + Optional.ofNullable(Optional.ofNullable(printSpooler).
-                        map(Print_spoolerBulk::getPgStampa).get()).toString());
-            }
-            logger.error(error, e);
+            logger.error("Error executeReportWithDsJsonDataSource ".concat(
+                    Optional.ofNullable(printSpooler.get())
+                            .flatMap(print_spoolerBulk -> Optional.ofNullable(print_spoolerBulk.getPgStampa()))
+                            .map(aLong -> "for pg_stampa=" + aLong)
+                            .orElse("")), e);
         }
         logger.trace("Finish executeReportWithJsonDataSource");
     }

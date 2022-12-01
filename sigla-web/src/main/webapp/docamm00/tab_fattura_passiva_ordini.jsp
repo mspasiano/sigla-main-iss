@@ -24,7 +24,7 @@
         <table width="100%">
             <tr>
                 <td>
-                    <% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","400px"); %>
+                    <% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","40vh"); %>
                 </td>
             </tr>
         </table>
@@ -38,20 +38,20 @@
     </div>
     <div class="card-block">
         <% if (!bp.getFatturaOrdiniController().isRettificheCollapse()) { %>
-            <table cellpadding="5px">
+            <table class="card p-2" cellpadding="2">
                 <tr>
                     <% bp.getFatturaOrdiniController().writeFormField(out, "voceIva"); %>
                     <% bp.getFatturaOrdiniController().writeFormField(out, "prezzoUnitarioRett"); %>
                 </tr>
-            </table>
-            <table cellpadding="5">
                 <tr>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "sconto1Rett"); %>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "sconto2Rett"); %>
+                    <td><% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto1Rett"); %></td>
+                    <td>
+                        <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto1Rett"); %>
+                        <% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto2Rett"); %>
+                        <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto2Rett"); %>
+                    </td>
                     <% bp.getFatturaOrdiniController().writeFormField(out, "sconto3Rett"); %>
                 </tr>
-            </table>
-            <table cellpadding="5px">
                 <tr>
                     <% bp.getFatturaOrdiniController().writeFormField(out, "imponibileErrato"); %>
                     <% if (fatturaOrdine.isRigaAttesaNotaCredito()) {
