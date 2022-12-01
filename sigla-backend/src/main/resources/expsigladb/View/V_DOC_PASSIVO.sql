@@ -406,7 +406,94 @@
       and a.esercizio = b.esercizio
       and a.cd_numeratore = b.cd_numeratore
       and a.numero = b.numero
-      and a.cd_unita_operativa = c.cd_unita_operativa;
+      and a.cd_unita_operativa = c.cd_unita_operativa
+   UNION ALL
+          a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_ORDINE',
+          a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
+          a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
+          a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,
+          b.cd_cds_obbligazione, b.esercizio_obbligazione,
+          b.esercizio_ori_obbligazione, b.pg_obbligazione,
+          b.pg_obbligazione_scadenzario, a.dt_fattura_fornitore,
+          a.nr_fattura_fornitore, a.cd_terzo, b.cd_terzo_cessionario,
+          a.cognome, a.nome, a.ragione_sociale,
+          DECODE (b.cd_terzo_cessionario,
+                  NULL, b.pg_banca,
+                  d.pg_banca_delegato
+                 ),
+          DECODE (b.cd_terzo_cessionario,
+                  NULL, b.cd_modalita_pag,
+                  SUBSTR (getmodpagcessionario (b.cd_terzo_cessionario,
+                                                d.ti_pagamento
+                                               ),
+                          1,
+                          10
+                         )
+                 ),
+          DECODE (a.ti_fattura, 'C', (b.im_imponibile * -1), b.im_imponibile),
+          DECODE (a.ti_fattura, 'C', (b.im_iva * -1), b.im_iva),
+          DECODE (a.ti_fattura,
+                  'C', ((b.im_imponibile + b.im_iva) * -1),
+                  (b.im_imponibile + b.im_iva
+                  )
+                 ),
+          a.pg_lettera, c.ti_entrata_spesa, c.ti_sospeso_riscontro,
+          c.cd_sospeso, nvl(a.fl_da_ordini,'N'),
+          SUBSTR (getflselezione ('FATTURA_P',
+                                  a.stato_pagamento_fondo_eco,
+                                  a.ti_fattura,
+                                  a.pg_lettera,
+                                  c.cd_sospeso,
+                                  NULL,
+                                  0,
+                                  0,
+                                  0,
+                                  a.fl_congelata,
+                                  a.stato_liquidazione
+                                 ),
+                  1,
+                  1
+                 ),
+          SUBSTR (getflfaireversale (a.ti_fattura,
+                                     a.ti_istituz_commerc,
+                                     a.ti_bene_servizio,
+                                     a.fl_san_marino_senza_iva,
+                                     DECODE (a.fl_merce_intra_ue,
+                                             'Y', 'Y',
+                                             a.fl_intra_ue
+                                            ),
+                                     a.fl_split_payment,
+                                     DECODE (a.ti_bene_servizio,
+                                             'B', t.ti_bene_servizio,
+                                             t.fl_servizi_non_residenti
+                                            )
+                                    ),
+                  1,
+                  1
+                 )
+     FROM fattura_passiva a,
+          fattura_passiva_riga b,
+          lettera_pagam_estero c,
+          fattura_ordine fa,
+          banca d,
+          tipo_sezionale t
+    WHERE a.cd_tipo_sezionale = t.cd_tipo_sezionale
+      AND b.cd_cds = a.cd_cds
+      AND b.cd_unita_organizzativa = a.cd_unita_organizzativa
+      AND b.esercizio = a.esercizio
+      AND b.pg_fattura_passiva = a.pg_fattura_passiva
+      AND b.cd_cds = fa.cd_cds
+      AND b.cd_unita_organizzativa = fa.cd_unita_organizzativa
+      AND b.esercizio = fa.esercizio
+      AND b.pg_fattura_passiva = fa.pg_fattura_passiva
+      AND b.dt_cancellazione IS NULL
+      AND nvl(a.fl_da_ordini,'Y')= 'Y'
+      AND c.cd_cds(+) = a.cd_cds
+      AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
+      AND c.esercizio(+) = a.esercizio_lettera
+      AND c.pg_lettera(+) = a.pg_lettera
+      AND d.cd_terzo = b.cd_terzo
+      AND d.pg_banca = b.pg_banca;
 
    COMMENT ON TABLE "V_DOC_PASSIVO"  IS 'Pre view di estrazione delle righe di fatture passive, attive e documenti passivi necessari
 alla selezione nella costruzione di un mandato. La vista è stata scorporata da

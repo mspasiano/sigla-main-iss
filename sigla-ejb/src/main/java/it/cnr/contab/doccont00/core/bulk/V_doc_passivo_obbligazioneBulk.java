@@ -39,7 +39,8 @@ public class V_doc_passivo_obbligazioneBulk extends V_doc_passivo_obbligazioneBa
 		tipoDocumentoKeys.put(Numerazione_doc_ammBulk.TIPO_TRASF_S,"Documento generico di trasferimento di spesa");
 		tipoDocumentoKeys.put(Numerazione_doc_ammBulk.TIPO_MISSIONE,"Missione");
 		tipoDocumentoKeys.put(Numerazione_doc_ammBulk.TIPO_ORDINE,"Ordine");
-		
+		tipoDocumentoKeys.put(Numerazione_doc_ammBulk.TIPO_FATTURA_ORDINE,"Fattura da Ordine");
+
 	};
 	static 
 	{
