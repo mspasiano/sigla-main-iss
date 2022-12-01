@@ -5788,7 +5788,8 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         .isPresent() &&
                         !Arrays.asList(
                                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABA.value(),
-                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value())
+                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value(),
+                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value())
                                 .contains(Optional.ofNullable(rifModPag)
                                         .map(Rif_modalita_pagamentoBase::getTipo_pagamento_siope)
                                         .orElse(null)

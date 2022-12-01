@@ -4733,6 +4733,28 @@ public class DistintaCassiereComponent extends
         }
         throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]");
     }
+    private String getCodiceEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]");
+    }
     public StorageObject generaFlussoSiopeplus(UserContext userContext, Distinta_cassiereBulk distinta) throws ComponentException,
             RemoteException {
         try {
@@ -4755,13 +4777,7 @@ public class DistintaCassiereComponent extends
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ABI_BT]"));
             String codiceA2A = getCodiceA2A( userContext,distinta,sess);
 
-            String codiceEnte =  Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]"));
+            String codiceEnte =  getCodiceEnte(userContext,distinta,sess);
             String codiceEnteBT = getCodiceEnteBT(userContext,distinta,sess);
 
             String codiceTramiteBT = Optional.ofNullable(
@@ -5410,7 +5426,7 @@ public class DistintaCassiereComponent extends
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONEACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value());
                         } else {
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
-                        }
+                        }//da modificare per Banca D'Italia
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
                         throw new ApplicationMessageFormatException(
