@@ -36,6 +36,7 @@ import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.ejb.EsercizioComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -1418,94 +1419,184 @@ public class DistintaCassiereComponent extends
             throws ComponentException {
         try {
             if (distinta.getFl_flusso()) {
-
-                SQLBuilder sql = getHome(userContext,
-                        V_mandato_reversaleBulk.class,
-                        "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
-                sql.addClause(clausole);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
-                        ((CNRUserContext) userContext).getEsercizio());
-                // Da condizionare 02/12/2015
-                if (!tesoreriaUnica(userContext, distinta)) {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
-                            MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
-                } else {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
-                            MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
-                }
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont", SQLBuilder.NOT_EQUALS,
-                        MandatoBulk.TIPO_REGOLARIZZAZIONE);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
-                        MandatoBulk.STATO_MANDATO_ANNULLATO);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_var_sos", SQLBuilder.ISNULL, null);
-                if (isInserisciMandatiVersamentoCori(userContext)) {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'N'");
-                }
-                sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
-                sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
-                if (Utility.createParametriCnrComponentSession().getParametriCnr(
-                        userContext, docPassivo.getEsercizio()).getFl_siope()
-                        .booleanValue()) {
-                    Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome(
-                            userContext, Unita_organizzativa_enteBulk.class)
-                            .findAll().get(0);
-                    if (!((CNRUserContext) userContext).getCd_cds().equals(
-                            ente.getUnita_padre().getCd_unita_organizzativa()))
-                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
-                                SQLBuilder.NOT_EQUALS,
-                                MandatoBulk.TIPO_ACCREDITAMENTO);
-                }
-
-                if (docPassivo != null) // (1) clausole sull'esercizio,
-                    // cd_unita_organizzativa + clausole
-                    // dell'utente
-                    sql.addClause(docPassivo.buildFindClauses(null));
-                // sql.addOrderBy(
-                // "cd_tipo_documento_cont, ti_documento_cont, pg_documento_cont" );
-
-                SQLUnion union;
-
-                // MARIO - condizione che aggiunge in ogni caso, a prescindere dalla
-                // selezione effettuata
-                // i mandati di versamento CORI/IVA, ma solo se i parametri sono
-                // impostati in tal senso
-                if (isInserisciMandatiVersamentoCori(userContext)) {
-                    SQLBuilder sql2 = getHome(userContext,
+                if (!Optional.ofNullable(distinta.getCd_tesoreria()).isPresent()) {
+                    SQLBuilder sql = getHome(userContext,
                             V_mandato_reversaleBulk.class,
                             "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
-                    sql2.addClause(clausole);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
+                    sql.addClause(clausole);
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
                             ((CNRUserContext) userContext).getEsercizio());
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_unita_organizzativa",
-                            SQLBuilder.EQUALS, docPassivo
-                                    .getCd_unita_organizzativa());
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_tipo_documento_cont",
-                            SQLBuilder.EQUALS, "MAN");
-
                     // Da condizionare 02/12/2015
                     if (!tesoreriaUnica(userContext, distinta)) {
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
                                 MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
                     } else {
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                                MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
                     }
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
-                            SQLBuilder.NOT_EQUALS,
-                            MandatoBulk.TIPO_REGOLARIZZAZIONE);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
-                            MandatoBulk.STATO_MANDATO_ANNULLATO);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'S'");
-                    sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
-                    sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont", SQLBuilder.NOT_EQUALS, MandatoBulk.TIPO_REGOLARIZZAZIONE);
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS, MandatoBulk.STATO_MANDATO_ANNULLATO);
 
-                    union = sql2.union(sql, true);
-                    return union;
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_var_sos", SQLBuilder.ISNULL, null);
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'N'");
+                    }
+                    sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
+                    sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+                    if (Utility.createParametriCnrComponentSession().getParametriCnr(
+                                    userContext, docPassivo.getEsercizio()).getFl_siope()
+                            .booleanValue()) {
+                        Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome(
+                                userContext, Unita_organizzativa_enteBulk.class)
+                                .findAll().get(0);
+                        if (!((CNRUserContext) userContext).getCd_cds().equals(
+                                ente.getUnita_padre().getCd_unita_organizzativa()))
+                            sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
+                                    SQLBuilder.NOT_EQUALS,
+                                    MandatoBulk.TIPO_ACCREDITAMENTO);
+                    }
+
+
+                    if (docPassivo != null) // (1) clausole sull'esercizio,
+                        // cd_unita_organizzativa + clausole
+                        // dell'utente
+                        sql.addClause(docPassivo.buildFindClauses(null));
+                    // sql.addOrderBy(
+                    // "cd_tipo_documento_cont, ti_documento_cont, pg_documento_cont" );
+
+                    SQLUnion union;
+
+                    // MARIO - condizione che aggiunge in ogni caso, a prescindere dalla
+                    // selezione effettuata
+                    // i mandati di versamento CORI/IVA, ma solo se i parametri sono
+                    // impostati in tal senso
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        SQLBuilder sql2 = getHome(userContext,
+                                V_mandato_reversaleBulk.class,
+                                "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
+                        sql2.addClause(clausole);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
+                                ((CNRUserContext) userContext).getEsercizio());
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_unita_organizzativa",
+                                SQLBuilder.EQUALS, docPassivo
+                                        .getCd_unita_organizzativa());
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_tipo_documento_cont",
+                                SQLBuilder.EQUALS, "MAN");
+
+                        // Da condizionare 02/12/2015
+                        if (!tesoreriaUnica(userContext, distinta)) {
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                                    MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                        } else {
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        }
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
+                                SQLBuilder.NOT_EQUALS,
+                                MandatoBulk.TIPO_REGOLARIZZAZIONE);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
+                                MandatoBulk.STATO_MANDATO_ANNULLATO);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'S'");
+                        sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
+                        sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+
+                        union = sql2.union(sql, true);
+                        return union;
+                    } else {
+                        return sql;
+                    }
                 } else {
-                    return sql;
+                    SQLBuilder sql = getHome(userContext, V_mandato_reversaleBulk.class).createSQLBuilder();
+                    if (docPassivo != null) // (1) clausole sull'esercizio,
+                        sql.addClause(docPassivo.buildFindClauses(null));
+                    sql.addClause(clausole);
+                    sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+                    if (!tesoreriaUnica(userContext, distinta)) {
+                        sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
+                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                    } else {
+                        sql.addClause(FindClause.AND, "dt_firma", SQLBuilder.ISNOTNULL, null);
+                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                    }
+                    sql.openParenthesis(FindClause.AND);
+                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        sql.addClause(FindClause.OR, "esito_operazione", SQLBuilder.EQUALS, EsitoOperazione.NON_ACQUISITO.value());
+                    sql.closeParenthesis();
+
+                    sql.openParenthesis(FindClause.AND);
+                    sql.addClause(FindClause.AND, "stato_var_sos", SQLBuilder.ISNULL, null);
+                    sql.addClause(FindClause.OR, "stato_var_sos", SQLBuilder.EQUALS, StatoVariazioneSostituzione.SOSTITUZIONE_DEFINITIVA.value());
+                    sql.closeParenthesis();
+
+                    SQLBuilder sqlRifModalitaPagamentoMandato = getHome(userContext, Mandato_rigaBulk.class).createSQLBuilder();
+                    sqlRifModalitaPagamentoMandato.resetColumns();
+                    sqlRifModalitaPagamentoMandato.addColumn("1");
+                    sqlRifModalitaPagamentoMandato.addTableToHeader("RIF_MODALITA_PAGAMENTO");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.CD_CDS", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.CD_CDS");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.ESERCIZIO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.ESERCIZIO");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.PG_MANDATO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.CD_MODALITA_PAG", SQLBuilder.EQUALS, "RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG");
+                    sqlRifModalitaPagamentoMandato.addSQLClause(
+                            FindClause.AND,
+                            "RIF_MODALITA_PAGAMENTO.TI_PAGAMENTO",
+                            distinta.isBancaItalia() ? SQLBuilder.EQUALS : SQLBuilder.NOT_EQUALS,
+                            Rif_modalita_pagamentoBulk.BANCA_ITALIA
+                    );
+
+                    SQLBuilder sqlRifModalitaPagamentoReversale = getHome(userContext, Reversale_rigaBulk.class).createSQLBuilder();
+                    sqlRifModalitaPagamentoReversale.resetColumns();
+                    sqlRifModalitaPagamentoReversale.addColumn("1");
+                    sqlRifModalitaPagamentoReversale.addTableToHeader("RIF_MODALITA_PAGAMENTO");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.CD_CDS", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.CD_CDS");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.ESERCIZIO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.ESERCIZIO");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.PG_REVERSALE", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.CD_MODALITA_PAG", SQLBuilder.EQUALS, "RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG");
+                    sqlRifModalitaPagamentoReversale.addSQLClause(
+                            FindClause.AND,
+                            "RIF_MODALITA_PAGAMENTO.TI_PAGAMENTO",
+                            distinta.isBancaItalia() ? SQLBuilder.EQUALS : SQLBuilder.NOT_EQUALS,
+                            Rif_modalita_pagamentoBulk.BANCA_ITALIA
+                    );
+                    sql.openParenthesis(FindClause.AND);
+                        sql.openParenthesis(FindClause.AND);
+                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_MAN);
+                            sql.addSQLExistsClause(FindClause.AND, sqlRifModalitaPagamentoMandato);
+                        sql.closeParenthesis();
+                        sql.openParenthesis(FindClause.OR);
+                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_REV);
+                            sql.addSQLExistsClause(FindClause.AND, sqlRifModalitaPagamentoReversale);
+                        sql.closeParenthesis();
+                    sql.closeParenthesis();
+
+                    SQLUnion union;
+                    /*  MARIO - condizione che aggiunge in ogni caso, a prescindere dalla selezione effettuata
+                        i mandati di versamento CORI/IVA, ma solo se i parametri sono impostati in tal senso */
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        SQLBuilder sql2 = getHome(userContext, V_mandato_reversaleBulk.class).createSQLBuilder();
+                        sql2.addClause(clausole);
+                        sql2.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+                        Optional.ofNullable(docPassivo)
+                                .flatMap(v_mandato_reversaleBulk -> Optional.ofNullable(v_mandato_reversaleBulk.getCd_unita_organizzativa()))
+                                .ifPresent(s -> {
+                                    sql2.addClause(FindClause.AND, "cd_unita_organizzativa",SQLBuilder.EQUALS, s);
+                                });
+                        sql2.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_MAN);
+                        if (!tesoreriaUnica(userContext, distinta)) {
+                            sql2.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
+                            sql2.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                        } else {
+                            sql2.addClause(FindClause.AND, "dt_firma", SQLBuilder.ISNOTNULL, null);
+                            sql2.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        }
+                        sql2.addClause(FindClause.AND, "versamento_cori", SQLBuilder.EQUALS, Boolean.TRUE);
+                        union = sql2.union(sql, true);
+                        return union;
+                    } else {
+                        return sql;
+                    }
                 }
             } else if (distinta.getFl_sepa()) {  //no flusso
                 SQLBuilder sql = getHome(userContext,
@@ -2891,6 +2982,8 @@ public class DistintaCassiereComponent extends
             sql.addClause("AND", "fl_sepa", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getFl_sepa().booleanValue());
         if (bulk instanceof Distinta_cassiereBulk && ((Distinta_cassiereBulk) bulk).getFl_annulli() != null)
             sql.addClause("AND", "fl_annulli", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getFl_annulli().booleanValue());
+        if (bulk instanceof Distinta_cassiereBulk && ((Distinta_cassiereBulk) bulk).getCd_tesoreria() != null)
+            sql.addClause("AND", "cd_tesoreria", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getCd_tesoreria());
 
         sql.addOrderBy("pg_distinta");
         return sql;
@@ -4574,7 +4667,94 @@ public class DistintaCassiereComponent extends
 
     }
 
-
+    private String getCodiceA2A(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]");
+    }
+    private String getCodiceEnteBT(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]");
+    }
+    private String getCodiceIstatEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]");
+    }
+    private String getCodiceEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]");
+    }
     public StorageObject generaFlussoSiopeplus(UserContext userContext, Distinta_cassiereBulk distinta) throws ComponentException,
             RemoteException {
         try {
@@ -4595,29 +4775,10 @@ public class DistintaCassiereComponent extends
                             null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
                             Configurazione_cnrBulk.SK_CODICE_ABI_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ABI_BT]"));
-            String codiceA2A = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_A2A
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]"));
+            String codiceA2A = getCodiceA2A( userContext,distinta,sess);
 
-            String codiceEnte = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]"));
-
-            String codiceEnteBT = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]"));
+            String codiceEnte =  getCodiceEnte(userContext,distinta,sess);
+            String codiceEnteBT = getCodiceEnteBT(userContext,distinta,sess);
 
             String codiceTramiteBT = Optional.ofNullable(
                     sess.getVal01(
@@ -4627,13 +4788,7 @@ public class DistintaCassiereComponent extends
                             Configurazione_cnrBulk.SK_CODICE_TRAMITE_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_TRAMITE_BT]"));
 
-            String codiceIstatEnte = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]"));
+            String codiceIstatEnte = getCodiceIstatEnte(userContext,distinta,sess);
 
             final CtTestataFlusso testataFlusso = objectFactory.createCtTestataFlusso();
             testataFlusso.setCodiceABIBT(codiceAbi);
@@ -4801,6 +4956,7 @@ public class DistintaCassiereComponent extends
             final ObjectFactory objectFactory = new ObjectFactory();
             Reversale reversale = objectFactory.createReversale();
             List list = findDocumentiFlusso(userContext, bulk);
+            reversale.setTipoOperazione(getTipoOperazione(userContext, bulk));
             Configurazione_cnrBulk inviaTagBilanio= null;
             try {
                 inviaTagBilanio= getConfigurazioneInviaBilancio( userContext);
@@ -4809,7 +4965,6 @@ public class DistintaCassiereComponent extends
             }
             if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
                 Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
-                reversale.setTipoOperazione(getTipoOperazione(userContext, bulk));
                 ReversaleIHome reversaleHome = Optional.ofNullable(getHome(userContext, ReversaleIBulk.class))
                         .filter(ReversaleIHome.class::isInstance)
                         .map(ReversaleIHome.class::cast)
@@ -4825,10 +4980,10 @@ public class DistintaCassiereComponent extends
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, reversaleHome.getSiopeBilancio(userContext, reversaleBulk));
                 if ( bilancioTag.isEmpty())
                     throw new ApplicationMessageFormatException("La reversale {0} non ha le voci di Bilancio",
-                            reversaleBulk.getCds().getDs_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()));
+                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()));
                 if ( bilancioTag.size()>numMaxVociBilancio)
                     throw new ApplicationMessageFormatException("Per la reversale  {0} ci sono più voci di {1} voce/i bilancio",
-                            reversaleBulk.getCds().getDs_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()),
+                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()),
                             numMaxVociBilancio);
                 reversale.getBilancio().addAll(bilancioTag);
 
@@ -5076,6 +5231,7 @@ public class DistintaCassiereComponent extends
 
     private void completeMandato(UserContext userContext, MandatoBulk mandato) throws ComponentException, PersistencyException {
         //Se le righe del mandato non sono valorizzate le riempio io
+        //CdsBulk cds = (CdsBulk)getHome(userContext,CdsBulk.class).findByPrimaryKey(new CdsBulk(mandato.getCd_cds()));
         if (!Optional.ofNullable(mandato.getMandato_rigaColl()).filter(el->!el.isEmpty()).isPresent()) {
             mandato.setMandato_rigaColl(new BulkList(((MandatoHome) getHome(
                     userContext, mandato.getClass())).findMandato_riga(userContext, mandato, false)));
@@ -5134,10 +5290,10 @@ public class DistintaCassiereComponent extends
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, mandatoHome.getSiopeBilancio(userContext, mandatoBulk));
                 if ( bilancioTag.isEmpty())
                     throw new ApplicationMessageFormatException("Per il mandato  {0} non ha le voci di Bilancio",
-                            mandatoBulk.getCds().getDs_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()));
+                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()));
                 if ( bilancioTag.size()>numMaxVociBilancio)
                     throw new ApplicationMessageFormatException("Per il mandato  {0} ci sono più voci di {1} voce/i bilancio",
-                            mandatoBulk.getCds().getDs_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()),
+                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()),
                             numMaxVociBilancio);
                 mandato.getBilancio().addAll(bilancioTag);
 
@@ -5270,7 +5426,7 @@ public class DistintaCassiereComponent extends
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONEACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value());
                         } else {
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
-                        }
+                        }//da modificare per Banca D'Italia
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
                         throw new ApplicationMessageFormatException(

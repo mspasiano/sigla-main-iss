@@ -24,6 +24,10 @@
 
     <changeSet author="ciro.salvio" id="update_configurazioneCnr_FlussiSiope_BI">
         <update tableName="configurazione_cnr">
+            <column name="val02" type="STRING" value="A2A-37163813"/>
+            <where>CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='FLUSSO_ORDINATIVI' AND CD_CHIAVE_SECONDARIA='CODICE_A2A'</where>
+        </update>
+        <update tableName="configurazione_cnr">
             <column name="val02" type="STRING" value="007535174000001"/>
             <where>CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='FLUSSO_ORDINATIVI' AND CD_CHIAVE_SECONDARIA='CODICE_ISTAT_ENTE'</where>
         </update>
