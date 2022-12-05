@@ -21,18 +21,17 @@
         <table class="w-100">
             <tr>
                 <td ><% bp.getCrudDettaglio_contratto().writeFormLabel(out, "findBeneServizio"); %></td>
-                <td colspan="4"><% bp.getCrudDettaglio_contratto().writeFormInput(out, "findBeneServizio"); %></td>
+                <td colspan="6"><% bp.getCrudDettaglio_contratto().writeFormInput(out, "findBeneServizio"); %></td>
             </tr>
             <tr>
                 <td><% bp.getCrudDettaglio_contratto().writeFormLabel(out, "findUnitaMisura");%></td>
-                <td colspan="2"><% bp.getCrudDettaglio_contratto().writeFormInput(out, "findUnitaMisura");%></td>
-                <td colspan="4">
+                <td colspan="3"><% bp.getCrudDettaglio_contratto().writeFormInput(out, "findUnitaMisura");%></td>
+                <td colspan="3">
                     <% bp.getCrudDettaglio_contratto().writeFormLabel(out,"coefConv");%>
                     <% bp.getCrudDettaglio_contratto().writeFormInput(out,null,"coefConv",riga!=null&&riga.isROCoefConv(),null,""); %>
                 </td>
             </tr>
             <tr>
-
                 <td><% bp.getCrudDettaglio_contratto().writeFormLabel(out,"prezzoUnitario");%></td>
                 <td><% bp.getCrudDettaglio_contratto().writeFormInput(out,null,"prezzoUnitario"); %></td>
                 <td><% bp.getCrudDettaglio_contratto().writeFormLabel(out,"importoOrdinato");%></td>

@@ -205,7 +205,8 @@
 	<columnFieldProperty
 		name="cdBeneServizio" />
 	<columnFieldProperty
-		name="cdUnitaMisura" />
+		name="cdUnitaMisura"
+		label="UM"/>
 	<columnFieldProperty
 		name="coefConv" />
 	<columnFieldProperty

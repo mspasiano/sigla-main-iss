@@ -147,7 +147,7 @@
 		property="divisa"
 		formName="searchtool"
 		inputType="SEARCHTOOL"
-		inputCssClass="w-50 "
+		inputCssClass="w-90 "
 		label="Valuta"		
 		/>		
 	<fieldProperty

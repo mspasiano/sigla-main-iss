@@ -13,16 +13,22 @@ OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel();
 %>
 <div class="Group card p-2 m-1">
 	<table class="w-100" cellpadding="2">
-		<tr><% bp.getController().writeFormField(out, "findUnitaOperativaOrd");%></tr>
-		<tr><% bp.getController().writeFormField(out, "findNumerazioneOrd");%></tr>
-		<tr>	
-			<td><% bp.getController().writeFormLabel(out, "findDivisa");%></td>
-			<td>
-				<% bp.getController().writeFormInput(out, "findDivisa");%>
-				<% bp.getController().writeFormField( out, "cambio"); %>
-			</td>
+		<tr>
+		    <td><% bp.getController().writeFormLabel(out, "findUnitaOperativaOrd");%>
+		    <td colspan="3"><% bp.getController().writeFormInput(out, "findUnitaOperativaOrd");%>
 		</tr>
-		<tr><% bp.getController().writeFormField(out, "findTipoOrdine");%></tr>
+		<tr>
+		    <td><% bp.getController().writeFormLabel(out, "findNumerazioneOrd");%>
+		    <td colspan="3"><% bp.getController().writeFormInput(out, "findNumerazioneOrd");%>
+		</tr>
+		<tr>
+			<% bp.getController().writeFormField(out, "findDivisa");%>
+			<% bp.getController().writeFormField(out, "cambio");%>
+		</tr>
+		<tr>
+		    <td><% bp.getController().writeFormLabel(out, "findTipoOrdine");%>
+		    <td colspan="3"><% bp.getController().writeFormInput(out, "findTipoOrdine");%>
+		</tr>
 	</table>
 </div>
 <div class="h3 text-primary p-2 m-1">Dati del Contratto</div>

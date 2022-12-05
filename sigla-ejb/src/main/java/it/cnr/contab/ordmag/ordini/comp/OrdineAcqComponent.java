@@ -381,21 +381,18 @@ public class OrdineAcqComponent
 	}
 
 	private void controlliValiditaConsegna(UserContext userContext, OrdineAcqConsegnaBulk consegna)throws it.cnr.jada.comp.ComponentException{
-		if (consegna.getMagazzino() == null || consegna.getMagazzino().getCdMagazzino() == null){
-			throw new ApplicationException ("E' necessario indicare il magazzino.");
-		}
-		if (consegna.getLuogoConsegnaMag() == null || consegna.getLuogoConsegnaMag().getCdLuogoConsegna() == null){
-			throw new ApplicationException ("E' necessario indicare il luogo di consegna.");
-		}
+		if (consegna.getMagazzino() == null || consegna.getMagazzino().getCdMagazzino() == null)
+			throw new ApplicationException ("E' necessario indicare il magazzino sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
+
+		if (consegna.getLuogoConsegnaMag() == null || consegna.getLuogoConsegnaMag().getCdLuogoConsegna() == null)
+			throw new ApplicationException ("E' necessario indicare il luogo di consegna sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 
 		if (!consegna.isConsegnaMagazzino()){
-			if (consegna.getCdUopDest() == null){
-				throw new ApplicationException("E' necessario indicare l'unità operativa di destinazione per la riga "+consegna.getRiga()+".");
-			}
+			if (consegna.getCdUopDest() == null)
+				throw new ApplicationException("E' necessario indicare l'unità operativa di destinazione per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		} else {
-			if (consegna.getCdUopDest() != null){
-				throw new ApplicationException("Per una consegna a magazzino non è possibile selezionare l'unità operativa di destinazione per la riga "+consegna.getRiga()+".");
-			}
+			if (consegna.getCdUopDest() != null)
+				throw new ApplicationException("Per una consegna a magazzino non è possibile selezionare l'unità operativa di destinazione per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		}
 		if (consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine() == null){
 			OrdineAcqHome home = (OrdineAcqHome)getHome(userContext, OrdineAcqBulk.class);
@@ -407,13 +404,13 @@ public class OrdineAcqComponent
 			}
 
 		}
-		if (consegna.getDtPrevConsegna() != null && consegna.getDtPrevConsegna().before(consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine())){
-			throw new ApplicationException("La data di prevista consegna non può essere precedente alla data dell'ordine per la riga "+consegna.getRiga()+".");
-		}
+
+		if (consegna.getDtPrevConsegna() != null && consegna.getDtPrevConsegna().before(consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine()))
+			throw new ApplicationException("La data di prevista consegna non può essere precedente alla data dell'ordine per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
+
 		try {
-			if (!Utility.createConfigurazioneCnrComponentSession().isBloccoScrittureProposte(userContext) && (consegna.getContoBulk() == null || consegna.getContoBulk().getCd_voce_ep() == null)){
-				throw new ApplicationException ("E' necessario indicare il conto di Economico Patrimoniale.");
-			}
+			if (Utility.createConfigurazioneCnrComponentSession().isAttivaEconomica(userContext) && (consegna.getContoBulk() == null || consegna.getContoBulk().getCd_voce_ep() == null))
+				throw new ApplicationException ("E' necessario indicare il conto di Economico Patrimoniale sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		} catch (RemoteException e) {
 			throw new ComponentException(e);
 		}
@@ -2939,6 +2936,19 @@ public class OrdineAcqComponent
 		}
  		sql.addClause(clauses);
 		sql.addOrderBy("cd_numeratore");
+		return sql;
+	}
+
+	public SQLBuilder selectContoBulkByClause(UserContext userContext,  OrdineAcqConsegnaBulk bulk, ContoBulk contoBulk, CompoundFindClause clauses) throws PersistencyException, ComponentException {
+		ContoHome home = (ContoHome)getHome(userContext, ContoBulk.class);
+		SQLBuilder sql = home.createSQLBuilder();
+		OrdineAcqConsegnaBulk consegna = (OrdineAcqConsegnaBulk)bulk;
+		try {
+			sql = home.selectContiAssociatiACategoria(new CompoundFindClause(), consegna.getEsercizio() == null ? CNRUserContext.getEsercizio(userContext) : consegna.getEsercizio(),
+					consegna.getOrdineAcqRiga().getBeneServizio().getCategoria_gruppo());
+		} catch (InvocationTargetException | IllegalAccessException e) {
+			throw new PersistencyException(e);
+		}
 		return sql;
 	}
 
