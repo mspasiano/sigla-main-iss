@@ -64,6 +64,7 @@ import it.cnr.contab.util.enumeration.EsitoOperazione;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.contab.util.enumeration.TipoDebitoSIOPE;
 import it.cnr.contab.util.Utility;
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.BusinessProcessException;
@@ -4979,12 +4980,12 @@ public class DistintaCassiereComponent extends
                 completeReversale(userContext,reversaleBulk);
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, reversaleHome.getSiopeBilancio(userContext, reversaleBulk));
                 if ( bilancioTag.isEmpty())
-                    throw new ApplicationMessageFormatException("La reversale {0} non ha le voci di Bilancio",
-                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()));
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, indicare le voci di bilancio nella reversale cds {0} n. {1}",
+                            reversaleBulk.getCds(),reversaleBulk.getPg_reversale());
                 if ( bilancioTag.size()>numMaxVociBilancio)
-                    throw new ApplicationMessageFormatException("Per la reversale  {0} ci sono più voci di {1} voce/i bilancio",
-                            reversaleBulk.getCds().getCd_unita_organizzativa().concat("/").concat(reversaleBulk.getEsercizio().toString()).concat("/").concat(reversaleBulk.getPg_reversale().toString()),
-                            numMaxVociBilancio);
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, ci sono più voci di {0} voce/i di bilancio nella reversale cds {1} n. {2}",
+                            numMaxVociBilancio,reversaleBulk.getCds(),reversaleBulk.getPg_reversale());
+
                 reversale.getBilancio().addAll(bilancioTag);
 
             }
@@ -5251,6 +5252,10 @@ public class DistintaCassiereComponent extends
         if (!Optional.ofNullable(mandato.getUnita_organizzativa()).filter(el->el.getCrudStatus()!=OggettoBulk.UNDEFINED).isPresent())
             mandato.setUnita_organizzativa((Unita_organizzativaBulk)getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(mandato.getUnita_organizzativa()));
     }
+    private TipoRapportoTesoreriaEnum getConfigurazioneTipoRapportoTesoreria(UserContext userContext) throws RemoteException, ComponentException {
+        return ((Configurazione_cnrComponentSession) EJBCommonServices
+                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getTipoRapportoTesoreria(userContext);
+    }
 
     public Mandato creaMandatoFlussoSiopeplus(UserContext userContext, V_mandato_reversaleBulk bulk) throws ComponentException, RemoteException {
         try {
@@ -5289,12 +5294,12 @@ public class DistintaCassiereComponent extends
 
                 List<Bilancio> bilancioTag = this.createBilancio(userContext, mandatoHome.getSiopeBilancio(userContext, mandatoBulk));
                 if ( bilancioTag.isEmpty())
-                    throw new ApplicationMessageFormatException("Per il mandato  {0} non ha le voci di Bilancio",
-                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()));
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, indicare le voci di bilancio nel mandato cds {0} n. {1}",
+                            mandatoBulk.getCds(),mandatoBulk.getPg_mandato());
                 if ( bilancioTag.size()>numMaxVociBilancio)
-                    throw new ApplicationMessageFormatException("Per il mandato  {0} ci sono più voci di {1} voce/i bilancio",
-                            mandatoBulk.getCds().getCd_unita_organizzativa().concat("/").concat(mandatoBulk.getEsercizio().toString()).concat("/").concat(mandatoBulk.getPg_mandato().toString()),
-                            numMaxVociBilancio);
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, ci sono più voci di {0} voce/i di bilancio nel mandato cds {1} n. {2}",
+                            numMaxVociBilancio,mandatoBulk.getCds(),mandatoBulk.getPg_mandato());
+
                 mandato.getBilancio().addAll(bilancioTag);
 
             }
@@ -5426,12 +5431,21 @@ public class DistintaCassiereComponent extends
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONEACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value());
                         } else {
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
-                        }//da modificare per Banca D'Italia
+                        }
+                    } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)// caso BI
+                            && docContabile.getDtPagamentoRichiesta() == null
+                            && (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                            (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext))))) {
+                        infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value());
+                        infoben.setDestinazione(LIBERA);
+                        infoben.setNumeroContoBancaItaliaEnteRicevente(NUMERO_CONTO_BANCA_ITALIA_ENTE_RICEVENTE);
+                        infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
-                        throw new ApplicationMessageFormatException(
+                            throw new ApplicationMessageFormatException(
                                 "Impossibile generare il flusso, indicare data richiesta pagamento nel mandato cds {0} n. {1}",
                                 docContabile.getCdCds(), docContabile.getPgDocumento());
+
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() != null &&
                             (EJBCommonServices.getServerTimestamp().after(docContabile.getDtPagamentoRichiesta()))) {
@@ -5760,11 +5774,20 @@ public class DistintaCassiereComponent extends
                         infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value());
                     } else if (docContabile.getTiDocumento().compareTo(MandatoBulk.TIPO_REGOLAM_SOSPESO) == 0) {
                         infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
+                    } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)// caso BI
+                            && docContabile.getDtPagamentoRichiesta() == null
+                            && (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                            (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext))))) {
+                        infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value());
+                        infoben.setDestinazione(LIBERA);
+                        infoben.setNumeroContoBancaItaliaEnteRicevente(NUMERO_CONTO_BANCA_ITALIA_ENTE_RICEVENTE);
+                        infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
                         throw new ApplicationMessageFormatException(
                                 "Impossibile generare il flusso, indicare data richiesta pagamento nel mandato cds {0} n. {1}",
                                 docContabile.getCdCds(), docContabile.getPgDocumento());
+
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() != null &&
                             (EJBCommonServices.getServerTimestamp().after(docContabile.getDtPagamentoRichiesta()))) {

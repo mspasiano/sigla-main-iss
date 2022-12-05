@@ -5928,4 +5928,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_conf_gestione_bene_dismesso_inventario.xml"/>
     <!-- Autore : VALENTINA TOMADA - Configurazione modulo pagamento estero -->
     <include file="bootstrap/add_conf_pagamento_estero_iss.xml"/>
+
+    <include file="bootstrap/insert_configurazioneCnr_tipo_rapporto_tesoriera.xml"/>
 </databaseChangeLog>

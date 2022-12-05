@@ -18,6 +18,7 @@
 package it.cnr.contab.config00.ejb;
 
 import it.cnr.contab.config00.comp.Configurazione_cnrComponent;
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.AdminUserContext;
 import it.cnr.jada.comp.ComponentException;
@@ -25,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.ejb.EJBException;
 import javax.ejb.Remove;
 import javax.ejb.Stateless;
@@ -892,6 +892,25 @@ public class Configurazione_cnrComponentSessionBean extends it.cnr.jada.ejb.Gene
     public Boolean isPagamentoEsteroISSAttivo(UserContext param0) throws ComponentException, RemoteException {
         try {
             Boolean result = componentObj.isPagamentoEsteroISSAttivo(param0);
+            component_invocation_succes(param0, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(param0, componentObj);
+            throw e;
+        } catch (ComponentException e) {
+            component_invocation_failure(param0, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(param0, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(param0, componentObj, e);
+        }
+    }
+
+    @Override
+    public TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            TipoRapportoTesoreriaEnum result = componentObj.getTipoRapportoTesoreria(param0);
             component_invocation_succes(param0, componentObj);
             return result;
         } catch (it.cnr.jada.comp.NoRollbackException e) {

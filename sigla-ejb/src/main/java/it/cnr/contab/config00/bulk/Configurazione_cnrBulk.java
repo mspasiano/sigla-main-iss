@@ -156,6 +156,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_CODICE_ISTAT_ENTE = "CODICE_ISTAT_ENTE";
     public final static String SK_ATTIVO_SIOPEPLUS = "ATTIVO_SIOPEPLUS";
     public final static String SK_INVIA_TAG_BILANCIO = "INVIA_TAG_BILANCIO";
+    public final static String SK_TIPO_RAPPORTO_TESORERIA = "TIPO_RAPPORTO_TESORERIA";
 
     public final static String SK_ANNULLA_MANDATI = "ANNULLA_MANDATI";
     public final static String SK_ANNULLA_REVERSALI = "ANNULLA_REVERSALI";

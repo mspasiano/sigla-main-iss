@@ -20,9 +20,9 @@ package it.cnr.contab.config00.comp;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.bulk.Configurazione_cnrKey;
-import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.utente00.ejb.RuoloComponentSession;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
@@ -1114,4 +1114,17 @@ public class Configurazione_cnrComponent extends it.cnr.jada.comp.GenericCompone
         }
         return gestioneModuloPagamentoEsteroIssAttiva;
     }
+
+    public TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext userContext) throws ComponentException {
+        final Configurazione_cnrBulk configurazione =
+                        getConfigurazione(
+                                userContext,
+                                CNRUserContext.getEsercizio(userContext),
+                                ASTERISCO,
+                                Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                                Configurazione_cnrBulk.SK_TIPO_RAPPORTO_TESORERIA);
+         return TipoRapportoTesoreriaEnum.valueOf(configurazione.getVal01());
+    }
+
+
 }

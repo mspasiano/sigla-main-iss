@@ -60,6 +60,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.contab.util00.ejb.ProcedureComponentSession;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
@@ -74,6 +75,7 @@ import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.Config;
 import it.cnr.jada.util.SendMail;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.apache.cxf.databinding.source.mime.CustomExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -5716,7 +5718,10 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
         }
 
     }
-
+    private TipoRapportoTesoreriaEnum getConfigurazioneTipoRapportoTesoreria(UserContext userContext) throws RemoteException, ComponentException {
+        return ((Configurazione_cnrComponentSession) EJBCommonServices
+                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getTipoRapportoTesoreria(userContext);
+    }
     /**
      * verifica mandato - errore mod. pagamento bancario PreCondition: E' stata
      * richiesta la creazione/modifica di un mandato Le righe del mandato hanno
@@ -5786,10 +5791,10 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         .map(Rif_modalita_pagamentoBase::getTi_pagamento)
                         .filter(s -> s.equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA))
                         .isPresent() &&
+                        TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(aUC)) &&
                         !Arrays.asList(
                                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABA.value(),
-                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value(),
-                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value())
+                                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value())
                                 .contains(Optional.ofNullable(rifModPag)
                                         .map(Rif_modalita_pagamentoBase::getTipo_pagamento_siope)
                                         .orElse(null)
