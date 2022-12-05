@@ -408,7 +408,7 @@
       and a.numero = b.numero
       and a.cd_unita_operativa = c.cd_unita_operativa
    UNION ALL
-     SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_ORDINE',
+     SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FAT_ORDINE',
           a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
           a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
           a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,

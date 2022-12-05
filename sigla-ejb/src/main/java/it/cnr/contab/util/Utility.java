@@ -104,7 +104,8 @@ public final class Utility {
 	public static final String MANIFEST_PATH = "/META-INF/MANIFEST.MF";
 	public static final String APPLICATION_TITLE = "SIGLA - Sistema Informativo per la Gestione delle Linee di Attività";
 	public static final java.math.BigDecimal ZERO = new java.math.BigDecimal(0);
-	public static String TIPO_GESTIONE_SPESA = "S";
+    public static final String CSS_CLASS_W_10 = "w-10";
+    public static String TIPO_GESTIONE_SPESA = "S";
 	public static String TIPO_GESTIONE_ENTRATA = "E";
 	public static final BigDecimal CENTO = new BigDecimal(100);
 	/**

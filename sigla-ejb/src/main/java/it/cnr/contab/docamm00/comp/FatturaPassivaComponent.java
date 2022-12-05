@@ -2859,9 +2859,8 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
     private Fattura_passiva_rigaBulk getDettaglioForRigaDaOrdini(Fattura_passivaBulk fattura, FatturaOrdineBulk fatturaOrdineBulk){
         Voce_ivaBulk iva = getVoceIvaOrdini(fatturaOrdineBulk);
         BigDecimal prezzoUnitarioOrdine = getPrezzoUnitarioOrdini(fatturaOrdineBulk);
-        for (Object obj : fattura.getFattura_passiva_dettColl()){
-            Fattura_passiva_rigaBulk riga = (Fattura_passiva_rigaBulk)obj;
-            if (riga.getBene_servizio().equalsByPrimaryKey(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio()) &&
+        for (Fattura_passiva_rigaBulk riga : fattura.getFattura_passiva_dettColl()){
+            if (fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio().equalsByPrimaryKey(riga.getBene_servizio()) &&
                 riga.getVoce_iva().equalsByPrimaryKey(iva) &&
                 fatturaOrdineBulk.getOrdineAcqConsegna().getObbligazioneScadenzario().equalsByPrimaryKey(riga.getObbligazione_scadenziario()) &&
                     prezzoUnitarioOrdine.compareTo(riga.getPrezzo_unitario()) == 0){
@@ -8068,12 +8067,20 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         if (fatturaPassiva.getDocumentoEleTestata().getNumeroDocumento().compareTo(fatturaPassiva.getNr_fattura_fornitore()) != 0)
             throw new it.cnr.jada.comp.ApplicationException("Numero Fattura fornitore diverso da quello inserito nel documento elettronico: " + fatturaPassiva.getDocumentoEleTestata().getNumeroDocumento() + "!");
 
-        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDataDocumento()).compareTo(DateUtils.truncate(fatturaPassiva.getDt_fattura_fornitore())) != 0)
-            throw new it.cnr.jada.comp.ApplicationException("Data Fattura fornitore diversa da quella presente nel documento elettronico: " + sdf.format(fatturaPassiva.getDocumentoEleTestata().getDataDocumento()) + "!");
-
-        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione()).compareTo(DateUtils.truncate(fatturaPassiva.getData_protocollo())) != 0)
-            throw new it.cnr.jada.comp.ApplicationException("Data Ricezione diversa da quella presente nel documento elettronico: " + sdf.format(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione()) + "!");
-
+        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDataDocumento()).compareTo(DateUtils.truncate(fatturaPassiva.getDt_fattura_fornitore())) != 0) {
+            throw new ApplicationMessageFormatException(
+                    "Data Fattura fornitore {0} diversa da quella presente nel documento elettronico {1}, registrazione non possibile!",
+                    sdf.format(fatturaPassiva.getDt_fattura_fornitore()),
+                    sdf.format(fatturaPassiva.getDocumentoEleTestata().getDataDocumento())
+            );
+        }
+        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione()).compareTo(DateUtils.truncate(fatturaPassiva.getData_protocollo())) != 0) {
+            throw new ApplicationMessageFormatException(
+                    "Data Ricezione {0} diversa da quella presente nel documento elettronico {1}, registrazione non possibile!",
+                    sdf.format(fatturaPassiva.getData_protocollo()),
+                    sdf.format(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione())
+            );
+        }
         if (fatturaPassiva.getDocumentoEleTestata().getImportoDocumento() == null)
             throw new it.cnr.jada.comp.ApplicationException("Totale Documento elettronico non valorizzato!");
 

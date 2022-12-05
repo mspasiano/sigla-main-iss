@@ -25,6 +25,7 @@ import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.util.Utility;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -32,6 +33,7 @@ import java.util.Dictionary;
 import java.util.Optional;
 
 public class FatturaOrdineBulk extends FatturaOrdineBase {
+
 	public String getOperazioneImpegnoNotaCredito() {
 		return operazioneImpegnoNotaCredito;
 	}
@@ -506,5 +508,18 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 	public void setPgObbligazioneScadNc(java.lang.Long pgObbligazioneScad)  {
 		this.getObbligazioneScadenzarioNc().setPg_obbligazione_scadenzario(pgObbligazioneScad);
 	}
+
+	public String getCssClassImImponibile(){
+		return Utility.CSS_CLASS_W_10;
+	}
+
+	public String getCssClassImIva(){
+		return Utility.CSS_CLASS_W_10;
+	}
+	public String getCssClassImTotaleConsegna(){
+		return Utility.CSS_CLASS_W_10;
+	}
+
+
 
 }

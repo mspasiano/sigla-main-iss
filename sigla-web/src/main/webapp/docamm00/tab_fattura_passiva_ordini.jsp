@@ -16,7 +16,7 @@
 	String collapseIconClass = bp.getFatturaOrdiniController().isRettificheCollapse() ? "fa-chevron-circle-down" : "fa-chevron-circle-up";
 %>
 
-<% bp.getCrudDocEleAcquistoColl().writeHTMLTable(pageContext,"default",false,false,false,"100%","200px"); %>
+<% bp.getCrudDocEleAcquistoColl().writeHTMLTable(pageContext,"default",false,false,false,"100%","10vh"); %>
 <% bp.getCrudDocEleAcquistoColl().closeHTMLTable(pageContext);%>
 <div class="card">
     <fieldset class="fieldset mt-1 mb-1">
@@ -24,7 +24,7 @@
         <table width="100%">
             <tr>
                 <td>
-                    <% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","40vh"); %>
+                    <% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","50vh"); %>
                 </td>
             </tr>
         </table>
@@ -36,30 +36,44 @@
             <a onclick="submitForm('doToggle(ordiniRettifiche)')" class="text-primary"><i aria-hidden="true" class="fa <%=collapseIconClass%>"></i> Rettifiche</a>
         </h5>
     </div>
-    <div class="card-block">
+    <div class="card-block p-2">
+        <div>
         <% if (!bp.getFatturaOrdiniController().isRettificheCollapse()) { %>
-            <table class="card p-2" cellpadding="2">
-                <tr>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "voceIva"); %>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "prezzoUnitarioRett"); %>
-                </tr>
-                <tr>
-                    <td><% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto1Rett"); %></td>
-                    <td>
-                        <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto1Rett"); %>
-                        <% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto2Rett"); %>
-                        <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto2Rett"); %>
-                    </td>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "sconto3Rett"); %>
-                </tr>
-                <tr>
-                    <% bp.getFatturaOrdiniController().writeFormField(out, "imponibileErrato"); %>
-                    <% if (fatturaOrdine.isRigaAttesaNotaCredito()) {
-                         bp.getFatturaOrdiniController().writeFormField(out, "operazioneImpegnoNotaCredito");
-                       }
-                    %>
-                </tr>
-            </table>
+            <div class="form-row">
+                <div class="form-group col-md-3">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "voceIva"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "voceIva"); %>
+                </div>
+                <div class="form-group col-md-3">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "prezzoUnitarioRett"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "prezzoUnitarioRett"); %>
+                </div>
+                <div class="form-group col-md-2">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto1Rett"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto1Rett"); %>
+                </div>
+                <div class="form-group col-md-2">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto2Rett"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto2Rett"); %>
+                </div>
+                <div class="form-group col-md-2">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "sconto3Rett"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "sconto3Rett"); %>
+                </div>
+            </div>
+            <div class="form-row pt-2">
+                <div class="form-group col-md-6">
+                    <% bp.getFatturaOrdiniController().writeFormLabel(out, "imponibileErrato"); %>
+                    <% bp.getFatturaOrdiniController().writeFormInput(out, "imponibileErrato"); %>
+                </div>
+                <div class="form-group col-md-6 h-100">
+                    <% if (fatturaOrdine.isRigaAttesaNotaCredito()) { %>
+                        <% bp.getFatturaOrdiniController().writeFormLabel(out, "operazioneImpegnoNotaCredito"); %>
+                        <% bp.getFatturaOrdiniController().writeFormInput(out, "operazioneImpegnoNotaCredito"); %>
+                    <%}%>
+                </div>
+            </div>
         <% } %>
+        </div>
     </div>
 </div>
