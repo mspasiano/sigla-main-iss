@@ -2379,58 +2379,43 @@ public class OrdineAcqComponent
 
 		if (clauses != null)
 			sql.addClause(clauses);
-		sql.openParenthesis("AND");
-		sql.addSQLClause("AND","NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_PASSIVO);
-		sql.addSQLClause("OR","NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO);
+		sql.openParenthesis(FindClause.AND);
+		sql.addSQLClause(FindClause.AND,"NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_PASSIVO);
+		sql.addSQLClause(FindClause.OR,"NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO);
 		sql.closeParenthesis();
+
 		if(param_cds != null && param_cds.getFl_contratto_cessato().booleanValue()){
-			sql.openParenthesis("AND");
-			sql.addSQLClause("AND","STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
-			sql.addSQLClause("OR","STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_CESSSATO);
+			sql.openParenthesis(FindClause.AND);
+			sql.addSQLClause(FindClause.AND,"STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+			sql.addSQLClause(FindClause.OR,"STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_CESSSATO);
 			sql.closeParenthesis();
 		}
 		else
-			sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+			sql.addSQLClause(FindClause.AND, "STATO", SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
 
-		// Se uo 999.000 in scrivania: visualizza tutti i contratti
-		Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome( userContext, Unita_organizzativa_enteBulk.class).findAll().get(0);
-		if (!((CNRUserContext) userContext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
-			sql.openParenthesis("AND");
-			sql.addSQLClause("AND","CONTRATTO.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
-			SQLBuilder sqlAssUo = getHome(userContext,Ass_contratto_uoBulk.class).createSQLBuilder();
-			sqlAssUo.addSQLJoin("CONTRATTO.ESERCIZIO","ASS_CONTRATTO_UO.ESERCIZIO");
-			sqlAssUo.addSQLJoin("CONTRATTO.PG_CONTRATTO","ASS_CONTRATTO_UO.PG_CONTRATTO");
-			sqlAssUo.addSQLClause("AND","ASS_CONTRATTO_UO.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
-			sql.addSQLExistsClause("OR",sqlAssUo);
-			sql.closeParenthesis();
-		}
+		sql.addSQLClause(FindClause.AND,"CONTRATTO.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
+
 		sql.addTableToHeader("TERZO");
 		sql.addSQLJoin("CONTRATTO.FIG_GIUR_EST", SQLBuilder.EQUALS,"TERZO.CD_TERZO");
-		sql.addSQLClause("AND","TERZO.DT_FINE_RAPPORTO",SQLBuilder.ISNULL,null);
+		sql.addSQLClause(FindClause.AND,"TERZO.DT_FINE_RAPPORTO",SQLBuilder.ISNULL,null);
 
 		if((ordine.getFornitore() != null && ordine.getFornitore().getCd_terzo()!=null)){
-			sql.openParenthesis("AND");
-			sql.openParenthesis("AND");
+			sql.openParenthesis(FindClause.AND);
+			sql.openParenthesis(FindClause.AND);
 			sql.addSQLClause(FindClause.AND, "FIG_GIUR_EST",SQLBuilder.EQUALS,ordine.getFornitore().getCd_terzo());
 			AnagraficoHome anagraficoHome = (AnagraficoHome) getHome(userContext, AnagraficoBulk.class);
 			sql.closeParenthesis();
 			try {
 				for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(ordine.getFornitore().getAnagrafico()).iterator(); i.hasNext();) {
-					sql.openParenthesis("OR");
+					sql.openParenthesis(FindClause.OR);
 					Anagrafico_terzoBulk associato = i.next();
-					sql.addSQLClause("OR", "CONTRATTO.FIG_GIUR_EST",SQLBuilder.EQUALS, associato.getCd_terzo());
+					sql.addSQLClause(FindClause.OR, "CONTRATTO.FIG_GIUR_EST",SQLBuilder.EQUALS, associato.getCd_terzo());
 					sql.closeParenthesis();
 				}
 			} catch (IntrospectionException e) {
 			}
 			sql.closeParenthesis();
 		}
-		/*
-		sql.openParenthesis("AND");
-		  sql.addSQLClause("AND","TRUNC(NVL(DT_FINE_VALIDITA,SYSDATE)) >= TRUNC(SYSDATE)");
-		  sql.addSQLClause("OR","(DT_PROROGA IS NOT NULL AND TRUNC(DT_PROROGA) >= TRUNC(SYSDATE))");
-		sql.closeParenthesis();
-		*/
 		sql.addOrderBy("esercizio");
 		sql.addOrderBy("pg_contratto");
 		return sql;
