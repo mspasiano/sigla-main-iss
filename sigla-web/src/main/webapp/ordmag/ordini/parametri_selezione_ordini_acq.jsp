@@ -299,17 +299,16 @@
                   </td>
               </tr>
   			<tr>
-                  <td>
-                      <%
-                          bp.getController().writeFormLabel(out, "findImpegno");
-                      %>
-                  </td>
-                  <td>
-                      <%
-                          bp.getController().writeFormInput(out, "findImpegno");
-                      %>
-                  </td>
-
+              <td>
+                  <%
+                      bp.getController().writeFormLabel(out, "findImpegno");
+                  %>
+              </td>
+              <td colspan=8>
+                  <%
+                      bp.getController().writeFormInput(out, "findImpegno");
+                  %>
+              </td>
              </tr>
 		</table>
 	</div>
