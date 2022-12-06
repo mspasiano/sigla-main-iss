@@ -37,6 +37,7 @@ import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
@@ -245,6 +246,11 @@ public class CRUDEvasioneOrdineBP extends SimpleCRUDBP {
 
 	public EvasioneOrdineBulk initializeMagazzino(ActionContext actioncontext, EvasioneOrdineBulk evasioneOrdine, MagazzinoBulk magazzino) throws BusinessProcessException {
 		try {
+			evasioneOrdine.setMagazzinoAbilitato(null);
+			evasioneOrdine.setNumerazioneMag(null);
+			evasioneOrdine.setRigheConsegnaDaEvadereColl(new BulkList<>());
+			evasioneOrdine.setRigheConsegnaSelezionate(new BulkList<>());
+			this.getConsegne().reset(actioncontext);
 			if (magazzino!=null) {
 				evasioneOrdine.setMagazzinoAbilitato(magazzino);
 
