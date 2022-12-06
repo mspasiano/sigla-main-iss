@@ -46,7 +46,7 @@
    				    <span class="FormLabel" style="color:blue">
 					<% if (bene.isTotalmenteScaricato()){ %>
 						totalmente scaricato
-					<% } else if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(uc) && bene.getFl_dismesso()){ %>
+					<% } else if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(uc) && (bene.getFl_dismesso()!= null && bene.getFl_dismesso())){ %>
 					    dismesso
 					<%}else{%>
 						normale
