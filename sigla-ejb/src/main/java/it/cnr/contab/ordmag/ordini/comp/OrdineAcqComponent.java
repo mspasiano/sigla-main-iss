@@ -381,21 +381,18 @@ public class OrdineAcqComponent
 	}
 
 	private void controlliValiditaConsegna(UserContext userContext, OrdineAcqConsegnaBulk consegna)throws it.cnr.jada.comp.ComponentException{
-		if (consegna.getMagazzino() == null || consegna.getMagazzino().getCdMagazzino() == null){
-			throw new ApplicationException ("E' necessario indicare il magazzino.");
-		}
-		if (consegna.getLuogoConsegnaMag() == null || consegna.getLuogoConsegnaMag().getCdLuogoConsegna() == null){
-			throw new ApplicationException ("E' necessario indicare il luogo di consegna.");
-		}
+		if (consegna.getMagazzino() == null || consegna.getMagazzino().getCdMagazzino() == null)
+			throw new ApplicationException ("E' necessario indicare il magazzino sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
+
+		if (consegna.getLuogoConsegnaMag() == null || consegna.getLuogoConsegnaMag().getCdLuogoConsegna() == null)
+			throw new ApplicationException ("E' necessario indicare il luogo di consegna sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 
 		if (!consegna.isConsegnaMagazzino()){
-			if (consegna.getCdUopDest() == null){
-				throw new ApplicationException("E' necessario indicare l'unità operativa di destinazione per la riga "+consegna.getRiga()+".");
-			}
+			if (consegna.getCdUopDest() == null)
+				throw new ApplicationException("E' necessario indicare l'unità operativa di destinazione per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		} else {
-			if (consegna.getCdUopDest() != null){
-				throw new ApplicationException("Per una consegna a magazzino non è possibile selezionare l'unità operativa di destinazione per la riga "+consegna.getRiga()+".");
-			}
+			if (consegna.getCdUopDest() != null)
+				throw new ApplicationException("Per una consegna a magazzino non è possibile selezionare l'unità operativa di destinazione per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		}
 		if (consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine() == null){
 			OrdineAcqHome home = (OrdineAcqHome)getHome(userContext, OrdineAcqBulk.class);
@@ -407,13 +404,13 @@ public class OrdineAcqComponent
 			}
 
 		}
-		if (consegna.getDtPrevConsegna() != null && consegna.getDtPrevConsegna().before(consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine())){
-			throw new ApplicationException("La data di prevista consegna non può essere precedente alla data dell'ordine per la riga "+consegna.getRiga()+".");
-		}
+
+		if (consegna.getDtPrevConsegna() != null && consegna.getDtPrevConsegna().before(consegna.getOrdineAcqRiga().getOrdineAcq().getDataOrdine()))
+			throw new ApplicationException("La data di prevista consegna non può essere precedente alla data dell'ordine per la riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
+
 		try {
-			if (!Utility.createConfigurazioneCnrComponentSession().isBloccoScrittureProposte(userContext) && (consegna.getContoBulk() == null || consegna.getContoBulk().getCd_voce_ep() == null)){
-				throw new ApplicationException ("E' necessario indicare il conto di Economico Patrimoniale.");
-			}
+			if (Utility.createConfigurazioneCnrComponentSession().isAttivaEconomica(userContext) && (consegna.getContoBulk() == null || consegna.getContoBulk().getCd_voce_ep() == null))
+				throw new ApplicationException ("E' necessario indicare il conto di Economico Patrimoniale sulla riga di consegna "+consegna.getConsegna()+" della riga d'ordine "+consegna.getRiga()+".");
 		} catch (RemoteException e) {
 			throw new ComponentException(e);
 		}
@@ -2382,58 +2379,43 @@ public class OrdineAcqComponent
 
 		if (clauses != null)
 			sql.addClause(clauses);
-		sql.openParenthesis("AND");
-		sql.addSQLClause("AND","NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_PASSIVO);
-		sql.addSQLClause("OR","NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO);
+		sql.openParenthesis(FindClause.AND);
+		sql.addSQLClause(FindClause.AND,"NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_PASSIVO);
+		sql.addSQLClause(FindClause.OR,"NATURA_CONTABILE",SQLBuilder.EQUALS, ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO);
 		sql.closeParenthesis();
+
 		if(param_cds != null && param_cds.getFl_contratto_cessato().booleanValue()){
-			sql.openParenthesis("AND");
-			sql.addSQLClause("AND","STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
-			sql.addSQLClause("OR","STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_CESSSATO);
+			sql.openParenthesis(FindClause.AND);
+			sql.addSQLClause(FindClause.AND,"STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+			sql.addSQLClause(FindClause.OR,"STATO",SQLBuilder.EQUALS, ContrattoBulk.STATO_CESSSATO);
 			sql.closeParenthesis();
 		}
 		else
-			sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+			sql.addSQLClause(FindClause.AND, "STATO", SQLBuilder.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
 
-		// Se uo 999.000 in scrivania: visualizza tutti i contratti
-		Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome( userContext, Unita_organizzativa_enteBulk.class).findAll().get(0);
-		if (!((CNRUserContext) userContext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
-			sql.openParenthesis("AND");
-			sql.addSQLClause("AND","CONTRATTO.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
-			SQLBuilder sqlAssUo = getHome(userContext,Ass_contratto_uoBulk.class).createSQLBuilder();
-			sqlAssUo.addSQLJoin("CONTRATTO.ESERCIZIO","ASS_CONTRATTO_UO.ESERCIZIO");
-			sqlAssUo.addSQLJoin("CONTRATTO.PG_CONTRATTO","ASS_CONTRATTO_UO.PG_CONTRATTO");
-			sqlAssUo.addSQLClause("AND","ASS_CONTRATTO_UO.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
-			sql.addSQLExistsClause("OR",sqlAssUo);
-			sql.closeParenthesis();
-		}
+		sql.addSQLClause(FindClause.AND,"CONTRATTO.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
+
 		sql.addTableToHeader("TERZO");
 		sql.addSQLJoin("CONTRATTO.FIG_GIUR_EST", SQLBuilder.EQUALS,"TERZO.CD_TERZO");
-		sql.addSQLClause("AND","TERZO.DT_FINE_RAPPORTO",SQLBuilder.ISNULL,null);
+		sql.addSQLClause(FindClause.AND,"TERZO.DT_FINE_RAPPORTO",SQLBuilder.ISNULL,null);
 
 		if((ordine.getFornitore() != null && ordine.getFornitore().getCd_terzo()!=null)){
-			sql.openParenthesis("AND");
-			sql.openParenthesis("AND");
+			sql.openParenthesis(FindClause.AND);
+			sql.openParenthesis(FindClause.AND);
 			sql.addSQLClause(FindClause.AND, "FIG_GIUR_EST",SQLBuilder.EQUALS,ordine.getFornitore().getCd_terzo());
 			AnagraficoHome anagraficoHome = (AnagraficoHome) getHome(userContext, AnagraficoBulk.class);
 			sql.closeParenthesis();
 			try {
 				for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(ordine.getFornitore().getAnagrafico()).iterator(); i.hasNext();) {
-					sql.openParenthesis("OR");
+					sql.openParenthesis(FindClause.OR);
 					Anagrafico_terzoBulk associato = i.next();
-					sql.addSQLClause("OR", "CONTRATTO.FIG_GIUR_EST",SQLBuilder.EQUALS, associato.getCd_terzo());
+					sql.addSQLClause(FindClause.OR, "CONTRATTO.FIG_GIUR_EST",SQLBuilder.EQUALS, associato.getCd_terzo());
 					sql.closeParenthesis();
 				}
 			} catch (IntrospectionException e) {
 			}
 			sql.closeParenthesis();
 		}
-		/*
-		sql.openParenthesis("AND");
-		  sql.addSQLClause("AND","TRUNC(NVL(DT_FINE_VALIDITA,SYSDATE)) >= TRUNC(SYSDATE)");
-		  sql.addSQLClause("OR","(DT_PROROGA IS NOT NULL AND TRUNC(DT_PROROGA) >= TRUNC(SYSDATE))");
-		sql.closeParenthesis();
-		*/
 		sql.addOrderBy("esercizio");
 		sql.addOrderBy("pg_contratto");
 		return sql;
@@ -2939,6 +2921,19 @@ public class OrdineAcqComponent
 		}
  		sql.addClause(clauses);
 		sql.addOrderBy("cd_numeratore");
+		return sql;
+	}
+
+	public SQLBuilder selectContoBulkByClause(UserContext userContext,  OrdineAcqConsegnaBulk bulk, ContoBulk contoBulk, CompoundFindClause clauses) throws PersistencyException, ComponentException {
+		ContoHome home = (ContoHome)getHome(userContext, ContoBulk.class);
+		SQLBuilder sql = home.createSQLBuilder();
+		OrdineAcqConsegnaBulk consegna = (OrdineAcqConsegnaBulk)bulk;
+		try {
+			sql = home.selectContiAssociatiACategoria(new CompoundFindClause(), consegna.getEsercizio() == null ? CNRUserContext.getEsercizio(userContext) : consegna.getEsercizio(),
+					consegna.getOrdineAcqRiga().getBeneServizio().getCategoria_gruppo());
+		} catch (InvocationTargetException | IllegalAccessException e) {
+			throw new PersistencyException(e);
+		}
 		return sql;
 	}
 

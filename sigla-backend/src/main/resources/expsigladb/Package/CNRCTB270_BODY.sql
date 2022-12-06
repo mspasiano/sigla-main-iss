@@ -107,7 +107,7 @@ aCDRUO.cd_centro_responsabilita||'/'||codLASpecVersIva||') per l''esercizio '||t
    Where a.esercizio = aEs
    And   a.cd_centro_responsabilita = aCDRUOVERSIVA.cd_centro_responsabilita
    And   a.cd_linea_attivita = codLASpecVersIvaSAC
-   And   a.ti_gestione = CNRCTB001.GESTIONE_SPESE;
+   And   (a.ti_gestione = CNRCTB001.GESTIONE_SPESE or a.ti_gestione = CNRCTB001.GESTIONE_ENTRAMBE);
 
    Return aLASpecVersIvaSac;
  Exception

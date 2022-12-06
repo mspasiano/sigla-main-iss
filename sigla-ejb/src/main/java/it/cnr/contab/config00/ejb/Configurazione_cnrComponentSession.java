@@ -17,6 +17,7 @@
 
 package it.cnr.contab.config00.ejb;
 
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
@@ -122,5 +123,7 @@ public interface Configurazione_cnrComponentSession extends it.cnr.jada.ejb.Gene
     Boolean isGestioneBeneDismessoInventarioAttivo(UserContext param0) throws ComponentException, RemoteException;
 
     Boolean isPagamentoEsteroISSAttivo(UserContext param0) throws ComponentException, RemoteException;
+
+    TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException;
 
 }

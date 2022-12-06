@@ -17,6 +17,7 @@
 
 package it.cnr.contab.config00.ejb;
 
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
@@ -810,6 +811,23 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
                 throw ex;
             } catch (Throwable ex) {
                 throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    @Override
+    public TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (TipoRapportoTesoreriaEnum) invoke("getTipoRapportoTesoreria", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
             }
         }
     }
