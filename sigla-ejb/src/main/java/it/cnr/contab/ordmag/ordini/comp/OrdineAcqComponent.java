@@ -1019,7 +1019,7 @@ public class OrdineAcqComponent
 			}
 		}
 
-		sql.addSQLClause("AND", "CD_VOCE_IVA", SQLBuilder.EQUALS, bene.getCd_voce_iva());
+		sql.addSQLClause("AND", "CD_VOCE_IVA", SQLBuilder.EQUALS, Optional.ofNullable(bene).map(Bene_servizioBulk::getCd_voce_iva).orElse(null));
 
 		return sql;
 	}
