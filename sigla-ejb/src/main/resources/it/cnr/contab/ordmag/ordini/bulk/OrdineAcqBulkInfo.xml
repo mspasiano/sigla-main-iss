@@ -709,14 +709,22 @@
 		enabledOnEdit="false"
 		label="dtCancellazione" />
 	<fieldProperty
-			name="fl_mepa"
-			property="fl_mepa"
-			inputType="CHECKBOX"
-			nullable="false"
-			enabledOnSearch="false"
-			enabledOnEdit="false"
-			enabledOnInsert="false"
-			label="MEPA" />
+		name="fl_mepa"
+		property="fl_mepa"
+		inputType="CHECKBOX"
+		nullable="false"
+		enabledOnSearch="false"
+		enabledOnEdit="false"
+		enabledOnInsert="false"
+		label="MEPA" />
+	<fieldProperty
+		name="motivoAssenzaCig"
+		property="motivoAssenzaCig"
+		inputType="SELECT"
+		keysProperty="motivoEsclusioneCigSIOPEKeys"
+		enabledOnSearch="true"
+		label="Motivo assenza CIG"/>
+
 	<form
 		name="searchtool">
 		<formFieldProperty
@@ -857,6 +865,8 @@
 	<formFieldProperty
 		name="visualizza_contratto"
 		/>
+	<formFieldProperty
+			name="motivoAssenzaCig"/>
 
 	<findFieldProperty
 		name="cdCds" />

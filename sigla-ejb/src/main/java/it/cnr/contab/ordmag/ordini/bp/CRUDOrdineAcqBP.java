@@ -54,6 +54,7 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.GenerazioneReportException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+import it.cnr.jada.util.jsp.Button;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
 import it.cnr.si.spring.storage.config.StoragePropertyNames;
@@ -538,17 +539,13 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	}
 
 	protected it.cnr.jada.util.jsp.Button[] createToolbar() {
-		it.cnr.jada.util.jsp.Button[] toolbar = new it.cnr.jada.util.jsp.Button[7];
-		int i = 0;
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.search");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.startSearch");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.freeSearch");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.new");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.save");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(it.cnr.jada.util.action.CRUDBP.class),"CRUDToolbar.delete");
-		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()),"CRUDToolbar.stampa");
+		Button[] toolbar = super.createToolbar();
+		Button[] newToolbar = new Button[ toolbar.length + 1 ];
+		for ( int i = 0; i< toolbar.length; i++ )
+			newToolbar[ i ] = toolbar[ i ];
+		newToolbar[ toolbar.length ] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()),"CRUDToolbar.stampa");
+		return newToolbar;
 
-		return toolbar;
 	}
 	public boolean areBottoniObbligazioneAbilitati()
 	{
@@ -743,5 +740,13 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		}
 	}
 
+	public boolean isVisibleMotivoAssenzaCig() {
+		return Optional.ofNullable(getModel())
+				.filter(OrdineAcqBulk.class::isInstance)
+				.map(OrdineAcqBulk.class::cast)
+				.flatMap(ordineAcqBulk -> Optional.ofNullable(ordineAcqBulk.getCig()))
+				.map(cigBulk -> !Optional.ofNullable(cigBulk.getCdCig()).isPresent())
+				.orElse(Boolean.TRUE);
+	}
 
 }

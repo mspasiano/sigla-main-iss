@@ -120,6 +120,8 @@ public class OrdineAcqBase extends OrdineAcqKey implements Keyed {
 
 	private java.math.BigDecimal imImponibile;
 
+	private String motivoAssenzaCig;
+
 	public Boolean getFl_mepa() {
 		return fl_mepa;
 	}
@@ -599,5 +601,13 @@ public class OrdineAcqBase extends OrdineAcqKey implements Keyed {
 	}
 	public void setCdUopOrdine(java.lang.String cdUopOrdine) {
 		this.cdUopOrdine = cdUopOrdine;
+	}
+
+	public String getMotivoAssenzaCig() {
+		return motivoAssenzaCig;
+	}
+
+	public void setMotivoAssenzaCig(String motivoAssenzaCig) {
+		this.motivoAssenzaCig = motivoAssenzaCig;
 	}
 }

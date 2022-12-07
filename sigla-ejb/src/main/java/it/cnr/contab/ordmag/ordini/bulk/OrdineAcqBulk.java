@@ -52,11 +52,13 @@ import it.cnr.jada.util.StrServ;
 import it.cnr.jada.util.action.CRUDBP;
 import it.cnr.si.spring.storage.annotation.StoragePolicy;
 import it.cnr.si.spring.storage.annotation.StorageProperty;
+import it.siopeplus.StMotivoEsclusioneCigSiope;
 import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class OrdineAcqBulk extends OrdineAcqBase
         implements IDocumentoAmministrativoBulk,
@@ -79,6 +81,14 @@ public class OrdineAcqBulk extends OrdineAcqBase
         STATO.put(STATO_ANNULLATO, "Annullato");
         STATO.put(STATO_DEFINITIVO, "Definitivo");
     }
+    public final static Map<String,String> motivoEsclusioneCigSIOPEKeys = Arrays.asList(StMotivoEsclusioneCigSiope.values())
+            .stream()
+            .collect(Collectors.toMap(
+                    StMotivoEsclusioneCigSiope::name,
+                    StMotivoEsclusioneCigSiope::value,
+                    (oldValue, newValue) -> oldValue,
+                    Hashtable::new
+            ));
 
     protected BulkList<OrdineAcqRigaBulk> righeOrdineColl = new BulkList<OrdineAcqRigaBulk>();
     protected BulkList listaRichiesteTrasformateInOrdine = new BulkList();
@@ -1601,7 +1611,14 @@ public class OrdineAcqBulk extends OrdineAcqBase
     public void validate() throws ValidationException {
         if ( getNumerazioneOrd() == null || StringUtils.isEmpty(getNumerazioneOrd().getCdNumeratore()) || StringUtils.isEmpty(getNumerazioneOrd().getCdUnitaOperativa()))
             throw new ValidationException( "Il campo Numeratore è obbligatorio." );
-
+        if (Optional.ofNullable(getCig()).flatMap(cigBulk -> Optional.ofNullable(cigBulk.getCdCig())).isPresent()
+                && Optional.ofNullable(getMotivoAssenzaCig()).isPresent()) {
+            throw new ValidationException("Non possono essere valorizzati sia il CIG che il Motivo di assenza del CIG!");
+        }
+        if (!Optional.ofNullable(getCig()).flatMap(cigBulk -> Optional.ofNullable(cigBulk.getCdCig())).isPresent()
+                && !Optional.ofNullable(getMotivoAssenzaCig()).isPresent()) {
+            throw new ValidationException("Bisogna valorizzare o il CIG oppure il Motivo di assenza del CIG!");
+        }
     }
 
     @Override

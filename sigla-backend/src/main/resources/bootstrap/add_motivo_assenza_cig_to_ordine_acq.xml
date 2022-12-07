@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2022  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="maco.spasiano" id="add_motivo_assenza_cig_to_ordine_acq">
+        <addColumn tableName="ordine_acq">
+            <column name="motivo_assenza_cig" type="VARCHAR(250)" remarks="Motivo assenza CIG  Può assumere i valori:
+ACCORDO_AMM_AGGIUDICATRICI
+ACQUISTO_LOCAZIONE
+AFFIDAMENTI_IN_HOUSE
+AMMINISTRAZIONE DIRETTA
+APPALTI_ENERGIA_ACQUA
+ARBITRATO
+ATTIVITA_CONCORRENZA
+CONCESSIONI_PAESI_TERZI
+CONTRATTI_ASSOCIAZIONE
+CONTRATTI_AUTORITA_GIUDIZIARIA
+CONTRATTI_DIFESA
+CONTRATTI_ESTERO
+CONTRATTI_LAVORO
+DIRITTO_ESCLUSIVO
+EROGAZIONI_LIBERALITA
+IMPRESA_COLLEGATA
+INCARICHI_COLLABORAZIONE
+JOINT_VENTURE
+PRESTAZIONI
+RIASSICURAZIONE
+RISARCIMENTI_INDENNIZZI
+SERVIZI_BANCHE_CENTRALI_EFSF
+SERVIZI_CAMPAGNE_POLITICHE
+SPESE_ECONOMALI
+SPONSORIZZAZIONE_PURA
+TRASFERIMENTO_FONDI
+TRASPORTO_AEREO"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

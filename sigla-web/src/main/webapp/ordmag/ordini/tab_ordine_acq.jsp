@@ -8,7 +8,7 @@
 		it.cnr.contab.ordmag.anag00.*"
 %>
 
-<% CRUDBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
+<% CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
 OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel();
 %>
 <div class="Group card p-2 m-1">
@@ -40,6 +40,9 @@ OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel();
 			<tr><% bp.getController().writeFormField(out, "findResponsabile");%></tr>
 			<tr><% bp.getController().writeFormField(out, "findDirettore");%></tr>
 			<tr><% bp.getController().writeFormField(out, "cig");%></tr>
+			<% if (bp.isVisibleMotivoAssenzaCig()) { %>
+			    <tr><% bp.getController().writeFormField(out, "motivoAssenzaCig");%></tr>
+			<% } %>
 			<tr><% bp.getController().writeFormField(out, "procedura_amministrativa");%></tr>
 			<tr><% bp.getController().writeFormField(out, "cup");%></tr>
 			<tr><% bp.getController().writeFormField(out, "referenteEsterno");%></tr>

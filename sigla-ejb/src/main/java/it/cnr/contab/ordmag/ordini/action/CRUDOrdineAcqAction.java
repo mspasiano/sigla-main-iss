@@ -123,9 +123,7 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
     }
 
     public Forward doBlankSearchFind_contratto(ActionContext context, OrdineAcqBulk ordine) throws java.rmi.RemoteException {
-
         try {
-            //imposta i valori di default per il tariffario
             ordine.setContratto(new ContrattoBulk());
             ordine.setResponsabileProcPers(null);
             ordine.setCup(null);
@@ -142,7 +140,6 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
             ordine.setCodiceFiscale(null);
             ordine.setPartitaIva(null);
             return context.findDefaultForward();
-
         } catch (Exception e) {
             return handleException(context, e);
         }
