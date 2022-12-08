@@ -132,6 +132,7 @@ public class DistintaCassiereComponent extends
     public static final String FATT_ANALOGICA = "FATT_ANALOGICA";
     public static final String DOC_EQUIVALENTE = "DOC_EQUIVALENTE";
     public static final String REGOLARIZZAZIONE_ACCREDITO_BANCA_D_ITALIA = "REGOLARIZZAZIONE ACCREDITO BANCA D'ITALIA";
+    public static final String ACCREDITO_BANCA_D_ITALIA = "ACCREDITO BANCA D'ITALIA";
     public static final String SCOSTAMENTO = "0.03";
     public static final String VARIAZIONE = "VARIAZIONE";
     public static final String SOSTITUZIONE = "SOSTITUZIONE";
@@ -5019,7 +5020,11 @@ public class DistintaCassiereComponent extends
                                 .map(Rif_modalita_pagamentoBulk.class::cast)
                                 .orElseThrow(() -> new ApplicationMessageFormatException("Modalità di pagamento non trovata: {0}", modalitaPagamento));
 
-                if (docContabile.getTiDocumento().compareTo(ReversaleBulk.TIPO_REGOLAM_SOSPESO) == 0) {
+                //Gestione banca D'Italia ISS
+                if (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                        (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext)))) {
+                    infover.setTipoRiscossione(ACCREDITO_BANCA_D_ITALIA);
+                }else if (docContabile.getTiDocumento().compareTo(ReversaleBulk.TIPO_REGOLAM_SOSPESO) == 0) {
                     if (Optional.ofNullable(bulk.getTi_cc_bi()).filter(s -> s.equals("B")).isPresent() &&
                             Optional.ofNullable(rif_modalita_pagamentoBulk.getTi_pagamento()).filter(s -> s.equals(Rif_modalita_pagamentoBulk.BANCA_ITALIA)).isPresent() ) {
                         infover.setTipoRiscossione(REGOLARIZZAZIONE_ACCREDITO_BANCA_D_ITALIA);
@@ -5035,6 +5040,7 @@ public class DistintaCassiereComponent extends
                 } else if(!bulk.getPg_documento_cont_padre().equals(bulk.getPg_documento_cont())) {
                     infover.setTipoRiscossione(COMPENSAZIONE);
                 }
+
                 // Classificazioni
                 infover.setTipoEntrata(INFRUTTIFERO);
                 infover.setDestinazione(LIBERA);
