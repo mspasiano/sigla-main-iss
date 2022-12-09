@@ -7991,6 +7991,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                             documentoEleAcquistos));
                     fattura_passiva.setDocEleAcquistoColl(new BulkList<DocumentoEleAcquistoBulk>(
                             documentoEleAcquistos));
+                    fattura_passiva.setDocEleIvaColl(documentoEleTestata.getDocEleIVAColl());
                     documentoEleTestata.setDocEleDdtColl(new BulkList<DocumentoEleDdtBulk>(
                             getHome(aUC, DocumentoEleDdtBulk.class).find(new DocumentoEleDdtBulk(documentoEleTestata))));
                     getHomeCache(aUC).fetchAll(aUC);

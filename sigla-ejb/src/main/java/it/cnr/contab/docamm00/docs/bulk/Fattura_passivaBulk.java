@@ -187,6 +187,7 @@ public abstract class Fattura_passivaBulk
     private BulkList fattura_passiva_intrastatColl = new BulkList();
     private BulkList riferimenti_bancari = new BulkList();
     private BulkList<DocumentoEleAcquistoBulk> docEleAcquistoColl = new BulkList<DocumentoEleAcquistoBulk>();
+    private BulkList<DocumentoEleIvaBulk> docEleIvaColl = new BulkList<DocumentoEleIvaBulk>();
     private Collection fattura_passiva_consuntivoColl = new Vector();
     private ObbligazioniTable fattura_passiva_obbligazioniHash = null;
     private BulkList fattura_passiva_ordini = new BulkList();
@@ -3484,6 +3485,14 @@ public abstract class Fattura_passivaBulk
 
     public void setDocEleAcquistoColl(BulkList<DocumentoEleAcquistoBulk> docEleAcquistoColl) {
         this.docEleAcquistoColl = docEleAcquistoColl;
+    }
+
+    public BulkList<DocumentoEleIvaBulk> getDocEleIvaColl() {
+        return docEleIvaColl;
+    }
+
+    public void setDocEleIvaColl(BulkList<DocumentoEleIvaBulk> docEleIvaColl) {
+        this.docEleIvaColl = docEleIvaColl;
     }
 
     public List<String> getStorePath() {

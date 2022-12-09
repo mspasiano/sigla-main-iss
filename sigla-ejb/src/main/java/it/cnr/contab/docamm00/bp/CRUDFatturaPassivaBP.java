@@ -115,7 +115,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     private final SimpleDetailCRUDController dettaglioObbligazioneController;
 
     private final OrdiniCRUDController fatturaOrdiniController = new OrdiniCRUDController(
-            "Ordini", FatturaOrdineBulk.class,
+            "Righe di consegna selezionate", FatturaOrdineBulk.class,
             "fattura_passiva_ordini", this);
 
     private final FatturaPassivaRigaIntrastatCRUDController dettaglioIntrastatController = new FatturaPassivaRigaIntrastatCRUDController(
@@ -130,6 +130,31 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                 public boolean isEnabled() {
                     return false;
                 }
+
+                @Override
+                protected String getBorderClass() {
+                    return "border-info";
+                }
+                protected String getTextClass() {
+                    return "text-info";
+                }
+
+            };
+    private final CollapsableDetailCRUDController crudDocEleIvaColl =
+            new CollapsableDetailCRUDController("Riferimenti IVA",DocumentoEleIvaBulk.class,"docEleIvaColl",this){
+                @Override
+                public boolean isEnabled() {
+                    return false;
+                }
+
+                @Override
+                protected String getBorderClass() {
+                    return "border-info";
+                }
+                protected String getTextClass() {
+                    return "text-info";
+                }
+
             };
     private final CollapsableDetailCRUDController movimentiDare = new EconomicaDareDetailCRUDController(this);
     private final CollapsableDetailCRUDController movimentiAvere = new EconomicaAvereDetailCRUDController(this);
@@ -1803,6 +1828,10 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     }
     public CollapsableDetailCRUDController getCrudDocEleAcquistoColl() {
         return crudDocEleAcquistoColl;
+    }
+
+    public CollapsableDetailCRUDController getCrudDocEleIvaColl() {
+        return crudDocEleIvaColl;
     }
 
     public CollapsableDetailCRUDController getMovimentiDare() {

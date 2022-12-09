@@ -23,12 +23,14 @@ import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
 import it.cnr.jada.bulk.BulkInfo;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.action.Selection;
 import it.cnr.jada.util.jsp.TableCustomizer;
 
 import javax.servlet.jsp.JspWriter;
@@ -45,7 +47,7 @@ import java.util.Optional;
  *
  * @author: Marco Spasiano
  */
-public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCRUDController implements TableCustomizer {
+public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDetailCRUDController implements TableCustomizer {
     private boolean rettificheCollapse = true;
 
     public boolean isRettificheCollapse() {
@@ -65,8 +67,8 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
      */
     public OrdiniCRUDController(String name, Class modelClass, String listPropertyName, it.cnr.jada.util.action.FormController parent) {
         super(name, modelClass, listPropertyName, parent);
+        setCollapsed(false);
     }
-
 
     /**
      * Restituisce true se è possibile aggiungere nuovi elementi
@@ -106,6 +108,18 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
     public String getTableClass() {
         return null;
     }
+
+    @Override
+    public Selection setSelection(ActionContext actioncontext) throws ValidationException, BusinessProcessException {
+        Optional.ofNullable(getParentController())
+                .filter(CRUDFatturaPassivaBP.class::isInstance)
+                .map(CRUDFatturaPassivaBP.class::cast)
+                .ifPresent(crudFatturaPassivaBP -> {
+                    crudFatturaPassivaBP.getFatturaOrdiniController().setRettificheCollapse(false);
+                });
+        return super.setSelection(actioncontext);
+    }
+
     @Override
     public void writeTfoot(JspWriter jspWriter) throws IOException {
         final EuroFormat euroFormat = new EuroFormat();
@@ -242,11 +256,6 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
                 "Contabilizza righe per Note Credito",
                 "btn-sm btn-outline-primary btn-title",
                 isFromBootstrap);
-
-
-
-
-
         super.closeButtonGROUPToolbar(context);
     }
 }
