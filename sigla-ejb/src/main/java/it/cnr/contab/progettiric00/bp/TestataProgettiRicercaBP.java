@@ -45,6 +45,7 @@ import it.cnr.jada.bulk.BulkInfo;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ApplicationRuntimeException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.ejb.CRUDComponentSession;
@@ -1025,19 +1026,23 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
                     String path = rimodulazione.getStorePath().replaceFirst(progetto.getCd_unita_organizzativa(), cdUnitaOrganizzativa);
                     if (path != null && storeService.getStorageObjectByPath(path) != null) {
                         for (StorageObject storageObject : storeService.getChildren(storeService.getStorageObjectByPath(path).getKey())) {
-                            if (!storeService.hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()) && !excludeChild(storageObject) &&
-                                    !Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
-                                            .map(String.class::cast)
-                                            .filter(s -> s.equals(StoragePropertyNames.CMIS_FOLDER.value()))
-                                            .isPresent()) {
-                                AllegatoProgettoRimodulazioneBulk allegato = new AllegatoProgettoRimodulazioneBulk(storageObject.getKey());
-                                allegato.setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
-                                allegato.setNome(storageObject.getPropertyValue(StoragePropertyNames.NAME.value()));
-                                allegato.setDescrizione(storageObject.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
-                                allegato.setTitolo(storageObject.getPropertyValue(StoragePropertyNames.TITLE.value()));
-                                allegato.setObjectType(storageObject.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()));
-                                allegato.setCrudStatus(OggettoBulk.NORMAL);
-                                progetto.addToArchivioAllegati(allegato);
+                            try {
+                                if (!storeService.hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()) && !excludeChild(storageObject) &&
+                                        !Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
+                                                .map(String.class::cast)
+                                                .filter(s -> s.equals(StoragePropertyNames.CMIS_FOLDER.value()))
+                                                .isPresent()) {
+                                    AllegatoProgettoRimodulazioneBulk allegato = new AllegatoProgettoRimodulazioneBulk(storageObject.getKey());
+                                    allegato.setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
+                                    allegato.setNome(storageObject.getPropertyValue(StoragePropertyNames.NAME.value()));
+                                    allegato.setDescrizione(storageObject.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
+                                    allegato.setTitolo(storageObject.getPropertyValue(StoragePropertyNames.TITLE.value()));
+                                    allegato.setObjectType(storageObject.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()));
+                                    allegato.setCrudStatus(OggettoBulk.NORMAL);
+                                    progetto.addToArchivioAllegati(allegato);
+                                }
+                            } catch (ApplicationException e) {
+                                new RuntimeException(e);
                             }
                         }
                     }

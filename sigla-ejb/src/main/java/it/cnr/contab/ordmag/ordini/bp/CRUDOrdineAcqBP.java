@@ -352,7 +352,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 
 
 	@Override
-	protected boolean excludeChild(StorageObject storageObject) {
+	protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
 		if (storeService.hasAspect( storageObject,(( OrdineAcqCMISService)storeService).ASPECT_STAMPA_ORDINI))
 			return true;
 

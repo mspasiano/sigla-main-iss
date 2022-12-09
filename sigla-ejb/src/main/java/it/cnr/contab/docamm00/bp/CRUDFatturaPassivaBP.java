@@ -1721,7 +1721,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     }
 
     @Override
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         if (Stream.of(crudDocEleAllegatiColl.getDetails().stream().toArray())
                 .filter(DocumentoEleAllegatiBulk.class::isInstance)
                 .map(DocumentoEleAllegatiBulk.class::cast)
