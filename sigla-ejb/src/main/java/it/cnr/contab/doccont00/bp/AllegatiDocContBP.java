@@ -112,7 +112,7 @@ public class AllegatiDocContBP extends AllegatiCRUDBP<AllegatoDocContBulk, Stato
     }
 
     @Override
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         if (Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()))
                 .filter(s -> s.equals("D:doccont:document")).isPresent())
             return true;

@@ -234,7 +234,7 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
     protected void completeAllegato(T allegato, StorageObject storageObject) throws ApplicationException {
     }
 
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         return false;
     }
 

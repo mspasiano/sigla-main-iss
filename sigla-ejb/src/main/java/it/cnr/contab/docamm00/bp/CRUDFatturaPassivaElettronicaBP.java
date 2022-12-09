@@ -644,7 +644,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	}
 
 	@Override
-	protected boolean excludeChild(StorageObject storageObject) {
+	protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
 		if (Stream.of(crudDocEleAllegatiColl.getDetails().stream().toArray())
 				.filter(DocumentoEleAllegatiBulk.class::isInstance)
 				.map(DocumentoEleAllegatiBulk.class::cast)
@@ -658,7 +658,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 			return true;
 		}
 		if (Optional.ofNullable(storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()))
-				.orElseGet(() -> storageObject.<String>getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
+				.orElseThrow(()-> new ApplicationException("L'allegato ".concat(storageObject.getKey().concat(" non ha il metadato OBJECT_TYPE_ID"))))
 				.equalsIgnoreCase("D:sigla_fatture_attachment:document"))
 			return true;
 		return super.excludeChild(storageObject);

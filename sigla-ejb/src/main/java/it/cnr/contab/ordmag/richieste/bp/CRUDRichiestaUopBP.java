@@ -17,18 +17,6 @@
 
 package it.cnr.contab.ordmag.richieste.bp;
 
-import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import javax.servlet.ServletException;
 import it.cnr.contab.ordmag.richieste.bulk.AllegatoRichiestaBulk;
 import it.cnr.contab.ordmag.richieste.bulk.AllegatoRichiestaDettaglioBulk;
 import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopBulk;
@@ -39,10 +27,6 @@ import it.cnr.contab.reports.bulk.Print_spoolerBulk;
 import it.cnr.contab.reports.bulk.Report;
 import it.cnr.contab.reports.service.PrintService;
 import it.cnr.contab.service.SpringUtil;
-import it.cnr.si.spring.storage.MimeTypes;
-import it.cnr.si.spring.storage.StorageException;
-import it.cnr.si.spring.storage.StorageObject;
-import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
@@ -58,6 +42,22 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.Introspector;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.upload.UploadedFile;
+import it.cnr.si.spring.storage.MimeTypes;
+import it.cnr.si.spring.storage.StorageException;
+import it.cnr.si.spring.storage.StorageObject;
+import it.cnr.si.spring.storage.config.StoragePropertyNames;
+
+import javax.servlet.ServletException;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Gestisce le catene di elementi correlate con il documento in uso.
@@ -257,6 +257,13 @@ public class CRUDRichiestaUopBP extends AllegatiCRUDBP<AllegatoRichiestaBulk, Ri
 		richiesteCMISService = SpringUtil.getBean("richiesteCMISService",
 				RichiesteCMISService.class);	
 	}
+	private boolean innerExcludeChild(StorageObject storageObject) {
+		try {
+			return !excludeChild(storageObject);
+		} catch (ApplicationException e) {
+			throw new RuntimeException(e);
+		}
+	}
 	@Override
 	public OggettoBulk initializeModelForEditAllegati(ActionContext actioncontext, OggettoBulk oggettobulk) throws BusinessProcessException {
 		RichiestaUopBulk allegatoParentBulk = (RichiestaUopBulk)oggettobulk;
@@ -264,7 +271,7 @@ public class CRUDRichiestaUopBP extends AllegatiCRUDBP<AllegatoRichiestaBulk, Ri
 	        richiesteCMISService.getFilesRichiesta(allegatoParentBulk).stream()
             .filter(storageObject -> !richiesteCMISService.hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()))
             .filter(storageObject -> !richiesteCMISService.hasAspect(storageObject, RichiesteCMISService.ASPECT_STAMPA_RICHIESTA_ORDINI))
-            .filter(storageObject -> !excludeChild(storageObject))
+            .filter(this::innerExcludeChild)
             .forEach(storageObject -> {
                 try {
                     richiesteCMISService.recuperoAllegatiDettaglioRichiesta(allegatoParentBulk, storageObject);
@@ -496,4 +503,6 @@ public class CRUDRichiestaUopBP extends AllegatiCRUDBP<AllegatoRichiestaBulk, Ri
 
 		return toolbar;
 	}
+
+
 }

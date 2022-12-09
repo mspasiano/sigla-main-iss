@@ -1296,7 +1296,7 @@ public abstract class CRUDFatturaAttivaBP
     }
 
     @Override
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         if (storageObject.<List<String>>getPropertyValue(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value()).stream()
                 .anyMatch(s -> s.equalsIgnoreCase(StorageDocAmmAspect.SIGLA_FATTURE_ATTACHMENT_ALLEGATI_NON_INVIATI_SDI.value())))
             return false;
