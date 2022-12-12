@@ -2861,7 +2861,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         BigDecimal prezzoUnitarioOrdine = getPrezzoUnitarioOrdini(fatturaOrdineBulk);
         for (Fattura_passiva_rigaBulk riga : fattura.getFattura_passiva_dettColl()){
             if (fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio().equalsByPrimaryKey(riga.getBene_servizio()) &&
-                riga.getVoce_iva().equalsByPrimaryKey(iva) &&
+                    iva.equalsByPrimaryKey(riga.getVoce_iva()) &&
                 fatturaOrdineBulk.getOrdineAcqConsegna().getObbligazioneScadenzario().equalsByPrimaryKey(riga.getObbligazione_scadenziario()) &&
                     prezzoUnitarioOrdine.compareTo(riga.getPrezzo_unitario()) == 0){
                 return riga;

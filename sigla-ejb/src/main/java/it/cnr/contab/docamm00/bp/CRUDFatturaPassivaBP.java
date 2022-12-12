@@ -125,7 +125,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             "RifDocEleAllegatiColl", DocumentoEleAllegatiBulk.class,
             "docEleAllegatiColl", this);
     private final CollapsableDetailCRUDController crudDocEleAcquistoColl =
-            new CollapsableDetailCRUDController("Riferimenti Acquisto",DocumentoEleAcquistoBulk.class,"docEleAcquistoColl",this){
+            new CollapsableDetailCRUDController("Riferimenti Acquisto",DocumentoEleAcquistoBulk.class,"docEleAcquistoColl",this, false){
                 @Override
                 public boolean isEnabled() {
                     return false;
@@ -141,7 +141,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
 
             };
     private final CollapsableDetailCRUDController crudDocEleIvaColl =
-            new CollapsableDetailCRUDController("Riferimenti IVA",DocumentoEleIvaBulk.class,"docEleIvaColl",this){
+            new CollapsableDetailCRUDController("Riferimenti IVA",DocumentoEleIvaBulk.class,"docEleIvaColl",this, false){
                 @Override
                 public boolean isEnabled() {
                     return false;
