@@ -2834,11 +2834,11 @@ public abstract class Fattura_passivaBulk
         return (Fattura_passiva_intraBulk) fattura_passiva_intrastatColl.remove(index);
     }
 
-    public BulkList getFattura_passiva_ordini() {
+    public BulkList<FatturaOrdineBulk> getFattura_passiva_ordini() {
         return fattura_passiva_ordini;
     }
 
-    public void setFattura_passiva_ordini(BulkList fattura_passiva_ordini) {
+    public void setFattura_passiva_ordini(BulkList<FatturaOrdineBulk> fattura_passiva_ordini) {
         this.fattura_passiva_ordini = fattura_passiva_ordini;
     }
 

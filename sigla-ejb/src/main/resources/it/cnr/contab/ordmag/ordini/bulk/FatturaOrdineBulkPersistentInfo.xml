@@ -94,7 +94,7 @@
                 propertyName="fatturaPassivaRiga.fattura_passivaI.pg_fattura_passiva"/>
         <columnMapping
                 columnName="PROGRESSIVO_RIGA"
-                propertyName="fatturaPassivaRiga.fattura_passivaI.progressivo_riga"/>
+                propertyName="fatturaPassivaRiga.progressivo_riga"/>
     </columnMap>
     <columnMap
             name="NOTA_CREDITO_P"
@@ -114,7 +114,7 @@
                 propertyName="fatturaPassivaRiga.notaDiCredito.pg_fattura_passiva"/>
         <columnMapping
                 columnName="PROGRESSIVO_RIGA"
-                propertyName="fatturaPassivaRiga.notaDiCredito.progressivo_riga"/>
+                propertyName="fatturaPassivaRiga.progressivo_riga"/>
     </columnMap>
     <columnMap
             name="NOTA_DEBITO_P"
@@ -134,7 +134,7 @@
                 propertyName="fatturaPassivaRiga.notaDiDebito.pg_fattura_passiva"/>
         <columnMapping
                 columnName="PROGRESSIVO_RIGA"
-                propertyName="fatturaPassivaRiga.notaDiDebito.progressivo_riga"/>
+                propertyName="fatturaPassivaRiga.progressivo_riga"/>
     </columnMap>
 
     <persistentProperty
@@ -145,4 +145,5 @@
             partOfOid="true"/>
     <persistentProperty
             name="voceIva"/>
+
 </SQLPersistentInfo>

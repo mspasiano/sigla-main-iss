@@ -2938,14 +2938,13 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
 
     public void valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
         if (!fattura.getFattura_passiva_ordini().isEmpty()){
-            for (Object obj : fattura.getFattura_passiva_ordini()){
-                FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) obj;
+            for (FatturaOrdineBulk fatturaOrdineBulk : fattura.getFattura_passiva_ordini()){
                 OrdineAcqConsegnaBulk consegna = fatturaOrdineBulk.getOrdineAcqConsegna();
                 if (fatturaOrdineBulk.isRigaAttesaNotaCredito()){
                     if (fatturaOrdineBulk.getImponibilePerNotaCredito().compareTo(fatturaOrdineBulk.getImImponibile()) < 0)
-                        throw new it.cnr.jada.comp.ApplicationException("Attenzione: Per la riga di consegna "+consegna.getConsegnaOrdineString() +" è stato indicato un imponibile errato per nota di credito più basso dell'imponibile reale!");
+                        throw new ApplicationMessageFormatException("Attenzione: Per la riga di consegna {0} è stato indicato un imponibile errato per nota di credito più basso dell'imponibile reale!", consegna.getConsegnaOrdineString());
                     if (fatturaOrdineBulk.getOperazioneImpegnoNotaCredito() == null)
-                        throw new it.cnr.jada.comp.ApplicationException("Attenzione: Per la riga di consegna "+consegna.getConsegnaOrdineString() +" non è stato indicato l'impegno da usare per nota di credito");
+                        throw new ApplicationMessageFormatException("Attenzione: Per la riga di consegna {0} non è stato indicato l'impegno da usare per nota di credito", consegna.getConsegnaOrdineString());
                 }
                 consegna.setFatturaOrdineBulk(fatturaOrdineBulk);
                 Fattura_passiva_rigaBulk riga = getDettaglioForRigaDaOrdini(fattura, fatturaOrdineBulk);
@@ -4813,13 +4812,17 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         fattura_passiva.resetDefferredSaldi();
 
         try {
-            BulkList<Fattura_passiva_rigaBulk> dettagli = new BulkList(findDettagli(userContext, fattura_passiva));
-            fattura_passiva.setFattura_passiva_dettColl(dettagli);
-            fattura_passiva.setFattura_passiva_dettColl(dettagli);
+            fattura_passiva.setFattura_passiva_dettColl(new BulkList(findDettagli(userContext, fattura_passiva)));
             fattura_passiva.setFattura_passiva_ordini(new BulkList(findFatturaOrdini(userContext, fattura_passiva)));
             if (fattura_passiva.getFattura_passiva_ordini() != null && !fattura_passiva.getFattura_passiva_ordini().isEmpty()){
                 for (Iterator i = fattura_passiva.getFattura_passiva_ordini().iterator(); i.hasNext(); ) {
                     FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) i.next();
+                    final Optional<Fattura_passiva_rigaBulk> optionalFatturaPassivaRigaBulk = fattura_passiva.getFattura_passiva_dettColl()
+                            .stream()
+                            .filter(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.equalsByPrimaryKey(fatturaOrdineBulk.getFatturaPassivaRiga()))
+                            .findAny();
+                    if (optionalFatturaPassivaRigaBulk.isPresent())
+                        fatturaOrdineBulk.setFatturaPassivaRiga(optionalFatturaPassivaRigaBulk.get());
                     if (fatturaOrdineBulk.getImponibileErrato() != null){
                         FatturaOrdineBulk fatturaOrdine =  Utility.createOrdineAcqComponentSession().calcolaImportoOrdine(userContext, fatturaOrdineBulk);
                         fatturaOrdineBulk.setImImponibile(fatturaOrdine.getImImponibile());
@@ -4830,7 +4833,6 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                         fatturaOrdineBulk.setImTotaleConsegna(fatturaOrdine.getImTotaleConsegna());
                     }
                 }
-
             }
             completeWithCondizioneConsegna(userContext, fattura_passiva);
             completeWithModalitaTrasporto(userContext, fattura_passiva);
@@ -4851,7 +4853,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
             getHomeCache(userContext).fetchAll(userContext);
             int dettagliRiportati = 0;
-            for (Iterator i = dettagli.iterator(); i.hasNext(); ) {
+            for (Iterator i = fattura_passiva.getFattura_passiva_dettColl().iterator(); i.hasNext(); ) {
                 Fattura_passiva_rigaBulk dettaglio = (Fattura_passiva_rigaBulk) i.next();
                 if (dettaglio.getBene_servizio().getFl_gestione_inventario().booleanValue()) {
                     dettaglio.setInventariato(true);
@@ -6632,33 +6634,27 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
     }
 
     private void controllaQuadraturaOrdini(UserContext aUC, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
-/*  TODO GG
-        if (Optional.ofNullable(fatturaPassiva.getFatturaRigaOrdiniHash()).isPresent()) {
+        if (Optional.ofNullable(fatturaPassiva.getFattura_passiva_ordini()).filter(fatturaOrdineBulks -> !fatturaOrdineBulks.isEmpty()).isPresent()) {
             try {
-                fatturaPassiva.getFatturaRigaOrdiniHash().entrySet().stream()
-                        .filter(fattura_passiva_rigaBulkBulkListEntry -> !fattura_passiva_rigaBulkBulkListEntry.getValue().isEmpty())
-                        .filter(fattura_passiva_rigaBulkBulkListEntry -> {
-                            final BigDecimal totaleImponibile = BigDecimal.valueOf(fattura_passiva_rigaBulkBulkListEntry.getValue().stream()
-                                    .mapToDouble(value -> value.getImImponibile().doubleValue())
-                                    .sum());
-                            final BigDecimal totaleIva = BigDecimal.valueOf(fattura_passiva_rigaBulkBulkListEntry.getValue().stream()
-                                    .mapToDouble(value -> value.getImIva().doubleValue())
-                                    .sum());
-                            final BigDecimal differenzaImponibile = fattura_passiva_rigaBulkBulkListEntry.getKey()
+                fatturaPassiva.getFattura_passiva_ordini().stream()
+                        .filter(fatturaOrdineBulk -> {
+                            final BigDecimal totaleImponibile = fatturaOrdineBulk.getImImponibile();
+                            final BigDecimal totaleIva = fatturaOrdineBulk.getImIva();
+                            final BigDecimal differenzaImponibile = fatturaOrdineBulk.getFatturaPassivaRiga()
                                     .getIm_imponibile().subtract(totaleImponibile);
-                            final BigDecimal differenzaIva = fattura_passiva_rigaBulkBulkListEntry.getKey()
+                            final BigDecimal differenzaIva = fatturaOrdineBulk.getFatturaPassivaRiga()
                                     .getIm_iva().subtract(totaleIva);
                             return differenzaImponibile.compareTo(BigDecimal.ZERO) != 0 || differenzaIva.compareTo(BigDecimal.ZERO) != 0;
-                        }).findFirst().ifPresent(fattura_passiva_rigaBulkBulkListEntry -> {
+                        }).findFirst().ifPresent(fatturaOrdineBulk -> {
                     throw new DetailedRuntimeException(
                             "Attenzione l'imponibile o l'iva della riga di fattura \"" +
-                                    fattura_passiva_rigaBulkBulkListEntry.getKey().getDs_riga_fattura() +
+                                    fatturaOrdineBulk.getFatturaPassivaRiga().getDs_riga_fattura() +
                                     "\" non quadra con la somma delle righe di consegna!");
                 });
             } catch (DetailedRuntimeException _ex) {
                 throw new ApplicationException(_ex.getMessage());
             }
-        }*/
+        }
     }
 
     private void controllaQuadraturaInventario(UserContext auc, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
@@ -8527,7 +8523,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             throws ComponentException, it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException {
         if (!Optional.ofNullable(fattura_passiva).isPresent())
             return Collections.emptyList();
-        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(userContext, FatturaOrdineBulk.class, "FATTURA_P", "default"))
+        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(userContext, FatturaOrdineBulk.class, fattura_passiva.getCd_tipo_doc()))
                 .filter(FatturaOrdineHome.class::isInstance)
                 .map(FatturaOrdineHome.class::cast)
                 .orElseThrow(() -> new ComponentException("Home di FatturaOrdineBulk non trovata!"));
