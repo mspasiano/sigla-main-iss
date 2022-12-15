@@ -5243,6 +5243,9 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
 
         Fattura_passivaBulk fatturaPassiva = (Fattura_passivaBulk) bulk;
+        if (Optional.ofNullable(fatturaPassiva.getFlDaOrdini()).isPresent() && fatturaPassiva.getFlDaOrdini()) {
+            valorizzaDatiDaOrdini(aUC, fatturaPassiva);
+        }
         if (fatturaPassiva.isElettronica())
             validaFatturaElettronica(aUC, fatturaPassiva);
         try {

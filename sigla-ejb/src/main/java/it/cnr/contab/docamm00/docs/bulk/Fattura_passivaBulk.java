@@ -728,8 +728,8 @@ public abstract class Fattura_passivaBulk
         // Metti solo le liste di oggetti che devono essere resi persistenti
 
         return new it.cnr.jada.bulk.BulkCollection[]{
-                fattura_passiva_ordini,
                 fattura_passiva_dettColl,
+                fattura_passiva_ordini,
                 fattura_passiva_intrastatColl,
                 riferimenti_bancari,
                 docEleAllegatiColl
