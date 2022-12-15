@@ -28,6 +28,8 @@ public class V_doc_attivo_accertamento_wizardBulk extends V_doc_attivo_accertame
 
 	String descrizioneRigaReversaleWizard;
 
+	String cdElementoVoce;
+
 	public V_doc_attivo_accertamento_wizardBulk() {
 		super();
 	}
@@ -46,5 +48,13 @@ public class V_doc_attivo_accertamento_wizardBulk extends V_doc_attivo_accertame
 
 	public void setDescrizioneRigaReversaleWizard(String descrizioneRigaReversaleWizard) {
 		this.descrizioneRigaReversaleWizard = descrizioneRigaReversaleWizard;
+	}
+
+	public String getCdElementoVoce() {
+		return cdElementoVoce;
+	}
+
+	public void setCdElementoVoce(String cdElementoVoce) {
+		this.cdElementoVoce = cdElementoVoce;
 	}
 }

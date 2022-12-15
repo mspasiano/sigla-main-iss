@@ -32,6 +32,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.CRUDComponent;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.NoRollbackException;
@@ -95,6 +96,13 @@ public class ScritturaPartitaDoppiaFromDocumentoComponent extends CRUDComponent 
                 try {
                     this.createScrittura(usercontext, el);
                 } catch (NoRollbackException ignored) {
+                } catch (ApplicationException e) {
+                    try {
+                        if (!Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(usercontext))
+                            throw e;
+                    } catch (RemoteException | ComponentException e2) {
+                        throw new DetailedRuntimeException(e2);
+                    }
                 } catch (ComponentException e) {
                     throw new DetailedRuntimeException(e);
                 }
@@ -110,6 +118,13 @@ public class ScritturaPartitaDoppiaFromDocumentoComponent extends CRUDComponent 
                 try {
                     this.createScrittura(usercontext, el);
                 } catch (NoRollbackException ignored) {
+                } catch (ApplicationException e) {
+                    try {
+                        if (!Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(usercontext))
+                            throw e;
+                    } catch (RemoteException | ComponentException e2) {
+                        throw new DetailedRuntimeException(e2);
+                    }
                 } catch (ComponentException e) {
                     throw new DetailedRuntimeException(e);
                 }
@@ -446,7 +461,7 @@ public class ScritturaPartitaDoppiaFromDocumentoComponent extends CRUDComponent 
             setSavepoint(userContext, "INIT_SCRITTURA_PRIMA_NOTA");
             return Optional.ofNullable(Utility.createScritturaPartitaDoppiaComponentSession()
                         .proposeScritturaPartitaDoppia(userContext, documentoCoge));
-        } catch (ScritturaPartitaDoppiaNotRequiredException | ScritturaPartitaDoppiaNotEnabledException e) {
+        } catch (ScritturaPartitaDoppiaNotRequiredException | ScritturaPartitaDoppiaNotEnabledException | ApplicationException e) {
             rollbackToSavepoint(userContext, "INIT_SCRITTURA_PRIMA_NOTA");
             throw e;
         } catch (RemoteException e) {

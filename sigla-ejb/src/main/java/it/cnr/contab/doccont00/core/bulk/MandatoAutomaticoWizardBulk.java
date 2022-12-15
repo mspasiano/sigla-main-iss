@@ -44,6 +44,9 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 	//Indica se il mandato da generare deve essere diviso tra competenza/residuo o unico
 	private boolean flGeneraMandatoUnico;
 
+	//Indica se il mandato da generare deve essere unico o diversi per voce di bilancio
+	private boolean flGeneraMandatoMonoVoce;
+
 	protected BancaBulk banca = new BancaBulk();
 	protected Modalita_pagamentoBulk modalita_pagamento = new Modalita_pagamentoBulk();
 	protected List modalita_pagamentoOptions;
@@ -485,12 +488,30 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		this.ti_entrate_spese = ti_entrate_spese;
 	}
 
+	/**
+	 * Indica se il mandato da generare deve essere diviso tra competenza/residuo o unico
+	 * Se true viene creato un unico mandato
+	 * Se false viene creato un mandato di competenza e/o di residuo
+	 */
 	public boolean isFlGeneraMandatoUnico() {
 		return flGeneraMandatoUnico;
 	}
 
 	public void setFlGeneraMandatoUnico(boolean flGeneraMandatoUnico) {
 		this.flGeneraMandatoUnico = flGeneraMandatoUnico;
+	}
+
+	/**
+	 * Indica se il mandato da generare deve essere unico o diversi per voce di bilancio
+	 * Se true viene creato un unico mandato
+	 * Se false vengono creati tanti mandati quante sono le voci di bilancio associate
+	 */
+	public boolean isFlGeneraMandatoMonoVoce() {
+		return flGeneraMandatoMonoVoce;
+	}
+
+	public void setFlGeneraMandatoMonoVoce(boolean flGeneraMandatoMonoVoce) {
+		this.flGeneraMandatoMonoVoce = flGeneraMandatoMonoVoce;
 	}
 
 	public static MandatoAutomaticoWizardBulk createBy(MandatoAutomaticoWizardBulk mandatoWizard) {

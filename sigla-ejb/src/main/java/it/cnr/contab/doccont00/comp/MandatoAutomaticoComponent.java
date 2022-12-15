@@ -27,10 +27,12 @@ import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.core.bulk.V_anagrafico_terzoBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
-import it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoRigaBulk;
 import it.cnr.contab.doccont00.core.ObbligazioneWizard;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.tabrif.bulk.Tipo_bolloBulk;
@@ -47,7 +49,6 @@ import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -146,6 +147,20 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 
 	private OggettoBulk creaMandatoAutomaticoDaDocPassivi(UserContext userContext, MandatoAutomaticoWizardBulk wizard, java.util.Collection<V_doc_passivo_obbligazione_wizardBulk> docPassiviColl) throws ComponentException {
 		try	{
+			final boolean isMandatoMonoVoce;
+			if (wizard.isFlGeneraMandatoMonoVoce())
+				isMandatoMonoVoce = Boolean.TRUE;
+			else {
+				Configurazione_cnrBulk configTagBilancio;
+				try {
+					configTagBilancio = getConfigurazioneInviaBilancio(userContext);
+				} catch (PersistencyException e) {
+					throw new ComponentException(e);
+				}
+				isMandatoMonoVoce = Optional.ofNullable(configTagBilancio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE) &&
+						Optional.ofNullable(configTagBilancio).map(s->Integer.valueOf(s.getVal02())).orElse(1)<=1;
+			}
+
 			Map<Integer, Map<String, Map<Long, List<V_doc_passivo_obbligazione_wizardBulk>>>> mapTerzo =
 					docPassiviColl.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_terzo,
 							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_modalita_pag,
@@ -154,55 +169,81 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			mapTerzo.keySet().stream().forEach(aCdTerzo -> {
 				mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> {
 					mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
-						try {
-							List docPassiviCompetenzaColl = new ArrayList();
-							List docPassiviResiduiColl = new ArrayList();
-							mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca).forEach(docTerzo->{
+						List<V_doc_passivo_obbligazione_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
+
+						final Map<String, List<V_doc_passivo_obbligazione_wizardBulk>> mapVoce;
+
+						//Se rottura per voce la carico sugli oggetti per le successive operazioni
+						if (isMandatoMonoVoce) {
+							result.forEach(docTerzo->{
 								try {
-									Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)
-											getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
+									ObbligazioneBulk obbBulk = (ObbligazioneBulk)getHome(userContext, ObbligazioneBulk.class).findAndLock(new ObbligazioneBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione()));
+									Elemento_voceBulk evBulk = (Elemento_voceBulk)getHome(userContext, Elemento_voceBulk.class).findByPrimaryKey(obbBulk.getElemento_voce());
 
-									if (os.getIm_scadenza().compareTo(docTerzo.getIm_scadenza()) != 0 ||
-											os.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
-										throw new ApplicationException("Operazione non possibile! E' stata utilizzata da un altro utente la scadenza nr." + docTerzo.getPg_obbligazione_scadenzario() + " dell'impegno " + docTerzo.getEsercizio_ori_obbligazione() + "/" + docTerzo.getPg_obbligazione());
-
-									if (docTerzo.isCompetenza() || wizard.isFlGeneraMandatoUnico())
-										docPassiviCompetenzaColl.add(docTerzo);
-									else
-										docPassiviResiduiColl.add(docTerzo);
+									docTerzo.setCdElementoVoce(evBulk.getCd_elemento_voce());
 								} catch (Exception e) {
 									throw new ApplicationRuntimeException(e);
 								}
 							});
 
-							MandatoBulk mandatoCompetenza, mandatoResiduo;
-							if ( !docPassiviCompetenzaColl.isEmpty() ) {
-								mandatoCompetenza = creaMandatoAutomatico( userContext, wizard, MandatoBulk.TIPO_COMPETENZA );
-								mandatoCompetenza.setMandato_terzo( creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo() ) );
-								mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl );
-
-								mandatoCompetenza.refreshImporto();
-								verificaMandato( userContext, mandatoCompetenza );
-								aggiornaImportoObbligazioni(userContext, mandatoCompetenza );
-								super.creaConBulk( userContext, mandatoCompetenza);
-								aggiornaStatoFattura( userContext, mandatoCompetenza, INSERIMENTO_MANDATO_ACTION );
-								wizard.getMandatiColl().add( mandatoCompetenza );
-							}
-							if ( !docPassiviResiduiColl.isEmpty() )	{
-								mandatoResiduo = creaMandatoAutomatico( userContext, wizard, MandatoBulk.TIPO_RESIDUO );
-								mandatoResiduo.setMandato_terzo( creaMandatoTerzo(mandatoResiduo, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo() ) );
-								mandatoResiduo = aggiungiDocPassivi(userContext, mandatoResiduo, docPassiviResiduiColl );
-
-								mandatoResiduo.refreshImporto();
-								verificaMandato( userContext, mandatoResiduo );
-								aggiornaImportoObbligazioni(userContext, mandatoResiduo );
-								super.creaConBulk( userContext, mandatoResiduo);
-								aggiornaStatoFattura( userContext, mandatoResiduo, INSERIMENTO_MANDATO_ACTION );
-								wizard.getMandatiColl().add( mandatoResiduo );
-							}
-						} catch (Exception e) {
-							throw new ApplicationRuntimeException(e);
+							mapVoce = result.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdElementoVoce));
+						} else {
+							mapVoce = new HashMap<>();
+							mapVoce.put("XXX", result);
 						}
+
+						mapVoce.keySet().stream().forEach(aCdVoce -> {
+							try {
+								List docPassiviCompetenzaColl = new ArrayList();
+								List docPassiviResiduiColl = new ArrayList();
+
+								mapVoce.get(aCdVoce).forEach(docTerzo -> {
+									try {
+										Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)
+													getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
+
+										if (os.getIm_scadenza().compareTo(docTerzo.getIm_scadenza()) != 0 ||
+												os.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
+											throw new ApplicationException("Operazione non possibile! E' stata utilizzata da un altro utente la scadenza nr." + docTerzo.getPg_obbligazione_scadenzario() + " dell'impegno " + docTerzo.getEsercizio_ori_obbligazione() + "/" + docTerzo.getPg_obbligazione());
+
+										if (docTerzo.isCompetenza() || wizard.isFlGeneraMandatoUnico())
+											docPassiviCompetenzaColl.add(docTerzo);
+										else
+											docPassiviResiduiColl.add(docTerzo);
+									} catch (Exception e) {
+										throw new ApplicationRuntimeException(e);
+									}
+								});
+
+								MandatoBulk mandatoCompetenza, mandatoResiduo;
+								if (!docPassiviCompetenzaColl.isEmpty()) {
+									mandatoCompetenza = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_COMPETENZA);
+									mandatoCompetenza.setMandato_terzo(creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo()));
+									mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl);
+
+									mandatoCompetenza.refreshImporto();
+									verificaMandato(userContext, mandatoCompetenza);
+									aggiornaImportoObbligazioni(userContext, mandatoCompetenza);
+									super.creaConBulk(userContext, mandatoCompetenza);
+									aggiornaStatoFattura(userContext, mandatoCompetenza, INSERIMENTO_MANDATO_ACTION);
+									wizard.getMandatiColl().add(mandatoCompetenza);
+								}
+								if (!docPassiviResiduiColl.isEmpty()) {
+									mandatoResiduo = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_RESIDUO);
+									mandatoResiduo.setMandato_terzo(creaMandatoTerzo(mandatoResiduo, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo()));
+									mandatoResiduo = aggiungiDocPassivi(userContext, mandatoResiduo, docPassiviResiduiColl);
+
+									mandatoResiduo.refreshImporto();
+									verificaMandato(userContext, mandatoResiduo);
+									aggiornaImportoObbligazioni(userContext, mandatoResiduo);
+									super.creaConBulk(userContext, mandatoResiduo);
+									aggiornaStatoFattura(userContext, mandatoResiduo, INSERIMENTO_MANDATO_ACTION);
+									wizard.getMandatiColl().add(mandatoResiduo);
+								}
+							} catch (Exception e) {
+								throw new ApplicationRuntimeException(e);
+							}
+						});
 					});
 				});
 			});

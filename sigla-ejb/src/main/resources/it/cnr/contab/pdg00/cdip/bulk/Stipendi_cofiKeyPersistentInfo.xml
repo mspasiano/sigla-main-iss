@@ -24,7 +24,7 @@
 			columnName="MESE"
 			propertyName="mese"
 			sqlTypeName="DECIMAL"
-			columnSize="2"
+			columnSize="5"
 			nullable="false"
 			primary="true" />
 		<columnMapping

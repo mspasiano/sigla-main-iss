@@ -56,6 +56,7 @@ import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.contab.utenze00.bulk.Utente_indirizzi_mailBulk;
 import it.cnr.contab.utenze00.bulk.Utente_indirizzi_mailHome;
 import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
@@ -455,19 +456,16 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         || scadenza.getIm_associato_doc_contabile().compareTo(
                         scadenza.getIm_scadenza()) > 0)
                     throw new ApplicationException(
-                            "La scadenza "
-                                    + " con esercizio: "
-                                    + scadenza.getEsercizio()
-                                    + " Cds: "
-                                    + scadenza.getCd_cds()
-                                    + " Esercizio impegno: "
-                                    + scadenza.getEsercizio_originale()
-                                    + " Pg impegno: "
-                                    + scadenza.getPg_obbligazione()
-                                    + " Pg scadenza: "
-                                    + scadenza.getPg_obbligazione_scadenzario()
-                                    + " ha importo associato ai doc. contabili maggiore dell'importo associato a doc.amm o dell'importo della scadenza.");
-
+                            "La scadenza con esercizio: " + scadenza.getEsercizio() +
+                                    " Cds: " + scadenza.getCd_cds() +
+                                    " Esercizio impegno: " + scadenza.getEsercizio_originale() +
+                                    " Pg impegno: " + scadenza.getPg_obbligazione() +
+                                    " Pg scadenza: " + scadenza.getPg_obbligazione_scadenzario() +
+                                    " ha importo associato ai doc. contabili ("+
+                                    new EuroFormat().format(scadenza.getIm_associato_doc_contabile()) +
+                                    ") maggiore dell'importo associato a doc.amm (" +
+                                    new EuroFormat().format(scadenza.getIm_associato_doc_amm())+") o dell'importo della scadenza ("+
+                                    new EuroFormat().format(scadenza.getIm_scadenza())+").");
                 updateBulk(userContext, scadenza);
             }
         } catch (Exception e) {
@@ -6662,10 +6660,8 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                 .orElse(null);
     }
 
-    private Configurazione_cnrBulk getConfigurazioneInviaBilancio(UserContext userContext) throws RemoteException, ComponentException {
-        return ((Configurazione_cnrComponentSession) EJBCommonServices
-                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getConfigurazione(
-                userContext,
+    protected Configurazione_cnrBulk getConfigurazioneInviaBilancio(UserContext userContext) throws PersistencyException, ComponentException {
+        return ((Configurazione_cnrHome) getHome(userContext, Configurazione_cnrBulk.class)).getConfigurazione(
                 CNRUserContext.getEsercizio(userContext),
                 null,
                 Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
@@ -6678,7 +6674,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
         Configurazione_cnrBulk inviaTagBilanio= null;
         try {
              inviaTagBilanio= getConfigurazioneInviaBilancio( usercontext);
-        } catch (RemoteException e) {
+        } catch (PersistencyException e) {
             throw new ComponentException(e);
         }
         if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
@@ -6691,6 +6687,4 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                 throw new ApplicationException("Le voci di Bilancio sono maggiori di quelle previste. Max:"+numMaxVociBilancio);
         }
     }
-
-
 }

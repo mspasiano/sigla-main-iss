@@ -5933,5 +5933,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/insert_configurazioneCnr_tipo_rapporto_tesoriera.xml"/>
     <!-- Autore : MARCO SPASIANO - Aggiunto Motivo assenza CIG sull'Ordine -->
     <include file="bootstrap/add_motivo_assenza_cig_to_ordine_acq.xml"/>
+    <!-- Autore : RAFFAELE PAGANO - Aggiunto Progressivo per elaborazione stipendi -->
+    <include file="bootstrap/add_mese_riferimento_to_stipendi_cofi.xml"/>
 
 </databaseChangeLog>

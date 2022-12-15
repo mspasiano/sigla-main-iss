@@ -1176,7 +1176,7 @@ REVERSALE
 
 */
     public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk) throws ComponentException {
-        return creaConBulk(userContext, bulk, true);
+        return creaConBulk(userContext, bulk, Boolean.TRUE, Boolean.FALSE);
     }
 
     /**
@@ -1205,11 +1205,14 @@ REVERSALE
 5 - aggiorna saldi per im_incassato
 
 */
-    public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk, boolean verificaDt_emissione) throws ComponentException {
+    public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk, boolean verificaDt_emissione, boolean checkDocAmmCambiato) throws ComponentException {
         ReversaleBulk reversale = (ReversaleBulk) bulk;
+
         //check and lock i doc.amm.
-        for (Iterator i = reversale.getReversale_rigaColl().iterator(); i.hasNext(); )
-            checkDocAmmCambiato(userContext, (Reversale_rigaBulk) i.next());
+        if (checkDocAmmCambiato) {
+            for (Iterator i = reversale.getReversale_rigaColl().iterator(); i.hasNext(); )
+                checkDocAmmCambiato(userContext, (Reversale_rigaBulk) i.next());
+        }
 
         verificaReversale(userContext, reversale, verificaDt_emissione);
         aggiornaImportoSospesi(userContext, reversale);
@@ -1296,7 +1299,7 @@ REVERSALE
                 sde.setToBeCreated();
                 reversaleDef.getSospeso_det_etrColl().add(sde);
             }
-            reversaleDef = (ReversaleIBulk) creaConBulk(uc, reversaleDef, false);
+            reversaleDef = (ReversaleIBulk) creaConBulk(uc, reversaleDef, Boolean.FALSE, Boolean.TRUE);
             return reversaleDef;
         } catch (Exception e) {
             throw handleException(e);
@@ -3913,10 +3916,8 @@ REVERSALE
         }
     }
 
-    private Configurazione_cnrBulk getConfigurazioneInviaBilancio(UserContext userContext) throws RemoteException, ComponentException {
-        return ((Configurazione_cnrComponentSession) EJBCommonServices
-                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getConfigurazione(
-                userContext,
+    protected Configurazione_cnrBulk getConfigurazioneInviaBilancio(UserContext userContext) throws PersistencyException, ComponentException {
+        return ((Configurazione_cnrHome) getHome(userContext, Configurazione_cnrBulk.class)).getConfigurazione(
                 CNRUserContext.getEsercizio(userContext),
                 null,
                 Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
@@ -3929,7 +3930,7 @@ REVERSALE
         Configurazione_cnrBulk inviaTagBilanio= null;
         try {
             inviaTagBilanio= getConfigurazioneInviaBilancio( usercontext);
-        } catch (RemoteException e) {
+        } catch (PersistencyException e) {
             throw new ComponentException(e);
         }
         if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {

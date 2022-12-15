@@ -62,7 +62,12 @@ public class Stipendi_cofiBase extends Stipendi_cofiKey implements Keyed {
 	// STATO CHAR(1) NOT NULL
 	private java.lang.String stato;
 
-public Stipendi_cofiBase() {
+	// MESE DECIMAL(2,0) NOT NULL (PK)
+	private java.lang.Integer mese_reale;
+
+	private java.lang.Integer prog_flusso;
+
+	public Stipendi_cofiBase() {
 	super();
 }
 public Stipendi_cofiBase(java.lang.Integer esercizio,java.lang.Integer mese) {
@@ -224,4 +229,22 @@ public void setPg_mandato(java.lang.Long pg_mandato) {
 public void setStato(java.lang.String stato) {
 	this.stato = stato;
 }
+
+	//Ritorna il mese al quale devono fare riferimento le righe con mese > 15
+	public Integer getMese_reale() {
+		return mese_reale;
+	}
+
+	public void setMese_reale(Integer mese_reale) {
+		this.mese_reale = mese_reale;
+	}
+
+	//Ritorna il progressivo del flusso
+	public Integer getProg_flusso() {
+		return prog_flusso;
+	}
+
+	public void setProg_flusso(Integer prog_flusso) {
+		this.prog_flusso = prog_flusso;
+	}
 }
