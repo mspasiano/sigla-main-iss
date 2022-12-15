@@ -737,31 +737,6 @@ public abstract class Fattura_passiva_rigaBulk
         return TipoIVA.COMMERCIALE.value().equals(getTi_istituz_commerc());
     }
 
-    public BulkList<FatturaOrdineBulk> getFatturaOrdineColl() {
-        return fatturaOrdineColl;
-    }
-
-    public void setFatturaOrdineColl(BulkList<FatturaOrdineBulk> fatturaOrdineColl) {
-        this.fatturaOrdineColl = fatturaOrdineColl;
-    }
-
-    public int addToFatturaOrdineColl(FatturaOrdineBulk fatturaOrdineBulk) {
-        fatturaOrdineColl.add(fatturaOrdineBulk);
-        fatturaOrdineBulk.setFatturaPassivaRiga(this);
-        return fatturaOrdineColl.size() - 1;
-    }
-
-    public void removeFromFatturaOrdineColl(FatturaOrdineBulk fatturaOrdineBulk) {
-        fatturaOrdineColl.removeByPrimaryKey(fatturaOrdineBulk);
-    }
-
-    public BulkCollection[] getBulkLists() {
-        // Metti solo le liste di oggetti che devono essere resi persistenti
-        return new it.cnr.jada.bulk.BulkCollection[]{
-                fatturaOrdineColl
-        };
-    }
-
 	public CigBulk getCig() {
 		return cig;
 	}

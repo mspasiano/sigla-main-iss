@@ -34,6 +34,7 @@ import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
@@ -724,16 +725,27 @@ public abstract class Fattura_passivaBulk
 
 
     public BulkCollection[] getBulkLists() {
-
-        // Metti solo le liste di oggetti che devono essere resi persistenti
-
-        return new it.cnr.jada.bulk.BulkCollection[]{
-                fattura_passiva_dettColl,
-                fattura_passiva_ordini,
-                fattura_passiva_intrastatColl,
-                riferimenti_bancari,
-                docEleAllegatiColl
-        };
+        /**
+         * Metti solo le liste di oggetti che devono essere resi persistenti
+         * In caso di fattura da ordini deve cambiare l'ordinamento delle liste.
+         */
+        if (Optional.ofNullable(getFlDaOrdini()).filter(aBoolean -> !aBoolean).isPresent()) {
+            return new it.cnr.jada.bulk.BulkCollection[]{
+                    fattura_passiva_ordini,
+                    fattura_passiva_dettColl,
+                    fattura_passiva_intrastatColl,
+                    riferimenti_bancari,
+                    docEleAllegatiColl
+            };
+        } else {
+            return new it.cnr.jada.bulk.BulkCollection[]{
+                    fattura_passiva_dettColl,
+                    fattura_passiva_ordini,
+                    fattura_passiva_intrastatColl,
+                    riferimenti_bancari,
+                    docEleAllegatiColl
+            };
+        }
     }
 
     /**
@@ -2832,6 +2844,11 @@ public abstract class Fattura_passivaBulk
                 final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
                 fatturaPassivaRigaBulk.setToBeDeleted();
             });
+        Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna())
+                .ifPresent(ordineAcqConsegnaBulk -> {
+                    ordineAcqConsegnaBulk.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_NON_ASSOCIATA);
+                    ordineAcqConsegnaBulk.setToBeUpdated();
+                });
         return fatturaOrdineBulk;
     }
 
