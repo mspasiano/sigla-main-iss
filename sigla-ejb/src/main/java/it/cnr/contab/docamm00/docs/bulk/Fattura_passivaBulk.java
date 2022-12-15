@@ -728,10 +728,10 @@ public abstract class Fattura_passivaBulk
         // Metti solo le liste di oggetti che devono essere resi persistenti
 
         return new it.cnr.jada.bulk.BulkCollection[]{
+                fattura_passiva_ordini,
                 fattura_passiva_dettColl,
                 fattura_passiva_intrastatColl,
                 riferimenti_bancari,
-                fattura_passiva_ordini,
                 docEleAllegatiColl
         };
     }
@@ -2824,9 +2824,15 @@ public abstract class Fattura_passivaBulk
         return (Fattura_passiva_rigaBulk) fattura_passiva_dettColl.remove(indiceDiLinea);
     }
 
-    public Fattura_passiva_rigaBulk removeFromFattura_passiva_ordini(int indiceDiLinea) {
-
-        return (Fattura_passiva_rigaBulk) fattura_passiva_dettColl.remove(indiceDiLinea);
+    public FatturaOrdineBulk removeFromFattura_passiva_ordini(int indiceDiLinea) {
+        final FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) fattura_passiva_ordini.remove(indiceDiLinea);
+        Optional.ofNullable(fattura_passiva_dettColl.indexOf(fatturaOrdineBulk.getFatturaPassivaRiga()))
+            .filter(i -> i != -1)
+            .ifPresent(i -> {
+                final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
+                fatturaPassivaRigaBulk.setToBeDeleted();
+            });
+        return fatturaOrdineBulk;
     }
 
     public Fattura_passiva_intraBulk removeFromFattura_passiva_intrastatColl(int index) {

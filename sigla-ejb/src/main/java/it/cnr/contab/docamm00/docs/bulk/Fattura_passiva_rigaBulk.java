@@ -17,6 +17,9 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Dictionary;
 import java.util.Optional;
@@ -563,9 +566,13 @@ public abstract class Fattura_passiva_rigaBulk
             throw new ValidationException("Inserire correttamente le date di competenza " + dsRiga + ".");
 
         if (competenzaDa.before(competenzaDaTestata))
-            throw new ValidationException("La data di \"competenza Da\" deve essere successiva o uguale alla data di \"competenza da\" della testata " + dsRiga + ".");
+            throw new ValidationException("La data di \"competenza Da\" deve essere successiva o uguale " +
+                    "alla data di \"competenza da\" della testata " + LocalDateTime.ofInstant(competenzaDaTestata.toInstant(),
+                    ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " " + dsRiga + ".");
         if (competenzaA.after(competenzaATestata))
-            throw new ValidationException("La data di \"competenza A\" deve essere inferiore o uguale alla data di \"competenza a\" della testata " + dsRiga + ".");
+            throw new ValidationException("La data di \"competenza A\" deve essere inferiore o uguale " +
+                    "alla data di \"competenza a\" della testata " + LocalDateTime.ofInstant(competenzaATestata.toInstant(),
+                    ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " " + dsRiga + ".");
     }
 
     public TerzoBulk getFornitore() {
