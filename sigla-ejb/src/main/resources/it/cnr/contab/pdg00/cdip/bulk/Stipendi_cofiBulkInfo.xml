@@ -40,6 +40,16 @@
 		inputType="TEXT"
 		label="Mese" />
 	<fieldProperty
+		name="mese_reale"
+		property="mese_reale"
+		inputType="TEXT"
+		label="Mese" />
+	<fieldProperty
+		name="prog_flusso"
+		property="prog_flusso"
+		inputType="TEXT"
+		label="Prog. Flusso" />
+	<fieldProperty
 		name="meseLettere"
 		property="meseLettere"		
 		keysProperty="meseKeys" />
@@ -76,9 +86,14 @@
 		label="Nr. mandato" />
 
 	<columnFieldProperty
+		name="mese"
+		label="progr."/>
+	<columnFieldProperty
 		name="esercizio" />
 	<columnFieldProperty
-		name="mese" />
+		name="prog_flusso" />
+	<columnFieldProperty
+		name="mese_reale" />
 	<columnFieldProperty
 		name="stato" />
 	<columnFieldProperty

@@ -18,7 +18,6 @@
 package it.cnr.contab.pdg00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.*;
-import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoHome;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
@@ -62,13 +61,16 @@ import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
-import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.LoggableStatement;
+import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import javax.ejb.EJBException;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -208,21 +210,20 @@ public OggettoBulk caricaCosto_dipendente(UserContext userContext,Costi_dipenden
 			// alle percentuali
 			// Se la provenienza NON è interna la lista è vuota
 			if (cdp.getCostiScaricatiAltraUO() != null)
-				for (java.util.Iterator<Ass_cdp_uoBulk> i = cdp.getCostiScaricatiAltraUO().iterator();i.hasNext();)
-					(i.next()).calcolaGiorni_uo(costi_dipendente.getGiorni_lavorativi());
+				for (Ass_cdp_uoBulk o : (Iterable<Ass_cdp_uoBulk>) cdp.getCostiScaricatiAltraUO())
+					o.calcolaGiorni_uo(costi_dipendente.getGiorni_lavorativi());
 	
 			boolean modificabile = isCosto_del_dipendenteValidoPerModifica(userContext,cdp);
-	
-			for (java.util.Iterator<Ass_cdp_laBulk> i = cdp.getCostiScaricati().iterator();i.hasNext();) {
+
+			for (Ass_cdp_laBulk ass_cdp_la : (Iterable<Ass_cdp_laBulk>) cdp.getCostiScaricati()) {
 				// Calcolo i giorni lavorativi corrispondenti alle percentuali
-				Ass_cdp_laBulk ass_cdp_la = i.next();
-				ass_cdp_la.calcolaGiorni_la(1,cdp.getGiorni_lavorativi_a1());
-				ass_cdp_la.calcolaGiorni_la(2,cdp.getGiorni_lavorativi_a2());
-				ass_cdp_la.calcolaGiorni_la(3,cdp.getGiorni_lavorativi_a3());
+				ass_cdp_la.calcolaGiorni_la(1, cdp.getGiorni_lavorativi_a1());
+				ass_cdp_la.calcolaGiorni_la(2, cdp.getGiorni_lavorativi_a2());
+				ass_cdp_la.calcolaGiorni_la(3, cdp.getGiorni_lavorativi_a3());
 				if (mese == 0) {
 					// Controllo che il pdgP del cdr sia aperto
 					CdrBulk cdrPdgP = getCdrPdgP(userContext);
-					Pdg_esercizioBulk pdgp = (Pdg_esercizioBulk)getHome(userContext,Pdg_esercizioBulk.class).findByPrimaryKey(new Pdg_esercizioBulk(esercizio, cdrPdgP.getCd_centro_responsabilita()));
+					Pdg_esercizioBulk pdgp = (Pdg_esercizioBulk) getHome(userContext, Pdg_esercizioBulk.class).findByPrimaryKey(new Pdg_esercizioBulk(esercizio, cdrPdgP.getCd_centro_responsabilita()));
 					ass_cdp_la.setReadonly(!modificabile || !isStatoPdgPValidoPerModificaCDP(pdgp));
 				} else {
 					ass_cdp_la.setReadonly(!modificabile);
@@ -237,9 +238,7 @@ public OggettoBulk caricaCosto_dipendente(UserContext userContext,Costi_dipenden
 		}
 
 		return cdp;
-	} catch(it.cnr.jada.persistency.PersistencyException e) {
-		throw handleException(e);
-	} catch(javax.ejb.EJBException e) {
+	} catch(PersistencyException | EJBException e) {
 		throw handleException(e);
 	}
 }
@@ -253,7 +252,7 @@ public OggettoBulk caricaCosto_dipendente(UserContext userContext,Costi_dipenden
  */
 public void contabilizzaFlussoStipendialeMensile(UserContext userContext,int mese) throws ComponentException {
 	try {
-		if (Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaPura(userContext))
+		if (Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(userContext))
 			innerContabilizzaFlussoStipendialeMensile(userContext, CNRUserContext.getEsercizio(userContext).intValue(), mese);
 		else {
 			LoggableStatement stm = new LoggableStatement(getConnection(userContext),
@@ -294,14 +293,13 @@ public OggettoBulk copiaRipartizione(it.cnr.jada.UserContext userContext,Costi_d
 		// Lock della matricola
 		lockMatricola(userContext,matricola_dest.getId_matricola(),cdp.getMese());
 
-		for (java.util.Iterator<V_cdp_matricolaBulk> i = cdp.getCosti_dipendenti().iterator();i.hasNext();) {
-			V_cdp_matricolaBulk matricola = i.next();
+		for (V_cdp_matricolaBulk matricola : (Iterable<V_cdp_matricolaBulk>) cdp.getCosti_dipendenti()) {
 			if (matricola.getEsercizio().equals(matricola_dest.getEsercizio()) &&
-				matricola.getMese().equals(matricola_dest.getMese()) &&
-				matricola.getId_matricola().equals(matricola_dest.getId_matricola()) &&
-				matricola.getTi_prev_cons().equals(matricola_dest.getTi_prev_cons()) &&
-				matricola.getTi_appartenenza().equals(matricola_dest.getTi_appartenenza()) &&
-				matricola.getTi_gestione().equals(matricola_dest.getTi_gestione())) {
+					matricola.getMese().equals(matricola_dest.getMese()) &&
+					matricola.getId_matricola().equals(matricola_dest.getId_matricola()) &&
+					matricola.getTi_prev_cons().equals(matricola_dest.getTi_prev_cons()) &&
+					matricola.getTi_appartenenza().equals(matricola_dest.getTi_appartenenza()) &&
+					matricola.getTi_gestione().equals(matricola_dest.getTi_gestione())) {
 				matricola_dest = matricola;
 				break;
 			}
@@ -315,11 +313,10 @@ public OggettoBulk copiaRipartizione(it.cnr.jada.UserContext userContext,Costi_d
 		if (!matricola_dest.getCostiScaricatiAltraUO().isEmpty())
 			throw new ApplicationException("La matricola "+matricola_dest.getId_matricola()+" possiede già una ripartizione");
 
-		for (java.util.Iterator<Ass_cdp_laBulk> i = matricola_src.getCostiScaricati().iterator();i.hasNext();) {
-			Ass_cdp_laBulk ass_cdp_la = i.next();
+		for (Ass_cdp_laBulk ass_cdp_la : (Iterable<Ass_cdp_laBulk>) matricola_src.getCostiScaricati()) {
 			ass_cdp_la.setId_matricola(matricola_dest.getId_matricola());
 			ass_cdp_la.setUser(userContext.getUser());
-			ass_cdp_la.setFl_dip_altra_uo(new Boolean(matricola_dest.isProvenienzaCaricato()));
+			ass_cdp_la.setFl_dip_altra_uo(matricola_dest.isProvenienzaCaricato());
 			matricola_dest.addToCostiScaricati(ass_cdp_la);
 		}
 		return cdp;
@@ -366,17 +363,17 @@ public V_cdp_matricolaBulk generaDaUltimaRipartizione(UserContext userContext,V_
 				// Estraggo solo le righe appartenenti alla mia UO
 				sql.addTableToHeader("CDR");
 				sql.addSQLJoin("CDR.CD_CENTRO_RESPONSABILITA","ASS_CDP_LA.CD_CENTRO_RESPONSABILITA");
-				sql.addSQLClause("AND","CDR.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,cd_unita_organizzativa);
-				sql.addClause("AND","esercizio",SQLBuilder.EQUALS,esercizio);
-				sql.addClause("AND","id_matricola",SQLBuilder.EQUALS,id_matricola);
-				sql.addClause("AND","mese",SQLBuilder.EQUALS,new Integer(ultimo_mese));
+				sql.addSQLClause(FindClause.AND,"CDR.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,cd_unita_organizzativa);
+				sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,esercizio);
+				sql.addClause(FindClause.AND,"id_matricola",SQLBuilder.EQUALS,id_matricola);
+				sql.addClause(FindClause.AND,"mese",SQLBuilder.EQUALS,new Integer(ultimo_mese));
 				cdp.setCostiScaricati(new BulkList(getHome(userContext,Ass_cdp_laBulk.class).fetchAll(sql)));
 
 				sql = getHome(userContext,Ass_cdp_uoBulk.class).createSQLBuilder();
-				sql.addClause("AND","esercizio",SQLBuilder.EQUALS,esercizio);
-				sql.addClause("AND","id_matricola",SQLBuilder.EQUALS,id_matricola);
-				sql.addClause("AND","mese",SQLBuilder.EQUALS,new Integer(ultimo_mese));
-				sql.addClause("AND","stato",SQLBuilder.NOT_EQUALS,Ass_cdp_uoBulk.STATO_NON_ACCETTATO);
+				sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,esercizio);
+				sql.addClause(FindClause.AND,"id_matricola",SQLBuilder.EQUALS,id_matricola);
+				sql.addClause(FindClause.AND,"mese",SQLBuilder.EQUALS,new Integer(ultimo_mese));
+				sql.addClause(FindClause.AND,"stato",SQLBuilder.NOT_EQUALS,Ass_cdp_uoBulk.STATO_NON_ACCETTATO);
 				cdp.setCostiScaricatiAltraUO(new BulkList(getHome(userContext,Ass_cdp_uoBulk.class).fetchAll(sql)));
 
 				for (java.util.Iterator i = cdp.getCostiScaricati().iterator();i.hasNext();) {
@@ -405,15 +402,13 @@ public V_cdp_matricolaBulk generaDaUltimaRipartizione(UserContext userContext,V_
 				}
 
 			} finally {
-				try{rs.close();}catch( java.sql.SQLException e ){};
+				try{rs.close();}catch( java.sql.SQLException e ){}
 			}
 		} finally {
-			try{stm.close();}catch( java.sql.SQLException e ){};
+			try{stm.close();}catch( java.sql.SQLException e ){}
 		}
 		return cdp;
-	} catch(it.cnr.jada.persistency.PersistencyException e) {
-		throw handleException(e);
-	} catch(java.sql.SQLException e) {
+	} catch(PersistencyException | SQLException e) {
 		throw handleException(e);
 	}
 }
@@ -553,10 +548,10 @@ private boolean isStatoAnaliticaValidoPerModificaCDP(UserContext userContext,Str
 			try {
 				return !rs.next();
 			} finally {
-				try{rs.close();}catch( java.sql.SQLException e ){};
+				try{rs.close();}catch( java.sql.SQLException e ){}
 			}
 		} finally {
-			try{stm.close();}catch( java.sql.SQLException e ){};
+			try{stm.close();}catch( java.sql.SQLException e ){}
 		}
 	} catch(java.sql.SQLException e) {
 		throw handleException(e);
@@ -564,18 +559,18 @@ private boolean isStatoAnaliticaValidoPerModificaCDP(UserContext userContext,Str
 }
 private boolean isStatoPdgValidoPerModificaCDP(Pdg_preventivoBulk pdg) {
 	return 
-		pdg.getStato().equalsIgnoreCase(pdg.ST_A_CREAZIONE) || 
-		pdg.getStato().equalsIgnoreCase(pdg.ST_B_MODIFICA) ||
-		pdg.getStato().equalsIgnoreCase(pdg.ST_D_CHIUSURA_I) || 
-		pdg.getStato().equalsIgnoreCase(pdg.ST_E_CHIUSO); 
+		pdg.getStato().equalsIgnoreCase(Pdg_preventivoBulk.ST_A_CREAZIONE) ||
+		pdg.getStato().equalsIgnoreCase(Pdg_preventivoBulk.ST_B_MODIFICA) ||
+		pdg.getStato().equalsIgnoreCase(Pdg_preventivoBulk.ST_D_CHIUSURA_I) ||
+		pdg.getStato().equalsIgnoreCase(Pdg_preventivoBulk.ST_E_CHIUSO);
 }
 private boolean isStatoPdgPValidoPerModificaCDP(Pdg_esercizioBulk pdgP) {
 	if (pdgP==null)
 		return false;
 	else
 	return 
-		(pdgP.getStato().equalsIgnoreCase(pdgP.STATO_APERTURA_CDR) || 
-		 pdgP.getStato().equalsIgnoreCase(pdgP.STATO_ESAMINATO_CDR)); 
+		(pdgP.getStato().equalsIgnoreCase(Pdg_esercizioBulk.STATO_APERTURA_CDR) ||
+		 pdgP.getStato().equalsIgnoreCase(Pdg_esercizioBulk.STATO_ESAMINATO_CDR));
 }
 /**
  *  Default
@@ -589,9 +584,9 @@ private boolean isStatoPdgPValidoPerModificaCDP(Pdg_esercizioBulk pdgP) {
  */
 public it.cnr.jada.util.RemoteIterator listaCdp_analitica(UserContext userContext) throws ComponentException {
 	SQLBuilder sql = getHome(userContext,V_cdp_stato_mensilitaBulk.class).createSQLBuilder();
-	sql.addClause("AND","esercizio",sql.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
-	sql.addClause("AND","cd_unita_organizzativa",sql.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getCd_unita_organizzativa(userContext));
-	sql.addClause("AND","stato_carico",sql.EQUALS,"P");
+	sql.addClause("AND","esercizio", SQLBuilder.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
+	sql.addClause("AND","cd_unita_organizzativa",SQLBuilder.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getCd_unita_organizzativa(userContext));
+	sql.addClause("AND","stato_carico",SQLBuilder.EQUALS,"P");
 	return iterator(userContext,sql,V_cdp_stato_mensilitaBulk.class,null);
 }
 /** 
@@ -617,14 +612,14 @@ public it.cnr.jada.util.RemoteIterator listaCdr(UserContext userContext,String c
 	if (mese == 0) {
 		SQLBuilder sqlPdgP = getHome(userContext, Pdg_moduloBulk.class).createSQLBuilder();
 		
-		sqlPdgP.addSQLClause("AND","PDG_MODULO.ESERCIZIO",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sqlPdgP.addSQLClause("AND","PDG_MODULO.CD_CENTRO_RESPONSABILITA",sql.EQUALS,getCdrPdgP(userContext).getCd_centro_responsabilita());
-		sqlPdgP.addSQLClause("AND","PDG_MODULO.STATO", sql.NOT_EQUALS, Pdg_moduloBulk.STATO_AC);
-		sqlPdgP.addSQLClause("AND","PDG_MODULO.STATO", sql.NOT_EQUALS, Pdg_moduloBulk.STATO_AD);
+		sqlPdgP.addSQLClause("AND","PDG_MODULO.ESERCIZIO",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sqlPdgP.addSQLClause("AND","PDG_MODULO.CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,getCdrPdgP(userContext).getCd_centro_responsabilita());
+		sqlPdgP.addSQLClause("AND","PDG_MODULO.STATO", SQLBuilder.NOT_EQUALS, Pdg_moduloBulk.STATO_AC);
+		sqlPdgP.addSQLClause("AND","PDG_MODULO.STATO", SQLBuilder.NOT_EQUALS, Pdg_moduloBulk.STATO_AD);
 
 		sql.addSQLNotExistsClause("AND", sqlPdgP);
 	}
-	sql.addSQLClause("AND","CDR.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,cd_unita_organizzativa);
+	sql.addSQLClause("AND","CDR.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,cd_unita_organizzativa);
 //	sql.addSQLClause("AND","CDR.CD_UNITA_ORGANIZZATIVA",sql.EQUALS,CNRUserContext.getCd_unita_organizzativa(userContext));
 	return iterator(userContext,sql,CdrBulk.class,null);
 }
@@ -651,7 +646,7 @@ public it.cnr.jada.util.RemoteIterator listaCdr(UserContext userContext,String c
   *		 - la linea di attività deve essere valida nell'esercizio di scrivania
   */
 public it.cnr.jada.util.RemoteIterator listaLinea_attivitaPerCdr(UserContext userContext,CdrBulk cdr,int mese, String tipo_rapporto, boolean isRapporto13) throws ComponentException {
-	it.cnr.contab.config00.bulk.Configurazione_cnrBulk config = null;
+	it.cnr.contab.config00.bulk.Configurazione_cnrBulk config;
 	SQLBuilder sql = getHome(userContext,it.cnr.contab.config00.latt.bulk.WorkpackageBulk.class, "V_LINEA_ATTIVITA_VALIDA").createSQLBuilder();
 try {	
 	if (mese == 0) {
@@ -700,9 +695,7 @@ try {
 	 * Escludo la linea di attività dell'IVA C20
 	 */
 			config = Utility.createConfigurazioneCnrComponentSession().getConfigurazione( userContext, null, null, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.PK_LINEA_ATTIVITA_SPECIALE, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.SK_LINEA_COMUNE_VERSAMENTO_IVA);
-	} catch (RemoteException e) {
-		throw new ComponentException(e);
-	} catch (EJBException e) {
+	} catch (RemoteException | EJBException e) {
 		throw new ComponentException(e);
 	}
 	if (config != null){
@@ -781,12 +774,10 @@ public java.util.List listaLinea_attivitaPerRipartizioneResidui(UserContext user
 		/**
 		 * Escludo la linea di attività dell'IVA C20
 		 */
-		it.cnr.contab.config00.bulk.Configurazione_cnrBulk config = null;
+		it.cnr.contab.config00.bulk.Configurazione_cnrBulk config;
 		try {
 			config = Utility.createConfigurazioneCnrComponentSession().getConfigurazione( userContext, null, null, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.PK_LINEA_ATTIVITA_SPECIALE, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.SK_LINEA_COMUNE_VERSAMENTO_IVA);
-		} catch (RemoteException e) {
-			throw new ComponentException(e);
-		} catch (EJBException e) {
+		} catch (RemoteException | EJBException e) {
 			throw new ComponentException(e);
 		}
 		if (config != null){
@@ -802,7 +793,8 @@ public java.util.List listaLinea_attivitaPerRipartizioneResidui(UserContext user
 }
 public it.cnr.jada.util.RemoteIterator listaStipendi_cofi(UserContext userContext) throws ComponentException {
 	SQLBuilder sql = getHome(userContext,Stipendi_cofiBulk.class).createSQLBuilder();
-	sql.addClause("AND","esercizio",sql.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
+	sql.addClause(FindClause.AND,"esercizio", SQLBuilder.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
+	sql.addOrderBy("prog_flusso,mese");
 	return iterator(userContext,sql,Stipendi_cofiBulk.class,null);
 }
 /** 
@@ -918,7 +910,7 @@ public void lockMatricola(UserContext userContext,String id_matricola,int mese) 
 			java.sql.ResultSet rs = stm.executeQuery();
 			while (rs.next());
 		} finally {
-			try{stm.close();}catch( java.sql.SQLException e ){};
+			try{stm.close();}catch( java.sql.SQLException e ){}
 		}
 	} catch(java.sql.SQLException e) {
 		throw new BusyResourceException();
@@ -987,7 +979,7 @@ public void ripartizioneResidui(it.cnr.jada.UserContext userContext, java.lang.S
 			prc_a2 = prc_a2.subtract(rs.getBigDecimal(2));
 			prc_a3 = prc_a3.subtract(rs.getBigDecimal(3));
 		} 
-		try{rs.close();}catch( java.sql.SQLException e ){};
+		try{rs.close();}catch( java.sql.SQLException e ){}
 
 		// Calcolo della percentuale ripartita per ogni anno
 		prc_a1 = prc_a1.divide(BD_LATT_S,2,java.math.BigDecimal.ROUND_HALF_UP);
@@ -1021,7 +1013,7 @@ public void ripartizioneResidui(it.cnr.jada.UserContext userContext, java.lang.S
 				ass_cdp_la = ass_cdp_la_pk;
 				ass_cdp_la.setToBeCreated();
 				ass_cdp_la.setFl_dip_altra_uo(ass_cdp_uo == null ? Boolean.FALSE : Boolean.TRUE);
-				ass_cdp_la.setStato(ass_cdp_la.STATO_NON_SCARICATO);
+				ass_cdp_la.setStato(Ass_cdp_laBulk.STATO_NON_SCARICATO);
 				ass_cdp_la.setPrc_la_a1(prc_a1);
 				ass_cdp_la.setPrc_la_a2(prc_a2);
 				ass_cdp_la.setPrc_la_a3(prc_a3);
@@ -1043,7 +1035,7 @@ public void ripartizioneResidui(it.cnr.jada.UserContext userContext, java.lang.S
 			ass_cdp_la.setPrc_la_a2(ass_cdp_la.getPrc_la_a2().add(BD_100.subtract(rs.getBigDecimal(2))));
 			ass_cdp_la.setPrc_la_a3(ass_cdp_la.getPrc_la_a3().add(BD_100.subtract(rs.getBigDecimal(3))));
 			ass_cdp_la.setToBeUpdated();
-			try{rs.close();}catch( java.sql.SQLException e ){};
+			try{rs.close();}catch( java.sql.SQLException e ){}
 			makeBulkPersistent(userContext,ass_cdp_la);
 		}
 
@@ -1106,8 +1098,7 @@ public V_cdp_matricolaBulk salvaCosti_dipendente(UserContext userContext,V_cdp_m
 		lockMatricola(userContext,cdp.getId_matricola(),cdp.getMese());
 
 		// Controllo dei constraint SQL (campi not null, lunghezza...)
-		for (java.util.Iterator j = cdp.getCostiScaricati().iterator();j.hasNext();)
-			checkSQLConstraints(userContext,(OggettoBulk)j.next());
+		for (Object o : cdp.getCostiScaricati()) checkSQLConstraints(userContext, (OggettoBulk) o);
 
 		// Controllo di validità degli ass_cdp_la modificati o cancellati
 		for (java.util.Iterator i = cdp.getCostiScaricati().iterator();i.hasNext();) {
@@ -1180,7 +1171,7 @@ public SQLBuilder selectUoForPrintByClause(UserContext userContext, Stampa_impon
 
 	Unita_organizzativaHome home = (Unita_organizzativaHome)getHome(userContext, it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk.class);
 	SQLBuilder sql = home.createSQLBuilder();
-	sql.addClause("AND", "cd_unita_padre", sql.EQUALS, stampa.getCd_cds());
+	sql.addClause("AND", "cd_unita_padre", SQLBuilder.EQUALS, stampa.getCd_cds());
 	sql.addClause(clauses);
 	return sql;
 }
@@ -1208,7 +1199,7 @@ public SQLBuilder selectUoForPrintByClause(UserContext usercontext, Stampa_ripar
 {
 	Unita_organizzativaHome unita_organizzativahome = (Unita_organizzativaHome)getHome(usercontext, it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk.class);
 	SQLBuilder sqlbuilder = unita_organizzativahome.createSQLBuilder();
-	sqlbuilder.addClause("AND", "cd_unita_padre", sqlbuilder.EQUALS, stampa_ripartizione_costivbulk.getCd_cds());
+	sqlbuilder.addClause("AND", "cd_unita_padre", SQLBuilder.EQUALS, stampa_ripartizione_costivbulk.getCd_cds());
 	sqlbuilder.addClause(compoundfindclause);
 	return sqlbuilder;
 }
@@ -1217,11 +1208,11 @@ public SQLBuilder selectDipendenteForPrintByClause(UserContext usercontext, Stam
 {
 	V_dipendenteHome dipendentehome = (V_dipendenteHome)getHome(usercontext, V_dipendenteBulk.class,"V_DIPENDENTE_RID");
 	SQLBuilder sqlbuilder = dipendentehome.createSQLBuilder();
-	sqlbuilder.addSQLClause("AND", "ESERCIZIO", sqlbuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
+	sqlbuilder.addSQLClause("AND", "ESERCIZIO", SQLBuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
 	// Se uo 999.000 in scrivania: visualizza tutti i dipendenti
 	Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome( usercontext, Unita_organizzativa_enteBulk.class).findAll().get(0);
 	if (!((CNRUserContext) usercontext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
-		sqlbuilder.addSQLClause("AND","cd_unita_organizzativa",sqlbuilder.EQUALS,CNRUserContext.getCd_unita_organizzativa(usercontext));	
+		sqlbuilder.addSQLClause("AND","cd_unita_organizzativa",SQLBuilder.EQUALS,CNRUserContext.getCd_unita_organizzativa(usercontext));
 	}
 	sqlbuilder.setDistinctClause(Boolean.TRUE);
 	sqlbuilder.addClause(compoundfindclause);
@@ -1235,11 +1226,11 @@ public SQLBuilder selectCommessaForPrintByClause(UserContext usercontext, Stampa
 	ProgettoHome progettohome = (ProgettoHome)getHome(usercontext, ProgettoBulk.class,"V_PROGETTO_PADRE");
 	SQLBuilder sqlbuilder = progettohome.createSQLBuilder();
 	if (par.getFl_nuovo_pdg())
-		sqlbuilder.addSQLClause("AND", "LIVELLO", sqlbuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_PRIMO);
+		sqlbuilder.addSQLClause("AND", "LIVELLO", SQLBuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_PRIMO);
 	else
-		sqlbuilder.addSQLClause("AND", "LIVELLO", sqlbuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_SECONDO);
-	sqlbuilder.addSQLClause("AND", "TIPO_FASE", sqlbuilder.EQUALS, ProgettoBulk.TIPO_FASE_PREVISIONE);
-	sqlbuilder.addSQLClause("AND", "ESERCIZIO", sqlbuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
+		sqlbuilder.addSQLClause("AND", "LIVELLO", SQLBuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_SECONDO);
+	sqlbuilder.addSQLClause("AND", "TIPO_FASE", SQLBuilder.EQUALS, ProgettoBulk.TIPO_FASE_PREVISIONE);
+	sqlbuilder.addSQLClause("AND", "ESERCIZIO", SQLBuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
 	// Se uo 999.000 in scrivania: visualizza tutti i progetti
 	Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome( usercontext, Unita_organizzativa_enteBulk.class).findAll().get(0);
 	if (!((CNRUserContext) usercontext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
@@ -1258,14 +1249,14 @@ public SQLBuilder selectModuloForPrintByClause(UserContext usercontext, Stampa_r
 	ProgettoHome progettohome = (ProgettoHome)getHome(usercontext, ProgettoBulk.class,"V_PROGETTO_PADRE");
 	SQLBuilder sqlbuilder = progettohome.createSQLBuilder();
 	if (par.getFl_nuovo_pdg())
-		sqlbuilder.addSQLClause("AND", "LIVELLO", sqlbuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_SECONDO);
+		sqlbuilder.addSQLClause("AND", "LIVELLO", SQLBuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_SECONDO);
 	else
-		sqlbuilder.addSQLClause("AND", "LIVELLO", sqlbuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_TERZO);
+		sqlbuilder.addSQLClause("AND", "LIVELLO", SQLBuilder.EQUALS, ProgettoBulk.LIVELLO_PROGETTO_TERZO);
 
-	sqlbuilder.addSQLClause("AND", "TIPO_FASE", sqlbuilder.EQUALS, ProgettoBulk.TIPO_FASE_PREVISIONE);
-	sqlbuilder.addSQLClause("AND", "ESERCIZIO", sqlbuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
+	sqlbuilder.addSQLClause("AND", "TIPO_FASE", SQLBuilder.EQUALS, ProgettoBulk.TIPO_FASE_PREVISIONE);
+	sqlbuilder.addSQLClause("AND", "ESERCIZIO", SQLBuilder.EQUALS, stampa_ripartizione_costivbulk.getEsercizio());
 	if(stampa_ripartizione_costivbulk.getCommessaForPrint()!= null && stampa_ripartizione_costivbulk.getCommessaForPrint().getPg_progetto()!=null)
-	  sqlbuilder.addClause("AND", "pg_progetto_padre", sqlbuilder.EQUALS, stampa_ripartizione_costivbulk.getCommessaForPrint().getPg_progetto());
+	  sqlbuilder.addClause("AND", "pg_progetto_padre", SQLBuilder.EQUALS, stampa_ripartizione_costivbulk.getCommessaForPrint().getPg_progetto());
 	// Se uo 999.000 in scrivania: visualizza tutti i progetti
 	Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome( usercontext, Unita_organizzativa_enteBulk.class).findAll().get(0);
 	if (!((CNRUserContext) usercontext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
@@ -1295,7 +1286,7 @@ private void validaAss_cdp_la(UserContext userContext,Ass_cdp_laBulk ass_cdp_la)
 	try {
 		// Controllo che tutti i cdr su cui scarico i costi dei dipendenti
 		// non siano già chiusi.
-		if (ass_cdp_la.getCrudStatus() != ass_cdp_la.NORMAL) {
+		if (ass_cdp_la.getCrudStatus() != OggettoBulk.NORMAL) {
 			if (ass_cdp_la.getMese().intValue() == 0) {
 				CdrBulk cdrPdgP = getCdrPdgP(userContext);
 				Pdg_esercizioBulk pdgp =
@@ -1309,11 +1300,7 @@ private void validaAss_cdp_la(UserContext userContext,Ass_cdp_laBulk ass_cdp_la)
 					throw new ApplicationException("Il pdgP relativo del cdr "+getCdrPdgP(userContext).getCd_centro_responsabilita()+" è già chiuso. Non è possibile scaricarvi costi.");
 			}
 		}
-	} catch(it.cnr.jada.persistency.PersistencyException e) {
-		throw handleException(e);
-	} catch(OutdatedResourceException e) {
-		throw handleException(e);
-	} catch(BusyResourceException e) {
+	} catch(PersistencyException | OutdatedResourceException | BusyResourceException e) {
 		throw handleException(e);
 	}
 }
@@ -1334,7 +1321,7 @@ private void validaAss_cdp_la(UserContext userContext,Ass_cdp_laBulk ass_cdp_la)
   */
 private void validaAss_cdp_uo(UserContext userContext,Ass_cdp_uoBulk ass_cdp_uo) throws ComponentException {
 	try {
-		if (ass_cdp_uo.getCrudStatus() != ass_cdp_uo.NORMAL) {
+		if (ass_cdp_uo.getCrudStatus() != OggettoBulk.NORMAL) {
 			// 05/09/2003
 			// Aggiunto controllo sulla chiusura dell'esercizio
 			if (isEsercizioChiuso(userContext,ass_cdp_uo.getUnita_organizzativa()))
@@ -1345,12 +1332,12 @@ private void validaAss_cdp_uo(UserContext userContext,Ass_cdp_uoBulk ass_cdp_uo)
 				// non abbia già il pdg chiuso
 				BulkHome home = getHome(userContext,Pdg_esercizioBulk.class);
 				SQLBuilder sql = home.createSQLBuilder();
-				sql.addSQLClause("AND","PDG_ESERCIZIO.ESERCIZIO",sql.EQUALS,ass_cdp_uo.getEsercizio());
+				sql.addSQLClause("AND","PDG_ESERCIZIO.ESERCIZIO",SQLBuilder.EQUALS,ass_cdp_uo.getEsercizio());
 
 				V_struttura_organizzativaHome struttHome = (V_struttura_organizzativaHome)getHome(userContext,V_struttura_organizzativaBulk.class);
 				CdrBulk cdr = struttHome.findCDRBaseCDS(ass_cdp_uo.getUnita_organizzativa(), ass_cdp_uo.getEsercizio());
 
-				sql.addSQLClause("AND","PDG_ESERCIZIO.CD_CENTRO_RESPONSABILITA",sql.EQUALS,cdr.getCd_centro_responsabilita());
+				sql.addSQLClause("AND","PDG_ESERCIZIO.CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,cdr.getCd_centro_responsabilita());
 
 				sql.setForUpdate(true);
 				Pdg_esercizioBulk pdgp = (Pdg_esercizioBulk)home.fetchAndLock(sql);
@@ -1361,11 +1348,7 @@ private void validaAss_cdp_uo(UserContext userContext,Ass_cdp_uoBulk ass_cdp_uo)
 					throw new ApplicationException("Non è possibile modificare la ripartizione perchè è già stato effettuato lo scarico in analitica per l'unità organizzativa "+ass_cdp_uo.getCd_unita_organizzativa()+".");
 			}
 		}
-	} catch(it.cnr.jada.persistency.PersistencyException e) {
-		throw handleException(e);
-	} catch(OutdatedResourceException e) {
-		throw handleException(e);
-	} catch(BusyResourceException e) {
+	} catch(PersistencyException | OutdatedResourceException | BusyResourceException e) {
 		throw handleException(e);
 	}
 }
@@ -1441,10 +1424,10 @@ public boolean isPdgPrevisionaleEnabled (UserContext userContext)  throws Compon
 	try {
 		SQLBuilder sql = getHome(userContext, Pdg_moduloBulk.class).createSQLBuilder();
 			
-		sql.addSQLClause("AND","PDG_MODULO.ESERCIZIO",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql.addSQLClause("AND","PDG_MODULO.CD_CENTRO_RESPONSABILITA",sql.EQUALS,getCdrPdgP(userContext).getCd_centro_responsabilita());
-		sql.addSQLClause("AND","PDG_MODULO.STATO", sql.NOT_EQUALS, Pdg_moduloBulk.STATO_AC);
-		sql.addSQLClause("AND","PDG_MODULO.STATO", sql.NOT_EQUALS, Pdg_moduloBulk.STATO_AD);
+		sql.addSQLClause("AND","PDG_MODULO.ESERCIZIO",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND","PDG_MODULO.CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,getCdrPdgP(userContext).getCd_centro_responsabilita());
+		sql.addSQLClause("AND","PDG_MODULO.STATO", SQLBuilder.NOT_EQUALS, Pdg_moduloBulk.STATO_AC);
+		sql.addSQLClause("AND","PDG_MODULO.STATO", SQLBuilder.NOT_EQUALS, Pdg_moduloBulk.STATO_AD);
 	
 		List result = getHome( userContext, Pdg_moduloBulk.class ).fetchAll( sql );
 		if ( result.size() > 0 )
@@ -1481,17 +1464,17 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, CdrBulk cdr)
 			
 		// se il CdR è della SAC deve esser controllato direttamente
 		// altrimenti si vede l'afferenza
-		sql.addSQLClause("AND","ASS_CDP_LA.ESERCIZIO",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql.addSQLClause("AND","ASS_CDP_LA.MESE",sql.EQUALS,BigDecimal.ZERO);
+		sql.addSQLClause("AND","ASS_CDP_LA.ESERCIZIO",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND","ASS_CDP_LA.MESE",SQLBuilder.EQUALS,BigDecimal.ZERO);
 		
 		if (isCdrSAC(userContext, cdr)) {
-			sql.addSQLClause("AND","ASS_CDP_LA.CD_CENTRO_RESPONSABILITA",sql.EQUALS,cdr.getCd_centro_responsabilita());
+			sql.addSQLClause("AND","ASS_CDP_LA.CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,cdr.getCd_centro_responsabilita());
 		}
 		else {
 			sql.addToHeader("V_STRUTTURA_ORGANIZZATIVA");
 			sql.addSQLJoin("ASS_CDP_LA.ESERCIZIO", "V_STRUTTURA_ORGANIZZATIVA.ESERCIZIO");
 			sql.addSQLJoin("ASS_CDP_LA.CD_CENTRO_RESPONSABILITA", "V_STRUTTURA_ORGANIZZATIVA.CD_ROOT");
-			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDR_AFFERENZA",sql.EQUALS,cdr.getCd_centro_responsabilita());
+			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDR_AFFERENZA",SQLBuilder.EQUALS,cdr.getCd_centro_responsabilita());
 		}
 
 		// controlliamo prima che esistano dati per cui effettuare la ripartizione
@@ -1500,8 +1483,8 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, CdrBulk cdr)
 			return false;
 
 		sql.openParenthesis("AND");
-		sql.addSQLClause("AND","ASS_CDP_LA.STATO", sql.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO);
-		sql.addSQLClause("OR","ASS_CDP_LA.STATO", sql.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO_PDGP);
+		sql.addSQLClause("AND","ASS_CDP_LA.STATO", SQLBuilder.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO);
+		sql.addSQLClause("OR","ASS_CDP_LA.STATO", SQLBuilder.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO_PDGP);
 		sql.closeParenthesis();
 	
 		result = getHome( userContext, Ass_cdp_laBulk.class ).fetchAll( sql );
@@ -1528,25 +1511,25 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, CdrBulk cdr,
 			
 		// se il CdR è della SAC deve esser controllato direttamente
 		// altrimenti si vede l'afferenza
-		sql.addSQLClause("AND","ASS_CDP_LA.ESERCIZIO",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql.addSQLClause("AND","ASS_CDP_LA.MESE",sql.EQUALS,BigDecimal.ZERO);
+		sql.addSQLClause("AND","ASS_CDP_LA.ESERCIZIO",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND","ASS_CDP_LA.MESE",SQLBuilder.EQUALS,BigDecimal.ZERO);
 		
 		if (isCdrSAC(userContext, cdr)) {
 			sql.addToHeader("LINEA_ATTIVITA");
-			sql.addSQLClause("AND","LINEA_ATTIVITA.PG_PROGETTO",sql.EQUALS,modulo.getPg_progetto());
+			sql.addSQLClause("AND","LINEA_ATTIVITA.PG_PROGETTO",SQLBuilder.EQUALS,modulo.getPg_progetto());
 			sql.addSQLJoin("ASS_CDP_LA.CD_CENTRO_RESPONSABILITA", "LINEA_ATTIVITA.CD_CENTRO_RESPONSABILITA");
 			sql.addSQLJoin("ASS_CDP_LA.CD_LINEA_ATTIVITA", "LINEA_ATTIVITA.CD_LINEA_ATTIVITA");		
-			sql.addSQLClause("AND","ASS_CDP_LA.CD_CENTRO_RESPONSABILITA",sql.EQUALS,cdr.getCd_centro_responsabilita());
+			sql.addSQLClause("AND","ASS_CDP_LA.CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,cdr.getCd_centro_responsabilita());
 		}
 		else {
 			sql.addToHeader("V_STRUTTURA_ORGANIZZATIVA");
 			sql.addToHeader("LINEA_ATTIVITA");
-			sql.addSQLClause("AND","LINEA_ATTIVITA.PG_PROGETTO",sql.EQUALS,modulo.getPg_progetto());
+			sql.addSQLClause("AND","LINEA_ATTIVITA.PG_PROGETTO",SQLBuilder.EQUALS,modulo.getPg_progetto());
 			sql.addSQLJoin("ASS_CDP_LA.CD_CENTRO_RESPONSABILITA", "LINEA_ATTIVITA.CD_CENTRO_RESPONSABILITA");
 			sql.addSQLJoin("ASS_CDP_LA.CD_LINEA_ATTIVITA", "LINEA_ATTIVITA.CD_LINEA_ATTIVITA");		
 			sql.addSQLJoin("ASS_CDP_LA.ESERCIZIO", "V_STRUTTURA_ORGANIZZATIVA.ESERCIZIO");
 			sql.addSQLJoin("ASS_CDP_LA.CD_CENTRO_RESPONSABILITA", "V_STRUTTURA_ORGANIZZATIVA.CD_ROOT");
-			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDR_AFFERENZA",sql.EQUALS,cdr.getCd_centro_responsabilita());
+			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDR_AFFERENZA",SQLBuilder.EQUALS,cdr.getCd_centro_responsabilita());
 		}
 		
 		// controlliamo prima che esistano dati per cui effettuare la ripartizione
@@ -1555,8 +1538,8 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, CdrBulk cdr,
 			return true;
 
 		sql.openParenthesis("AND");
-		sql.addSQLClause("AND","ASS_CDP_LA.STATO", sql.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO);
-		sql.addSQLClause("OR","ASS_CDP_LA.STATO", sql.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO_PDGP);
+		sql.addSQLClause("AND","ASS_CDP_LA.STATO", SQLBuilder.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO);
+		sql.addSQLClause("OR","ASS_CDP_LA.STATO", SQLBuilder.EQUALS, Ass_cdp_laBulk.STATO_SCARICATO_PDGP);
 		sql.closeParenthesis();
 	
 		result = getHome( userContext, Ass_cdp_laBulk.class ).fetchAll( sql );
@@ -1616,11 +1599,11 @@ public boolean isSpeseFromScaricoDipendente(UserContext userContext, Pdg_modulo_
 		SQLBuilder sql = new SQLBuilder();
 		sql.setHeader("SELECT 1");
 		sql.addTableToHeader("ASS_CDP_PDGP");
-		sql.addSQLClause("AND","ESERCIZIO",sql.EQUALS,pdg_modulo_spese.getEsercizio());
-		sql.addSQLClause("AND","CD_CENTRO_RESPONSABILITA",sql.EQUALS,pdg_modulo_spese.getCd_centro_responsabilita());
-		sql.addSQLClause("AND","PG_PROGETTO_SPESE",sql.EQUALS,pdg_modulo_spese.getPg_progetto());
-		sql.addSQLClause("AND","ID_CLASSIFICAZIONE",sql.EQUALS,pdg_modulo_spese.getId_classificazione());
-		sql.addSQLClause("AND","CD_CDS_AREA",sql.EQUALS,pdg_modulo_spese.getCd_cds_area());
+		sql.addSQLClause("AND","ESERCIZIO",SQLBuilder.EQUALS,pdg_modulo_spese.getEsercizio());
+		sql.addSQLClause("AND","CD_CENTRO_RESPONSABILITA",SQLBuilder.EQUALS,pdg_modulo_spese.getCd_centro_responsabilita());
+		sql.addSQLClause("AND","PG_PROGETTO_SPESE",SQLBuilder.EQUALS,pdg_modulo_spese.getPg_progetto());
+		sql.addSQLClause("AND","ID_CLASSIFICAZIONE",SQLBuilder.EQUALS,pdg_modulo_spese.getId_classificazione());
+		sql.addSQLClause("AND","CD_CDS_AREA",SQLBuilder.EQUALS,pdg_modulo_spese.getCd_cds_area());
 		//sql.addSQLClause("AND","PG_DETTAGLIO",sql.EQUALS,pdg_modulo_spese.getPg_dettaglio());
 		
 		LoggableStatement stm = sql.prepareStatement(getConnection(userContext));
@@ -1665,10 +1648,10 @@ public boolean isCostiDipendenteCaricati (UserContext userContext, CdrBulk cdr) 
 		// Estraggo tutti i V_cdp_matricolaBulk che competono all'utente
 		BulkHome home = getHome(userContext,V_cdp_matricolaBulk.class);
 		SQLBuilder sql = home.createSQLBuilder();
-		sql.addSQLClause("AND","ESERCIZIO",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql.addSQLClause("AND","MESE",sql.EQUALS,BigDecimal.ZERO);
+		sql.addSQLClause("AND","ESERCIZIO",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND","MESE",SQLBuilder.EQUALS,BigDecimal.ZERO);
 		if (isCdrSAC(userContext, cdr) && cdr.getUnita_padre()!=null) {
-			sql.addSQLClause("AND","CD_UO_CARICO",sql.EQUALS,cdr.getUnita_padre().getCd_unita_organizzativa());
+			sql.addSQLClause("AND","CD_UO_CARICO",SQLBuilder.EQUALS,cdr.getUnita_padre().getCd_unita_organizzativa());
 		}
 		else{
 			V_struttura_organizzativaHome homeStrutt = (V_struttura_organizzativaHome)getHome(userContext,V_struttura_organizzativaBulk.class);
@@ -1678,7 +1661,7 @@ public boolean isCostiDipendenteCaricati (UserContext userContext, CdrBulk cdr) 
 			sql.openParenthesis("AND");
 			for ( Iterator uoIterator = uoList.iterator(); uoIterator.hasNext();) {
 				uoBulk = (Unita_organizzativaBulk) uoIterator.next();
-				sql.addSQLClause("OR", "CD_UO_CARICO",sql.EQUALS,uoBulk.getCd_unita_organizzativa());
+				sql.addSQLClause("OR", "CD_UO_CARICO",SQLBuilder.EQUALS,uoBulk.getCd_unita_organizzativa());
 			}
 			sql.closeParenthesis();
 		}
@@ -1706,12 +1689,12 @@ public SQLBuilder selectUnita_organizzativa_filterByClause(UserContext userConte
 	
 		if (uoScrivania.getFl_uo_cds().booleanValue()){
 			sql.addTableToHeader("V_STRUTTURA_ORGANIZZATIVA");
-			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.ESERCIZIO",sql.EQUALS,esercizio);
-			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDS",sql.EQUALS,uoScrivania.getCd_cds());
-			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_TIPO_LIVELLO",sql.EQUALS,V_struttura_organizzativaHome.LIVELLO_UO);
+			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.ESERCIZIO",SQLBuilder.EQUALS,esercizio);
+			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_CDS",SQLBuilder.EQUALS,uoScrivania.getCd_cds());
+			sql.addSQLClause("AND","V_STRUTTURA_ORGANIZZATIVA.CD_TIPO_LIVELLO",SQLBuilder.EQUALS,V_struttura_organizzativaHome.LIVELLO_UO);
 			sql.addSQLJoin("V_STRUTTURA_ORGANIZZATIVA.CD_UNITA_ORGANIZZATIVA",from +"CD_UNITA_ORGANIZZATIVA");
 		}else{
-			sql.addSQLClause("AND",from +"CD_UNITA_ORGANIZZATIVA",sql.EQUALS,cd_unita_organizzativa);				        					
+			sql.addSQLClause("AND",from +"CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,cd_unita_organizzativa);
 		}
 		return sql;		
 	} catch (PersistencyException e) {
@@ -1867,7 +1850,7 @@ public SQLBuilder selectStipendiObbByClause(UserContext userContext, Stipendi_co
 	 SQLBuilder sql;
 	 sql = getHome(userContext,Stipendi_cofi_obb_scadBulk.class).createSQLBuilder();
 	
-	 sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
+	 sql.addSQLClause("AND", "ESERCIZIO", SQLBuilder.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
 	 //sql.addSQLClause("AND", "MESE", sql.EQUALS, dett.getMese());
 	 return sql;
 }
@@ -2183,20 +2166,15 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			java.util.Collection<Stipendi_cofiBulk> stipendiCofi = stipendi_cofiHome.findStipendiCofiAnno(aEsercizio);
 
 			int lastMesePagato = stipendiCofi.stream()
-									.filter(el->el.getMese().compareTo(15)<0)
+									.filter(el->el.getMese_reale().compareTo(15)<0)
 									.filter(Stipendi_cofiBulk::isLiquidato)
 									.mapToInt(Stipendi_cofiBulk::getMese).max().orElse(0);
 
-			if (aMese>15) {
-				if (isCNR)
+			if (isCNR) {
+				if (aMese>15)
 					throw new ApplicationException("Il mese deve avere un valore compreso tra 1 e 15");
-				if (lastMesePagato == 0)
-					throw new ApplicationException("Non è possibile effettuare pagamenti 'Straordinari' senza aver effettuato almeno un pagamento stipendiale nell'anno" + aEsercizio);
-			} else if (aMese != 15) {
-				if (aMese < 1 || aMese > 13)
+				else if (aMese != 15 && (aMese < 1 || aMese > 13))
 					throw new ApplicationException("Il mese deve essere compreso tra 1 (Gennaio) e 13 (Mese Tredicesima)");
-
-				//se il mese è > 1 verifico che la liquidazione del mese precedente sia stata fatta
 				if (lastMesePagato==aMese)
 					throw new ApplicationException("Dati stipendiali non trovati o contabilizzazione già effettuata per mese n."+aMese+" es."+aEsercizio);
 				if (lastMesePagato != aMese - 1)
@@ -2206,17 +2184,23 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Stipendi_cofiBulk stipendiCofiBulk = stipendiCofi.stream().filter(el->el.getEsercizio().equals(aEsercizio)).filter(el->el.getMese().equals(aMese)).findAny()
 					.orElseThrow(()->new ApplicationRuntimeException("StipendiCofi non esistente per mese n. " + aMese + " es. " + aEsercizio + "."));
 
+			if (stipendiCofiBulk.isLiquidato())
+				throw new ApplicationException("Flusso Stipendiale già liquidato.");
+
 			String cdrPersonale = Optional.ofNullable(((Configurazione_cnrHome)getHome(userContext,Configurazione_cnrBulk.class)).getCdrPersonale(aEsercizio))
 					.orElseThrow(() -> new ComponentException("Non è possibile individuare il codice CDR del Personale nell'anno "+aEsercizio+"."));
 			CdrBulk cdrPersonaleBulk = (CdrBulk)getHome(userContext, CdrBulk.class).findByPrimaryKey(new CdrBulk(cdrPersonale));
 			cdrPersonaleBulk.setUnita_padre((Unita_organizzativaBulk)getHome(userContext,Unita_organizzativaBulk.class).findByPrimaryKey(cdrPersonaleBulk.getUnita_padre()));
 
+			Integer aMeseReale = Optional.ofNullable(stipendiCofiBulk.getMese_reale()).orElse(aMese);
+
 			GregorianCalendar aDateInizioComp = new GregorianCalendar();
 			GregorianCalendar aDateFineComp = new GregorianCalendar();
-			if (aMese == 13) {
-				aDateInizioComp = new GregorianCalendar(aEsercizio, 11, 1);
-				aDateFineComp = new GregorianCalendar(aEsercizio, 11, 31);
-			} else if (aMese < 13) {
+
+			if (aMeseReale == 13) {
+				aDateInizioComp = new GregorianCalendar(aEsercizio, Calendar.DECEMBER, 1);
+				aDateFineComp = new GregorianCalendar(aEsercizio, Calendar.DECEMBER, 31);
+			} else if (aMeseReale < 13) {
 				aDateInizioComp = new GregorianCalendar(aEsercizio, aMese-1, 1);
 				aDateFineComp = new GregorianCalendar(aEsercizio, aMese-1, 1);
 				aDateFineComp.set(Calendar.DAY_OF_MONTH, aDateFineComp.getActualMaximum(Calendar.DAY_OF_MONTH));
@@ -2224,9 +2208,9 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 
 			GregorianCalendar aDateCont = new GregorianCalendar();
 			if (LocalDate.now().getYear() == aEsercizio + 1)
-				aDateCont = new GregorianCalendar(aEsercizio, 11, 31);
+				aDateCont = new GregorianCalendar(aEsercizio, Calendar.DECEMBER, 31);
 			else if (LocalDate.now().getYear() < aEsercizio )
-				aDateCont = new GregorianCalendar(aEsercizio, 0, 1);
+				aDateCont = new GregorianCalendar(aEsercizio, Calendar.JANUARY, 1);
 			else if (LocalDate.now().getYear() > aEsercizio ) {
 				java.text.SimpleDateFormat formatter = new java.text.SimpleDateFormat("dd/MM/yyyy");
 				throw new ApplicationException("La data di sistema (" + formatter.format(aDateCont) + ") è superiore all''esercizio di scrivania (" + aEsercizio + ") di almeno 2 anni");
@@ -2237,12 +2221,12 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			aDateCont.set(Calendar.SECOND, aDateCont.getActualMinimum(Calendar.SECOND));
 			aDateCont.set(Calendar.MILLISECOND, aDateCont.getActualMinimum(Calendar.MILLISECOND));
 
-			aDateInizioComp.set(Calendar.HOUR_OF_DAY, aDateCont.getActualMinimum(Calendar.HOUR_OF_DAY));
+			aDateInizioComp.set(Calendar.HOUR_OF_DAY, aDateInizioComp.getActualMinimum(Calendar.HOUR_OF_DAY));
 			aDateInizioComp.set(Calendar.MINUTE, aDateInizioComp.getActualMinimum(Calendar.MINUTE));
 			aDateInizioComp.set(Calendar.SECOND, aDateInizioComp.getActualMinimum(Calendar.SECOND));
 			aDateInizioComp.set(Calendar.MILLISECOND, aDateInizioComp.getActualMinimum(Calendar.MILLISECOND));
 
-			aDateFineComp.set(Calendar.HOUR_OF_DAY, aDateCont.getActualMinimum(Calendar.HOUR_OF_DAY));
+			aDateFineComp.set(Calendar.HOUR_OF_DAY, aDateFineComp.getActualMinimum(Calendar.HOUR_OF_DAY));
 			aDateFineComp.set(Calendar.MINUTE, aDateFineComp.getActualMinimum(Calendar.MINUTE));
 			aDateFineComp.set(Calendar.SECOND, aDateFineComp.getActualMinimum(Calendar.SECOND));
 			aDateFineComp.set(Calendar.MILLISECOND, aDateFineComp.getActualMinimum(Calendar.MILLISECOND));
@@ -2281,13 +2265,44 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			mandatoTerzo.setTipoBollo(((Tipo_bolloHome)getHome( userContext, Tipo_bolloBulk.class )).findTipoBolloStipendi(Tipo_bolloBulk.TIPO_SPESA));
 			mandatoWizard.setMandato_terzo(mandatoTerzo);
 
-			MandatoBulk mandatoStipendio = this.createMandatoStipendio(userContext, stipendiCofiBulk, mandatoWizard);
+			List<MandatoBulk> mandatiStipendioColl = this.createMandatoStipendio(userContext, stipendiCofiBulk, mandatoWizard);
 
 			/******************* CREO IL COMPENSO **************/
 			//Per il compenso setto come terzo quello diversi per stipendi
 			MandatoAutomaticoWizardBulk compensoWizard = MandatoAutomaticoWizardBulk.createBy(mandatoWizard);
 			Integer cdTerzoStipendi = Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiStipendi(userContext);
 			compensoWizard.getMandato_terzo().setTerzo((TerzoBulk)(getHome(userContext, TerzoBulk.class)).findByPrimaryKey(new TerzoBulk(cdTerzoStipendi)));
+
+			//Recupero il mandato di importo più elevato su cui collegare la catena Compenso/Reversali
+			MandatoBulk mandatoStipendio = mandatiStipendioColl.stream().max(Comparator.comparing(MandatoBulk::getIm_mandato)).orElse(null);
+
+			//e storicizzo tutti gli altri
+			for (MandatoBulk mandato : mandatiStipendioColl) {
+			 	if (!mandato.equalsByPrimaryKey(mandatoStipendio)) {
+					Stipendi_cofiBulk newStipendiCofiBulk = new Stipendi_cofiBulk();
+					newStipendiCofiBulk.setEsercizio(stipendiCofiBulk.getEsercizio());
+					newStipendiCofiBulk.setStato(Stipendi_cofiBulk.STATO_LIQUIDATO);
+
+					newStipendiCofiBulk.setMese(((Integer) getHome(userContext, Stipendi_cofiBulk.class).findAndLockMax(newStipendiCofiBulk, "mese", new Integer(0))).intValue() + 1);
+
+					newStipendiCofiBulk.setProg_flusso(stipendiCofiBulk.getProg_flusso());
+					newStipendiCofiBulk.setMese_reale(stipendiCofiBulk.getMese_reale());
+					newStipendiCofiBulk.setEsercizio_mandato(mandato.getEsercizio());
+					newStipendiCofiBulk.setCd_cds_mandato(mandato.getCd_cds());
+					newStipendiCofiBulk.setPg_mandato(mandato.getPg_mandato());
+
+					Mandato_rigaBulk riga = mandato.getMandato_rigaColl().stream().findFirst().get();
+
+					newStipendiCofiBulk.setEsercizio_doc_gen(riga.getEsercizio_doc_amm());
+					newStipendiCofiBulk.setCd_tipo_doc_gen(riga.getCd_tipo_documento_amm());
+					newStipendiCofiBulk.setCd_cds_doc_gen(riga.getCd_cds_doc_amm());
+					newStipendiCofiBulk.setCd_uo_doc_gen(riga.getCd_uo_doc_amm());
+					newStipendiCofiBulk.setPg_doc_gen(riga.getPg_doc_amm());
+
+					newStipendiCofiBulk.setToBeCreated();
+					makeBulkPersistent(userContext, newStipendiCofiBulk);
+				}
+			}
 
 			CompensoBulk compensoBulk = this.createCompensoStipendio(userContext, stipendiCofiBulk, compensoWizard, mandatoStipendio);
 
@@ -2330,19 +2345,30 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			stipendiCofiBulk.setCd_cds_comp(compensoBulk.getCd_cds());
 			stipendiCofiBulk.setCd_uo_comp(compensoBulk.getCd_unita_organizzativa());
 			stipendiCofiBulk.setPg_comp(compensoBulk.getPg_compenso());
+			stipendiCofiBulk.setStato(Stipendi_cofiBulk.STATO_LIQUIDATO);
 
 			stipendiCofiBulk.setToBeUpdated();
 			makeBulkPersistent(userContext, stipendiCofiBulk);
 
 			//Effettuo scritture prima nota
-			Scrittura_partita_doppiaBulk scritturaPartitaDoppiaBulk = Utility.createScritturaPartitaDoppiaComponentSession().proposeScritturaPartitaDoppia(userContext, compensoBulk);
-			makeBulkPersistent(userContext, scritturaPartitaDoppiaBulk);
+			try {
+				Scrittura_partita_doppiaBulk scritturaPartitaDoppiaBulk = Utility.createScritturaPartitaDoppiaComponentSession().proposeScritturaPartitaDoppia(userContext, compensoBulk);
+				makeBulkPersistent(userContext, scritturaPartitaDoppiaBulk);
+			} catch (NoRollbackException ignored) {
+			} catch (ApplicationException e) {
+				try {
+					if (!Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(userContext))
+						throw e;
+				} catch (RemoteException | ComponentException e2) {
+					throw new DetailedRuntimeException(e2);
+				}
+			}
 		} catch(Exception e) {
 			throw handleException(e);
 		}
 	}
 
-	private MandatoBulk createMandatoStipendio(UserContext userContext, Stipendi_cofiBulk stipendiCofiBulk, MandatoAutomaticoWizardBulk mandatoWizard) throws ComponentException {
+	private List<MandatoBulk> createMandatoStipendio(UserContext userContext, Stipendi_cofiBulk stipendiCofiBulk, MandatoAutomaticoWizardBulk mandatoWizard) throws ComponentException {
 		try {
 			Integer aEsercizio = stipendiCofiBulk.getEsercizio();
 			Integer aMese = stipendiCofiBulk.getMese();
@@ -2352,8 +2378,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Stipendi_cofi_obb_scadHome stipendi_cofi_obb_scadHome = (Stipendi_cofi_obb_scadHome)getHome(userContext, it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofi_obb_scadBulk.class);
 			java.util.Collection<Stipendi_cofi_obb_scadBulk> stipendiCofiObbScadColl = stipendi_cofi_obb_scadHome.findStipendiCofiObbScad(userContext, aEsercizio, aMese);
 
-			for (java.util.Iterator<Stipendi_cofi_obb_scadBulk> i = stipendiCofiObbScadColl.iterator();i.hasNext();) {
-				Stipendi_cofi_obb_scadBulk el = i.next();
+			for (Stipendi_cofi_obb_scadBulk el : stipendiCofiObbScadColl) {
 				try {
 					ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome(userContext, ObbligazioneBulk.class);
 					ObbligazioneBulk obbligazione = obbligazioneHome.findObbligazione(el.getStipendi_cofi_obb().getObbligazioni());
@@ -2366,8 +2391,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					//Recupero la scadenza su cui dovrebbero esserci le disponibilità
 					Optional<Obbligazione_scadenzarioBulk> scadenzarioDisp = obbligazione.getObbligazione_scadenzarioColl().stream()
 							.filter(scad -> scad.getPg_obbligazione_scadenzario().compareTo(Long.valueOf(15)) < 0)
-							.sorted(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario).reversed())
-							.findFirst()
+							.max(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario))
 							.filter(scad -> scad.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO) == 0)
 							.filter(scad -> scad.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO) == 0);
 
@@ -2429,9 +2453,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 							((TerzoHome) getHome(userContext, TerzoBulk.class)).findModalita_pagamento(obbligazione.getCreditore());
 
 					Modalita_pagamentoBulk modalitaPagamentoBulk = modalita_pagamentoBulks
-							.stream()
-							.sorted(Comparator.comparing(Modalita_pagamentoBulk::getDacr).reversed())
-							.findFirst().orElse(null);
+							.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
 
 					Collection<BancaBulk> bancaBulks =
 							((AnagraficoHome) getHome(userContext, AnagraficoBulk.class)).findBanca(obbligazione.getCreditore().getAnagrafico());
@@ -2439,20 +2461,19 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					//Cerco la banca associata al terzo e la prendo in ordine inverso di data creazione se ne esistono troppe valide
 					BancaBulk bancaBulk = bancaBulks
 							.stream()
-							.filter(banca->banca.getTerzo().equalsByPrimaryKey(obbligazione.getCreditore()))
-							.filter(banca->!banca.getFl_cancellato())
-							.sorted(Comparator.comparing(BancaBulk::getDacr).reversed())
-							.findFirst().orElse(null);
+							.filter(banca -> banca.getTerzo().equalsByPrimaryKey(obbligazione.getCreditore()))
+							.filter(banca -> !banca.getFl_cancellato()).max(Comparator.comparing(BancaBulk::getDacr))
+							.orElse(null);
 
-					V_obbligazioneBulk vObbligazioneBulk = ((V_obbligazioneHome)getHome( userContext, V_obbligazioneBulk.class )).findImpegno(scadenzario.get());
+					V_obbligazioneBulk vObbligazioneBulk = ((V_obbligazioneHome) getHome(userContext, V_obbligazioneBulk.class)).findImpegno(scadenzario.get());
 					vObbligazioneBulk.setIm_da_trasferire(el.getIm_totale());
 
 					ObbligazioneWizard obbligazioneWizardBulk = new ObbligazioneWizard(vObbligazioneBulk);
 					obbligazioneWizardBulk.setTerzoWizardBulk(obbligazione.getCreditore());
 					obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoBulk);
 					obbligazioneWizardBulk.setBancaWizardBulk(bancaBulk);
-					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi mese:"+aMese);
-					obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:"+obbligazione.getCd_elemento_voce());
+					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi mese:" + aMese);
+					obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:" + obbligazione.getCd_elemento_voce());
 
 					listaObbligazioniWizard.add(obbligazioneWizardBulk);
 				} catch (Exception e) {
@@ -2463,14 +2484,13 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			mandatoWizard.setTi_automatismo(MandatoAutomaticoWizardBulk.AUTOMATISMO_DA_IMPEGNI);
 			mandatoWizard.setImpegniSelezionatiColl(listaObbligazioniWizard);
 			mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
+			mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
 
 			MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
 			mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);
-			if (mandatoWizard.getMandatiColl().size()>1)
-				throw new ApplicationRuntimeException("Errore in fase di creazione mandati. Risulta essere stato emesso più di un mandato.");
-			MandatoBulk mandatoBulk = mandatoWizard.getMandatiColl().stream().filter(MandatoBulk.class::isInstance).map(MandatoBulk.class::cast).findFirst()
+			mandatoWizard.getMandatiColl().stream().filter(MandatoBulk.class::isInstance).map(MandatoBulk.class::cast).findFirst()
 					.orElseThrow(()->new DetailedRuntimeException("Errore in fase di creazione mandati. Non risulta esserne stato emesso alcuno."));
-			return (MandatoBulk)Utility.createMandatoComponentSession().inizializzaBulkPerModifica(userContext, mandatoBulk);
+			return new ArrayList<>(mandatoWizard.getMandatiColl());
 		} catch(Exception e) {
 			throw handleException(e);
 		}
@@ -2511,16 +2531,12 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Collection<Modalita_pagamentoBulk> modalita_pagamentoBulks = ((TerzoHome)getHome(userContext, TerzoBulk.class)).findModalita_pagamento(terzoStipendi.getTerzo());
 
 			Modalita_pagamentoBulk modalitaPagamentoBulk = modalita_pagamentoBulks
-					.stream()
-					.sorted(Comparator.comparing(Modalita_pagamentoBulk::getDacr).reversed())
-					.findFirst().orElse(null);
+					.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
 
 			Collection<BancaBulk> bancaBulks = ((AnagraficoHome)getHome(userContext, AnagraficoBulk.class)).findBanca(terzoStipendi.getAnagrafico());
 
 			BancaBulk bancaBulk = bancaBulks
-					.stream()
-					.sorted(Comparator.comparing(BancaBulk::getDacr).reversed())
-					.findFirst().orElse(null);
+					.stream().max(Comparator.comparing(BancaBulk::getDacr)).orElse(null);
 
 			compensoBulk.setModalitaPagamento(modalitaPagamentoBulk.getRif_modalita_pagamento());
 			compensoBulk.setBanca(bancaBulk);
@@ -2556,17 +2572,16 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 
 			compensoBulk.setContributi(new ArrayList<>());
 
-			for (java.util.Iterator<Stipendi_cofi_coriBulk> i = stipendiCofiCoriColl.iterator();i.hasNext();) {
-				Stipendi_cofi_coriBulk el = i.next();
-				Tipo_contributo_ritenutaHome tipoContributoRitenutaHome = (Tipo_contributo_ritenutaHome)getHome(userContext, Tipo_contributo_ritenutaBulk.class);
+			for (Stipendi_cofi_coriBulk el : stipendiCofiCoriColl) {
+				Tipo_contributo_ritenutaHome tipoContributoRitenutaHome = (Tipo_contributo_ritenutaHome) getHome(userContext, Tipo_contributo_ritenutaBulk.class);
 				Tipo_contributo_ritenutaBulk tipoContributoRitenutaBulk = tipoContributoRitenutaHome.findTipoCORIValido(el.getCd_contributo_ritenuta(), tipoContributoRitenutaHome.getServerDate());
 				boolean isCoriSpeciale = tipoContributoRitenutaBulk.getCd_classificazione_cori().equals(aClassCoriSpec);
 
-				if (el.getAmmontare().compareTo(BigDecimal.ZERO)!=0) {
+				if (el.getAmmontare().compareTo(BigDecimal.ZERO) != 0) {
 					Ass_tipo_cori_evBulk aEffCori = findAssociazioneCoriVoce(userContext, el.getEsercizio(), el.getCd_contributo_ritenuta(),
 							Elemento_voceHome.APPARTENENZA_CNR, Elemento_voceHome.GESTIONE_ENTRATE, el.getTi_ente_percipiente());
 
-					aEffCori = (Ass_tipo_cori_evBulk)((AssTipoCORIEvComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOMPENSI00_EJB_AssTipoCORIEvComponentSession", AssTipoCORIEvComponentSession.class)).inizializzaBulkPerModifica(userContext, aEffCori);
+					aEffCori = (Ass_tipo_cori_evBulk) ((AssTipoCORIEvComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOMPENSI00_EJB_AssTipoCORIEvComponentSession", AssTipoCORIEvComponentSession.class)).inizializzaBulkPerModifica(userContext, aEffCori);
 
 					Contributo_ritenutaBulk contributoRitenutaBulk = new Contributo_ritenutaBulk();
 					contributoRitenutaBulk.setCompenso(compensoBulk);
@@ -2587,7 +2602,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					contributoRitenutaBulk.setTi_ente_percipiente(el.getTi_ente_percipiente());
 					contributoRitenutaBulk.setStato_cofi_cr(compensoBulk.getStato_cofi());
 
-					if (el.getAmmontare().compareTo(BigDecimal.ZERO)>0) {
+					if (el.getAmmontare().compareTo(BigDecimal.ZERO) > 0) {
 						//Creo l'accertamento partita di giro che poi legherò alla reversale
 						AccertamentoPGiroBulk accertamentoPGiroBulk = new AccertamentoPGiroBulk();
 						accertamentoPGiroBulk.setEsercizio(aEsercizio);
@@ -2601,29 +2616,29 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						accertamentoPGiroBulk.setRiportato("N");
 						accertamentoPGiroBulk.setFl_isTronco(isCoriSpeciale);
 
-						accertamentoPGiroBulk = (AccertamentoPGiroBulk)Utility.createAccertamentoPGiroComponentSession().inizializzaBulkPerInserimento(userContext, accertamentoPGiroBulk);
+						accertamentoPGiroBulk = (AccertamentoPGiroBulk) Utility.createAccertamentoPGiroComponentSession().inizializzaBulkPerInserimento(userContext, accertamentoPGiroBulk);
 
 						Ass_partita_giroHome assPartitaGiroHome = (Ass_partita_giroHome) getHome(userContext, Ass_partita_giroBulk.class);
 						Ass_partita_giroBulk assPartitaGiro = assPartitaGiroHome.getAssociazionePGiroFor(aEffCori.getElemento_voce());
 
 						accertamentoPGiroBulk.setElemento_voceContr(new Elemento_voceBulk(assPartitaGiro.getCd_voce_clg(), assPartitaGiro.getEsercizio(), assPartitaGiro.getTi_appartenenza_clg(), assPartitaGiro.getTi_gestione_clg()));
-						accertamentoPGiroBulk.setCapitolo((V_voce_f_partita_giroBulk) getHome( userContext, V_voce_f_partita_giroBulk.class ).findByPrimaryKey(new V_voce_f_partita_giroBulk(aEffCori.getElemento_voce().getCd_voce(),
-																						aEffCori.getElemento_voce().getEsercizio(),
-																						aEffCori.getElemento_voce().getTi_appartenenza(),
-																						aEffCori.getElemento_voce().getTi_gestione())));
+						accertamentoPGiroBulk.setCapitolo((V_voce_f_partita_giroBulk) getHome(userContext, V_voce_f_partita_giroBulk.class).findByPrimaryKey(new V_voce_f_partita_giroBulk(aEffCori.getElemento_voce().getCd_voce(),
+								aEffCori.getElemento_voce().getEsercizio(),
+								aEffCori.getElemento_voce().getTi_appartenenza(),
+								aEffCori.getElemento_voce().getTi_gestione())));
 						accertamentoPGiroBulk.setIm_accertamento(el.getAmmontare());
 						accertamentoPGiroBulk.setDt_registrazione(compensoBulk.getDt_registrazione());
-						accertamentoPGiroBulk.setDs_accertamento("CORI-D mese:"+el.getMese()+" es:"+el.getEsercizio()+" CORI:"+el.getCd_contributo_ritenuta());
+						accertamentoPGiroBulk.setDs_accertamento("CORI-D mese:" + el.getMese() + " es:" + el.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
 						accertamentoPGiroBulk.setDebitore(mandatoStipendio.getMandato_terzo().getTerzo());
 						accertamentoPGiroBulk.setToBeCreated();
 
-						accertamentoPGiroBulk = (AccertamentoPGiroBulk)Utility.createAccertamentoPGiroComponentSession().creaConBulk(userContext, accertamentoPGiroBulk);
+						accertamentoPGiroBulk = (AccertamentoPGiroBulk) Utility.createAccertamentoPGiroComponentSession().creaConBulk(userContext, accertamentoPGiroBulk);
 
 						contributoRitenutaBulk.setCd_cds_accertamento(accertamentoPGiroBulk.getCd_cds());
 						contributoRitenutaBulk.setEsercizio_accertamento(accertamentoPGiroBulk.getEsercizio());
 						contributoRitenutaBulk.setEsercizio_ori_accertamento(accertamentoPGiroBulk.getEsercizio_originale());
 						contributoRitenutaBulk.setPg_accertamento(accertamentoPGiroBulk.getPg_accertamento());
-						contributoRitenutaBulk.setPg_accertamento_scadenzario(Long.valueOf(1));
+						contributoRitenutaBulk.setPg_accertamento_scadenzario(1L);
 					} else {
 						//Creo l'obbligazione
 						ImpegnoPGiroBulk obbligazionePGiroBulk = new ImpegnoPGiroBulk();
@@ -2643,21 +2658,21 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						obbligazionePGiroBulk.setRiportato("N");
 						obbligazionePGiroBulk.setIm_costi_anticipati(BigDecimal.ZERO);
 
-						obbligazionePGiroBulk = (ImpegnoPGiroBulk)Utility.createObbligazionePGiroComponentSession().inizializzaBulkPerInserimento(userContext, obbligazionePGiroBulk);
+						obbligazionePGiroBulk = (ImpegnoPGiroBulk) Utility.createObbligazionePGiroComponentSession().inizializzaBulkPerInserimento(userContext, obbligazionePGiroBulk);
 
 						Ass_partita_giroHome assPartitaGiroHome = (Ass_partita_giroHome) getHome(userContext, Ass_partita_giroBulk.class);
 						Ass_partita_giroBulk assPartitaGiro = assPartitaGiroHome.getAssociazionePGiroFor(aEffCori.getElemento_voce());
 
-						obbligazionePGiroBulk.setElemento_voceContr(new Elemento_voceBulk(assPartitaGiro.getCd_voce(),assPartitaGiro.getEsercizio(), assPartitaGiro.getTi_appartenenza(), assPartitaGiro.getTi_gestione()));
+						obbligazionePGiroBulk.setElemento_voceContr(new Elemento_voceBulk(assPartitaGiro.getCd_voce(), assPartitaGiro.getEsercizio(), assPartitaGiro.getTi_appartenenza(), assPartitaGiro.getTi_gestione()));
 						obbligazionePGiroBulk.setElemento_voce(new Elemento_voceBulk(assPartitaGiro.getCd_voce_clg(), assPartitaGiro.getEsercizio(), assPartitaGiro.getTi_appartenenza_clg(), assPartitaGiro.getTi_gestione_clg()));
 						obbligazionePGiroBulk.setIm_obbligazione(el.getAmmontare());
 						obbligazionePGiroBulk.setDt_registrazione(compensoBulk.getDt_registrazione());
-						obbligazionePGiroBulk.setDs_obbligazione("CORI-D mese:"+el.getMese()+" es:"+el.getEsercizio()+" CORI:"+el.getCd_contributo_ritenuta());
+						obbligazionePGiroBulk.setDs_obbligazione("CORI-D mese:" + el.getMese() + " es:" + el.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
 						obbligazionePGiroBulk.setCreditore(mandatoStipendio.getMandato_terzo().getTerzo());
 						obbligazionePGiroBulk.setStato_obbligazione(ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 						obbligazionePGiroBulk.setToBeCreated();
 
-						obbligazionePGiroBulk = (ImpegnoPGiroBulk)Utility.createObbligazionePGiroComponentSession().creaConBulk(userContext, obbligazionePGiroBulk);
+						obbligazionePGiroBulk = (ImpegnoPGiroBulk) Utility.createObbligazionePGiroComponentSession().creaConBulk(userContext, obbligazionePGiroBulk);
 
 						contributoRitenutaBulk.setObbligazioneScadenzario(obbligazionePGiroBulk.getObbligazione_scadenzarioColl().stream().findFirst().orElse(null));
 					}
@@ -2716,46 +2731,45 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 				reversaleWizard.setAccertamentiSelezionatiColl(listAccertamenti);
 				reversaleWizard.setDs_reversale("CORI - mese:" + stipendiCofiBulk.getMese() + " es:" + stipendiCofiBulk.getEsercizio());
 				reversaleWizard.setTi_automatismo(ReversaleAutomaticaWizardBulk.AUTOMATISMO_DA_ACCERTAMENTI);
+				reversaleWizard.setFlGeneraReversaleUnica(Boolean.TRUE);
+				reversaleWizard.setFlGeneraReversaleMonoVoce(Boolean.TRUE);
 
 				ReversaleAutomaticaComponentSession reversaleAutomaticaComponent = (ReversaleAutomaticaComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ReversaleAutomaticaComponentSession", ReversaleAutomaticaComponentSession.class);
 				reversaleWizard = (ReversaleAutomaticaWizardBulk)reversaleAutomaticaComponent.creaReversaleAutomatica(userContext, reversaleWizard);
-				if (reversaleWizard.getReversaliColl().size()>1)
-					throw new ApplicationRuntimeException("Errore in fase di creazione reversale. Risulta essere stata emessa più di una reversale.");
-				ReversaleBulk reversaleBulk = reversaleWizard.getReversaliColl().stream().findFirst()
+				reversaleWizard.getReversaliColl().stream().findFirst()
 						.orElseThrow(()->new ComponentException("Errore in fase di creazione reversale. Non risulta esserne stata emessa alcuna."));
-				reversaleBulk = (ReversaleBulk)Utility.createReversaleComponentSession().inizializzaBulkPerModifica(userContext, reversaleBulk);
 
-				//Lego la reversale al compenso
-				Ass_comp_doc_cont_nmpBulk assReversaleCompenso = new Ass_comp_doc_cont_nmpBulk();
-				assReversaleCompenso.setCompenso(compensoBulk);
-				assReversaleCompenso.setCd_cds_doc(reversaleBulk.getCd_cds());
-				assReversaleCompenso.setEsercizio_doc(reversaleBulk.getEsercizio());
-				assReversaleCompenso.setCd_tipo_doc(V_doc_cont_compBulk.TIPO_DOC_CONT_REVERSALE);
-				assReversaleCompenso.setPg_doc(reversaleBulk.getPg_reversale());
-				assReversaleCompenso.setToBeCreated();
-				makeBulkPersistent(userContext, assReversaleCompenso);
+				for (ReversaleBulk reversaleBulk : reversaleWizard.getReversaliColl()) {
+					//Lego la reversale al compenso
+					Ass_comp_doc_cont_nmpBulk assReversaleCompenso = new Ass_comp_doc_cont_nmpBulk();
+					assReversaleCompenso.setCompenso(compensoBulk);
+					assReversaleCompenso.setCd_cds_doc(reversaleBulk.getCd_cds());
+					assReversaleCompenso.setEsercizio_doc(reversaleBulk.getEsercizio());
+					assReversaleCompenso.setCd_tipo_doc(V_doc_cont_compBulk.TIPO_DOC_CONT_REVERSALE);
+					assReversaleCompenso.setPg_doc(reversaleBulk.getPg_reversale());
+					assReversaleCompenso.setToBeCreated();
+					makeBulkPersistent(userContext, assReversaleCompenso);
 
-				//Lego la reversale al mandato
-				Ass_mandato_reversaleBulk assMandatoReversale = new Ass_mandato_reversaleBulk();
-				assMandatoReversale.setMandato(mandatoCompensoBulk);
-				assMandatoReversale.setReversale(reversaleBulk);
-				assMandatoReversale.setTi_origine(Ass_mandato_reversaleBulk.TIPO_ORIGINE_SPESA);
-				assMandatoReversale.setToBeCreated();
-				makeBulkPersistent(userContext, assMandatoReversale);
+					//Lego la reversale al mandato
+					Ass_mandato_reversaleBulk assMandatoReversale = new Ass_mandato_reversaleBulk();
+					assMandatoReversale.setMandato(mandatoCompensoBulk);
+					assMandatoReversale.setReversale(reversaleBulk);
+					assMandatoReversale.setTi_origine(Ass_mandato_reversaleBulk.TIPO_ORIGINE_SPESA);
+					assMandatoReversale.setToBeCreated();
+					makeBulkPersistent(userContext, assMandatoReversale);
 
-				//Aggiorno i totali ritenute sul mandato
-				mandatoCompensoBulk.setIm_ritenute(reversaleBulk.getIm_reversale());
-				mandatoCompensoBulk.setToBeUpdated();
-				makeBulkPersistent(userContext, mandatoCompensoBulk);
-
+					//Aggiorno i totali ritenute sul mandato
+					mandatoCompensoBulk.setIm_ritenute(Optional.ofNullable(mandatoCompensoBulk.getIm_ritenute()).orElse(BigDecimal.ZERO).add(Optional.ofNullable(reversaleBulk.getIm_reversale()).orElse(BigDecimal.ZERO)));
+					mandatoCompensoBulk.setToBeUpdated();
+					makeBulkPersistent(userContext, mandatoCompensoBulk);
+				}
 			}
 
 			List<ObbligazioneWizard> listObbligazioni = compensoBulk.getContributi().stream().filter(el->Optional.ofNullable(el.getPg_obbligazione()).isPresent()).map(el->{
 				try {
 					V_obbligazioneBulk vObbligazioneBulk = (V_obbligazioneBulk)getHome(userContext, V_obbligazioneBulk.class)
 							.findByPrimaryKey(new V_obbligazioneBulk(el.getCd_cds_obbligazione(), el.getEsercizio_obbligazione(), el.getEsercizio_ori_obbligazione(), el.getPg_obbligazione(), el.getPg_obbligazione_scadenzario()));
-					ObbligazioneWizard obbligazioneWizardBulk = new ObbligazioneWizard(vObbligazioneBulk);
-					return obbligazioneWizardBulk;
+					return new ObbligazioneWizard(vObbligazioneBulk);
 				} catch (Exception e) {
 					throw new DetailedRuntimeException(e);
 				}
@@ -2767,31 +2781,31 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 				mandatoWizard.setImpegniSelezionatiColl(listObbligazioni);
 				mandatoWizard.setTi_automatismo(MandatoAutomaticoWizardBulk.AUTOMATISMO_DA_IMPEGNI);
 				mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
+				mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
 
 				MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
 				mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);
-				if (mandatoWizard.getMandatiColl().size()>1)
-					throw new ApplicationRuntimeException("Errore in fase di creazione mandati. Risulta essere stato emesso più di un mandato.");
-				MandatoBulk mandatoBulk = mandatoWizard.getMandatiColl().stream().findFirst()
+				mandatoWizard.getMandatiColl().stream().findFirst()
 						.orElseThrow(()->new DetailedRuntimeException("Errore in fase di creazione mandati. Non risulta esserne stato emesso alcuno."));
-				mandatoBulk = (MandatoBulk)Utility.createMandatoComponentSession().inizializzaBulkPerModifica(userContext, mandatoBulk);
 
-				//Lego il mandato al compenso
-				Ass_comp_doc_cont_nmpBulk assReversaleCompenso = new Ass_comp_doc_cont_nmpBulk();
-				assReversaleCompenso.setCompenso(compensoBulk);
-				assReversaleCompenso.setCd_cds_doc(mandatoBulk.getCd_cds());
-				assReversaleCompenso.setEsercizio_doc(mandatoBulk.getEsercizio());
-				assReversaleCompenso.setCd_tipo_doc(V_doc_cont_compBulk.TIPO_DOC_CONT_MANDATO);
-				assReversaleCompenso.setPg_doc(mandatoBulk.getPg_mandato());
-				assReversaleCompenso.setToBeCreated();
-				makeBulkPersistent(userContext, assReversaleCompenso);
+				for (MandatoBulk mandatoBulk : mandatoWizard.getMandatiColl()) {
+					//Lego il mandato al compenso
+					Ass_comp_doc_cont_nmpBulk assReversaleCompenso = new Ass_comp_doc_cont_nmpBulk();
+					assReversaleCompenso.setCompenso(compensoBulk);
+					assReversaleCompenso.setCd_cds_doc(mandatoBulk.getCd_cds());
+					assReversaleCompenso.setEsercizio_doc(mandatoBulk.getEsercizio());
+					assReversaleCompenso.setCd_tipo_doc(V_doc_cont_compBulk.TIPO_DOC_CONT_MANDATO);
+					assReversaleCompenso.setPg_doc(mandatoBulk.getPg_mandato());
+					assReversaleCompenso.setToBeCreated();
+					makeBulkPersistent(userContext, assReversaleCompenso);
 
-				//Lego il mandato al mandato
-				Ass_mandato_mandatoBulk assMandatoMandato = new Ass_mandato_mandatoBulk();
-				assMandatoMandato.setMandato(mandatoCompensoBulk);
-				assMandatoMandato.setMandatoColl(mandatoBulk);
-				assMandatoMandato.setToBeCreated();
-				makeBulkPersistent(userContext, assMandatoMandato);
+					//Lego il mandato al mandato
+					Ass_mandato_mandatoBulk assMandatoMandato = new Ass_mandato_mandatoBulk();
+					assMandatoMandato.setMandato(mandatoCompensoBulk);
+					assMandatoMandato.setMandatoColl(mandatoBulk);
+					assMandatoMandato.setToBeCreated();
+					makeBulkPersistent(userContext, assMandatoMandato);
+				}
 			}
 		} catch(Throwable e) {
 			throw handleException(e);

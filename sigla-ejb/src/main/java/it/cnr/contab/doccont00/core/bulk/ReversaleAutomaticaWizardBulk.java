@@ -59,6 +59,8 @@ public class ReversaleAutomaticaWizardBulk extends ReversaleIBulk {
 
 	//Indica se la reversale da generare deve essere divisa tra competenza/residuo o unico
 	private boolean flGeneraReversaleUnica;
+	//Indica se la reversale da generare deve essere unico o diversi per voce di bilancio
+	private boolean flGeneraReversaleMonoVoce;
 
 	public final static String AUTOMATISMO_DA_ACCERTAMENTI	= "A";
 	public final static String AUTOMATISMO_DA_DOCATTIVI	= "D";
@@ -150,12 +152,30 @@ public class ReversaleAutomaticaWizardBulk extends ReversaleIBulk {
 		return getTi_automatismo().equals(AUTOMATISMO_DA_DOCATTIVI);
 	}
 
+	/**
+	 * Indica se la reversale da generare deve essere divisa tra competenza/residuo o unica
+	 * Se true viene creato un'unica reversale
+	 * Se false viene creata una reversale di competenza e/o di residuo
+	 */
 	public boolean isFlGeneraReversaleUnica() {
 		return flGeneraReversaleUnica;
 	}
 
 	public void setFlGeneraReversaleUnica(boolean flGeneraReversaleUnica) {
 		this.flGeneraReversaleUnica = flGeneraReversaleUnica;
+	}
+
+	/**
+	 * Indica se la reversale da generare deve essere unica o diverse per voce di bilancio
+	 * Se true viene creato un'unica reversale'
+	 * Se false vengono create tante reversali quante sono le voci di bilancio associate
+	 */
+	public boolean isFlGeneraReversaleMonoVoce() {
+		return flGeneraReversaleMonoVoce;
+	}
+
+	public void setFlGeneraReversaleMonoVoce(boolean flGeneraReversaleMonoVoce) {
+		this.flGeneraReversaleMonoVoce = flGeneraReversaleMonoVoce;
 	}
 
 	public BancaBulk getBanca() {

@@ -5506,7 +5506,7 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 					.orElseThrow(()->new ApplicationException("Scadenza da sdoppiare non trovata nell'impegno indicato!"));
 
 			Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome)getHome(userContext, Obbligazione_scadenzarioBulk.class);
-			scadenzaVecchia.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadenzaVecchia)));
+			scadenzaVecchia.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadenzaVecchia, Boolean.FALSE)));
 
 			Obbligazione_scadenzarioBulk scadenzaNuova = new Obbligazione_scadenzarioBulk();
 			obbligazione.addToObbligazione_scadenzarioColl(scadenzaNuova);

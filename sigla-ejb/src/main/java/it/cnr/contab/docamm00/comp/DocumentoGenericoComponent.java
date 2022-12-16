@@ -6273,8 +6273,10 @@ public class DocumentoGenericoComponent
                 riga.setIm_riga_divisa(impegno.getIm_da_trasferire());
 
                 Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) getHome( userContext, Obbligazione_scadenzarioBulk.class ).findByPrimaryKey( new Obbligazione_scadenzarioBulk( impegno.getCd_cds(), impegno.getEsercizio(), impegno.getEsercizio_originale(), impegno.getPg_obbligazione(), impegno.getPg_obbligazione_scadenzario()));
-                getHomeCache(userContext).fetchAll(userContext);
                 riga.setObbligazione_scadenziario( scadenza );
+
+                scadenza.setObbligazione((ObbligazioneBulk) getHome( userContext, ObbligazioneBulk.class ).findByPrimaryKey( scadenza.getObbligazione()));
+                scadenza.getObbligazione().setElemento_voce((Elemento_voceBulk) getHome( userContext, Elemento_voceBulk.class ).findByPrimaryKey( scadenza.getObbligazione().getElemento_voce()));
 
                 //aggiorno im_assciato_doc_amm della scadenza
                 lockBulk( userContext, scadenza.getObbligazione());
@@ -6288,7 +6290,6 @@ public class DocumentoGenericoComponent
 
                 Accertamento_scadenzarioBulk accertamentoScadenzarioDB = (Accertamento_scadenzarioBulk)getHome(userContext,Accertamento_scadenzarioBulk.class).findAndLock(accertamentoScadenzario);
                 AccertamentoBulk accertamentoDB = (AccertamentoBulk)getHome(userContext,AccertamentoBulk.class).findAndLock(accertamentoScadenzario.getAccertamento());
-                getHomeCache(userContext).fetchAll(userContext);
                 if (accertamentoScadenzarioDB.getIm_scadenza().compareTo(accertamentoScadenzario.getIm_scadenza())!=0 ||
                         accertamentoScadenzarioDB.getIm_associato_doc_amm().compareTo(accertamentoScadenzario.getIm_associato_doc_amm())!= 0 ||
                         accertamentoScadenzarioDB.getIm_associato_doc_contabile().compareTo(accertamentoScadenzario.getIm_associato_doc_contabile()) !=0 )

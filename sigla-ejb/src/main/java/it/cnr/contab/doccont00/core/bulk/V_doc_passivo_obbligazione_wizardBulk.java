@@ -23,10 +23,14 @@
  */
 package it.cnr.contab.doccont00.core.bulk;
 
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
+
 public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbligazioneBulk {
 	Mandato_rigaBulk mandatoRiga;
 
 	String descrizioneRigaMandatoWizard;
+
+	String cdElementoVoce;
 
 	public V_doc_passivo_obbligazione_wizardBulk() {
 		super();
@@ -46,5 +50,13 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 
 	public void setDescrizioneRigaMandatoWizard(String descrizioneRigaMandatoWizard) {
 		this.descrizioneRigaMandatoWizard = descrizioneRigaMandatoWizard;
+	}
+
+	public String getCdElementoVoce() {
+		return cdElementoVoce;
+	}
+
+	public void setCdElementoVoce(String cdElementoVoce) {
+		this.cdElementoVoce = cdElementoVoce;
 	}
 }
