@@ -30,6 +30,7 @@ import java.util.*;
 import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.DocumentoGenericoWizardBulk;
 import it.cnr.contab.doccont00.bp.MandatoAutomaticoWizardBP;
+import it.cnr.contab.doccont00.core.ObbligazioneWizard;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.bulk.*;
 
@@ -209,8 +210,13 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		for (Iterator i = impegniColl.iterator(); i.hasNext(); )
 		{
 			impegno = (V_obbligazioneBulk) i.next();
-			if ( impegno.getIm_da_trasferire() != null && impegno.getIm_da_trasferire().compareTo(new BigDecimal(0)) != 0 )
-				impegniSelezionatiColl.add( impegno );
+			if ( impegno.getIm_da_trasferire() != null && impegno.getIm_da_trasferire().compareTo(new BigDecimal(0)) != 0 ) {
+				ObbligazioneWizard obbligazioneWizardBulk = new ObbligazioneWizard(impegno);
+				obbligazioneWizardBulk.setTerzoWizardBulk(this.getTerzo());
+				obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(this.getModalita_pagamento());
+				obbligazioneWizardBulk.setBancaWizardBulk(this.getBanca());
+				impegniSelezionatiColl.add(obbligazioneWizardBulk);
+			}
 		}		
 	}
 	
@@ -235,7 +241,7 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 	public void validate() throws ValidationException {
 		super.validate();
 		for ( java.util.Iterator i = impegniSelezionatiColl.iterator(); i.hasNext(); )
-			((V_obbligazioneBulk)i.next()).validate();
+			((ObbligazioneWizard)i.next()).getObbligazioneBulk().validate();
 		for ( Iterator i = getMandato_rigaColl().iterator(); i.hasNext(); )
 			((Mandato_rigaIBulk) i.next()).validate();					
 	}
