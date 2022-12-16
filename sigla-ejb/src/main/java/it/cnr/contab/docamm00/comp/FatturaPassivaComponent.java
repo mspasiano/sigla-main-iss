@@ -829,7 +829,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         } else {
                             ((Vector) obblTemporanee.get(scadenza.getObbligazione())).add(scadenza);
                         }
-                    } else if (!fatturaPassiva.isToBeCreated() && OggettoBulk.NORMAL == scadenza.getCrudStatus()) {
+                    } else if (!fatturaPassiva.isToBeCreated() && OggettoBulk.NORMAL == scadenza.getCrudStatus() && !scadenza.getFlAssociataOrdine()) {
                         PrimaryKeyHashtable obbligs = getDocumentiContabiliNonTemporanei(userContext, fatturaPassiva.getObbligazioniHash().keys());
                         if (!obbligs.containsKey(scadenza.getObbligazione()))
                             aggiornaSaldi(

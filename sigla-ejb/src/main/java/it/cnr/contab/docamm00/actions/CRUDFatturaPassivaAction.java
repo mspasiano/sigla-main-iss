@@ -19,14 +19,7 @@ package it.cnr.contab.docamm00.actions;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Vector;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -2411,9 +2404,13 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
         CRUDFatturaPassivaBP bp = (CRUDFatturaPassivaBP) context.getBusinessProcess();
         java.util.List selectedModels = null;
         try {
-            selectedModels = bp.getDettaglio().getSelectedModels(context);
+            selectedModels = Optional.ofNullable(bp.getDettaglio().getSelectedModels(context))
+                    .filter(list -> !list.isEmpty())
+                    .orElse(Optional.ofNullable(bp.getDettaglio().getModel())
+                            .map(oggettoBulk -> Arrays.asList(oggettoBulk)).orElse(Collections.emptyList()));
             bp.getDettaglio().getSelection().clearSelection();
-        } catch (Throwable e) {
+        } catch (BusinessProcessException|ValidationException e) {
+            return handleException(context, e);
         }
 
         if (obblig != null) {
@@ -4199,7 +4196,7 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             CRUDFatturaPassivaBP bp = (CRUDFatturaPassivaBP) getBusinessProcess(context);
             fillModel(context);
             Fattura_passivaBulk fatturaPassiva = (Fattura_passivaBulk) bp.getModel();
-            Optional<List> models = Optional.ofNullable(bp.getDettaglio().getSelectedModels(context))
+            List models = Optional.ofNullable(bp.getDettaglio().getSelectedModels(context))
                     .map(list -> {
                         final int focus = bp.getDettaglio().getSelection().getFocus();
                         if (list.isEmpty() && Optional.ofNullable(fatturaPassiva.getFlDaOrdini())
@@ -4208,8 +4205,10 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                         }
                         return list;
                     })
-                    .filter(list -> !list.isEmpty());
-            if (!models.isPresent()) {
+                    .filter(list -> !list.isEmpty())
+                    .orElse(Optional.ofNullable(bp.getDettaglio().getModel())
+                            .map(oggettoBulk -> Arrays.asList(oggettoBulk)).orElse(Collections.emptyList()));
+            if (models.isEmpty()) {
                 bp.setErrorMessage("Per procedere, selezionare i dettagli da contabilizzare!");
                 return context.findDefaultForward();
             }
@@ -4222,17 +4221,17 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             if (fatturaPassiva.getFornitore() == null || fatturaPassiva.getFornitore().getCrudStatus() == it.cnr.jada.bulk.OggettoBulk.UNDEFINED)
                 throw new it.cnr.jada.comp.ApplicationException("Per eseguire questa operazione è necessario impostare un fornitore!");
             if (!isDaOrdini) {
-                controllaSelezionePerContabilizzazione(context, models.get().iterator());
+                controllaSelezionePerContabilizzazione(context, models.iterator());
                 try {
-                    controllaSelezionePerTitoloCapitoloLista(context, models.get().iterator());
+                    controllaSelezionePerTitoloCapitoloLista(context, models.iterator());
                 } catch (ApplicationException e) {
                     throw new it.cnr.jada.comp.ApplicationException(e.getMessage());
                 }
             }
             if (isDaOrdini)
-                return basicDoRicercaEvasioneOrdine(context, fatturaPassiva, models.get(), manually);
+                return basicDoRicercaEvasioneOrdine(context, fatturaPassiva, models, manually);
             else
-                return basicDoRicercaObbligazione(context, fatturaPassiva, models.get(), false);
+                return basicDoRicercaObbligazione(context, fatturaPassiva, models, false);
         } catch (Throwable e) {
             return handleException(context, e);
         }
