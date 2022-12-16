@@ -101,10 +101,13 @@ private void aggiornaInventario(UserContext userContext, Id_inventarioBulk inv)
 **/
 private void checkConsegnatario(it.cnr.jada.UserContext userContext, Inventario_consegnatarioBulk invCons) throws ComponentException {
 
+	// Controllo su Consegnatario. Campo Obbligatorio
+	if (invCons==null || invCons.getCrudStatus()==OggettoBulk.UNDEFINED)
+		throw new it.cnr.jada.comp.CRUDValidationException("Attenzione: il Consegnatario è un dato obbligatorio. Caricarlo tramite apposita funzionalità.");
+
 	// Controllo su Data Inizio Validità. Campo Obbligatorio
-	if (invCons.getDt_inizio_validita()==null){
+	if (invCons.getDt_inizio_validita()==null)
 		throw new it.cnr.jada.comp.CRUDValidationException("Attenzione: la data Inizio Validità del Consegnatario è un dato obbligatorio.");
-	}
 }
 /** 
   *  checkDataApertura - Data non specificata
@@ -945,7 +948,7 @@ private void validaSuInserimento(UserContext aUC,Inventario_ap_chBulk invApCh)
 	checkNumeroBeneIniziale(invApCh);
 	
 	// Controlli sul Consegnatario
-	//checkConsegnatario(aUC, invApCh.getInventarioConsegnatario());
+	checkConsegnatario(aUC, invApCh.getInventarioConsegnatario());
 }
 /** 
   *  Valida Inventario per MODIFICA - data di Apertura non valida.
