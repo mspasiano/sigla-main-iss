@@ -2974,12 +2974,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     contabilizzaDettagliSelezionati(userContext, fattura, dettagliDaContabilizzare, obbligazione);
                 } else {
                     fatturaOrdineBulk.setFatturaPassivaRiga(riga);
-                    riga.setIm_iva(riga.getIm_iva().add(fatturaOrdineBulk.getImIva()));
-                    riga.setIm_imponibile(riga.getIm_imponibile().add(fatturaOrdineBulk.getImImponibile()));
-                    riga.setIm_totale_divisa(riga.getIm_totale_divisa().add(Utility.nvl(fatturaOrdineBulk.getImImponibileDivisa())));
-                    riga.setIm_diponibile_nc(riga.getIm_diponibile_nc().add(riga.getIm_imponibile().add(riga.getIm_iva())));
-                    riga.setQuantita(riga.getQuantita().add(fatturaOrdineBulk.getOrdineAcqConsegna().getQuantita()));
-                    riga.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(riga.getDs_riga_fattura(), fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
                     valorizzaCIG(riga, fatturaOrdineBulk);
                 }
                 if (fatturaOrdineBulk.isRigaAttesaNotaCredito()){

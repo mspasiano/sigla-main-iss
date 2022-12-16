@@ -931,9 +931,12 @@
 		name="cdCig" />
 	<findFieldProperty
 		name="cdCup" />
+
 	<columnFieldProperty
+		label="UO"
 		name="cdUnitaOperativa" />
 	<columnFieldProperty
+		label="Es."
 		name="esercizio" />
 	<columnFieldProperty
 		name="cdNumeratore" />
@@ -964,8 +967,12 @@
 	<columnFieldProperty
 		name="nota" />
 	<columnFieldProperty
+		headerLabel="Contratto"
+		label="Es."
 		name="esercizioContratto" />
 	<columnFieldProperty
+		headerLabel="Contratto"
+		label="Pg."
 		name="pgContratto" />
 	<columnFieldProperty
 		name="statoForSearch" />

@@ -35,6 +35,7 @@ import it.cnr.contab.inventario01.bp.CRUDScaricoInventarioBP;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.inventario01.ejb.NumerazioneTempBuonoComponentSession;
 import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
@@ -136,11 +137,16 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
         rigaNC.setFl_iva_forzata(Boolean.FALSE);
         rigaNC.calcolaCampiDiRiga();
         java.math.BigDecimal totaleDiRiga = rigaNC.getIm_imponibile().add(rigaNC.getIm_iva());
-        Fattura_passiva_rigaIBulk rigaFP = rigaNC.getRiga_fattura_origine();
-        java.math.BigDecimal nuovoImportoDisponibile = rigaFP.getIm_diponibile_nc().subtract(totaleDiRiga.subtract(vecchioTotale));
-        if (nuovoImportoDisponibile.signum() < 0)
-            throw new it.cnr.jada.bulk.FillException("Attenzione: l'importo di storno massimo ancora disponibile è di " + rigaFP.getIm_diponibile_nc() + " EUR!");
-        rigaFP.setIm_diponibile_nc(nuovoImportoDisponibile.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+        try {
+            Optional.ofNullable(rigaNC.getRiga_fattura_origine()).ifPresent(rigaFP -> {
+                java.math.BigDecimal nuovoImportoDisponibile = rigaFP.getIm_diponibile_nc().subtract(totaleDiRiga.subtract(vecchioTotale));
+                if (nuovoImportoDisponibile.signum() < 0)
+                    throw new DetailedRuntimeException("Attenzione: l'importo di storno massimo ancora disponibile è di " + rigaFP.getIm_diponibile_nc() + " EUR!");
+                rigaFP.setIm_diponibile_nc(nuovoImportoDisponibile.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+            });
+        } catch (DetailedRuntimeException _ex) {
+            throw new it.cnr.jada.bulk.FillException(_ex.getMessage());
+        }
         doSelectObbligazioni(context);
         doSelectAccertamenti(context);
     }

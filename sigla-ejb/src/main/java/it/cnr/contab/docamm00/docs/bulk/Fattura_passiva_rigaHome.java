@@ -180,7 +180,7 @@ public class Fattura_passiva_rigaHome extends BulkHome {
             sql.addSQLClause("AND", "FATTURA_PASSIVA.PG_LETTERA", SQLBuilder.ISNULL, null);
         }
 
-        return sql;
+         return sql;
     }
 
     /**
