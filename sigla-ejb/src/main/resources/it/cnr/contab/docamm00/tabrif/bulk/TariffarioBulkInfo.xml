@@ -128,9 +128,10 @@
 	<fieldProperty
 		name="ds_tariffario"
 		property="ds_tariffario"
-		maxLength="100"
-		inputSize="60"
-		inputType="TEXT"
+		maxLength="500"
+		cols="60"
+		rows="5"
+		inputType="TEXTAREA"
 		nullable="false"
 		enabledOnSearch="true"
 		enabledOnEdit="true"

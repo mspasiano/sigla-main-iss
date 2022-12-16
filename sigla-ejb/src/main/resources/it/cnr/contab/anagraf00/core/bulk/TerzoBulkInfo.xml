@@ -326,6 +326,15 @@
 	</form>
 
 	<form
+		name="searchtoolByAnagrafico" >
+		<formFieldProperty
+			name="cd_terzo" />
+		<formFieldProperty
+			name="descrizioneAnagrafica"
+			inputSize="30" />
+	</form>
+
+	<form
 		name="searchtool_small" >
 		<formFieldProperty
 			name="cd_terzo" />
