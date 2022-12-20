@@ -2844,6 +2844,16 @@ public abstract class Fattura_passivaBulk
                 final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
                 fatturaPassivaRigaBulk.setToBeDeleted();
             });
+        Optional.ofNullable(fatturaOrdineBulk.getObbligazioneScadenzarioNc())
+               .ifPresent(obbligazioneScadenzarioBulk -> {
+                   for (int i = 0; i < fattura_passiva_dettColl.size(); i++){
+                        if (((Fattura_passiva_rigaBulk)fattura_passiva_dettColl.get(i))
+                                .getObbligazione_scadenziario().equalsByPrimaryKey(obbligazioneScadenzarioBulk)) {
+                            final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
+                            fatturaPassivaRigaBulk.setToBeDeleted();
+                        }
+                   }
+               });
         Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna())
                 .ifPresent(ordineAcqConsegnaBulk -> {
                     ordineAcqConsegnaBulk.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_NON_ASSOCIATA);

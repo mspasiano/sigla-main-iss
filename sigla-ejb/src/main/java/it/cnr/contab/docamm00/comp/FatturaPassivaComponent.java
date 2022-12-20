@@ -784,22 +784,21 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     fattura_passiva.setFattura_passiva_obbligazioniHash(newObbligazioniHash);
                     for (java.util.Enumeration e = ((ObbligazioniTable) newObbligazioniHash.clone()).keys(); e.hasMoreElements(); ) {
                         Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) e.nextElement();
-                        if (!scadenza.getFlAssociataOrdine()){
 
-                            java.math.BigDecimal im_ass = null;
-                            if (fattura_passiva.isEstera() &&
-                                    fattura_passiva.getLettera_pagamento_estero() != null &&
-                                    fattura_passiva.getLettera_pagamento_estero().getIm_pagamento() != null &&
-                                    fattura_passiva.getLettera_pagamento_estero().getIm_pagamento().compareTo(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)) != 0)
-                                //Caso di collegamento a documento 1210	con sospeso inserito
-                                im_ass = scadenza.getIm_scadenza();
-                            else
-                                //Tutti gli altri casi
-                                im_ass = calcolaTotaleObbligazionePer(userContext, scadenza, fattura_passiva);
+                        java.math.BigDecimal im_ass = null;
+                        if (fattura_passiva.isEstera() &&
+                                fattura_passiva.getLettera_pagamento_estero() != null &&
+                                fattura_passiva.getLettera_pagamento_estero().getIm_pagamento() != null &&
+                                fattura_passiva.getLettera_pagamento_estero().getIm_pagamento().compareTo(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)) != 0)
+                            //Caso di collegamento a documento 1210	con sospeso inserito
+                            im_ass = scadenza.getIm_scadenza();
+                        else
+                            //Tutti gli altri casi
+                            im_ass = calcolaTotaleObbligazionePer(userContext, scadenza, fattura_passiva);
 
-                            scadenza.setIm_associato_doc_amm(im_ass);
-                            updateImportoAssociatoDocAmm(userContext, scadenza);
-                        }
+                        scadenza.setIm_associato_doc_amm(im_ass);
+                        scadenza.setFlAssociataOrdine(Boolean.FALSE);
+                        updateImportoAssociatoDocAmm(userContext, scadenza);
                     }
 
                 }
@@ -2694,7 +2693,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
     public void controllaQuadraturaObbligazioni(UserContext aUC, Fattura_passivaBulk fatturaPassiva)
             throws ComponentException {
 
-        if (fatturaPassiva != null  && !fatturaPassiva.isDaOrdini() && !fatturaPassiva.isAnnullato() && !fatturaPassiva.isCongelata()) {
+        if (fatturaPassiva != null  && !fatturaPassiva.isAnnullato() && !fatturaPassiva.isCongelata()) {
             ObbligazioniTable obbligazioniHash = fatturaPassiva.getFattura_passiva_obbligazioniHash();
             if (obbligazioniHash != null) {
                 for (java.util.Enumeration e = obbligazioniHash.keys(); e.hasMoreElements(); ) {
@@ -2936,7 +2935,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         }
     }
 
-    public void valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
+    public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
         if (!fattura.getFattura_passiva_ordini().isEmpty()){
             for (FatturaOrdineBulk fatturaOrdineBulk : fattura.getFattura_passiva_ordini()){
                 OrdineAcqConsegnaBulk consegna = fatturaOrdineBulk.getOrdineAcqConsegna();
@@ -2954,8 +2953,14 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     riga.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
                     riga.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
                     riga.setQuantita(fatturaOrdineBulk.getOrdineAcqConsegna().getQuantita());
-                    riga.setPrezzo_unitario(Utility.nvl(fatturaOrdineBulk.getPrezzoUnitarioRett(), fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()));
-                    riga.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(riga.getBene_servizio().getDs_bene_servizio() ,fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
+                    riga.setPrezzo_unitario(Utility.nvl(fatturaOrdineBulk.getPrezzoUnitarioRett(),
+                            fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()));
+                    riga.setDs_riga_fattura(
+                            impostaDescrizioneRigaDaOrdine(
+                                    riga.getBene_servizio().getDs_bene_servizio(),
+                                    fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()
+                            )
+                    );
                     riga.setIm_iva(fatturaOrdineBulk.getImIva());
                     riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
                     riga.setIm_totale_divisa(Utility.nvl(fatturaOrdineBulk.getImImponibileDivisa()));
@@ -3020,8 +3025,10 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                 rigaPerNotaCredito.setIm_imponibile(rigaPerNotaCredito.getPrezzo_unitario());
                                 rigaPerNotaCredito.setIm_totale_divisa(rigaPerNotaCredito.getIm_imponibile());
                                 rigaPerNotaCredito.setIm_diponibile_nc(rigaPerNotaCredito.getIm_imponibile().add(rigaPerNotaCredito.getIm_iva()));
+                                valorizzaCIG(rigaPerNotaCredito, fatturaOrdineBulk);
                                 obbl.setIm_associato_doc_amm(rigaPerNotaCredito.getIm_diponibile_nc());
                                 obbl.setToBeUpdated();
+                                fatturaOrdineBulk.setObbligazioneScadenzarioNc(obbl);
                                 java.util.Vector dettagliDaContabilizzare = new java.util.Vector();
                                 dettagliDaContabilizzare.add(rigaPerNotaCredito);
                                 ObbligazioniTable obbs = fattura.getObbligazioniHash();
@@ -3041,6 +3048,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         } else {
             throw new it.cnr.jada.comp.ApplicationException("Attenzione: Fattura da Ordini, associare almeno un Ordine!");
         }
+        return fattura;
     }
 
     public OggettoBulk creaConBulk(
@@ -3052,10 +3060,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         Fattura_passivaBulk fattura_passiva = (Fattura_passivaBulk) bulk;
 
         assegnaProgressivo(userContext, fattura_passiva);
-
-        if (Optional.ofNullable(fattura_passiva.getFlDaOrdini()).isPresent() && fattura_passiva.getFlDaOrdini()) {
-            valorizzaDatiDaOrdini(userContext, fattura_passiva);
-        }
 
         if (fattura_passiva.isElettronica())
             validaFatturaElettronica(userContext, fattura_passiva);
@@ -5237,9 +5241,6 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
 
         Fattura_passivaBulk fatturaPassiva = (Fattura_passivaBulk) bulk;
-        if (Optional.ofNullable(fatturaPassiva.getFlDaOrdini()).isPresent() && fatturaPassiva.getFlDaOrdini()) {
-            valorizzaDatiDaOrdini(aUC, fatturaPassiva);
-        }
         if (fatturaPassiva.isElettronica())
             validaFatturaElettronica(aUC, fatturaPassiva);
         try {

@@ -22,7 +22,7 @@
 			  	<td colspan="3">
 					<%	boolean canAdd = true;
 
-						if (fatturaPassiva instanceof Nota_di_creditoBulk || fatturaPassiva instanceof Nota_di_debitoBulk || fatturaPassiva.isDaOrdini())
+						if (fatturaPassiva instanceof Nota_di_creditoBulk || fatturaPassiva instanceof Nota_di_debitoBulk)
 							canAdd = false;
 						bp.getObbligazioniController().writeHTMLTable(pageContext,"default",canAdd,false,!fatturaPassiva.isDaOrdini(),"100%","100px"); %>
 			  	</td>

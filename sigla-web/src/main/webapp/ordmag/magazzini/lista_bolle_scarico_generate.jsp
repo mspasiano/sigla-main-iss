@@ -27,7 +27,6 @@ function doStampaBollaScarico(esercizio, cdCds , cdMagazzino, cdNumeratore, pgBo
 }
 </script>
 </head>
-Ciao
 <body class="Form">
 
 	<table class="Panel" height="100%" width="100%">

@@ -58,20 +58,7 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
     }
 
     public java.util.List getDetails() {
-
         java.util.Vector lista = new java.util.Vector();
-
-        //if (this.parent.getModel().getClass().getName().equalsIgnoreCase("it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk")){
-        //it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk doc = (it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk)getParentModel();
-        //if (doc != null) {
-        //java.util.Hashtable h = doc.getDocumento_generico_obbligazioniHash();
-        //if (h != null) {
-        //for (java.util.Enumeration e = h.keys(); e.hasMoreElements();)
-        //lista.add(e.nextElement());
-        //}
-        //}
-        //}
-        //else {
         if (getParentModel() != null && getParentModel() instanceof IDocumentoAmministrativoBulk) {
             java.util.Hashtable h = ((IDocumentoAmministrativoBulk) getParentModel()).getObbligazioniHash();
             if (h != null) {
@@ -79,7 +66,6 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                     lista.add(e.nextElement());
             }
         }
-        //}
         return lista;
     }
 
@@ -127,24 +113,22 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                 }
             }
         }
-        if (!(bp instanceof IDocumentoAmministrativoBP) || getParentModel() == null || !(getParentModel() instanceof Fattura_passiva_IBulk) || !((Fattura_passiva_IBulk)getParentModel()).isDaOrdini()) {
-            it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
-                    context,
-                    HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-edit" : "img/redo16.gif",
-                    (bp.isViewing() || enabled) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
-                    true,
-                    "Aggiorna in manuale",
-                    "btn btn-outline-primary  btn-sm btn-title",
-                    HttpActionContext.isFromBootstrap(context));
-            it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
-                    context,
-                    HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-pencil" : "img/refresh16.gif",
-                    (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doModificaScadenzaInAutomatico(" + getInputPrefix() + ")')" : null,
-                    false,
-                    "Aggiorna in automatico",
-                    "btn btn-outline-info btn-sm btn-title",
-                    HttpActionContext.isFromBootstrap(context));
-        }
+        it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
+                context,
+                HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-edit" : "img/redo16.gif",
+                (bp.isViewing() || enabled) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
+                true,
+                "Aggiorna in manuale",
+                "btn btn-outline-primary  btn-sm btn-title",
+                HttpActionContext.isFromBootstrap(context));
+        it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
+                context,
+                HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-pencil" : "img/refresh16.gif",
+                (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doModificaScadenzaInAutomatico(" + getInputPrefix() + ")')" : null,
+                false,
+                "Aggiorna in automatico",
+                "btn btn-outline-info btn-sm btn-title",
+                HttpActionContext.isFromBootstrap(context));
         super.closeButtonGROUPToolbar(context);
     }
 }

@@ -116,10 +116,17 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
         sql.addOrderBy("FL_SELEZIONE DESC");
         List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
-        return Optional.ofNullable(l.stream()
+        final Optional<V_doc_passivo_obbligazioneBulk> fatturaOrdine = Optional.ofNullable(l.stream()
+                .filter(e -> e.getCd_tipo_documento_amm().equals(Numerazione_doc_ammBulk.TIPO_FATTURA_ORDINE))
+                .findFirst().orElse(null));
+        final Optional<V_doc_passivo_obbligazioneBulk> ordine = Optional.ofNullable(l.stream()
                 .filter(e -> e.getCd_tipo_documento_amm().equals(Numerazione_doc_ammBulk.TIPO_ORDINE))
-                .findFirst().orElse(null))
-                .orElse(l.stream().findFirst().orElse(null));
+                .findFirst().orElse(null));
+        if (fatturaOrdine.isPresent())
+            return fatturaOrdine.get();
+        if (ordine.isPresent())
+            return ordine.get();
+        return l.stream().findFirst().orElse(null);
     }
 
     /**

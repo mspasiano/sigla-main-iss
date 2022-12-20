@@ -1375,12 +1375,13 @@ public class FatturaPassivaComponentSessionBean extends it.cnr.jada.ejb.CRUDComp
             throw uncaughtError(param0, componentObj, e);
         }
     }
-    public void valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura)
+    public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura)
     throws ComponentException, RemoteException {
         pre_component_invocation(userContext, componentObj);
         try {
-            ((FatturaPassivaComponent) componentObj).valorizzaDatiDaOrdini(userContext, fattura);
+            Fattura_passivaBulk result = ((FatturaPassivaComponent) componentObj).valorizzaDatiDaOrdini(userContext, fattura);
             component_invocation_succes(userContext, componentObj);
+            return result;
         } catch (it.cnr.jada.comp.NoRollbackException e) {
             component_invocation_succes(userContext, componentObj);
             throw e;

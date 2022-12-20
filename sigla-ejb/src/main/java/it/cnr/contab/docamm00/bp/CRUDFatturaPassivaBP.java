@@ -1080,7 +1080,29 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
 
     public void save(ActionContext context) throws ValidationException,
             BusinessProcessException {
-
+        /**
+         * Prima del Salvataggio carico le righe di fattura da ordine
+         */
+        final Optional<Fattura_passivaBulk> optionalFatturaPassivaBulk = Optional.ofNullable(getModel())
+                .filter(Fattura_passivaBulk.class::isInstance)
+                .map(Fattura_passivaBulk.class::cast)
+                .map(fatturaPassivaBulk -> {
+                    if (Optional.ofNullable(fatturaPassivaBulk.getFlDaOrdini()).isPresent() && fatturaPassivaBulk.getFlDaOrdini()) {
+                        try {
+                            return ((FatturaPassivaComponentSession) createComponentSession()).valorizzaDatiDaOrdini(context.getUserContext(), fatturaPassivaBulk);
+                        } catch (ComponentException|RemoteException|BusinessProcessException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                    return fatturaPassivaBulk;
+                });
+        optionalFatturaPassivaBulk.ifPresent(fatturaPassivaBulk -> {
+            try {
+                setModel(context, fatturaPassivaBulk);
+            } catch (BusinessProcessException e) {
+                throw new RuntimeException(e);
+            }
+        });
         super.save(context);
         setCarryingThrough(false);
     }
@@ -1823,6 +1845,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                 throw new ApplicationException("Le righe di consegna selezionate sono utilizzate al momento da un'altro utente!");
             ordineAcqConsegna = (OrdineAcqConsegnaBulk) createComponentSession().modificaConBulk(context.getUserContext(), ordineAcqConsegna);
             fatturaOrdineBulk.setOrdineAcqConsegna(ordineAcqConsegna);
+
         } catch (ComponentException|RemoteException e) {
             throw handleException(e);
         }
@@ -1847,6 +1870,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             FatturaOrdineBulk fatturaOrdine =  Utility.createOrdineAcqComponentSession().calcolaImportoOrdine(context.getUserContext(), fatturaOrdineBulk);
             fatturaOrdineBulk.setImImponibile(fatturaOrdine.getImImponibile());
             fatturaOrdineBulk.setImIva(fatturaOrdine.getImIva());
+            fatturaOrdineBulk.setImImponibileDivisa(fatturaOrdine.getImImponibileDivisa());
+            fatturaOrdineBulk.setImIvaDivisa(fatturaOrdine.getImIvaDivisa());
             fatturaOrdineBulk.setImTotaleConsegna(fatturaOrdine.getImTotaleConsegna());
             fatturaOrdineBulk.setImponibilePerNotaCredito(fatturaOrdine.getImponibilePerNotaCredito());
             fatturaOrdineBulk.setImportoIvaPerNotaCredito(fatturaOrdine.getImportoIvaPerNotaCredito());

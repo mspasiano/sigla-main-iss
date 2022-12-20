@@ -1339,11 +1339,11 @@ public class TransactionalFatturaPassivaComponentSession extends it.cnr.jada.ejb
 	            }
 	        }
 	}
-    public void valorizzaDatiDaOrdini(UserContext param0,
+    public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext param0,
                                               Fattura_passivaBulk param1)
             throws ComponentException, RemoteException {
         try {
-            invoke("valorizzaDatiDaOrdini", new Object[]{
+            return (Fattura_passivaBulk) invoke("valorizzaDatiDaOrdini", new Object[]{
                     param0,
                     param1});
         } catch (java.rmi.RemoteException e) {
