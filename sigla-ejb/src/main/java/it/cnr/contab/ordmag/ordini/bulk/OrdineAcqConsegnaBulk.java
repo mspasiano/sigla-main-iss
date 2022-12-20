@@ -556,4 +556,8 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 		this.fatturaOrdineBulk = fatturaOrdineBulk;
 	}
 
+	public Dictionary getStatoOrdineKeys() {
+		return OrdineAcqBulk.STATO;
+	}
+
 }

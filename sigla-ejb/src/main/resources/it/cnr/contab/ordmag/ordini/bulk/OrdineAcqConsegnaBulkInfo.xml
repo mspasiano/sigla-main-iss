@@ -85,6 +85,19 @@
 			enabledOnFreeSearch="true"
 			label="Data Ordine" />
 	<fieldProperty
+			name="stato_ordine"
+			property="ordineAcqRiga.ordineAcq.stato"
+			inputType="TEXT"
+			inputSize="20"
+			maxLength="20"
+			enabledOnInsert="false"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnFreeSearch="false"
+			nullable="false"
+			keysProperty="statoOrdineKeys"
+			label="Stato" />
+	<fieldProperty
 			name="riga"
 			property="ordineAcqRiga.riga"
 			inputType="TEXT"
@@ -770,19 +783,27 @@
 	<columnSet
 			name="visualOrdinAcqCons">
 		<columnFieldProperty
-				name="dataOrdine"/>
+				headerLabel="Ordine"
+				name="dataOrdine"
+				label="Data"/>
 		<columnFieldProperty
+				headerLabel="Ordine"
 				name="cdNumeratore"
 				label="Numeratore"/>
 		<columnFieldProperty
+				headerLabel="Ordine"
 				name="numero"
-				label="Numero Ordine"/>
+				label="Num."/>
 		<columnFieldProperty
-				name="riga"
-				label="Riga Ordine"/>
+				headerLabel="Ordine"
+				name="stato_ordine"
+				label="Stato"/>
 		<columnFieldProperty
 				name="consegna"
 				label="Consegna"/>
+		<columnFieldProperty
+				name="riga"
+				label="Riga"/>
 		<columnFieldProperty
 				name="denominazioneSede"/>
 		<columnFieldProperty
