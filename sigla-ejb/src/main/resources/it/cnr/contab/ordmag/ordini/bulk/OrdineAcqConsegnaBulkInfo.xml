@@ -782,7 +782,7 @@
 				label="Riga Ordine"/>
 		<columnFieldProperty
 				name="consegna"
-				label="Fornitore"/>
+				label="Consegna"/>
 		<columnFieldProperty
 				name="denominazioneSede"/>
 		<columnFieldProperty
@@ -827,7 +827,7 @@
 				label="Riga Ordine"/>
 		<columnFieldProperty
 				name="consegna"
-				label="Fornitore"/>
+				label="Consegna"/>
 		<columnFieldProperty
 				name="denominazioneSede"/>
 		<columnFieldProperty
