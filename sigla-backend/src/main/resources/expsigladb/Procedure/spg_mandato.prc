@@ -154,7 +154,7 @@ begin
 	      where mriga.CD_CDS     	 	  	 = aMan.CD_CDS
 	        and mriga.ESERCIZIO  			 = aMan.ESERCIZIO
 		    	and mriga.PG_MANDATO 			 = aMan.PG_MANDATO
-		 			and mriga.CD_TIPO_DOCUMENTO_AMM = 'FATTURA_P'
+		 			and mriga.CD_TIPO_DOCUMENTO_AMM IN ('FATTURA_P', 'FAT_ORDINE')
 		 			and mriga.IM_MANDATO_RIGA <> 0  -- escludo note di credito
 		  union all
 	   	  select distinct cd_terzo, cd_modalita_pag, pg_banca,  nvl(cd_terzo_cedente,0)
@@ -162,7 +162,8 @@ begin
 	   	  where mriga.CD_CDS     	 	  	 = aMan.CD_CDS
 	        and mriga.ESERCIZIO  			 = aMan.ESERCIZIO
 		 			and mriga.PG_MANDATO 			 = aMan.PG_MANDATO
-		 			and mriga.CD_TIPO_DOCUMENTO_AMM <> 'FATTURA_P');
+		 			and mriga.CD_TIPO_DOCUMENTO_AMM <> 'FATTURA_P'
+		 			and mriga.CD_TIPO_DOCUMENTO_AMM <> 'FAT_ORDINE');
 
 	select parametri_cnr.fl_tesoreria_unica, parametri_cnr.fl_nuovo_pdg into tesoreria_unica, flNuovoPdg
  from parametri_cnr
