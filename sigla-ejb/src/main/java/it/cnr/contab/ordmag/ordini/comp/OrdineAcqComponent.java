@@ -2435,7 +2435,7 @@ public class OrdineAcqComponent
 						try {
 							rs = ps.executeQuery();
 							if (rs.next())
-								totale = rs.getBigDecimal(1);
+								totale = Optional.ofNullable(rs.getBigDecimal(1)).orElse(BigDecimal.ZERO);
 						} catch (java.sql.SQLException e) {
 							throw handleSQLException(e);
 						} finally {
