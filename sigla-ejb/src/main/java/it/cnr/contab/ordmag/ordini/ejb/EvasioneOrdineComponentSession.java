@@ -17,17 +17,24 @@
 
 package it.cnr.contab.ordmag.ordini.ejb;
 
+import java.rmi.RemoteException;
 import java.util.List;
 
 import javax.ejb.Remote;
 
 import it.cnr.contab.ordmag.magazzino.bulk.BollaScaricoMagBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
+import it.cnr.contab.ordmag.ordini.bulk.ParametriSelezioneOrdiniAcqBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.RemoteIterator;
+
 @Remote
 public interface EvasioneOrdineComponentSession extends it.cnr.jada.ejb.CRUDComponentSession{
 	EvasioneOrdineBulk cercaOrdini(it.cnr.jada.UserContext param0,EvasioneOrdineBulk evasioneOrdine) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 	List<BollaScaricoMagBulk> evadiOrdine(UserContext userContext, EvasioneOrdineBulk evasioneOrdine) throws ComponentException, PersistencyException,java.rmi.RemoteException;
+	public RemoteIterator ricercaEvasioni(UserContext userContext, OrdineAcqConsegnaBulk ordineAcqConsegnaBulk) throws ComponentException, RemoteException;
+
 }
