@@ -51,6 +51,9 @@
       path="/SelezionaListaMovimentiDaAnnullareAction" actionClass="it.cnr.contab.ordmag.magazzino.action.SelezionaListaMovimentiDaAnnullareAction">
   </action>
   <action
+          path="/SelezionatoreVisualOrdinAcqConsListaAction" actionClass="it.cnr.contab.ordmag.ordini.action.SelezionatoreVisualOrdinAcqConsListaAction">
+  </action>
+  <action
           path="/TipoMovimentoAction" actionClass="it.cnr.contab.ordmag.magazzino.action.TipoMovimentoAction">
   </action>
   <action
@@ -254,6 +257,13 @@
     <init-param name="componentSessionName" value="CNRORDMAG00_EJB_OrdineAcqComponentSession"/>
     <init-param name="defaultAction" value="ParametriSelezioneOrdiniAcqAction"/>
     <init-param name="tipoSelezione" value="visOrdiniConsegna"/>
+  </businessProcess>
+
+  <businessProcess name="SelezionatoreVisualOrdinAcqConsListaBP" className="it.cnr.contab.ordmag.ordini.bp.SelezionatoreVisualOrdinAcqConsListaBP">
+    <forward name="default" path="/util/form_lista.jsp" />
+    <init-param name="defaultAction" value="SelezionatoreVisualOrdinAcqConsListaAction" />
+    <init-param name="componentSessionName" value="CNRORDMAG00_EJB_OrdineAcqComponentSession"/>
+    <init-param name="bulkClassName" value="it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk"/>
   </businessProcess>
 
   <businessProcess

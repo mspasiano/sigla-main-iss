@@ -805,6 +805,8 @@
 		<columnFieldProperty
 				name="stato"/>
 		<columnFieldProperty
+				name="statoFatt"/>
+		<columnFieldProperty
 				name="tipoConsegna"/>
 		<columnFieldProperty
 				name="dtPrevConsegna"/>
