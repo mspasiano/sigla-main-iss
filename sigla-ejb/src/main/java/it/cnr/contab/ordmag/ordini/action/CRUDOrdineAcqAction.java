@@ -586,12 +586,10 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
                                                           OrdineAcqBulk ordine,
                                                           UnitaOperativaOrdBulk uop)
             throws java.rmi.RemoteException {
-
+        CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP) context.getBusinessProcess();
         ordine.setUnitaOperativaOrd(uop);
-        ((CRUDBP) context.getBusinessProcess()).setDirty(true);
-        if (uop != null) {
-            CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP) context.getBusinessProcess();
-
+        bp.setDirty(true);
+        if (uop != null && !bp.isSearching()) {
             try {
                 OrdineAcqComponentSession h = (OrdineAcqComponentSession) bp.createComponentSession();
                 h.completaOrdine(context.getUserContext(), ordine);
@@ -599,15 +597,7 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
                     bp.setModel(context, ordine);
                 } catch (BusinessProcessException e) {
                 }
-            } catch (BusinessProcessException e) {
-                return handleException(context, e);
-            } catch (java.rmi.RemoteException e) {
-                return handleException(context, e);
-            } catch (PersistenceException e) {
-                return handleException(context, e);
-            } catch (PersistencyException e) {
-                return handleException(context, e);
-            } catch (ComponentException e) {
+            } catch (BusinessProcessException|RemoteException|PersistenceException|PersistencyException|ComponentException e) {
                 return handleException(context, e);
             }
         }

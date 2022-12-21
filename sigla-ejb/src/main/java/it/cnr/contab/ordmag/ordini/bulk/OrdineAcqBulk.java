@@ -125,7 +125,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     /**
      * [NUMERAZIONE_ORD Numeratori Ordini]
      **/
-    private NumerazioneOrdBulk numerazioneOrd = new NumerazioneOrdBulk();
+    private NumerazioneOrdBulk numerazioneOrd;
     /**
      * [UNITA_OPERATIVA_ORD Rappresenta le unità operative utilizzate in gestione ordine e magazzino.]
      **/
@@ -501,10 +501,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [esercizio]
      **/
     public java.lang.Integer getEsercizio() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getEsercizio();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getEsercizio).orElse(null);
     }
 
     /**
@@ -512,7 +509,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [esercizio]
      **/
     public void setEsercizio(java.lang.Integer esercizio) {
-        this.getNumerazioneOrd().setEsercizio(esercizio);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setEsercizio(esercizio));
     }
 
     /**
@@ -520,10 +517,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdNumeratore]
      **/
     public java.lang.String getCdNumeratore() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getCdNumeratore();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getCdNumeratore).orElse(null);
     }
 
     /**
@@ -531,7 +525,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [cdNumeratore]
      **/
     public void setCdNumeratore(java.lang.String cdNumeratore) {
-        this.getNumerazioneOrd().setCdNumeratore(cdNumeratore);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setCdNumeratore(cdNumeratore));
     }
 
     /**
@@ -539,10 +533,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdUnitaOperativa]
      **/
     public java.lang.String getCdUnitaOperativa() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getCdUnitaOperativa();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getCdUnitaOperativa).orElse(null);
     }
 
     /**
@@ -550,7 +541,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [cdUnitaOperativa]
      **/
     public void setCdUnitaOperativa(java.lang.String cdUnitaOperativa) {
-        this.getNumerazioneOrd().setCdUnitaOperativa(cdUnitaOperativa);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setCdUnitaOperativa(cdUnitaOperativa));
     }
 
     public java.lang.String getCdUopOrdine() {
@@ -1024,6 +1015,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     public OggettoBulk initializeForSearch(CRUDBP bp, it.cnr.jada.action.ActionContext context) {
         super.initializeForSearch(bp, context);
         impostazioniIniziali(context);
+        setNumerazioneOrd(new NumerazioneOrdBulk());
         return this;
     }
 

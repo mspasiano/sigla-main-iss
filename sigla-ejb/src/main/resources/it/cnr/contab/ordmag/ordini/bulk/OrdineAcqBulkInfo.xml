@@ -35,21 +35,31 @@
 	<fieldProperty
 		name="findNumerazioneOrd"
 		property="numerazioneOrd"
-		inputType="searchtool"
+		inputType="SEARCHTOOL"
 		formName="searchtool"
-		enabledOnSearch="false"
+		enabledOnSearch="true"
 		nullable="false"
 		label="Numeratore" />
 	<fieldProperty
 		name="findUnitaOperativaOrd"
 		property="unitaOperativaOrd"
-		inputType="searchtool"
+		inputType="SEARCHTOOL"
 		formName="searchtool"
 		enabledOnSearch="true"
 		nullable="false"
 		label="Unità Operativa" />
 	<fieldProperty
 		name="cdUnitaOperativa"
+		property="numerazioneOrd.unitaOperativaOrd.cdUnitaOperativa"
+		inputType="TEXT"
+		inputSize="30"
+		maxLength="30"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Unità Operativa" />
+	<fieldProperty
+		name="cdUnitaOperativaSearch"
 		property="numerazioneOrd.unitaOperativaOrd.cdUnitaOperativa"
 		inputType="TEXT"
 		inputSize="30"
