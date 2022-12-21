@@ -114,21 +114,25 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         sql.addSQLClause("AND", "ESERCIZIO_ORI_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio_originale());
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getPg_obbligazione());
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
+        sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.NOT_EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
         sql.addOrderBy("FL_SELEZIONE DESC");
         List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
-        final Optional<V_doc_passivo_obbligazioneBulk> fatturaOrdine = Optional.ofNullable(l.stream()
-                .filter(e -> e.getCd_tipo_documento_amm().equals(Numerazione_doc_ammBulk.TIPO_FATTURA_ORDINE))
-                .findFirst().orElse(null));
-        final Optional<V_doc_passivo_obbligazioneBulk> ordine = Optional.ofNullable(l.stream()
-                .filter(e -> e.getCd_tipo_documento_amm().equals(Numerazione_doc_ammBulk.TIPO_ORDINE))
-                .findFirst().orElse(null));
-        if (fatturaOrdine.isPresent())
-            return fatturaOrdine.get();
-        if (ordine.isPresent())
-            return ordine.get();
         return l.stream().findFirst().orElse(null);
     }
 
+    public V_doc_passivo_obbligazioneBulk findDoc_ordine(Obbligazione_scadenzarioBulk os) throws IntrospectionException, PersistencyException {
+        PersistentHome docHome = getHomeCache().getHome(V_doc_passivo_obbligazioneBulk.class);
+        SQLBuilder sql = docHome.createSQLBuilder();
+        sql.addSQLClause("AND", "CD_CDS_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getCd_cds());
+        sql.addSQLClause("AND", "ESERCIZIO_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio());
+        sql.addSQLClause("AND", "ESERCIZIO_ORI_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio_originale());
+        sql.addSQLClause("AND", "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getPg_obbligazione());
+        sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
+        sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
+        sql.addOrderBy("FL_SELEZIONE DESC");
+        List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
+        return l.stream().findFirst().orElse(null);
+    }
     /**
      * <!-- @TODO: da completare -->
      *

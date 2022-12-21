@@ -16,128 +16,128 @@
   -->
 
 <bulkInfo
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns="https://contab.cnr.it/schema/SIGLA" 
-		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://contab.cnr.it/schema/SIGLA"
+        xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
 
-	<fieldProperty
-		name="cd_cds"
-		property="obbligazione.cds.cd_unita_organizzativa"
-		label="Cds"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="ds_scadenza"
-		property="ds_scadenza"
-		label="Descrizione"
-		inputType="TEXT"
-		maxLength="300"
-		inputSize="50"
-		enabledOnSearch="true"
-		nullable="false"
-		/>
-	<fieldProperty
-		name="importo_disponibile"
-		property="importoDisponibile"
-		inputType="TEXT"
-		label="Importo Disponibile"
-		formatName = "it.cnr.contab.util.EuroFormat"
-		/>
-	<fieldProperty
-		name="dt_scadenza"
-		property="dt_scadenza"
-		label="Data scadenza"
-		inputType="TEXT"
-		formatName="date_short"
-		enabledOnSearch="true"
-		nullable="false"
-		/>
-	<fieldProperty
-		name="esercizio"
-		property="obbligazione.esercizio"
-		label="Esercizio"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="im_associato_doc_amm"
-		property="im_associato_doc_amm"
-		label="Importo Associato"
-		inputType="TEXT"
-		formatName = "it.cnr.contab.util.EuroFormat"
-		enabledOnFreeSearch="false"
-		/>
-	<fieldProperty
-		name="im_scadenza"
-		property="im_scadenza"
-		label="Importo scadenza"
-		inputType="TEXT"
-		formatName = "it.cnr.contab.util.EuroFormat"
-		maxLength="13"
-		inputSize="13"
-		enabledOnSearch="true"
-		nullable="false"
-		/>
-	<fieldProperty
-		name="esercizio_originale"
-		property="obbligazione.esercizio_originale"
-		label="Esercizio Impegno"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="pg_obbligazione"
-		property="obbligazione.pg_obbligazione"
-		label="Num impegno"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="pg_obbligazione_scadenzario"
-		property="pg_obbligazione_scadenzario"
-		label="Num scadenza"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="esercizio_mandato"
-		property="esercizio_mandato"
-		label="Esercizio mandato"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="pg_mandato"
-		property="pg_mandato"
-		label="Nr. mandato"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="esercizio_doc_passivo"
-		property="esercizio_doc_passivo"
-		label="Esercizio doc. passivo"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="pg_doc_passivo"
-		property="pg_doc_passivo"
-		label="Nr. doc. passivo"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="cd_tipo_documento_amm"
-		property="cd_tipo_documento_amm"
-		label="Tipo doc. passivo"
-		keysProperty= "tipoDocumentoKeys"
-		inputType="TEXT"
-		/>		
-	<fieldProperty
-		name="im_associato_doc_contabile"
-		property="im_associato_doc_contabile"
-		label="im_associato_doc_contabile"
-		inputType="TEXT"
-		/>
-	<fieldProperty
-		name="cd_cig"
-		property="cd_cig"
-		label="cig"
-		inputType="TEXT"
-		/>	
+    <fieldProperty
+            name="cd_cds"
+            property="obbligazione.cds.cd_unita_organizzativa"
+            label="Cds"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="ds_scadenza"
+            property="ds_scadenza"
+            label="Descrizione"
+            inputType="TEXT"
+            maxLength="300"
+            inputSize="50"
+            enabledOnSearch="true"
+            nullable="false"
+    />
+    <fieldProperty
+            name="importo_disponibile"
+            property="importoDisponibile"
+            inputType="TEXT"
+            label="Importo Disponibile"
+            formatName="it.cnr.contab.util.EuroFormat"
+    />
+    <fieldProperty
+            name="dt_scadenza"
+            property="dt_scadenza"
+            label="Data scadenza"
+            inputType="TEXT"
+            formatName="date_short"
+            enabledOnSearch="true"
+            nullable="false"
+    />
+    <fieldProperty
+            name="esercizio"
+            property="obbligazione.esercizio"
+            label="Esercizio"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="im_associato_doc_amm"
+            property="im_associato_doc_amm"
+            label="Importo Associato"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnFreeSearch="false"
+    />
+    <fieldProperty
+            name="im_scadenza"
+            property="im_scadenza"
+            label="Importo scadenza"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            maxLength="13"
+            inputSize="13"
+            enabledOnSearch="true"
+            nullable="false"
+    />
+    <fieldProperty
+            name="esercizio_originale"
+            property="obbligazione.esercizio_originale"
+            label="Esercizio Impegno"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="pg_obbligazione"
+            property="obbligazione.pg_obbligazione"
+            label="Num impegno"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="pg_obbligazione_scadenzario"
+            property="pg_obbligazione_scadenzario"
+            label="Num scadenza"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="esercizio_mandato"
+            property="esercizio_mandato"
+            label="Esercizio mandato"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="pg_mandato"
+            property="pg_mandato"
+            label="Nr. mandato"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="esercizio_doc_passivo"
+            property="esercizio_doc_passivo"
+            label="Esercizio doc. passivo"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="pg_doc_passivo"
+            property="pg_doc_passivo"
+            label="Nr. doc. passivo"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="cd_tipo_documento_amm"
+            property="cd_tipo_documento_amm"
+            label="Tipo doc. passivo"
+            keysProperty="tipoDocumentoKeys"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="im_associato_doc_contabile"
+            property="im_associato_doc_contabile"
+            label="im_associato_doc_contabile"
+            inputType="TEXT"
+    />
+    <fieldProperty
+            name="cd_cig"
+            property="cd_cig"
+            label="cig"
+            inputType="TEXT"
+    />
 
     <fieldProperty
             name="cig"
@@ -145,8 +145,8 @@
             inputType="SEARCHTOOL"
             formName="searchtool"
             nullable="true"
-			enabledOnSearch="false"
-    	    enabledOnFreeSearch="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"
             CRUDBusinessProcessName="CRUDCodiciCIGBP"
             label="CIG"/>
     <fieldProperty
@@ -163,196 +163,247 @@
             inputType="SELECT"
             keysProperty="motivoEsclusioneCigSIOPEKeys"
             enabledOnSearch="true"
-            label="Motivo assenza CIG"/>		
-	<form name="searchtool">
+            label="Motivo assenza CIG"/>
+    <form name="searchtool">
         <formFieldProperty
-              name="esercizio_originale" 
-              enabledOnSearch="true"
-			  inputSize="5"/>
+                name="esercizio_originale"
+                enabledOnSearch="true"
+                inputSize="5"/>
         <formFieldProperty
-              name="pg_obbligazione" 
-              enabledOnSearch="true"
-			  inputSize="10"/>   
+                name="pg_obbligazione"
+                enabledOnSearch="true"
+                inputSize="10"/>
         <formFieldProperty
-              name="pg_obbligazione_scadenzario" 
-              enabledOnSearch="true"
-			  inputSize="4"/>   
+                name="pg_obbligazione_scadenzario"
+                enabledOnSearch="true"
+                inputSize="4"/>
         <formFieldProperty
-              name="im_scadenza"
-			  inputSize="15"/> 
+                name="im_scadenza"
+                inputSize="15"/>
         <formFieldProperty
-              name="dt_scadenza"
-			  inputSize="10"/> 
+                name="dt_scadenza"
+                inputSize="10"/>
         <formFieldProperty
-              name="ds_scadenza"
-			  inputSize="80"/> 
+                name="ds_scadenza"
+                inputSize="80"/>
     </form>
-	<form name="searchtool_ridotto">
+    <form name="searchtool_ridotto">
         <formFieldProperty
-              name="esercizio_originale" 
-              enabledOnSearch="true"
-			  inputSize="4"
-			  inputCssClass="w-4"/>
+                name="esercizio_originale"
+                enabledOnSearch="true"
+                inputSize="4"
+                inputCssClass="w-4"/>
         <formFieldProperty
-              name="pg_obbligazione" 
-              enabledOnSearch="true"
-			  inputSize="10"
-			  inputCssClass="w-10"/>
+                name="pg_obbligazione"
+                enabledOnSearch="true"
+                inputSize="10"
+                inputCssClass="w-10"/>
         <formFieldProperty
-              name="pg_obbligazione_scadenzario" 
-              enabledOnSearch="true"
-			  inputSize="3"
-			  inputCssClass="w-3"/>
+                name="pg_obbligazione_scadenzario"
+                enabledOnSearch="true"
+                inputSize="3"
+                inputCssClass="w-3"/>
         <formFieldProperty
-              name="ds_scadenza"
-			  inputSize="20"
-			  inputCssClass="w-60"/>
+                name="ds_scadenza"
+                inputSize="20"
+                inputCssClass="w-60"/>
     </form>
-    	
-	<columnFieldProperty
-		name="esercizio"
-		/>
-	<columnFieldProperty
-		name="cd_cds"
-		/>
-	<columnFieldProperty
-		name="esercizio_originale"
-		/>
-	<columnFieldProperty
-		name="pg_obbligazione"
-		/>	
-	<columnFieldProperty
-		name="dt_scadenza"
-		/>
-	<columnFieldProperty
-		name="im_scadenza"
-		columnStyle="width:80px; text-align: right; padding-right:20px"
-		/>
-	<columnFieldProperty
-		name="importo_disponibile"
-		columnStyle="width:80px; text-align: right; padding-right:20px"
-		/>
-	<columnFieldProperty
-		name="ds_scadenza"
-		/>
-	<columnFieldProperty
-		name="cd_terzo"
-		label="Beneficiario"
-		property="obbligazione.cd_terzo"
-		/>
-		
-	<columnFieldProperty
-		name="cd_cig"
-		label="Cig"
-		property="obbligazione.contratto.cig.cdCig"
-		/>
-		
-	<columnSet
-		name="obbligazione">
-	<columnFieldProperty
-		name="dt_scadenza"
-		/>
-	<columnFieldProperty
-		name="pg_obbligazione_scadenzario"
-		/>	
-	<columnFieldProperty
-		name="ds_scadenza"
-		/>
-	<columnFieldProperty
-		name="im_scadenza"
-		columnStyle="width:80px; text-align: right; padding-right:20px"
-		/>	
-	<columnFieldProperty
-		name="esercizio_mandato"
-		/>
-	<columnFieldProperty
-		name="pg_mandato"
-		/>
-	<columnFieldProperty
-		name="cd_tipo_documento_amm"
-		/>
-	<columnFieldProperty
-		name="esercizio_doc_passivo"
-		/>
-	<columnFieldProperty
-		name="pg_doc_passivo"
-		/>
-	</columnSet>
 
+    <columnFieldProperty
+            name="esercizio"
+    />
+    <columnFieldProperty
+            name="cd_cds"
+    />
+    <columnFieldProperty
+            name="esercizio_originale"
+    />
+    <columnFieldProperty
+            name="pg_obbligazione"
+    />
+    <columnFieldProperty
+            name="dt_scadenza"
+    />
+    <columnFieldProperty
+            name="im_scadenza"
+            columnStyle="width:80px; text-align: right; padding-right:20px"
+    />
+    <columnFieldProperty
+            name="importo_disponibile"
+            columnStyle="width:80px; text-align: right; padding-right:20px"
+    />
+    <columnFieldProperty
+            name="ds_scadenza"
+    />
+    <columnFieldProperty
+            name="cd_terzo"
+            label="Beneficiario"
+            property="obbligazione.cd_terzo"
+    />
 
-	<formFieldProperty
-		name="cd_cds"
+    <columnFieldProperty
+            name="cd_cig"
+            label="Cig"
+            property="obbligazione.contratto.cig.cdCig"
+    />
+
+    <columnSet
+            name="obbligazione">
+        <columnFieldProperty
+                name="dt_scadenza"
+        />
+        <columnFieldProperty
+                name="pg_obbligazione_scadenzario"
+        />
+        <columnFieldProperty
+                name="ds_scadenza"
+        />
+        <columnFieldProperty
+                name="im_scadenza"
+                columnStyle="width:80px; text-align: right; padding-right:20px"
+        />
+        <columnFieldProperty
+                name="esercizio_mandato"
+        />
+        <columnFieldProperty
+                name="pg_mandato"
+        />
+        <columnFieldProperty
+                name="cd_tipo_documento_amm"
+        />
+        <columnFieldProperty
+                name="esercizio_doc_passivo"
+        />
+        <columnFieldProperty
+                name="pg_doc_passivo"
+        />
+    </columnSet>
+
+    <columnSet
+            name="obbligazione_ordine">
+        <columnFieldProperty
+                name="dt_scadenza"
+        />
+        <columnFieldProperty
+                name="pg_obbligazione_scadenzario"
+        />
+        <columnFieldProperty
+                name="ds_scadenza"
+        />
+        <columnFieldProperty
+                name="im_scadenza"
+                columnStyle="width:80px; text-align: right; padding-right:20px"
+        />
+        <columnFieldProperty
+                name="esercizio_mandato"
+        />
+        <columnFieldProperty
+                name="pg_mandato"
+        />
+		<columnFieldProperty
+				property="esercizio_ordine"
+				inputType="TEXT"
+				headerLabel="Ordine"
+				label="Esecizio"
+				name="esercizio_ordine"
 		/>
-	<formFieldProperty
-		name="ds_scadenza"
+		<columnFieldProperty
+				property="pg_ordine"
+				inputType="TEXT"
+				headerLabel="Ordine"
+				label="Numero"
+				name="pg_ordine"
 		/>
-	<formFieldProperty
-		name="fl_aggiorna_scad_successiva"
-		property="fl_aggiorna_scad_successiva"
-		label="Aggiorna scadenza successiva"
-		inputType="CHECKBOX"
-		maxLength="1"
-		inputSize="1"
-		enabledOnSearch="true"
-		/>
-	<formFieldProperty
-		name="dt_scadenza"
-		/>
-	<formFieldProperty
-		name="esercizio"
-		/>
-	<formFieldProperty
-		name="im_associato_doc_amm"
-		/>
-	<formFieldProperty
-		name="im_associato_doc_contabile"
-		/>
-	<formFieldProperty
-		name="im_scadenza"
-		/>
-	<formFieldProperty
-		name="esercizio_originale"
-		/>
-	<formFieldProperty
-		name="pg_obbligazione"
-		/>
-	<formFieldProperty
-		name="pg_obbligazione_scadenzario"
-		/>
-	<formFieldProperty
-		name="importo_disponibile"
-		/>
+        <columnFieldProperty
+                headerLabel="Doc. Passivo"
+                name="cd_tipo_documento_amm"
+                label="Tipo"
+        />
+        <columnFieldProperty
+                headerLabel="Doc. Passivo"
+                name="esercizio_doc_passivo"
+                label="Esercizio"
+        />
+        <columnFieldProperty
+                headerLabel="Doc. Passivo"
+                name="pg_doc_passivo"
+                label="Nr."
+        />
+    </columnSet>
+
+    <formFieldProperty
+            name="cd_cds"
+    />
+    <formFieldProperty
+            name="ds_scadenza"
+    />
+    <formFieldProperty
+            name="fl_aggiorna_scad_successiva"
+            property="fl_aggiorna_scad_successiva"
+            label="Aggiorna scadenza successiva"
+            inputType="CHECKBOX"
+            maxLength="1"
+            inputSize="1"
+            enabledOnSearch="true"
+    />
+    <formFieldProperty
+            name="dt_scadenza"
+    />
+    <formFieldProperty
+            name="esercizio"
+    />
+    <formFieldProperty
+            name="im_associato_doc_amm"
+    />
+    <formFieldProperty
+            name="im_associato_doc_contabile"
+    />
+    <formFieldProperty
+            name="im_scadenza"
+    />
+    <formFieldProperty
+            name="esercizio_originale"
+    />
+    <formFieldProperty
+            name="pg_obbligazione"
+    />
+    <formFieldProperty
+            name="pg_obbligazione_scadenzario"
+    />
+    <formFieldProperty
+            name="importo_disponibile"
+    />
     <formFieldProperty
             name="cig"/>
     <formFieldProperty
             name="motivo_assenza_cig"/>
-	<findFieldProperty
-		name="cd_cds"
-		/>
-	<findFieldProperty
-		name="ds_scadenza"
-		/>
-	<findFieldProperty
-		name="dt_scadenza"
-		/>
-	<findFieldProperty
-		name="esercizio"
-		/>
-	<findFieldProperty
-		name="im_associato_doc_contabile"
-		/>
-	<findFieldProperty
-		name="im_scadenza"
-		/>
-	<findFieldProperty
-		name="esercizio_originale"
-		/>
-	<findFieldProperty
-		name="pg_obbligazione"
-		/>
-	<findFieldProperty
-		name="pg_obbligazione_scadenzario"
-		/>
+    <findFieldProperty
+            name="cd_cds"
+    />
+    <findFieldProperty
+            name="ds_scadenza"
+    />
+    <findFieldProperty
+            name="dt_scadenza"
+    />
+    <findFieldProperty
+            name="esercizio"
+    />
+    <findFieldProperty
+            name="im_associato_doc_contabile"
+    />
+    <findFieldProperty
+            name="im_scadenza"
+    />
+    <findFieldProperty
+            name="esercizio_originale"
+    />
+    <findFieldProperty
+            name="pg_obbligazione"
+    />
+    <findFieldProperty
+            name="pg_obbligazione_scadenzario"
+    />
 
 
 </bulkInfo>

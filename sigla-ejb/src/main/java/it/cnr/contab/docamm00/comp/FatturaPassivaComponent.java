@@ -841,9 +841,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     } else if (!fatturaPassiva.isToBeCreated() && OggettoBulk.NORMAL == scadenza.getCrudStatus() && scadenza.getFlAssociataOrdine()) {
                         final Obbligazione_scadenzarioHome home = (Obbligazione_scadenzarioHome) getHomeCache(userContext).getHome(Obbligazione_scadenzarioBulk.class);
                         try {
-                            final V_doc_passivo_obbligazioneBulk docPassivo = home.findDoc_passivo(scadenza);
-                            if (docPassivo.getCd_tipo_documento_amm().equalsIgnoreCase(Numerazione_doc_ammBulk.TIPO_ORDINE)) {
-                                scadenza.setIm_associato_doc_amm(docPassivo.getIm_totale_doc_amm());
+                            final Optional<V_doc_passivo_obbligazioneBulk> docPassivo = Optional.ofNullable(home.findDoc_ordine(scadenza));
+                            if (docPassivo.isPresent()) {
+                                scadenza.setIm_associato_doc_amm(docPassivo.get().getIm_totale_doc_amm());
                                 scadenza.setIm_associato_doc_contabile(BigDecimal.ZERO.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
                                 updateImportoAssociatoDocAmm(userContext, scadenza);
                             }

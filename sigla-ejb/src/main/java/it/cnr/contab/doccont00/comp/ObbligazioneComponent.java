@@ -2657,7 +2657,13 @@ public OggettoBulk inizializzaBulkPerModifica (UserContext aUC,OggettoBulk obbli
 				os.setEsercizio_doc_passivo( docPassivo.getEsercizio());
 				os.setPg_doc_passivo( docPassivo.getPg_documento_amm());
 				os.setCd_tipo_documento_amm(docPassivo.getCd_tipo_documento_amm());
-			}	
+			}
+			V_doc_passivo_obbligazioneBulk docOrdine = osHome.findDoc_ordine( os );
+			if ( docOrdine != null)
+			{
+				os.setEsercizio_ordine( docOrdine.getEsercizio());
+				os.setPg_ordine( docOrdine.getPg_documento_amm());
+			}
 
 			//per ogni scadenza carico l'eventuale mandato
 			Mandato_rigaBulk mandato = osHome.findMandato( os );
