@@ -282,7 +282,7 @@
             enabledOnInsert="true"
             enabledOnEdit="true"
             nullable="true"
-            label="Usa Impegno Per Attesa Nota Credito" />
+            label="Usa Impegno per rettifica" />
     <form
             name="searchtool">
         <formFieldProperty

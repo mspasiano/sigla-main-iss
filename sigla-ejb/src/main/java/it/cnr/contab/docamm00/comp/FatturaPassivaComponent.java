@@ -797,7 +797,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             im_ass = calcolaTotaleObbligazionePer(userContext, scadenza, fattura_passiva);
 
                         scadenza.setIm_associato_doc_amm(im_ass);
-                        scadenza.setFlAssociataOrdine(Boolean.FALSE);
                         updateImportoAssociatoDocAmm(userContext, scadenza);
                     }
 
@@ -839,6 +838,18 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         scadenza.setIm_associato_doc_amm(BigDecimal.ZERO.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
                         scadenza.setIm_associato_doc_contabile(BigDecimal.ZERO.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
                         updateImportoAssociatoDocAmm(userContext, scadenza);
+                    } else if (!fatturaPassiva.isToBeCreated() && OggettoBulk.NORMAL == scadenza.getCrudStatus() && scadenza.getFlAssociataOrdine()) {
+                        final Obbligazione_scadenzarioHome home = (Obbligazione_scadenzarioHome) getHomeCache(userContext).getHome(Obbligazione_scadenzarioBulk.class);
+                        try {
+                            final V_doc_passivo_obbligazioneBulk docPassivo = home.findDoc_passivo(scadenza);
+                            if (docPassivo.getCd_tipo_documento_amm().equalsIgnoreCase(Numerazione_doc_ammBulk.TIPO_ORDINE)) {
+                                scadenza.setIm_associato_doc_amm(docPassivo.getIm_totale_doc_amm());
+                                scadenza.setIm_associato_doc_contabile(BigDecimal.ZERO.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+                                updateImportoAssociatoDocAmm(userContext, scadenza);
+                            }
+                        } catch (IntrospectionException | PersistencyException ex) {
+                            throw handleException(ex);
+                        }
                     }
                     /**
                      * Devo aggiornare i Saldi per quelle scadenze modificate e riportate
@@ -2855,34 +2866,12 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
      */
 //^^@@
 
-    private Fattura_passiva_rigaBulk getDettaglioForRigaDaOrdini(Fattura_passivaBulk fattura, FatturaOrdineBulk fatturaOrdineBulk){
-        Voce_ivaBulk iva = getVoceIvaOrdini(fatturaOrdineBulk);
-        BigDecimal prezzoUnitarioOrdine = getPrezzoUnitarioOrdini(fatturaOrdineBulk);
-        for (Fattura_passiva_rigaBulk riga : fattura.getFattura_passiva_dettColl()){
-            if (fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio().equalsByPrimaryKey(riga.getBene_servizio()) &&
-                    iva.equalsByPrimaryKey(riga.getVoce_iva()) &&
-                fatturaOrdineBulk.getOrdineAcqConsegna().getObbligazioneScadenzario().equalsByPrimaryKey(riga.getObbligazione_scadenziario()) &&
-                    prezzoUnitarioOrdine.compareTo(riga.getPrezzo_unitario()) == 0){
-                return riga;
-            }
-        }
-        return null;
-    }
-
     private Voce_ivaBulk getVoceIvaOrdini(FatturaOrdineBulk fatturaOrdineBulk) {
         Voce_ivaBulk iva = fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getVoceIva();
         if (fatturaOrdineBulk.getVoceIva() != null && fatturaOrdineBulk.getCdVoceIvaRett() != null){
             iva = fatturaOrdineBulk.getVoceIva();
         }
         return iva;
-    }
-
-    private BigDecimal getPrezzoUnitarioOrdini(FatturaOrdineBulk fatturaOrdineBulk) {
-        BigDecimal prezzo = fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario();
-        if (fatturaOrdineBulk.getPrezzoUnitarioRett() != null){
-            prezzo = fatturaOrdineBulk.getPrezzoUnitarioRett();
-        }
-        return prezzo;
     }
 
     private String impostaDescrizioneRigaDaOrdine(String descr, String notaRiga){
@@ -2946,24 +2935,24 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         throw new ApplicationMessageFormatException("Attenzione: Per la riga di consegna {0} non è stato indicato l'impegno da usare per nota di credito", consegna.getConsegnaOrdineString());
                 }
                 consegna.setFatturaOrdineBulk(fatturaOrdineBulk);
-                Fattura_passiva_rigaBulk riga = getDettaglioForRigaDaOrdini(fattura, fatturaOrdineBulk);
+                Fattura_passiva_rigaBulk riga = Optional.ofNullable(fatturaOrdineBulk.getFatturaPassivaRiga())
+                        .filter(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getCrudStatus() != OggettoBulk.UNDEFINED).orElse(null);
                 if (riga == null){
                     riga = new Fattura_passiva_rigaIBulk();
                     fattura.addToFattura_passiva_dettColl(riga);
                     riga.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
                     riga.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
                     riga.setQuantita(fatturaOrdineBulk.getOrdineAcqConsegna().getQuantita());
-                    riga.setPrezzo_unitario(Utility.nvl(fatturaOrdineBulk.getPrezzoUnitarioRett(),
-                            fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()));
+                    riga.setPrezzo_unitario(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario());
                     riga.setDs_riga_fattura(
                             impostaDescrizioneRigaDaOrdine(
                                     riga.getBene_servizio().getDs_bene_servizio(),
                                     fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()
                             )
                     );
-                    riga.setIm_iva(fatturaOrdineBulk.getImIva());
-                    riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
-                    riga.setIm_totale_divisa(Utility.nvl(fatturaOrdineBulk.getImImponibileDivisa()));
+                    riga.setIm_iva(fatturaOrdineBulk.getOrdineAcqConsegna().getImIva());
+                    riga.setIm_imponibile(fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibile());
+                    riga.setIm_totale_divisa(fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibileDivisa());
                     riga.setIm_diponibile_nc(riga.getIm_imponibile().add(riga.getIm_iva()));
                     valorizzaCIG(riga, fatturaOrdineBulk);
                     java.util.Vector dettagliDaContabilizzare = new java.util.Vector();
@@ -2977,70 +2966,69 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     }
                     fatturaOrdineBulk.setFatturaPassivaRiga(riga);
                     contabilizzaDettagliSelezionati(userContext, fattura, dettagliDaContabilizzare, obbligazione);
-                } else {
-                    fatturaOrdineBulk.setFatturaPassivaRiga(riga);
-                    valorizzaCIG(riga, fatturaOrdineBulk);
-                }
-                if (fatturaOrdineBulk.isRigaAttesaNotaCredito()){
-                    Fattura_passiva_rigaBulk rigaPerNotaCredito = new Fattura_passiva_rigaIBulk();
-                    if (fatturaOrdineBulk.getOperazioneImpegnoNotaCredito().equals(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_DIVERSO)) {
-                        fattura.addToFattura_passiva_dettColl(rigaPerNotaCredito);
-                        rigaPerNotaCredito.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
-                        rigaPerNotaCredito.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
-                        rigaPerNotaCredito.setQuantita(BigDecimal.ONE);
-                        rigaPerNotaCredito.setPrezzo_unitario(fatturaOrdineBulk.getImponibilePerNotaCredito().subtract(fatturaOrdineBulk.getImImponibile()));
-                        rigaPerNotaCredito.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(rigaPerNotaCredito.getBene_servizio().getDs_bene_servizio() ,fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
-                        rigaPerNotaCredito.setIm_iva(fatturaOrdineBulk.getImportoIvaPerNotaCredito().subtract(fatturaOrdineBulk.getImIva()));
-                        rigaPerNotaCredito.setIm_imponibile(rigaPerNotaCredito.getPrezzo_unitario());
-                        rigaPerNotaCredito.setIm_totale_divisa(rigaPerNotaCredito.getIm_imponibile());
-                        rigaPerNotaCredito.setIm_diponibile_nc(rigaPerNotaCredito.getIm_imponibile().add(rigaPerNotaCredito.getIm_iva()));
-                        valorizzaCIG(rigaPerNotaCredito, fatturaOrdineBulk);
-                    }
-                    if (fatturaOrdineBulk.getOperazioneImpegnoNotaCredito().equals(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_ORDINE)) {
-                        Obbligazione_scadenzarioHome home = Optional.ofNullable(getHome(userContext, Obbligazione_scadenzarioBulk.class))
-                                .filter(Obbligazione_scadenzarioHome.class::isInstance)
-                                .map(Obbligazione_scadenzarioHome.class::cast)
-                                .orElseThrow(() -> new ComponentException("Cannot find Obbligazione_scadenzarioHome"));
 
-                        SQLBuilder sql = home.createSQLBuilder();
-                        sql.addClause("AND","cd_cds",sql.EQUALS, consegna.getObbligazioneScadenzario().getCd_cds());
-                        sql.addClause("AND","esercizio",sql.EQUALS, consegna.getObbligazioneScadenzario().getEsercizio());
-                        sql.addClause("AND","esercizio_originale",sql.EQUALS, consegna.getObbligazioneScadenzario().getEsercizio_originale());
-                        sql.addClause("AND","pg_obbligazione",sql.EQUALS, consegna.getObbligazioneScadenzario().getPg_obbligazione());
-                        sql.addClause("AND","im_associato_doc_amm",sql.EQUALS, BigDecimal.ZERO);
-                        sql.addClause("AND","im_scademza",sql.GREATER, BigDecimal.ZERO);
-                        sql.addOrderBy("dt_scadenza");
-                        sql.addOrderBy("pg_obbligazione_scadenzario");
-                        try {
-                            List<Obbligazione_scadenzarioBulk> scadenzaAperte = home.fetchAll(sql);
-                            if (scadenzaAperte!= null && scadenzaAperte.size() > 0){
-                                Obbligazione_scadenzarioBulk obbl = scadenzaAperte.get(0);
-                                fattura.addToFattura_passiva_dettColl(rigaPerNotaCredito);
-                                rigaPerNotaCredito.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
-                                rigaPerNotaCredito.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
-                                rigaPerNotaCredito.setQuantita(BigDecimal.ONE);
-                                rigaPerNotaCredito.setPrezzo_unitario(fatturaOrdineBulk.getImponibilePerNotaCredito().subtract(fatturaOrdineBulk.getImImponibile()));
-                                rigaPerNotaCredito.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(rigaPerNotaCredito.getBene_servizio().getDs_bene_servizio() ,fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
-                                rigaPerNotaCredito.setIm_iva(fatturaOrdineBulk.getImportoIvaPerNotaCredito().subtract(fatturaOrdineBulk.getImIva()));
-                                rigaPerNotaCredito.setIm_imponibile(rigaPerNotaCredito.getPrezzo_unitario());
-                                rigaPerNotaCredito.setIm_totale_divisa(rigaPerNotaCredito.getIm_imponibile());
-                                rigaPerNotaCredito.setIm_diponibile_nc(rigaPerNotaCredito.getIm_imponibile().add(rigaPerNotaCredito.getIm_iva()));
-                                valorizzaCIG(rigaPerNotaCredito, fatturaOrdineBulk);
-                                obbl.setIm_associato_doc_amm(rigaPerNotaCredito.getIm_diponibile_nc());
-                                obbl.setToBeUpdated();
-                                fatturaOrdineBulk.setObbligazioneScadenzarioNc(obbl);
-                                java.util.Vector dettagliDaContabilizzare = new java.util.Vector();
-                                dettagliDaContabilizzare.add(rigaPerNotaCredito);
-                                ObbligazioniTable obbs = fattura.getObbligazioniHash();
-                                if (obbs != null) {
-                                    java.util.List dettagliContabilizzati = (java.util.List) obbs.get(obbl);
-                                    if (dettagliContabilizzati != null && !dettagliContabilizzati.isEmpty())
-                                        dettagliDaContabilizzare.addAll(dettagliContabilizzati);
+                    if (fatturaOrdineBulk.isRigaAttesaNotaCredito() || Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent()){
+                        Fattura_passiva_rigaBulk rigaPerRettifica = new Fattura_passiva_rigaIBulk();
+                        fattura.addToFattura_passiva_dettColl(rigaPerRettifica);
+                        rigaPerRettifica.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
+                        rigaPerRettifica.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
+                        rigaPerRettifica.setQuantita(BigDecimal.ONE);
+                        rigaPerRettifica.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(rigaPerRettifica.getBene_servizio().getDs_bene_servizio() ,fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
+                        if (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent()) {
+                            final BigDecimal rettifica = fatturaOrdineBulk.getPrezzoUnitarioRett()
+                                    .subtract(fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibile());
+                            rigaPerRettifica.setPrezzo_unitario(rettifica);
+                            rigaPerRettifica.setIm_imponibile(rettifica.setScale(2));
+                            rigaPerRettifica.setIm_iva(fatturaOrdineBulk.calcolaIva(rigaPerRettifica.getIm_imponibile()));
+                            rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
+                        } else if (Optional.ofNullable(fatturaOrdineBulk.getImponibilePerNotaCredito()).isPresent()) {
+                            rigaPerRettifica.setPrezzo_unitario(fatturaOrdineBulk.getImponibilePerNotaCredito().subtract(fatturaOrdineBulk.getImImponibile()));
+                            rigaPerRettifica.setIm_iva(fatturaOrdineBulk.getImportoIvaPerNotaCredito().subtract(fatturaOrdineBulk.getImIva()));
+                            rigaPerRettifica.setIm_imponibile(rigaPerRettifica.getPrezzo_unitario());
+                            rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
+                            rigaPerRettifica.setIm_diponibile_nc(rigaPerRettifica.getIm_imponibile().add(rigaPerRettifica.getIm_iva()));
+                        }
+                        valorizzaCIG(rigaPerRettifica, fatturaOrdineBulk);
+                        if (Optional.ofNullable(fatturaOrdineBulk.getOperazioneImpegnoNotaCredito()).orElse(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_DIVERSO)
+                                .equals(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_ORDINE)) {
+                            Obbligazione_scadenzarioHome home = Optional.ofNullable(getHome(userContext, Obbligazione_scadenzarioBulk.class))
+                                    .filter(Obbligazione_scadenzarioHome.class::isInstance)
+                                    .map(Obbligazione_scadenzarioHome.class::cast)
+                                    .orElseThrow(() -> new ComponentException("Cannot find Obbligazione_scadenzarioHome"));
+
+                            SQLBuilder sql = home.createSQLBuilder();
+                            sql.addClause("AND","cd_cds",sql.EQUALS, consegna.getObbligazioneScadenzario().getCd_cds());
+                            sql.addClause("AND","esercizio",sql.EQUALS, consegna.getObbligazioneScadenzario().getEsercizio());
+                            sql.addClause("AND","esercizio_originale",sql.EQUALS, consegna.getObbligazioneScadenzario().getEsercizio_originale());
+                            sql.addClause("AND","pg_obbligazione",sql.EQUALS, consegna.getObbligazioneScadenzario().getPg_obbligazione());
+                            sql.addClause("AND","im_associato_doc_amm",sql.EQUALS, BigDecimal.ZERO);
+                            sql.addClause("AND","im_scadenza",sql.GREATER, BigDecimal.ZERO);
+                            sql.addOrderBy("dt_scadenza");
+                            sql.addOrderBy("pg_obbligazione_scadenzario");
+                            try {
+                                List<Obbligazione_scadenzarioBulk> scadenzaAperte = home.fetchAll(sql);
+                                if (Optional.ofNullable(scadenzaAperte).filter(obbligazioneScadenzarioBulks -> !obbligazioneScadenzarioBulks.isEmpty()).isPresent()){
+                                    Obbligazione_scadenzarioBulk obbl = scadenzaAperte.get(0);
+                                    if (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent()) {
+                                        obbl.setIm_associato_doc_amm(rigaPerRettifica.getIm_diponibile_nc());
+                                    } else if (Optional.ofNullable(fatturaOrdineBulk.getImponibilePerNotaCredito()).isPresent()) {
+                                        obbl.setIm_associato_doc_amm(rigaPerRettifica.getIm_diponibile_nc());
+                                    }
+                                    obbl.setToBeUpdated();
+                                    fatturaOrdineBulk.setObbligazioneScadenzarioNc(obbl);
+                                    dettagliDaContabilizzare = new java.util.Vector();
+                                    dettagliDaContabilizzare.add(rigaPerRettifica);
+                                    obbs = fattura.getObbligazioniHash();
+                                    if (obbs != null) {
+                                        java.util.List dettagliContabilizzati = (java.util.List) obbs.get(obbl);
+                                        if (dettagliContabilizzati != null && !dettagliContabilizzati.isEmpty())
+                                            dettagliDaContabilizzare.addAll(dettagliContabilizzati);
+                                    }
+                                    contabilizzaDettagliSelezionati(userContext, fattura, dettagliDaContabilizzare, obbl);
                                 }
-                                contabilizzaDettagliSelezionati(userContext, fattura, dettagliDaContabilizzare, obbl);
+                            } catch (PersistencyException e) {
+                                handleException(e);
                             }
-                        } catch (PersistencyException e) {
-                            handleException(e);
                         }
                     }
                 }
@@ -6616,7 +6604,8 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         }
         controllaQuadraturaIntrastat(aUC, fatturaPassiva);
         controllaQuadraturaObbligazioni(aUC, fatturaPassiva);
-        controllaQuadraturaOrdini(aUC, fatturaPassiva);
+        // TODO Per ora remmato Marco Spasiano
+        //controllaQuadraturaOrdini(aUC, fatturaPassiva);
     }
 
     public void controlliCig(Fattura_passiva_rigaBulk riga) throws ApplicationException {

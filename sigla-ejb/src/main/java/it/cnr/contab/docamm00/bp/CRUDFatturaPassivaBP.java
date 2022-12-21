@@ -115,7 +115,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     private final SimpleDetailCRUDController dettaglioObbligazioneController;
 
     private final OrdiniCRUDController fatturaOrdiniController = new OrdiniCRUDController(
-            "Righe di consegna selezionate", FatturaOrdineBulk.class,
+            "Ordini", FatturaOrdineBulk.class,
             "fattura_passiva_ordini", this);
 
     private final FatturaPassivaRigaIntrastatCRUDController dettaglioIntrastatController = new FatturaPassivaRigaIntrastatCRUDController(
@@ -1080,29 +1080,6 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
 
     public void save(ActionContext context) throws ValidationException,
             BusinessProcessException {
-        /**
-         * Prima del Salvataggio carico le righe di fattura da ordine
-         */
-        final Optional<Fattura_passivaBulk> optionalFatturaPassivaBulk = Optional.ofNullable(getModel())
-                .filter(Fattura_passivaBulk.class::isInstance)
-                .map(Fattura_passivaBulk.class::cast)
-                .map(fatturaPassivaBulk -> {
-                    if (Optional.ofNullable(fatturaPassivaBulk.getFlDaOrdini()).isPresent() && fatturaPassivaBulk.getFlDaOrdini()) {
-                        try {
-                            return ((FatturaPassivaComponentSession) createComponentSession()).valorizzaDatiDaOrdini(context.getUserContext(), fatturaPassivaBulk);
-                        } catch (ComponentException|RemoteException|BusinessProcessException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                    return fatturaPassivaBulk;
-                });
-        optionalFatturaPassivaBulk.ifPresent(fatturaPassivaBulk -> {
-            try {
-                setModel(context, fatturaPassivaBulk);
-            } catch (BusinessProcessException e) {
-                throw new RuntimeException(e);
-            }
-        });
         super.save(context);
         setCarryingThrough(false);
     }
@@ -1663,7 +1640,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
 
     private static final String[] TAB_FATTURA_PASSIVA = new String[]{"tabFatturaPassiva", "Testata", "/docamm00/tab_fattura_passiva.jsp"};
     private static final String[] TAB_FORNITORE = new String[]{"tabFornitore", "Fornitore", "/docamm00/tab_fornitore.jsp"};
-    private static final String[] TAB_FATTURA_PASSIVA_DETTAGLIO = new String[]{"tabFatturaPassivaDettaglio", "Dettaglio", "/docamm00/tab_fattura_passiva_dettaglio.jsp"};
+    public static final String[] TAB_FATTURA_PASSIVA_DETTAGLIO = new String[]{"tabFatturaPassivaDettaglio", "Dettaglio", "/docamm00/tab_fattura_passiva_dettaglio.jsp"};
     private static final String[] TAB_FATTURA_PASSIVA_CONSUNTIVO = new String[]{"tabFatturaPassivaConsuntivo", "Consuntivo", "/docamm00/tab_fattura_passiva_consuntivo.jsp"};
     private static final String[] TAB_FATTURA_PASSIVA_OBBLIGAZIONI = new String[]{"tabFatturaPassivaObbligazioni", "Impegni", "/docamm00/tab_fattura_passiva_obbligazioni.jsp"};
     private static final String[] TAB_FATTURA_PASSIVA_STORNI = new String[]{"tabFatturaPassivaObbligazioni", "Storni", "/docamm00/tab_fattura_passiva_obbligazioni.jsp"};
@@ -1711,12 +1688,9 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
 
             if (fattura.isDaOrdini()){
                 pages.put(i++, TAB_FATTURA_PASSIVA_ORDINI);
+                pages.put(i++, TAB_FATTURA_PASSIVA_DETTAGLIO);
                 pages.put(i++, TAB_FATTURA_PASSIVA_CONSUNTIVO);
-/*                java.util.Hashtable obbligazioni = fattura.getFattura_passiva_obbligazioniHash();
-                 boolean hasObbligazioni = !(obbligazioni == null || obbligazioni.isEmpty());
-                if (hasObbligazioni) {*/
-                    pages.put(i++, TAB_FATTURA_PASSIVA_OBBLIGAZIONI);
-//                }
+                pages.put(i++, TAB_FATTURA_PASSIVA_OBBLIGAZIONI);
             } else {
                 pages.put(i++, TAB_FATTURA_PASSIVA_DETTAGLIO);
                 pages.put(i++, TAB_FATTURA_PASSIVA_CONSUNTIVO);

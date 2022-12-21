@@ -57,15 +57,9 @@ public class FatturaPassivaRigaCRUDController extends it.cnr.jada.util.action.Si
      * Restituisce true se è possibile aggiungere nuovi elementi
      */
     public boolean isGrowable() {
-
         Fattura_passivaBulk fatturaP = (Fattura_passivaBulk) getParentModel();
         return super.isGrowable() && !((it.cnr.jada.util.action.CRUDBP) getParentController()).isSearching() &&
                 !fatturaP.isPagata();
-        //Tolto come da richiesta 423. Per NDC e NDD reimplementato
-        //&&
-        //fatturaP.getProtocollo_iva() == null &&
-        //fatturaP.getProtocollo_iva_generale() == null;
-
     }
 
     /**
@@ -89,16 +83,15 @@ public class FatturaPassivaRigaCRUDController extends it.cnr.jada.util.action.Si
     }
 
     /**
-     * Restituisce true se è possibile aggiungere nuovi elementi
+     * Restituisce true se è possibile rimuovere l'elemento
      */
     public boolean isShrinkable() {
         Fattura_passivaBulk fatturaP = (Fattura_passivaBulk) getParentModel();
+        if (fatturaP.isDaOrdini() && isRigaDaOrdini(fatturaP)) {
+            return false;
+        }
         return super.isShrinkable() && !((it.cnr.jada.util.action.CRUDBP) getParentController()).isSearching() &&
                 !fatturaP.isPagata();
-        //Tolto come da richiesta 423
-        //&&
-        //fatturaP.getProtocollo_iva() == null &&
-        //fatturaP.getProtocollo_iva_generale() == null;
     }
 
     public void validate(ActionContext context, OggettoBulk model) throws ValidationException {
@@ -202,5 +195,25 @@ public class FatturaPassivaRigaCRUDController extends it.cnr.jada.util.action.Si
             }
         }
         super.closeButtonGROUPToolbar(context);
+    }
+
+    @Override
+    public boolean isInputReadonly() {
+        Fattura_passivaBulk fatturaP = (Fattura_passivaBulk) getParentModel();
+        if (fatturaP.isDaOrdini() && isRigaDaOrdini(fatturaP)) {
+            return true;
+        }
+        return super.isInputReadonly();
+    }
+
+    private boolean isRigaDaOrdini(Fattura_passivaBulk fatturaP) {
+        Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = (Fattura_passiva_rigaBulk)getModel();
+        if (fatturaP.getFattura_passiva_ordini()
+                .stream()
+                .filter(fatturaOrdineBulk -> fatturaOrdineBulk.getFatturaPassivaRiga().equalsByPrimaryKey(fatturaPassivaRigaBulk))
+                .findAny().isPresent()) {
+            return true;
+        }
+        return false;
     }
 }

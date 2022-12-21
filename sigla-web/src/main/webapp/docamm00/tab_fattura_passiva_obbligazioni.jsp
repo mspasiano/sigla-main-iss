@@ -92,7 +92,7 @@
 			</tr>
 			<tr>
 			  	<td>
-					<% bp.getDettaglioObbligazioneController().writeHTMLTable(pageContext,"righiSet",!fatturaPassiva.isDaOrdini(),false,!fatturaPassiva.isDaOrdini(),"100%","150px"); %>
+					<% bp.getDettaglioObbligazioneController().writeHTMLTable(pageContext,"righiSet",!fatturaPassiva.isDaOrdini(),false,true,"100%","150px"); %>
 			  	</td>
 			</tr>
    		</table>

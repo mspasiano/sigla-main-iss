@@ -474,7 +474,6 @@ public abstract class Fattura_passivaBulk
     }
 
     public int addToFattura_passiva_ordini(FatturaOrdineBulk fatturaOrdineBulk) {
-
         Fattura_passiva_rigaIBulk fattura_passiva_rigaIBulk = new Fattura_passiva_rigaIBulk();
         fattura_passiva_rigaIBulk.setFattura_passiva(this);
         fatturaOrdineBulk.setFatturaPassivaRiga(fattura_passiva_rigaIBulk);

@@ -427,6 +427,17 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 				.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)).setScale(2, RoundingMode.HALF_UP));
         setImTotaleConsegna(getImImponibile().add(getImIva()));
 	}
+
+	public BigDecimal calcolaIva(BigDecimal imponibile) {
+		final BigDecimal percentualeIva = Optional.ofNullable(getVoceIva())
+				.filter(voce_ivaBulk -> Optional.ofNullable(voce_ivaBulk.getPercentuale()).isPresent())
+				.map(voce_ivaBulk -> voce_ivaBulk.getPercentuale())
+				.orElseGet(() -> getOrdineAcqConsegna().getOrdineAcqRiga().getVoce_iva().getPercentuale());
+		return imponibile.multiply(percentualeIva)
+				.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)).setScale(2, RoundingMode.HALF_UP);
+	}
+
+
 	public BigDecimal getImponibilePerRigaFattura() {
 		if (getImponibilePerNotaCredito() != null && getImponibilePerNotaCredito().compareTo(BigDecimal.ZERO) > 0){
 			return getImponibilePerNotaCredito();
@@ -457,6 +468,10 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 		}
 		return false;
 	}
+	public Boolean isImportoRettificato() {
+		return Optional.ofNullable(getPrezzoUnitarioRett()).filter(b -> !b.equals(BigDecimal.ZERO) ).isPresent();
+	}
+
 	public Dictionary getOperazioneImpegnoNotaCreditoKeys() {
 		return OPERAZIONE_IMPEGNO_NOTA_CREDITO;
 	}

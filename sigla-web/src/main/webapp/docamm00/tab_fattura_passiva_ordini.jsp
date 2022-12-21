@@ -58,7 +58,7 @@
                         <% bp.getFatturaOrdiniController().writeFormField(out, "imponibileErrato", Boolean.FALSE); %>
                     </div>
                     <div class="form-group col-md-6 h-100">
-                        <% if (fatturaOrdine != null && fatturaOrdine.isRigaAttesaNotaCredito()) { %>
+                        <% if (fatturaOrdine != null && (fatturaOrdine.isRigaAttesaNotaCredito() || fatturaOrdine.isImportoRettificato())) { %>
                             <% bp.getFatturaOrdiniController().writeFormField(out, "operazioneImpegnoNotaCredito", Boolean.FALSE); %>
                         <%}%>
                     </div>
