@@ -2662,6 +2662,7 @@ public OggettoBulk inizializzaBulkPerModifica (UserContext aUC,OggettoBulk obbli
 			if ( docOrdine != null)
 			{
 				os.setEsercizio_ordine( docOrdine.getEsercizio());
+				os.setCd_numeratore_ordine( docOrdine.getCd_numeratore());
 				os.setPg_ordine( docOrdine.getPg_documento_amm());
 			}
 

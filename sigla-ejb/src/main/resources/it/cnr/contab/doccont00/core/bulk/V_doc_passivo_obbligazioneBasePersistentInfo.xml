@@ -53,6 +53,12 @@
 			columnSize="10"
 			nullable="false" />
 		<columnMapping
+			columnName="CD_NUMERATORE"
+			propertyName="cd_numeratore"
+			sqlTypeName="VARCHAR"
+			columnSize="3"
+			nullable="false" />
+		<columnMapping
 			columnName="FL_PGIRO"
 			propertyName="fl_pgiro"
 			sqlTypeName="CHAR"
@@ -223,6 +229,8 @@
 		name="im_iva_doc_amm" />
 	<persistentProperty
 		name="cd_tipo_documento_cont" />
+	<persistentProperty
+		name="cd_numeratore" />
 	<persistentProperty
 		name="cd_modalita_pag" />
 	<persistentProperty

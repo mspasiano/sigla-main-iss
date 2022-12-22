@@ -63,6 +63,7 @@ public class Obbligazione_scadenzarioBulk extends Obbligazione_scadenzarioBase i
     private java.math.BigDecimal importoDisponibile;
 
 	private Integer esercizio_ordine;
+    private java.lang.String cd_numeratore_ordine;
 	private java.lang.Long pg_ordine;
 
 	/**
@@ -462,4 +463,12 @@ public class Obbligazione_scadenzarioBulk extends Obbligazione_scadenzarioBase i
 	public void setPg_ordine(Long pg_ordine) {
 		this.pg_ordine = pg_ordine;
 	}
+
+    public String getCd_numeratore_ordine() {
+        return cd_numeratore_ordine;
+    }
+
+    public void setCd_numeratore_ordine(String cd_numeratore_ordine) {
+        this.cd_numeratore_ordine = cd_numeratore_ordine;
+    }
 }

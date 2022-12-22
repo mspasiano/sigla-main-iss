@@ -294,19 +294,20 @@
                 name="im_scadenza"
                 columnStyle="width:80px; text-align: right; padding-right:20px"
         />
-        <columnFieldProperty
-                name="esercizio_mandato"
-        />
-        <columnFieldProperty
-                name="pg_mandato"
-        />
 		<columnFieldProperty
 				property="esercizio_ordine"
 				inputType="TEXT"
 				headerLabel="Ordine"
-				label="Esecizio"
+				label="Es."
 				name="esercizio_ordine"
 		/>
+        <columnFieldProperty
+                property="cd_numeratore_ordine"
+                inputType="TEXT"
+                headerLabel="Ordine"
+                label="Numeratore"
+                name="numeratore_ordine"
+        />
 		<columnFieldProperty
 				property="pg_ordine"
 				inputType="TEXT"
@@ -322,11 +323,21 @@
         <columnFieldProperty
                 headerLabel="Doc. Passivo"
                 name="esercizio_doc_passivo"
-                label="Esercizio"
+                label="Es."
         />
         <columnFieldProperty
                 headerLabel="Doc. Passivo"
                 name="pg_doc_passivo"
+                label="Nr."
+        />
+        <columnFieldProperty
+                headerLabel="Mandato"
+                name="esercizio_mandato"
+                label="Es."
+        />
+        <columnFieldProperty
+                headerLabel="Mandato"
+                name="pg_mandato"
                 label="Nr."
         />
     </columnSet>
