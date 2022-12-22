@@ -116,8 +116,12 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
         sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.NOT_EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
         sql.addOrderBy("FL_SELEZIONE DESC");
-        List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
-        return l.stream().findFirst().orElse(null);
+        sql.addOrderBy("DT_FATTURA_FORNITORE ASC");
+        List l =  docHome.fetchAll(sql);
+        if ( l.size() > 0 )
+            return (V_doc_passivo_obbligazioneBulk) l.get(0);
+        else
+            return null;
     }
 
     public V_doc_passivo_obbligazioneBulk findDoc_ordine(Obbligazione_scadenzarioBulk os) throws IntrospectionException, PersistencyException {
