@@ -1,35 +1,21 @@
 package it.cnr.contab.web.rest.resource.config00;
 
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
-import it.cnr.contab.config00.ejb.ContrattoComponentSession;
-import it.cnr.contab.config00.ejb.Unita_organizzativaComponentSession;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.web.rest.exception.RestException;
 import it.cnr.contab.web.rest.local.config00.ContrattoMaggioliLocal;
-import it.cnr.contab.web.rest.model.AttachmentContratto;
 import it.cnr.contab.web.rest.model.ContrattoDtoBulk;
-import it.cnr.contab.web.rest.model.ContrattoMaggioliDTOBulk;
 import it.cnr.contab.web.rest.model.EnumTypeAttachmentContratti;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.ejb.CRUDComponentSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
-import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.servlet.http.HttpServletRequest;
-
-import javax.validation.Valid;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.rmi.RemoteException;
-import java.util.Base64;
-import java.util.List;
 import java.util.Optional;
 
 @Stateless
@@ -55,7 +41,7 @@ public class ContrattoMaggioliResource  extends AbstractContrattoResource implem
     }
 
     protected ContrattoBulk innerCreaContrattoBulk( CNRUserContext userContext ,ContrattoBulk contratto) throws ComponentException, RemoteException {
-        return (ContrattoBulk) contrattoComponentSession.creaContrattoDaFlussoAcquisti(userContext, contratto,false);
+        return (ContrattoBulk) contrattoComponentSession.creaContrattoDaFlussoAcquisti(userContext, contratto,true);
     }
 /*
     @Override

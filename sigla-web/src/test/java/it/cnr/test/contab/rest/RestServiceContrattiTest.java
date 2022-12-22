@@ -44,17 +44,17 @@ public class RestServiceContrattiTest {
 
         ObjectMapper mapper = new ObjectMapper();
         ContrattoDtoBulk c = new ContrattoDtoBulk();
-        c.setEsercizio(2021);
-        c.setCodiceFlussoAcquisti( "testCompleto2");
+        c.setEsercizio(2022);
+        c.setCodiceFlussoAcquisti( "testCompleto3");
         c.setCd_unita_organizzativa("000.000");
         c.setCodfisPivaRupExt("ZNCMRT79E49H501E");
         c.setCodfisPivaAggiudicatarioExt("05923561004");
         c.setCodfisPivaFirmatarioExt("ZNCMRT79E49H501E");
 
         c.setDs_atto("DECISIONE A CONTRARRE");
-        c.setOggetto("Oggetto Test Contratto");
+        c.setOggetto("Oggetto Test Contratto2");
 
-        c.setIm_contratto_passivo(new BigDecimal("1200"));
+        c.setIm_contratto_passivo(new BigDecimal("1000"));
         c.setIm_contratto_passivo_netto(new BigDecimal("1000"));
         c.setCd_tipo_norma_perla("30D");
         //c.setCd_tipo_atto("DEL");
@@ -102,7 +102,7 @@ public class RestServiceContrattiTest {
         UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("MAGGIOLI", "MAGGIOLI");
         provider.setCredentials(AuthScope.ANY, credentials);
         HttpClient client=HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
-        HttpPost method = new HttpPost("http://localhost:8080/SIGLA/restapi/contrattoMaggioli");
+        HttpPost method = new HttpPost("http://sigla.iss.it/SIGLA/restapi/contrattoMaggioli");
         method.addHeader("Accept-Language", Locale.getDefault().toString());
         method.setHeader("Content-Type", "application/json;charset=UTF-8");
         method.setHeader(SIGLASecurityContext.X_SIGLA_CD_CDS,"000");
