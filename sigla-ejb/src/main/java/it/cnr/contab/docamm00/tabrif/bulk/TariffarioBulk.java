@@ -17,10 +17,8 @@
 
 package it.cnr.contab.docamm00.tabrif.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.bulk.ValidationException;
 
 /**
  * Adatta e implementa: {@link TariffarioBase }
@@ -144,4 +142,23 @@ public void validate() throws ValidationException {
 		   		throw new ValidationException("Attenzione, il Prezzo Unitario deve essere maggiore di zero!");
 		   
 }
+	public static java.sql.Timestamp getDataOdierna() throws it.cnr.jada.action.BusinessProcessException {
+		try {
+			return getDataOdierna(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+		} catch (javax.ejb.EJBException e) {
+			throw new it.cnr.jada.action.BusinessProcessException(e);
+		}
+	}
+
+	public static java.sql.Timestamp getDataOdierna(java.sql.Timestamp dataOdierna) {
+
+		java.util.Calendar gc = java.util.Calendar.getInstance();
+		gc.setTime(dataOdierna);
+		gc.set(java.util.Calendar.HOUR, 0);
+		gc.set(java.util.Calendar.MINUTE, 0);
+		gc.set(java.util.Calendar.SECOND, 0);
+		gc.set(java.util.Calendar.MILLISECOND, 0);
+		gc.set(java.util.Calendar.AM_PM, java.util.Calendar.AM);
+		return new java.sql.Timestamp(gc.getTime().getTime());
+	}
 }

@@ -81,7 +81,7 @@
 			columnName="DS_TARIFFARIO"
 			propertyName="ds_tariffario"
 			sqlTypeName="VARCHAR"
-			columnSize="100"
+			columnSize="1000"
 			nullable="false" />
 	</defaultColumnMap>
 	<persistentProperty
