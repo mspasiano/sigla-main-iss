@@ -19,6 +19,7 @@ package it.cnr.contab.docamm00.bp;
 
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.TariffarioBulk;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.OggettoBulk;
 
 /**
@@ -79,7 +80,13 @@ public boolean isEliminaTariffarioHidden() {
 	return super.isDeleteButtonHidden();
 }
 public boolean isInputReadonly() {
-	return ((TariffarioBulk)getModel()).getDataFineValidita() != null;
+	java.sql.Timestamp dataOdierna = null;
+	try {
+		dataOdierna = TariffarioBulk.getDataOdierna();
+	} catch (BusinessProcessException e) {
+		throw new RuntimeException(e);
+	}
+	return (((TariffarioBulk)getModel()).getDataFineValidita() != null && ((TariffarioBulk)getModel()).getDataFineValidita().before(dataOdierna));
 }
 public boolean isSaveButtonEnabled() {
 	return super.isSaveButtonEnabled() && !isInputReadonly();
