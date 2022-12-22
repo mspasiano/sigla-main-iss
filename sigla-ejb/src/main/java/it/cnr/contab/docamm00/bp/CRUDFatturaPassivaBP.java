@@ -1670,22 +1670,15 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             pages.put(i++, TAB_FATTURA_PASSIVA_DETTAGLIO);
             pages.put(i++, TAB_FATTURA_PASSIVA_CONSUNTIVO);
             if (hasObbligazioni || !hasAccertamenti) {
-                pages.put(i++, Optional.ofNullable(fattura.getFlDaOrdini())
-                        .filter(daOrdini -> daOrdini.equals(Boolean.TRUE))
-                        .map(daOrdini -> TAB_FATTURA_PASSIVA_ORDINI)
-                        .orElse(TAB_FATTURA_PASSIVA_STORNI));
+                pages.put(i++, TAB_FATTURA_PASSIVA_STORNI);
             }
             if (hasAccertamenti || !hasObbligazioni)
                 pages.put(i++, TAB_FATTURA_PASSIVA_ACCERTAMENTI);
         } else if (fattura instanceof Nota_di_debitoBulk) {
             pages.put(i++, TAB_FATTURA_PASSIVA_DETTAGLIO);
             pages.put(i++, TAB_FATTURA_PASSIVA_CONSUNTIVO);
-            pages.put(i++, Optional.ofNullable(fattura.getFlDaOrdini())
-                    .filter(daOrdini -> daOrdini.equals(Boolean.TRUE))
-                    .map(daOrdini -> TAB_FATTURA_PASSIVA_ORDINI)
-                    .orElse(TAB_FATTURA_PASSIVA_OBBLIGAZIONI));
+            pages.put(i++, TAB_FATTURA_PASSIVA_OBBLIGAZIONI);
         } else if (fattura instanceof Fattura_passiva_IBulk) {
-
             if (fattura.isDaOrdini()){
                 pages.put(i++, TAB_FATTURA_PASSIVA_ORDINI);
                 pages.put(i++, TAB_FATTURA_PASSIVA_DETTAGLIO);
