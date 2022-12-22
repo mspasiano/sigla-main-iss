@@ -159,6 +159,11 @@
 	  			</td>
 		<%	} %>
       </tr>   
+  	  <% if (fatturaPassiva instanceof Fattura_passiva_IBulk) { %>
+	  <tr>
+ 	     <% bp.getDettaglio().writeFormField(out,"fl_attesa_nota");%>
+      </tr>
+      <% } %>
     </table>
    </div>
    <div class="Group card">

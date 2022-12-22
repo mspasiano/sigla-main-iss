@@ -363,6 +363,13 @@
 		inputSize="48"
 		inputType="ROTEXT"
 		label="Inventore del Trovato"/>
+	<fieldProperty
+		name="fl_attesa_nota"
+		property="fl_attesa_nota"
+		inputType="CHECKBOX"
+		enabledOnSearch="true"
+		label="Riga in attesa di Nota di Credito"/>
+
 	<formFieldProperty
 		name="voce_iva" />
 	<formFieldProperty
@@ -447,6 +454,10 @@
 		name="titoloTrovato" />
 	<formFieldProperty
 		name="inventoreTrovato" />
+
+	<formFieldProperty
+		name="fl_attesa_nota" />
+
 	<columnFieldProperty
 		name="cd_cds" />
 	<columnFieldProperty

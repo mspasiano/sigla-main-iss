@@ -160,7 +160,7 @@
                                   0,
                                   0,
                                   0,
-                                  a.fl_congelata,
+                                  nvl(b.fl_attesa_nota, a.fl_congelata),
                                   a.stato_liquidazione
                                  ),
                   1,
@@ -457,7 +457,7 @@
                                   0,
                                   0,
                                   0,
-                                  a.fl_congelata,
+                                  nvl(b.fl_attesa_nota, a.fl_congelata),
                                   a.stato_liquidazione
                                  ),
                   1,

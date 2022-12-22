@@ -2987,6 +2987,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             rigaPerRettifica.setIm_imponibile(rigaPerRettifica.getPrezzo_unitario());
                             rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
                             rigaPerRettifica.setIm_diponibile_nc(rigaPerRettifica.getIm_imponibile().add(rigaPerRettifica.getIm_iva()));
+                            rigaPerRettifica.setFl_attesa_nota(Boolean.TRUE);
                         }
                         valorizzaCIG(rigaPerRettifica, fatturaOrdineBulk);
                         if (Optional.ofNullable(fatturaOrdineBulk.getOperazioneImpegnoNotaCredito()).orElse(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_DIVERSO)
