@@ -1969,8 +1969,7 @@ public class OrdineAcqComponent
 					try {
 						obbl = (ObbligazioneBulk)homeObbligazione.findByPrimaryKey(scadenza.getObbligazione());
 					} catch (PersistencyException e1) {
-						// TODO Auto-generated catch block
-						throw new ApplicationException(e1);
+						throw handleException(e1);
 					}
 
 					scadenza.setObbligazione(obbl);

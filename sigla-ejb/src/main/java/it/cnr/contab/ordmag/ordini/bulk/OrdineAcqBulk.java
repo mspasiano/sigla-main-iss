@@ -1559,7 +1559,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
                 .concat("/")
                 .concat(this.getCdNumeratore())
                 .concat("/")
-                .concat(String.valueOf(this.getNumero()));
+                .concat(Optional.ofNullable(this.getNumero()).map(String::valueOf).orElse(""));
     }
 
     public String getDescrizioneObbligazione() {
