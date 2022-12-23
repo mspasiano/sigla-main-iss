@@ -45,14 +45,16 @@ public class RestServiceContrattiTest {
         ObjectMapper mapper = new ObjectMapper();
         ContrattoDtoBulk c = new ContrattoDtoBulk();
         c.setEsercizio(2022);
-        c.setCodiceFlussoAcquisti( "testCompleto3");
+        c.setCodiceFlussoAcquisti( "testCompleto23122022");
         c.setCd_unita_organizzativa("000.000");
         c.setCodfisPivaRupExt("ZNCMRT79E49H501E");
         c.setCodfisPivaAggiudicatarioExt("05923561004");
-        c.setCodfisPivaFirmatarioExt("ZNCMRT79E49H501E");
+        //c.setCodfisPivaFirmatarioExt("ZNCMRT79E49H501E");
+
+
 
         c.setDs_atto("DECISIONE A CONTRARRE");
-        c.setOggetto("Oggetto Test Contratto2");
+        c.setOggetto("Oggetto Test Contratto test");
 
         c.setIm_contratto_passivo(new BigDecimal("1000"));
         c.setIm_contratto_passivo_netto(new BigDecimal("1000"));
@@ -67,11 +69,11 @@ public class RestServiceContrattiTest {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-        c.setDt_stipula(new java.sql.Timestamp(dateFormat.parse("20211122").getTime()));
-        c.setDt_inizio_validita(new java.sql.Timestamp(dateFormat.parse("20211122").getTime()));
+        c.setDt_stipula(new java.sql.Timestamp(dateFormat.parse("20221122").getTime()));
+        c.setDt_inizio_validita(new java.sql.Timestamp(dateFormat.parse("20221122").getTime()));
 
         c.setDt_fine_validita(new java.sql.Timestamp(dateFormat.parse("20241122").getTime()));
-        c.setDt_registrazione(new java.sql.Timestamp(dateFormat.parse("20211122").getTime()));
+        c.setDt_registrazione(new java.sql.Timestamp(dateFormat.parse("20221223").getTime()));
 
         //c.setCdCigExt();
         //c.setCdCupExt();
@@ -102,7 +104,7 @@ public class RestServiceContrattiTest {
         UsernamePasswordCredentials credentials = new UsernamePasswordCredentials("MAGGIOLI", "MAGGIOLI");
         provider.setCredentials(AuthScope.ANY, credentials);
         HttpClient client=HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
-        HttpPost method = new HttpPost("http://sigla.iss.it/SIGLA/restapi/contrattoMaggioli");
+        HttpPost method = new HttpPost("http://localhost:8080/SIGLA/restapi/contrattoMaggioli");
         method.addHeader("Accept-Language", Locale.getDefault().toString());
         method.setHeader("Content-Type", "application/json;charset=UTF-8");
         method.setHeader(SIGLASecurityContext.X_SIGLA_CD_CDS,"000");
