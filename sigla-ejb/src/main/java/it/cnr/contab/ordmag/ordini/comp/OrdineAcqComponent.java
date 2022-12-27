@@ -1011,18 +1011,6 @@ public class OrdineAcqComponent
 		if (riga.getBeneServizio() == null){
 			throw new it.cnr.jada.comp.ApplicationException("Impossibile caricare il Codice Iva! E' necessario prima selezionare il bene/servizio.");
 		}
-		Bene_servizioBulk bene = riga.getBeneServizio();
-		if (bene.getVoce_iva() == null || bene.getVoce_iva().getCd_voce_iva() == null){
-			Bene_servizioHome beneHome = (Bene_servizioHome)getHome(userContext, Bene_servizioBulk.class);
-			try {
-				bene = (Bene_servizioBulk)beneHome.findByPrimaryKey(userContext, bene);
-			} catch (PersistencyException e) {
-				throw new ComponentException(e);
-			}
-		}
-
-		sql.addSQLClause("AND", "CD_VOCE_IVA", SQLBuilder.EQUALS, Optional.ofNullable(bene).map(Bene_servizioBulk::getCd_voce_iva).orElse(null));
-
 		return sql;
 	}
 
