@@ -73,6 +73,7 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.FatturaNonTrovataException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
@@ -2935,7 +2936,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
     }
     public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
         if (!fattura.getFattura_passiva_ordini().isEmpty()) {
-            aggiornaOrdiniMagazzino(userContext, fattura);
             for (FatturaOrdineBulk fatturaOrdineBulk : fattura.getFattura_passiva_ordini()) {
                 OrdineAcqConsegnaBulk consegna = fatturaOrdineBulk.getOrdineAcqConsegna();
                 if (fatturaOrdineBulk.isRigaAttesaNotaCredito()) {
@@ -2958,7 +2958,8 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                 riga.setQuantita(fatturaOrdineBulk.getOrdineAcqConsegna().getQuantita());
 
                 riga.setPrezzo_unitario(calcolaSconto(
-                    fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario(),
+                    Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett())
+                            .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
                     fatturaOrdineBulk
                 ));
                 riga.setDs_riga_fattura(
@@ -2968,15 +2969,15 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         )
                 );
                 riga.setIm_iva(calcolaSconto(
-                        fatturaOrdineBulk.getOrdineAcqConsegna().getImIva(),
+                        fatturaOrdineBulk.getImIva(),
                         fatturaOrdineBulk
                 ).setScale(2,RoundingMode.HALF_UP));
                 riga.setIm_imponibile(calcolaSconto(
-                        fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibile(),
+                        fatturaOrdineBulk.getImImponibile(),
                         fatturaOrdineBulk
                 ).setScale(2,RoundingMode.HALF_UP));
                 riga.setIm_totale_divisa(calcolaSconto(
-                        fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibileDivisa(),
+                        fatturaOrdineBulk.getImImponibileDivisa(),
                         fatturaOrdineBulk
                 ).setScale(2,RoundingMode.HALF_UP));
                 riga.setIm_diponibile_nc(calcolaSconto(
@@ -2986,6 +2987,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
 
                 riga.setToBeUpdated();
                 valorizzaCIG(riga, fatturaOrdineBulk);
+
                 java.util.Vector dettagliDaContabilizzare = new java.util.Vector();
                 dettagliDaContabilizzare.add(riga);
                 Obbligazione_scadenzarioBulk obbligazione =
@@ -2999,28 +3001,19 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                 fatturaOrdineBulk.setFatturaPassivaRiga(riga);
                 contabilizzaDettagliSelezionati(userContext, fattura, dettagliDaContabilizzare, obbligazione);
 
-                if (fatturaOrdineBulk.isRigaAttesaNotaCredito() || Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent()) {
+                if (fatturaOrdineBulk.isRigaAttesaNotaCredito()) {
                     Fattura_passiva_rigaBulk rigaPerRettifica = new Fattura_passiva_rigaIBulk();
                     fattura.addToFattura_passiva_dettColl(rigaPerRettifica);
                     rigaPerRettifica.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
                     rigaPerRettifica.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
                     rigaPerRettifica.setQuantita(BigDecimal.ONE);
                     rigaPerRettifica.setDs_riga_fattura(impostaDescrizioneRigaDaOrdine(rigaPerRettifica.getBene_servizio().getDs_bene_servizio(), fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()));
-                    if (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent()) {
-                        final BigDecimal rettifica = fatturaOrdineBulk.getPrezzoUnitarioRett()
-                                .subtract(fatturaOrdineBulk.getOrdineAcqConsegna().getImImponibile());
-                        rigaPerRettifica.setPrezzo_unitario(rettifica);
-                        rigaPerRettifica.setIm_imponibile(rettifica.setScale(2));
-                        rigaPerRettifica.setIm_iva(fatturaOrdineBulk.calcolaIva(rigaPerRettifica.getIm_imponibile()));
-                        rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
-                    } else if (Optional.ofNullable(fatturaOrdineBulk.getImponibilePerNotaCredito()).isPresent()) {
-                        rigaPerRettifica.setPrezzo_unitario(fatturaOrdineBulk.getImponibilePerNotaCredito().subtract(fatturaOrdineBulk.getImImponibile()));
-                        rigaPerRettifica.setIm_iva(fatturaOrdineBulk.getImportoIvaPerNotaCredito().subtract(fatturaOrdineBulk.getImIva()));
-                        rigaPerRettifica.setIm_imponibile(rigaPerRettifica.getPrezzo_unitario());
-                        rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
-                        rigaPerRettifica.setIm_diponibile_nc(rigaPerRettifica.getIm_imponibile().add(rigaPerRettifica.getIm_iva()));
-                        rigaPerRettifica.setFl_attesa_nota(Boolean.TRUE);
-                    }
+                    rigaPerRettifica.setPrezzo_unitario(fatturaOrdineBulk.getImponibilePerNotaCredito().subtract(fatturaOrdineBulk.getImImponibile()));
+                    rigaPerRettifica.setIm_iva(fatturaOrdineBulk.getImportoIvaPerNotaCredito().subtract(fatturaOrdineBulk.getImIva()));
+                    rigaPerRettifica.setIm_imponibile(rigaPerRettifica.getPrezzo_unitario());
+                    rigaPerRettifica.setIm_totale_divisa(rigaPerRettifica.getIm_imponibile());
+                    rigaPerRettifica.setIm_diponibile_nc(rigaPerRettifica.getIm_imponibile().add(rigaPerRettifica.getIm_iva()));
+                    rigaPerRettifica.setFl_attesa_nota(Boolean.TRUE);
                     valorizzaCIG(rigaPerRettifica, fatturaOrdineBulk);
                     if (Optional.ofNullable(fatturaOrdineBulk.getOperazioneImpegnoNotaCredito()).orElse(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_DIVERSO)
                             .equals(FatturaOrdineBulk.OPERAZIONE_IMPEGNO_NC_USA_ORDINE)) {
@@ -3064,6 +3057,28 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         }
                     }
                 }
+            }
+            aggiornaOrdiniMagazzino(userContext, fattura);
+            /**
+             * In caso di rettifiche del prezzo unitario o di uno sconto
+             * devo ricaricare le obbligazioni modificate
+             */
+            if (fattura
+                    .getFattura_passiva_ordini()
+                    .stream()
+                    .filter(fatturaOrdineBulk ->
+                            Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent() ||
+                            Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() ||
+                            Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() ||
+                            Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent()
+                    ).findAny().isPresent()) {
+                ObbligazioniTable obbligazioniTable = new ObbligazioniTable();
+                for (Object obj : fattura.getObbligazioniHash().entrySet()) {
+                    Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>> entry = (Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>>)obj;
+                    Obbligazione_scadenzarioBulk scadenzarioBulk = (Obbligazione_scadenzarioBulk) entry.getKey().getBulk();
+                    obbligazioniTable.put(findByPrimaryKey(userContext, scadenzarioBulk), entry.getValue());
+                }
+                fattura.setFattura_passiva_obbligazioniHash(obbligazioniTable);
             }
         } else {
             throw new it.cnr.jada.comp.ApplicationException("Attenzione: Fattura da Ordini, associare almeno un Ordine!");
@@ -3270,6 +3285,15 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                         (Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto3()).isPresent())) {
                                     try {
                                         movimentiMagComponent.creaMovimentoRettificaValoreOrdine(userContext, fatturaOrdineBulk);
+                                        Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett())
+                                                .ifPresent(bigDecimal -> ordineRigaComp.setPrezzoUnitario(bigDecimal));
+                                        Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett())
+                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto1(bigDecimal));
+                                        Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett())
+                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto2(bigDecimal));
+                                        Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett())
+                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto2(bigDecimal));
+                                        ordineRigaComp.setToBeUpdated();
                                     } catch (ComponentException | RemoteException e) {
                                         handleException(e);
                                     }

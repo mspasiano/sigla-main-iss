@@ -276,8 +276,7 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDet
         command = null;
         final Map<String, BigDecimal> differenze = differenze();
         if (getParentController() != null && !differenze.isEmpty()
-                && differenze.get("differenzaImponibile").compareTo(BigDecimal.ZERO) == 0
-                && differenze.get("differenzaIva").compareTo(BigDecimal.ZERO) == 0)
+                && differenze.get("differenzaImponibile").compareTo(BigDecimal.ZERO) == 0)
             command = "javascript:submitForm('doConfermaRiscontroAValore')";
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,

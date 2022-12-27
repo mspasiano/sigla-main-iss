@@ -104,6 +104,7 @@ public final class Utility {
 	public static final String MANIFEST_PATH = "/META-INF/MANIFEST.MF";
 	public static final String APPLICATION_TITLE = "SIGLA - Sistema Informativo per la Gestione delle Linee di Attività";
 	public static final java.math.BigDecimal ZERO = new java.math.BigDecimal(0);
+	public static final java.math.BigDecimal SCOSTAMENTO_MAX = new java.math.BigDecimal(0.05);
     public static final String CSS_CLASS_W_10 = "w-10";
     public static String TIPO_GESTIONE_SPESA = "S";
 	public static String TIPO_GESTIONE_ENTRATA = "E";
@@ -145,6 +146,10 @@ public final class Utility {
 		if (imp != null)
 			return imp;
 		return ZERO;
+	}
+
+	public static <T extends Comparable<T>> boolean isBetween(T value, T start, T end) {
+		return value.compareTo(start) >= 0 && value.compareTo(end) <= 0;
 	}
 
 	public static String getSiglaVersion(){

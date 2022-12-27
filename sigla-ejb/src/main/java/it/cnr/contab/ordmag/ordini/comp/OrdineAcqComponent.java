@@ -50,6 +50,7 @@ import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
@@ -1788,13 +1789,13 @@ public class OrdineAcqComponent
 	private void aumentoAutomaticoScadenzaModificaOrdine(UserContext userContext, Obbligazione_scadenzarioBulk obbligazione_scadenzario, BigDecimal importoDaAggiungere) throws ComponentException, PersistencyException, RemoteException {
 
 		ObbligazioneBulk obbligazioneBulk = obbligazione_scadenzario.getObbligazione();
+		BigDecimal importoVecchioScadenza = obbligazione_scadenzario.getIm_scadenza();
 		BigDecimal importoDisponibile = BigDecimal.ZERO;
 		List<Integer> scadenzeDaEliminare = new ArrayList<Integer>();
 		int index = 0;
 		for (Obbligazione_scadenzarioBulk scadenza : obbligazioneBulk.getObbligazione_scadenzarioColl()){
 			if (!scadenza.equalsByPrimaryKey(obbligazione_scadenzario) && scadenza.getImportoDisponibile().compareTo(BigDecimal.ZERO) > 0){
 				if (importoDaAggiungere.compareTo(scadenza.getImportoDisponibile()) < 0){
-					BigDecimal importoVecchioScadenza = obbligazione_scadenzario.getIm_scadenza();
 					obbligazione_scadenzario.setIm_scadenza(obbligazione_scadenzario.getIm_scadenza().add(importoDaAggiungere));
 					allineaScadVoce(obbligazione_scadenzario, importoVecchioScadenza);
 					importoVecchioScadenza = scadenza.getIm_scadenza();
@@ -1804,7 +1805,6 @@ public class OrdineAcqComponent
 					scadenza.setToBeUpdated();
 				} else {
 					importoDaAggiungere = importoDaAggiungere.subtract(scadenza.getImportoDisponibile());
-					BigDecimal importoVecchioScadenza = obbligazione_scadenzario.getIm_scadenza();
 					obbligazione_scadenzario.setIm_scadenza(obbligazione_scadenzario.getIm_scadenza().add(scadenza.getIm_scadenza()));
 					allineaScadVoce(obbligazione_scadenzario, importoVecchioScadenza);
 					scadenzeDaEliminare.add(index);
@@ -1812,6 +1812,8 @@ public class OrdineAcqComponent
 				if (importoDaAggiungere.compareTo(BigDecimal.ZERO) == 0){
 					break;
 				}
+			} else if (scadenza.getIm_scadenza().compareTo(scadenza.getIm_associato_doc_amm()) != 0){
+				scadenza.setToBeUpdated();
 			}
 			index++;
 		}
@@ -1820,8 +1822,13 @@ public class OrdineAcqComponent
 		}
 
 		if (importoDaAggiungere.compareTo(BigDecimal.ZERO) > 0){
-			throw new it.cnr.jada.comp.ApplicationException("L'impegno "+obbligazione_scadenzario.getEsercizio_originale()+"-"+
-					obbligazione_scadenzario.getPg_obbligazione()+"-"+" non ha disponibilità sufficiente per la modifica dell'importo dell'ordine di "+new EuroFormat().format(importoDaAggiungere));
+			throw new ApplicationMessageFormatException("L''impegno {0}/{1}/{2}" +
+					" non ha disponibilità sufficiente per la modifica dell''importo dell''ordine per {3}!",
+					String.valueOf(obbligazione_scadenzario.getEsercizio_originale()),
+					String.valueOf(obbligazione_scadenzario.getPg_obbligazione()),
+					String.valueOf(obbligazione_scadenzario.getPg_obbligazione_scadenzario()),
+					new EuroFormat().format(importoDaAggiungere)
+			);
 		}
 
 		ObbligazioneComponentSession obbligComp = (ObbligazioneComponentSession)EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession");
