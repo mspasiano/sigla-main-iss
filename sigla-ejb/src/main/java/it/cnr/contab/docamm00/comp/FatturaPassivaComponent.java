@@ -2956,34 +2956,23 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                 riga.setBene_servizio(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getBeneServizio());
                 riga.setVoce_iva(getVoceIvaOrdini(fatturaOrdineBulk));
                 riga.setQuantita(fatturaOrdineBulk.getOrdineAcqConsegna().getQuantita());
-
-                riga.setPrezzo_unitario(calcolaSconto(
-                    Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett())
-                            .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
-                    fatturaOrdineBulk
-                ));
                 riga.setDs_riga_fattura(
                         impostaDescrizioneRigaDaOrdine(
                                 riga.getBene_servizio().getDs_bene_servizio(),
                                 fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getNotaRiga()
                         )
                 );
-                riga.setIm_iva(calcolaSconto(
-                        fatturaOrdineBulk.getImIva(),
-                        fatturaOrdineBulk
-                ).setScale(2,RoundingMode.HALF_UP));
-                riga.setIm_imponibile(calcolaSconto(
-                        fatturaOrdineBulk.getImImponibile(),
-                        fatturaOrdineBulk
-                ).setScale(2,RoundingMode.HALF_UP));
-                riga.setIm_totale_divisa(calcolaSconto(
-                        fatturaOrdineBulk.getImImponibileDivisa(),
-                        fatturaOrdineBulk
-                ).setScale(2,RoundingMode.HALF_UP));
-                riga.setIm_diponibile_nc(calcolaSconto(
-                        riga.getIm_imponibile().add(riga.getIm_iva()),
-                        fatturaOrdineBulk
-                ).setScale(2,RoundingMode.HALF_UP));
+
+                riga.setPrezzo_unitario(calcolaSconto(
+                    Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett())
+                            .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
+                    fatturaOrdineBulk
+                ));
+                riga.calcolaCampiDiRiga();
+                riga.setIm_diponibile_nc(
+                        riga.getIm_imponibile().add(riga.getIm_iva())
+                                .setScale(2,RoundingMode.HALF_UP)
+                );
 
                 riga.setToBeUpdated();
                 valorizzaCIG(riga, fatturaOrdineBulk);
