@@ -29,6 +29,7 @@ import it.cnr.contab.doccont00.core.bulk.Numerazione_doc_contBulk;
 import it.cnr.contab.doccont00.intcass.bulk.V_mandato_reversaleBulk;
 import it.cnr.contab.missioni00.docs.bulk.MissioneBulk;
 import it.cnr.contab.missioni00.ejb.MissioneComponentSession;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.pdg00.bulk.ArchiviaStampaPdgVariazioneBulk;
 import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.pdg00.ejb.PdGVariazioniComponentSession;
@@ -507,6 +508,39 @@ public class ToDoResource implements ToDoLocal {
                                                 "SIOPE+",
                                                 firstLabel(i),
                                                 detailLabel(i, "Reversale non acquisita", "Reversali non acquisite", "")
+                                        ));
+                                    }
+                                } catch (ComponentException | RemoteException e) {
+                                    throw new RestException(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
+                                } finally {
+                                    iterator.ejbRemove();
+                                }
+                            });
+                    break;
+                }
+                case CRUDFirmaOrdineAcqBP: {
+                    OrdineAcqBulk ordineAcqBulk = new OrdineAcqBulk();
+                    ordineAcqBulk.setStato(OrdineAcqBulk.STATO_ALLA_FIRMA);
+                    BulkLoaderIterator remoteIteratorReversale =
+                            Optional.ofNullable(crudComponentSession.cerca(
+                                            userContext,
+                                            null,
+                                            ordineAcqBulk))
+                                    .filter(BulkLoaderIterator.class::isInstance)
+                                    .map(BulkLoaderIterator.class::cast)
+                                    .orElseThrow(() -> new RestException(Response.Status.INTERNAL_SERVER_ERROR, "Cannot create remote iterator"));
+                    Optional.ofNullable(remoteIteratorReversale)
+                            .ifPresent(iterator -> {
+                                try {
+                                    iterator.open(userContext);
+                                    final int i = iterator.countElements();
+                                    if (i > 0) {
+                                        result.add(new ToDoDetail(
+                                                "0.ORD.ORDACQ.A",
+                                                "fa fa-fw fa-paper-plane-o text-primary",
+                                                "Ordini",
+                                                firstLabel(i),
+                                                detailLabel(i, "Ordine da firmare", "Ordini da firmare", "")
                                         ));
                                     }
                                 } catch (ComponentException | RemoteException e) {
