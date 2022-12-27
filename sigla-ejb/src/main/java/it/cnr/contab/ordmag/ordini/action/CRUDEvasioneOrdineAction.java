@@ -65,6 +65,7 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			fillModel(context);
 			if (unitaOperativaOrd!=null) {
 				CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)getBusinessProcess(context);
+				evasioneOrdine.setUnitaOperativaAbilitata(unitaOperativaOrd);
 				if (!Optional.ofNullable(bp.getModel()).filter(EvasioneOrdineBulk.class::isInstance).map(EvasioneOrdineBulk.class::cast)
 						.flatMap(el->Optional.ofNullable(el.getUnitaOperativaAbilitata())).filter(el->el.equalsByPrimaryKey(unitaOperativaOrd)).isPresent()) {
 					bp.initializeUnitaOperativaOrd(context, evasioneOrdine, unitaOperativaOrd);
