@@ -43,15 +43,16 @@ import it.cnr.contab.ordmag.anag00.LuogoConsegnaMagBulk;
 import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
 import it.cnr.contab.ordmag.anag00.UnitaMisuraBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
-import it.cnr.contab.util.Utility;
+import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
+import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.BulkCollection;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.util.DateUtils;
+import it.cnr.jada.util.StrServ;
 import it.cnr.jada.util.action.CRUDBP;
-public class OrdineAcqRigaBulk extends OrdineAcqRigaBase implements IDocumentoAmministrativoRigaBulk, Voidable {
+public class OrdineAcqRigaBulk extends OrdineAcqRigaBase implements IDocumentoAmministrativoRigaBulk, Voidable, AllegatoParentBulk {
 	protected BulkList<OrdineAcqConsegnaBulk> righeConsegnaColl= new BulkList<OrdineAcqConsegnaBulk>();
 	private java.lang.String dspTipoConsegna;
 	private java.lang.String dspStato;
@@ -114,6 +115,8 @@ Da questa gestione sono ricavati gli elementi per la gestione di magazziono e di
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: ORDINE_ACQ_RIGA
 	 **/
+	private BulkList<AllegatoGenericoBulk> dettaglioAllegati = new BulkList<AllegatoGenericoBulk>();
+
 	public OrdineAcqRigaBulk() {
 		super();
 	}
@@ -460,7 +463,8 @@ Da questa gestione sono ricavati gli elementi per la gestione di magazziono e di
 		// Metti solo le liste di oggetti che devono essere resi persistenti
 
 		return new it.cnr.jada.bulk.BulkCollection[] { 
-				righeConsegnaColl
+				righeConsegnaColl,
+				dettaglioAllegati
 		};
 	}
 	public List getChildren() {
@@ -597,5 +601,34 @@ Da questa gestione sono ricavati gli elementi per la gestione di magazziono e di
 	@Override
 	public TerzoBulk getTerzo() {
 		return this.getOrdineAcq().getFornitore();
+	}
+
+	public String constructCMISNomeFile() {
+		StringBuffer nomeFile = new StringBuffer();
+		nomeFile = nomeFile.append(StrServ.lpad(this.getRiga().toString(), 9, "0"));
+		return nomeFile.toString();
+	}
+
+	@Override
+	public int addToArchivioAllegati(AllegatoGenericoBulk allegato) {
+		dettaglioAllegati.add(allegato);
+		return dettaglioAllegati.size()-1;
+	}
+
+	@Override
+	public AllegatoGenericoBulk removeFromArchivioAllegati(int index) {
+		AllegatoGenericoBulk allegato = dettaglioAllegati.remove(index);
+		allegato.setToBeDeleted();
+		return allegato;
+	}
+
+	@Override
+	public BulkList<AllegatoGenericoBulk> getArchivioAllegati() {
+		return dettaglioAllegati;
+	}
+
+	@Override
+	public void setArchivioAllegati(BulkList<AllegatoGenericoBulk> archivioAllegati) {
+		this.dettaglioAllegati = archivioAllegati;
 	}
 }

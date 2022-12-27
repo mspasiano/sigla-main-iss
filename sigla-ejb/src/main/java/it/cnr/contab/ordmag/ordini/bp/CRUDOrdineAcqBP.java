@@ -29,13 +29,10 @@ import it.cnr.contab.doccont00.bp.IDefferedUpdateSaldiBP;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
 import it.cnr.contab.doccont00.core.bulk.IDefferUpdateSaldi;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
-import it.cnr.contab.ordmag.ordini.bulk.AllegatoOrdineBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqRigaBulk;
+import it.cnr.contab.ordmag.ordini.bulk.*;
 import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
 import it.cnr.contab.ordmag.ordini.service.OrdineAcqCMISService;
-import it.cnr.contab.ordmag.richieste.bulk.AllegatoRichiestaBulk;
+import it.cnr.contab.ordmag.richieste.service.RichiesteCMISService;
 import it.cnr.contab.reports.bulk.Print_spoolerBulk;
 import it.cnr.contab.reports.bulk.Report;
 import it.cnr.contab.reports.service.PrintService;
@@ -47,6 +44,7 @@ import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
@@ -55,6 +53,8 @@ import it.cnr.jada.comp.GenerazioneReportException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
+import it.cnr.jada.util.upload.UploadedFile;
+import it.cnr.si.spring.storage.StorageException;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
 import it.cnr.si.spring.storage.config.StoragePropertyNames;
@@ -66,6 +66,7 @@ import java.io.*;
 import java.math.BigInteger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -98,7 +99,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	public boolean isInputReadonly()
 	{
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
-		if(ordine == null)
+		if(ordine == null || isSearching())
 			return super.isInputReadonly();
 		return 	super.isInputReadonly() || (ordine.getStato() != null && !ordine.isStatoInserito() && !ordine.isStatoInApprovazione() && ((ordine.isStatoAllaFirma() && !ordine.isToBeUpdated()) || !ordine.isStatoAllaFirma())) ;
 	}
@@ -119,6 +120,15 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			for (int k=0;k<dettaglio.getRigheConsegnaColl().size();k++) {
 				dettaglio.removeFromRigheConsegnaColl(k);
 			}
+			BulkList<AllegatoGenericoBulk> listaDettagliAllegati = dettaglio.getArchivioAllegati();
+			if (listaDettagliAllegati != null && !listaDettagliAllegati.isEmpty()){
+				int k;
+				for ( k = 0; k < listaDettagliAllegati.size(); k++ ){
+					AllegatoGenericoBulk all = listaDettagliAllegati.get(k);
+					all.setToBeDeleted();
+				}
+			}
+
 			return super.removeDetail(i);
 		}
 
@@ -168,11 +178,48 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		
 	};
 
+	private final SimpleDetailCRUDController dettaglioAllegatiController = new SimpleDetailCRUDController("AllegatiDettaglio", AllegatoOrdineDettaglioBulk.class,"archivioAllegati",righe)
+	{
+		@Override
+		protected void validate(ActionContext actioncontext, OggettoBulk oggettobulk) throws ValidationException {
+			AllegatoOrdineDettaglioBulk allegato = (AllegatoOrdineDettaglioBulk)oggettobulk;
+			UploadedFile file = ((it.cnr.jada.action.HttpActionContext)actioncontext).getMultipartParameter("main.Righe.AllegatiDettaglio.file");
+			if (!(file == null || file.getName().equals(""))) {
+				allegato.setFile(file.getFile());
+				allegato.setContentType(file.getContentType());
+				allegato.setNome(allegato.parseFilename(file.getName()));
+				allegato.setAspectName(OrdineAcqCMISService.ASPECT_ORDINI_DETTAGLIO);
+				allegato.setToBeUpdated();
+				getParentController().setDirty(true);
+			}
+			oggettobulk.validate();
+			super.validate(actioncontext, oggettobulk);
+		}
+		@Override
+		public OggettoBulk removeDetail(int i) {
+			if (!getModel().isNew()){
+				List list = getDetails();
+				AllegatoOrdineDettaglioBulk all =(AllegatoOrdineDettaglioBulk)list.get(i);
+				if (isPossibileCancellazioneDettaglioAllegato(all)) {
+					return super.removeDetail(i);
+				} else {
+					return null;
+				}
+			}
+			return super.removeDetail(i);
+		}
+		@Override
+		public int addDetail(OggettoBulk oggettobulk) throws BusinessProcessException {
+			int add = super.addDetail(oggettobulk);
+			AllegatoOrdineDettaglioBulk all =(AllegatoOrdineDettaglioBulk)oggettobulk;
+			all.setIsDetailAdded(true);
+			return add;
+		}
+	};
+
 	public final it.cnr.jada.util.action.SimpleDetailCRUDController getConsegne() {
 		return consegne;
 	}
-	
-	//private OrdineAcqCMISService ordineAcqCMISService;
 
 	public CRUDOrdineAcqBP() {
 		this(OrdineAcqConsegnaBulk.class);
@@ -328,6 +375,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 							getModel()));
 			allegatoStampaOrdine(context.getUserContext());
 			archiviaAllegati(context);
+			archiviaAllegatiDettaglio();
 		} catch(Exception e) {
 			throw handleException(e);
 		}
@@ -375,7 +423,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		return "allegatiOrdine";
 	}
 	public void scaricaAllegato(ActionContext actioncontext) throws IOException, ServletException, ApplicationException {
-		AllegatoRichiestaBulk allegato = (AllegatoRichiestaBulk)getCrudArchivioAllegati().getModel();
+		AllegatoOrdineBulk allegato = (AllegatoOrdineBulk)getCrudArchivioAllegati().getModel();
 		StorageObject storageObject = storeService.getStorageObjectBykey(allegato.getStorageKey());
 		InputStream is = storeService.getResource(storageObject.getKey());
 		((HttpActionContext)actioncontext).getResponse().setContentLength(storageObject.<BigInteger>getPropertyValue(StoragePropertyNames.CONTENT_STREAM_LENGTH.value()).intValue());
@@ -390,37 +438,34 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		is.close();
 		os.flush();
 	}
-//	public String getNomeAllegatoDettaglio() throws ApplicationException{
-//		AllegatoRichiestaDettaglioBulk dettaglio = (AllegatoRichiestaDettaglioBulk)getDettaglioAllegatiController().getModel();
-//		if (dettaglio!= null){
-//			return dettaglio.getNome();
-//		}
-//		return "";
-//	}
-//	public void scaricaDocumentoDettaglioCollegato(ActionContext actioncontext) throws Exception {
-//		AllegatoRichiestaDettaglioBulk dettaglio = (AllegatoRichiestaDettaglioBulk)getDettaglioAllegatiController().getModel();
-//		if (dettaglio!= null){
-//			Document document = dettaglio.getDocument(richiesteCMISService);
-//			if (document != null){
-//				InputStream is = richiesteCMISService.getResource(document);
-//				((HttpActionContext)actioncontext).getResponse().setContentLength(Long.valueOf(document.getContentStreamLength()).intValue());
-//				((HttpActionContext)actioncontext).getResponse().setContentType(document.getContentStreamMimeType());
-//				OutputStream os = ((HttpActionContext)actioncontext).getResponse().getOutputStream();
-//				((HttpActionContext)actioncontext).getResponse().setDateHeader("Expires", 0);
-//				byte[] buffer = new byte[((HttpActionContext)actioncontext).getResponse().getBufferSize()];
-//				int buflength;
-//				while ((buflength = is.read(buffer)) > 0) {
-//					os.write(buffer,0,buflength);
-//				}
-//				is.close();
-//				os.flush();
-//			} else {
-//				throw new it.cnr.jada.action.MessageToUser( "Documenti non presenti sul documentale per la riga selezionata" );
-//			}
-//		} else {
-//			throw new it.cnr.jada.action.MessageToUser( "Documenti non presenti sul documentale per la riga selezionata" );
-//		}
-//	}
+	public String getNomeAllegatoDettaglio() throws ApplicationException{
+		AllegatoOrdineDettaglioBulk dettaglio = (AllegatoOrdineDettaglioBulk)getDettaglioAllegatiController().getModel();
+		if (dettaglio!= null){
+			return dettaglio.getNome();
+		}
+		return "";
+	}
+	public void scaricaDocumentoDettaglioCollegato(ActionContext actioncontext) throws Exception {
+		AllegatoOrdineDettaglioBulk dettaglio = (AllegatoOrdineDettaglioBulk)getDettaglioAllegatiController().getModel();
+		if (dettaglio!= null){
+			StorageObject storageObject = storeService.getStorageObjectBykey(dettaglio.getStorageKey());
+			InputStream is = storeService.getResource(storageObject.getKey());
+			((HttpActionContext)actioncontext).getResponse().setContentLength(storageObject.<BigInteger>getPropertyValue(StoragePropertyNames.CONTENT_STREAM_LENGTH.value()).intValue());
+			((HttpActionContext)actioncontext).getResponse().setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
+			OutputStream os = ((HttpActionContext)actioncontext).getResponse().getOutputStream();
+			((HttpActionContext)actioncontext).getResponse().setDateHeader("Expires", 0);
+			byte[] buffer = new byte[((HttpActionContext)actioncontext).getResponse().getBufferSize()];
+			int buflength;
+			while ((buflength = is.read(buffer)) > 0) {
+				os.write(buffer,0,buflength);
+			}
+			is.close();
+			os.flush();
+		} else {
+			throw new it.cnr.jada.action.MessageToUser( "Documenti non presenti sul documentale per la riga selezionata" );
+		}
+
+	}
 	@Override
 	protected Boolean isPossibileCancellazione(AllegatoGenericoBulk allegato) {
 		return true;
@@ -428,9 +473,9 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	protected Boolean isPossibileCancellazioneDettaglioAllegato(AllegatoGenericoBulk allegato) {
 		return true;
 	}
-//	public SimpleDetailCRUDController getDettaglioAllegatiController() {
-//		return dettaglioAllegatiController;
-//	}
+	public SimpleDetailCRUDController getDettaglioAllegatiController() {
+		return dettaglioAllegatiController;
+	}
 	@Override
 	protected Boolean isPossibileModifica(AllegatoGenericoBulk allegato){
 		return true;
@@ -749,4 +794,69 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 				.orElse(Boolean.TRUE);
 	}
 
+	private void archiviaAllegatiDettaglio() throws ApplicationException, BusinessProcessException {
+		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
+		for (Object oggetto : ordine.getRigheOrdineColl()) {
+			OrdineAcqRigaBulk dettaglio = (OrdineAcqRigaBulk)oggetto;
+			for (AllegatoGenericoBulk allegato : dettaglio.getArchivioAllegati()) {
+				if (allegato.isToBeCreated()){
+					try {
+						storeService.storeSimpleDocument(allegato,
+								new FileInputStream(allegato.getFile()),
+								allegato.getContentType(),
+								allegato.getNome(),
+								((OrdineAcqCMISService)storeService).getStorePathDettaglio(dettaglio));
+						allegato.setCrudStatus(OggettoBulk.NORMAL);
+					} catch (FileNotFoundException e) {
+						throw handleException(e);
+					} catch (StorageException e) {
+						if (e.getType().equals(StorageException.Type.CONSTRAINT_VIOLATED))
+							throw new ApplicationException("File ["+allegato.getNome()+"] gia' presente. Inserimento non possibile!");
+						throw handleException(e);
+					}
+				}else if (allegato.isToBeUpdated()) {
+					if (isPossibileModifica(allegato)) {
+						try {
+							if (allegato.getFile() != null) {
+								storeService.updateStream(allegato.getStorageKey(),
+										new FileInputStream(allegato.getFile()),
+										allegato.getContentType());
+							}
+							storeService.updateProperties(allegato, storeService.getStorageObjectBykey(allegato.getStorageKey()));
+							allegato.setCrudStatus(OggettoBulk.NORMAL);
+						} catch (FileNotFoundException e) {
+							throw handleException(e);
+						}
+					}
+				}
+			}
+			for (Iterator<AllegatoOrdineDettaglioBulk> iterator = dettaglio.getArchivioAllegati().deleteIterator(); iterator.hasNext();) {
+				AllegatoOrdineDettaglioBulk allegato = iterator.next();
+				if (allegato.isToBeDeleted()){
+					storeService.delete(allegato.getStorageKey());
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+				}
+			}
+		}
+
+		for (Iterator<OrdineAcqRigaBulk> iterator = ordine.getRigheOrdineColl().deleteIterator(); iterator.hasNext();) {
+			OrdineAcqRigaBulk dettaglio = iterator.next();
+			for (Iterator<AllegatoGenericoBulk> iteratorAll = dettaglio.getArchivioAllegati().iterator(); iteratorAll.hasNext();) {
+				AllegatoGenericoBulk allegato = iteratorAll.next();
+				if (allegato.isToBeDeleted()){
+					storeService.delete(allegato.getStorageKey());
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+				}
+			}
+		}
+	}
+
+	@Override
+	protected OggettoBulk initializeModelForEditAllegati(ActionContext actioncontext, OggettoBulk oggettobulk, String path) throws BusinessProcessException {
+		OrdineAcqBulk ordine = (OrdineAcqBulk)oggettobulk;
+		for (OrdineAcqRigaBulk dettaglio : ordine.getRigheOrdineColl()) {
+			dettaglio.setArchivioAllegati(((OrdineAcqCMISService)storeService).recuperoAllegatiDettaglioOrdine(dettaglio));
+		}
+		return super.initializeModelForEditAllegati(actioncontext, oggettobulk, path);
+	}
 }

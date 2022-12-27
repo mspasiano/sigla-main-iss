@@ -18,13 +18,23 @@
 package it.cnr.contab.ordmag.ordini.service;
 
 import it.cnr.contab.firma.bulk.FirmaOTPBulk;
+import it.cnr.contab.ordmag.ordini.bulk.AllegatoOrdineDettaglioBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqRigaBulk;
+import it.cnr.contab.ordmag.richieste.bulk.AllegatoRichiestaDettaglioBulk;
+import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopBulk;
+import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopRigaBulk;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.SignP7M;
+import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
+import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.bulk.BulkList;
+import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.Introspector;
 import it.cnr.si.firmadigitale.firma.arss.ArubaSignServiceClient;
 import it.cnr.si.firmadigitale.firma.arss.ArubaSignServiceException;
 import it.cnr.si.spring.storage.MimeTypes;
@@ -38,8 +48,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -81,7 +94,7 @@ public class OrdineAcqCMISService extends StoreService {
         return getStorageObjectByPath(getStorePath(ordine));
 	}
 	
-	public String createFolderRichiestaIfNotPresent(String path, OrdineAcqBulk ordine) throws ApplicationException{
+	public String createFolderOrdineIfNotPresent(String path, OrdineAcqBulk ordine) throws ApplicationException{
 		Map<String, Object> metadataProperties = new HashMap<String, Object>();
 		String folderName = sanitizeFolderName(ordine.constructCMISNomeFile());
 		metadataProperties.put(StoragePropertyNames.OBJECT_TYPE_ID.value(), "F:ordini_acq:main");
@@ -98,10 +111,25 @@ public class OrdineAcqCMISService extends StoreService {
         return createFolderIfNotPresent(path, folderName, metadataProperties);
 	}
 
+	public String createFolderOrdineIfNotPresent(String path, OrdineAcqRigaBulk ordineAcqRigaBulk) throws ApplicationException{
+		Map<String, Object> metadataProperties = new HashMap<String, Object>();
+		String folderName = sanitizeFolderName(ordineAcqRigaBulk.constructCMISNomeFile());
+		metadataProperties.put(StoragePropertyNames.OBJECT_TYPE_ID.value(), "F:ordini_acq_dettaglio:main");
+		metadataProperties.put(StoragePropertyNames.NAME.value(), folderName);
+		metadataProperties.put(OrdineAcqCMISService.CMIS_ORDINI_ACQ_NUMERATORE, ordineAcqRigaBulk.getCdNumeratore());
+		metadataProperties.put(OrdineAcqCMISService.CMIS_ORDINI_ACQ_ANNO, ordineAcqRigaBulk.getEsercizio());
+		metadataProperties.put(OrdineAcqCMISService.CMIS_ORDINI_ACQ_NUMERO, ordineAcqRigaBulk.getNumero());
+		metadataProperties.put(OrdineAcqCMISService.CMIS_ORDINI_ACQ_UOP, ordineAcqRigaBulk.getCdUnitaOperativa());
+		metadataProperties.put(OrdineAcqCMISService.CMIS_ORDINI_ACQ_DETTAGLIO_RIGA, ordineAcqRigaBulk.getRiga());
+		metadataProperties.put("sigla_commons_aspect:utente_applicativo", ordineAcqRigaBulk.getUtuv());
+		List<String> aspectsToAdd = new ArrayList<String>();
+		aspectsToAdd.add("P:cm:titled");
+		aspectsToAdd.add("P:sigla_commons_aspect:utente_applicativo_sigla");
+		metadataProperties.put(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value(), aspectsToAdd);
+		return createFolderIfNotPresent(path, folderName, metadataProperties);
+	}
 	public String getStorePath(OrdineAcqBulk allegatoParentBulk) throws BusinessProcessException{
-
 		try {
-
 			String path =Arrays.asList(
 					SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
 					allegatoParentBulk.getUnitaOperativaOrd().getCdUnitaOrganizzativa(),
@@ -113,12 +141,25 @@ public class OrdineAcqCMISService extends StoreService {
 			).stream().collect(
 					Collectors.joining(StorageDriver.SUFFIX)
 			);
-            return createFolderRichiestaIfNotPresent(path, allegatoParentBulk);
+            return createFolderOrdineIfNotPresent(path, allegatoParentBulk);
 		} catch (ComponentException e) {
 			throw new BusinessProcessException(e);
 		}
 	}
 
+	public String getStorePathDettaglio(OrdineAcqRigaBulk ordineAcqRigaBulk) throws BusinessProcessException{
+		try {
+			String path = Arrays.asList(
+					getStorePath(ordineAcqRigaBulk.getOrdineAcq()),
+					ordineAcqRigaBulk.getOrdineAcq().constructCMISNomeFile()
+			).stream().collect(
+					Collectors.joining(StorageDriver.SUFFIX)
+			);
+			return createFolderOrdineIfNotPresent(path, ordineAcqRigaBulk);
+		} catch (ComponentException e) {
+			throw new BusinessProcessException(e);
+		}
+	}
 	public StorageObject getStorageObjectStampaOrdine(OrdineAcqBulk ordine)throws Exception{
 		return getFilesOrdine(ordine).stream()
 				.filter(storageObject -> hasAspect(storageObject, ASPECT_STAMPA_ORDINI))
@@ -168,4 +209,41 @@ public class OrdineAcqCMISService extends StoreService {
 			throw new ApplicationException( e );
 		}
 	}
+
+	public BulkList<AllegatoGenericoBulk> recuperoAllegatiDettaglioOrdine(OrdineAcqRigaBulk ordineAcqRigaBulk) throws BusinessProcessException {
+		BulkList<AllegatoGenericoBulk> allegatoGenericoBulks = new BulkList<AllegatoGenericoBulk>();
+		String path = getStorePathDettaglio(ordineAcqRigaBulk);
+		if (getStorageObjectByPath(path) == null)
+			return allegatoGenericoBulks;
+		for (StorageObject storageObject : getChildren(getStorageObjectByPath(path).getKey())) {
+			if (hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()))
+				continue;
+			if (Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
+					.map(String.class::cast)
+					.filter(s -> s.equals(StoragePropertyNames.CMIS_FOLDER.value()))
+					.isPresent()) {
+				continue;
+			}
+			AllegatoOrdineDettaglioBulk allegato = new AllegatoOrdineDettaglioBulk(storageObject.getKey());
+			allegato.setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
+			allegato.setNome(storageObject.getPropertyValue(StoragePropertyNames.NAME.value()));
+			allegato.setDescrizione(storageObject.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
+			allegato.setTitolo(storageObject.getPropertyValue(StoragePropertyNames.TITLE.value()));
+			allegato.setLastModificationDate(
+					Optional.ofNullable(storageObject.<Calendar>getPropertyValue(StoragePropertyNames.LAST_MODIFIED.value()))
+							.map(calendar -> calendar.getTime())
+							.orElse(new Date()));
+
+			allegato.setRelativePath(
+					Optional.ofNullable(storageObject.getPath())
+							.map(s -> s.substring(s.indexOf(path) + path.length()))
+							.map(s -> s.substring(0, s.indexOf(allegato.getNome())))
+							.orElse(File.separator)
+			);
+			allegato.setCrudStatus(OggettoBulk.NORMAL);
+			allegatoGenericoBulks.add(allegato);
+		}
+		return allegatoGenericoBulks;
+	}
+
 }

@@ -134,6 +134,7 @@
 		inputType="SELECT"
 		nullable="true"
 		keysProperty="statoKeysForSearch"
+		readonlyPropertyOnSearch="isForFirma"
 		enabledOnInsert="true"
 		enabledOnEdit="true"
 		enabledOnSearch="true"
