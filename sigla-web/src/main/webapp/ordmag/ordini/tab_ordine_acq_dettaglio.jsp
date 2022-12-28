@@ -13,7 +13,7 @@
 	OrdineAcqRigaBulk riga = (OrdineAcqRigaBulk)bp.getRighe().getModel();
 	String collapseIconClass = bp.isDettaglioContrattoCollapse() ? "fa-angle-down" : "fa-angle-up";
 %>
-<div class="Group card p-2 mb-2">
+<div class="Group p-2 mb-2">
     <div class="form-row">
         <div class="col-md-6"><% bp.getRighe().writeFormField(out, "findBeneServizio", Boolean.FALSE);%></div>
         <div class="col-md-4"><% bp.getRighe().writeFormField(out, "findUnitaMisura", Boolean.FALSE);%></div>
