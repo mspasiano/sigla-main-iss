@@ -689,7 +689,8 @@
 	          <formFieldProperty
 	                name="oggetto"
 	                inputType="TEXT"
-	                inputSize="40" />
+	                inputSize="40"
+                    inputCssClass="w-60" />
 	    </form>
 	    <form name="searchtool_large">
 	          <formFieldProperty
