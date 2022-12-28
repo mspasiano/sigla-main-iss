@@ -10,7 +10,7 @@
 
 <% CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
     OrdineAcqRigaBulk riga = (OrdineAcqRigaBulk)bp.getRighe().getModel();
-	bp.getRighe().writeHTMLTable(pageContext,"righeSet",true,false,true,"100%","140px"); %>
+	bp.getRighe().writeHTMLTable(pageContext,"righeSet",true,false,true,"100%","auto"); %>
 <div class="mt-2">
 	      <%
 	      	String[][] pages = null;

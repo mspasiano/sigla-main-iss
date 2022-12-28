@@ -22,7 +22,7 @@
     <% bp.getCrudDocEleIvaColl().closeHTMLTable(pageContext);%>
 </span>
 
-<% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","50vh"); %>
+<% bp.getFatturaOrdiniController().writeHTMLTable(pageContext,"default",false,false,true,"100%","auto"); %>
 <% bp.getFatturaOrdiniController().closeHTMLTable(pageContext);%>
 
 <span class="pt-1">

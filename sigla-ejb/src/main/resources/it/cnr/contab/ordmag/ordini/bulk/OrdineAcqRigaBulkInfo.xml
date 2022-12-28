@@ -111,7 +111,7 @@
 		name="findBeneServizio"
 		property="beneServizio"
 		inputType="SEARCHTOOL_WITH_LIKE"
-        formName="searchtool"
+        formName="searchtool_codice"
 		enabledOnSearch="true"
         enabledOnEdit="true" 
 		label="Bene/Servizio"/>	

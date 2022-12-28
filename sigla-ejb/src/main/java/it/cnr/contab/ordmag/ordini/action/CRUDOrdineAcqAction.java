@@ -204,49 +204,50 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
         riga.setBeneServizio(bene);
         ((CRUDBP) context.getBusinessProcess()).setDirty(true);
         if (bene != null) {
-            CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP) context.getBusinessProcess();
-            riga.setDsBeneServizio(bene.getDs_bene_servizio());
-            riga.setCdBeneServizio(bene.getCd_bene_servizio());
-            ContrattoBulk contrattoBulk = riga.getOrdineAcq().getContratto();
-            if (contrattoBulk != null) {
-                try {
-                    if (contrattoBulk.isDettaglioContrattoPerArticoli() || contrattoBulk.isDettaglioContrattoPerCategoriaGruppo() ){
-                        Dettaglio_contrattoBulk dettaglio_contrattoBulk = bp.recuperoDettaglioContratto(context, riga);
-                        riga.setDettaglioContratto(dettaglio_contrattoBulk);
-                    }
-                    if (contrattoBulk.isDettaglioContrattoPerArticoli()){
-                        riga.setUnitaMisura(riga.getDettaglioContratto().getUnitaMisura());
-                        riga.setCoefConv(riga.getDettaglioContratto().getCoefConv());
-                        riga.setPrezzoUnitario(riga.getDettaglioContratto().getPrezzoUnitario());
-                    } else {
-                        if (bene.getUnitaMisura() != null) {
-                            riga.setUnitaMisura(bene.getUnitaMisura());
-                            riga.setCoefConv(BigDecimal.ONE);
+            try {
+                CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP) context.getBusinessProcess();
+                riga.setDsBeneServizio(bene.getDs_bene_servizio());
+                riga.setCdBeneServizio(bene.getCd_bene_servizio());
+                ContrattoBulk contrattoBulk = riga.getOrdineAcq().getContratto();
+                if (contrattoBulk != null) {
+                    try {
+                        if (contrattoBulk.isDettaglioContrattoPerArticoli() || contrattoBulk.isDettaglioContrattoPerCategoriaGruppo() ){
+                            Dettaglio_contrattoBulk dettaglio_contrattoBulk = bp.recuperoDettaglioContratto(context, riga);
+                            riga.setDettaglioContratto(dettaglio_contrattoBulk);
                         }
+                        if (contrattoBulk.isDettaglioContrattoPerArticoli()){
+                            riga.setUnitaMisura(riga.getDettaglioContratto().getUnitaMisura());
+                            riga.setCoefConv(riga.getDettaglioContratto().getCoefConv());
+                            riga.setPrezzoUnitario(riga.getDettaglioContratto().getPrezzoUnitario());
+                        } else {
+                            if (bene.getUnitaMisura() != null) {
+                                riga.setUnitaMisura(bene.getUnitaMisura());
+                                riga.setCoefConv(BigDecimal.ONE);
+                            }
+                        }
+                    } catch (BusinessProcessException e) {
+                        handleException(context, e);
                     }
-                } catch (BusinessProcessException e) {
-                    handleException(context, e);
+                } else {
+                    if (bene.getUnitaMisura() != null) {
+                        riga.setUnitaMisura(bene.getUnitaMisura());
+                        riga.setCoefConv(BigDecimal.ONE);
+                    }
                 }
-            } else {
-                if (bene.getUnitaMisura() != null) {
-                    riga.setUnitaMisura(bene.getUnitaMisura());
-                    riga.setCoefConv(BigDecimal.ONE);
+                if (bene.getTipoGestione() != null) {
+                    riga.setDspTipoConsegna(bene.getTipoGestione());
+                    riga.setTipoConsegnaDefault(bene.getTipoGestione());
                 }
-            }
-            if (bene.getTipoGestione() != null) {
-                riga.setDspTipoConsegna(bene.getTipoGestione());
-                riga.setTipoConsegnaDefault(bene.getTipoGestione());
-            }
-            if (bene.getVoce_iva() != null) {
-                riga.setVoceIva(bene.getVoce_iva());
-            }
-            if (bene.getCategoria_gruppo() != null) {
-                try {
-                    ContoBulk conto = bp.recuperoContoDefault(context, bene.getCategoria_gruppo());
-                    riga.setDspConto(conto);
-                } catch (BusinessProcessException e) {
-                    handleException(context, e);
+                if (bene.getVoce_iva() != null && bene.getVoce_iva().isValid()) {
+                    riga.setVoceIva(bene.getVoce_iva());
                 }
+                if (bene.getCategoria_gruppo() != null) {
+                        ContoBulk conto = bp.recuperoContoDefault(context, bene.getCategoria_gruppo());
+                        riga.setDspConto(conto);
+                }
+                bp.completeSearchTools(context, bp);
+            } catch (BusinessProcessException | ValidationException e) {
+                handleException(context, e);
             }
         }
         return context.findDefaultForward();

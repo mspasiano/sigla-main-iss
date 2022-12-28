@@ -9,94 +9,71 @@
 %>
 
 <%  
-CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
+    CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
 	OrdineAcqRigaBulk riga = (OrdineAcqRigaBulk)bp.getRighe().getModel();
-	String collapseIconClass = bp.isDettaglioContrattoCollapse() ? "fa-chevron-circle-down" : "fa-chevron-circle-up";
+	String collapseIconClass = bp.isDettaglioContrattoCollapse() ? "fa-angle-down" : "fa-angle-up";
 %>
 <div class="Group card p-2 mb-2">
-	<table class="w-100">
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "findBeneServizio"); %></td>
-			<td colspan="5"><% bp.getRighe().writeFormInput(out, "findBeneServizio"); %></td>
-		</tr>
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "findUnitaMisura");%></td>
-			<td colspan="3"><% bp.getRighe().writeFormInput(out, "findUnitaMisura");%></td>
-			<td colspan="2">
-				<% bp.getRighe().writeFormLabel(out,"coefConv");%>
-				<% bp.getRighe().writeFormInput(out,null,"coefConv",riga!=null&&riga.isROCoefConv(),null,""); %>
-			</td>
-		</tr>
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "voce_iva"); %></td>
-			<td colspan="5"><% bp.getRighe().writeFormInput(out, "voce_iva"); %></td>
-		</tr>
-		<tr>
-			<% bp.getRighe().writeFormField(out,"prezzoUnitario");%>
-			<% bp.getRighe().writeFormField(out, "dspQuantita"); %>
-		</tr>
-		<tr>
-			<% bp.getRighe().writeFormField(out,"sconto1");%>      	
-			<% bp.getRighe().writeFormField(out,"sconto2");%>
-			<% bp.getRighe().writeFormField(out,"sconto3");%>      	
-		</tr>
-        <tr>      	
-			<td><% bp.getRighe().writeFormLabel(out,"notaRiga");%></td>      	
-			<td colspan="5"><% bp.getRighe().writeFormInput(out,"notaRiga");%></td>
-        </tr>
-        <% if (riga != null && riga.getDettaglioContratto() != null) { %>
-            <%if (bp.getParentRoot().isBootstrap()) { %>
-            <div>
-                <h6 class="mb-0">
-                    <a onclick="submitForm('doToggle(dettaglioContratto)')" class="text-primary"><i aria-hidden="true" class="fa <%=collapseIconClass%>"></i> Dati Dettaglio Contratto</a>
-                </h6>
+    <div class="form-row">
+        <div class="col-md-6"><% bp.getRighe().writeFormField(out, "findBeneServizio", Boolean.FALSE);%></div>
+        <div class="col-md-4"><% bp.getRighe().writeFormField(out, "findUnitaMisura", Boolean.FALSE);%></div>
+        <div class="col-md-2">
+            <% bp.getRighe().writeFormLabel(out,"coefConv");%>
+            <% bp.getRighe().writeFormInput(out,null,"coefConv",riga!=null&&riga.isROCoefConv(),null,""); %>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-12"><% bp.getRighe().writeFormField(out, "voce_iva", Boolean.FALSE);%></div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-4"><% bp.getRighe().writeFormField(out, "prezzoUnitario", Boolean.FALSE);%></div>
+        <div class="col-md-2"><% bp.getRighe().writeFormField(out, "dspQuantita", Boolean.FALSE);%></div>
+        <div class="col-md-2"><% bp.getRighe().writeFormField(out, "sconto1", Boolean.FALSE);%></div>
+        <div class="col-md-2"><% bp.getRighe().writeFormField(out, "sconto2", Boolean.FALSE);%></div>
+        <div class="col-md-2"><% bp.getRighe().writeFormField(out, "sconto3", Boolean.FALSE);%></div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-12"><% bp.getRighe().writeFormField(out, "notaRiga", Boolean.FALSE);%></div>
+    </div>
+    <% if (riga != null && riga.getDettaglioContratto() != null) { %>
+        <div class="card border-info mt-2">
+            <div class="card-header d-flex">
+                <a onclick="submitForm('doToggle(dettaglioContratto)')" class="text-info d-flex w-100">
+                    <span class="h4 mb-0">Dati Dettaglio Contratto</span>
+                    <i aria-hidden="true" class="ml-auto fa fa-2x <%=collapseIconClass%>"></i>
+                </a>
             </div>
+            <% if (!bp.isDettaglioContrattoCollapse()) { %>
+                <div class="card-block p-2">
+                    <div class="form-row">
+                        <div class="col-md-4"><% bp.getRighe().writeFormField(out, "quantitaMin", Boolean.FALSE); %></div>
+                        <div class="col-md-4"><% bp.getRighe().writeFormField(out, "quantitaMax", Boolean.FALSE); %></div>
+                        <div class="col-md-4"><% bp.getRighe().writeFormField(out, "quantitaOrdinata", Boolean.FALSE); %></div>
+                    </div>
+                </div>
             <% } %>
-            <% if (riga.getDettaglioContratto() != null && (!bp.isDettaglioContrattoCollapse() || !bp.getParentRoot().isBootstrap())) { %>
-                     <tr>
-                        <% bp.getRighe().writeFormField(out,"quantitaMin");%>
-                        <% bp.getRighe().writeFormField(out,"quantitaMax");%>
-                        <% bp.getRighe().writeFormField(out,"quantitaOrdinata");%>
-                    </tr>
-            <% } %>
-        <% } %>
-	</table>
+        </div>
+    <% } %>
 </div>
 
 <div class="Group card p-2 mb-2">
-	<table class="w-100">
-		<tr>
-			<% bp.getRighe().writeFormField(out, "tipoConsegna"); %>
-			<td colspan="4">
-				<% bp.getRighe().writeFormLabel(out, "dtPrevConsegna"); %>
-				<% bp.getRighe().writeFormInput(out, "dtPrevConsegna"); %>
-			</td>
-			<td colspan="4">
-				<% bp.getRighe().writeFormLabel(out, "statoConsegne"); %>
-				<% bp.getRighe().writeFormInput(out, "statoConsegne"); %>
-			</td>
-		</tr>
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "findMagazzino");%></td>
-			<td colspan="3"><% bp.getRighe().writeFormInput(out, "findMagazzino");%></td>
-			<td><% bp.getRighe().writeFormLabel(out, "findLuogoConsegnaMag");%></td>
-			<td colspan="3"><% bp.getRighe().writeFormInput(out, "findLuogoConsegnaMag");%></td>
-		</tr>
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "findUnitaOperativaOrdDest"); %></td>
-			<td colspan="7"><% bp.getRighe().writeFormInput(out, "findUnitaOperativaOrdDest"); %></td>
-		</tr>
-		<tr>
-			<%
-				bp.getRighe().writeFormField(out, "imImponibile");
-			    bp.getRighe().writeFormField(out, "imIva");
-			    bp.getRighe().writeFormField(out, "imIvaD");
-			    bp.getRighe().writeFormField(out, "imTotaleRiga");
-			%>
-		</tr>
-		<tr>
-			<td><% bp.getRighe().writeFormLabel(out, "cercaDspConto"); %></td>
-			<td colspan="7"><% bp.getRighe().writeFormInput(out, "cercaDspConto"); %></td>
-		</tr>
-	</table>
+    <div class="form-row">
+        <div class="col-md-2 h-100"><% bp.getRighe().writeFormField(out, "tipoConsegna"); %></div>
+        <div class="col-md-3"><% bp.getRighe().writeFormField(out, "dtPrevConsegna"); %></div>
+        <div class="col-md-2 h-100"><% bp.getRighe().writeFormField(out, "statoConsegne"); %></div>
+        <div class="col-md-5"><% bp.getRighe().writeFormField(out, "findMagazzino"); %></div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-6"><% bp.getRighe().writeFormField(out, "findLuogoConsegnaMag"); %></div>
+        <div class="col-md-6"><% bp.getRighe().writeFormField(out, "findUnitaOperativaOrdDest"); %></div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-3"><% bp.getRighe().writeFormField(out, "imImponibile"); %></div>
+        <div class="col-md-3"><% bp.getRighe().writeFormField(out, "imIva"); %></div>
+        <div class="col-md-3"><% bp.getRighe().writeFormField(out, "imIvaD"); %></div>
+        <div class="col-md-3"><% bp.getRighe().writeFormField(out, "imTotaleRiga"); %></div>
+    </div>
+    <div class="form-row">
+        <div class="col-md-12"><% bp.getRighe().writeFormField(out, "cercaDspConto"); %></div>
+    </div>
 </div>
