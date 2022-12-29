@@ -1555,9 +1555,9 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public String getOrdineString() {
-        return String.valueOf(this.getEsercizio())
+        return Optional.ofNullable(this.getEsercizio()).map(String::valueOf).orElse("")
                 .concat("/")
-                .concat(this.getCdNumeratore())
+                .concat(Optional.ofNullable(this.getCdNumeratore()).orElse(""))
                 .concat("/")
                 .concat(Optional.ofNullable(this.getNumero()).map(String::valueOf).orElse(""));
     }

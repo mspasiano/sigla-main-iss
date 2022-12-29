@@ -10,7 +10,7 @@
 		it.cnr.contab.anagraf00.tabrif.bulk.*"
 %>
 <%	CRUDFatturaPassivaElettronicaBP bp = (CRUDFatturaPassivaElettronicaBP)BusinessProcess.getBusinessProcess(request);%>
-<%  bp.getCrudDocEleIVAColl().writeHTMLTable(pageContext,"default",false,false,false,"100%","150px"); %>  
+<%  bp.getCrudDocEleIVAColl().writeHTMLTable(pageContext,"default",false,false,false,"100%","auto"); %>
 <div class="Group">
   <table>
   	<% bp.getCrudDocEleIVAColl().writeForm(out, "default");  %>
