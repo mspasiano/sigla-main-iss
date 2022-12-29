@@ -2936,6 +2936,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
     }
     public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
         if (!fattura.getFattura_passiva_ordini().isEmpty()) {
+            List<OrdineAcqConsegnaBulk> righeDiConsegna = new ArrayList<OrdineAcqConsegnaBulk>();
             for (FatturaOrdineBulk fatturaOrdineBulk : fattura.getFattura_passiva_ordini()) {
                 OrdineAcqConsegnaBulk consegna = fatturaOrdineBulk.getOrdineAcqConsegna();
                 if (fatturaOrdineBulk.isRigaAttesaNotaCredito()) {
@@ -2979,8 +2980,10 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
 
                 java.util.Vector dettagliDaContabilizzare = new java.util.Vector();
                 dettagliDaContabilizzare.add(riga);
-                Obbligazione_scadenzarioBulk obbligazione =
-                        fatturaOrdineBulk.getOrdineAcqConsegna().getObbligazioneScadenzario();
+
+                final OrdineAcqConsegnaBulk ordineAcqConsegna = fatturaOrdineBulk.getOrdineAcqConsegna();
+                righeDiConsegna.add(ordineAcqConsegna);
+                Obbligazione_scadenzarioBulk obbligazione = ordineAcqConsegna.getObbligazioneScadenzario();
                 ObbligazioniTable obbs = fattura.getObbligazioniHash();
                 if (obbs != null) {
                     java.util.List dettagliContabilizzati = (java.util.List) obbs.get(obbligazione);
@@ -3048,25 +3051,58 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
             aggiornaOrdiniMagazzino(userContext, fattura);
             /**
              * In caso di rettifiche del prezzo unitario o di uno sconto
-             * devo ricaricare le obbligazioni modificate
+             * devo ricaricare le obbligazioni modificate oppure
+             * se il totale delle righe di fattura non corrisponde con l'importo della scadenza
+             * allora devo sdoppiare la riga di scadenza
              */
-            if (fattura
-                    .getFattura_passiva_ordini()
-                    .stream()
-                    .filter(fatturaOrdineBulk ->
-                            Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent() ||
-                            Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() ||
-                            Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() ||
-                            Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent()
-                    ).findAny().isPresent()) {
-                ObbligazioniTable obbligazioniTable = new ObbligazioniTable();
-                for (Object obj : fattura.getObbligazioniHash().entrySet()) {
-                    Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>> entry = (Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>>)obj;
-                    Obbligazione_scadenzarioBulk scadenzarioBulk = (Obbligazione_scadenzarioBulk) entry.getKey().getBulk();
-                    obbligazioniTable.put(findByPrimaryKey(userContext, scadenzarioBulk), entry.getValue());
+            ObbligazioneAbstractComponentSession sess = (ObbligazioneAbstractComponentSession)
+                    it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneAbstractComponentSession");
+            ObbligazioniTable obbligazioniTable = new ObbligazioniTable();
+            for (Object obj : fattura.getObbligazioniHash().entrySet()) {
+                Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>> entry = (Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>>)obj;
+                Obbligazione_scadenzarioBulk scadenzarioBulk = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, (Obbligazione_scadenzarioBulk) entry.getKey().getBulk());
+                final BigDecimal totaleRigheDifattura = entry.getValue()
+                        .stream()
+                        .map(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_diponibile_nc())
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                if (scadenzarioBulk.getIm_scadenza().compareTo(totaleRigheDifattura) > 0) {
+                    try {
+                        final BigDecimal diff = scadenzarioBulk.getIm_scadenza().subtract(totaleRigheDifattura);
+                        final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomatico(userContext, scadenzarioBulk, diff);
+                        /**
+                         * Aggiorno l'importo associato ai documenti amministrativi sulla vecchia scadenza
+                         */
+                        Obbligazione_scadenzarioBulk oldScadenza = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, scadenzarioBulk);
+                        oldScadenza.setIm_associato_doc_amm(oldScadenza.getIm_scadenza());
+                        oldScadenza.setToBeUpdated();
+                        super.modificaConBulk(userContext, oldScadenza);
+
+                        nuovaScadenza.setIm_associato_doc_amm(nuovaScadenza.getIm_scadenza());
+                        nuovaScadenza.setFlAssociataOrdine(Boolean.TRUE);
+                        nuovaScadenza.setToBeUpdated();
+                        super.modificaConBulk(userContext, nuovaScadenza);
+                        /**
+                         * Ora devo legare le righe di consegna alla nuova scadenza
+                         */
+                        righeDiConsegna.stream()
+                                .forEach(ordineAcqConsegnaBulk -> {
+                                    try {
+                                        final OrdineAcqConsegnaBulk ordineAcqConsegna = (OrdineAcqConsegnaBulk)super.inizializzaBulkPerModifica(userContext, ordineAcqConsegnaBulk);
+                                        ordineAcqConsegna.setObbligazioneScadenzario(nuovaScadenza);
+                                        ordineAcqConsegna.setToBeUpdated();
+                                        super.modificaConBulk(userContext, ordineAcqConsegna);
+                                    } catch (ComponentException e) {
+                                        throw new DetailedRuntimeException(e);
+                                    }
+                                });
+                        scadenzarioBulk = nuovaScadenza;
+                    } catch (RemoteException|PersistencyException e) {
+                        throw handleException(e);
+                    }
                 }
-                fattura.setFattura_passiva_obbligazioniHash(obbligazioniTable);
+                obbligazioniTable.put(scadenzarioBulk, entry.getValue());
             }
+            fattura.setFattura_passiva_obbligazioniHash(obbligazioniTable);
         } else {
             throw new it.cnr.jada.comp.ApplicationException("Attenzione: Fattura da Ordini, associare almeno un Ordine!");
         }
@@ -3229,7 +3265,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             .filter(list -> !list.isEmpty())
                             .map(list -> list.stream())
                             .orElse(Stream.empty());
-            List<FatturaOrdineBulk> righeConMagazzinoDaAggiornare = new ArrayList<>();
             final Map<OrdineAcqBulk, Map<OrdineAcqRigaBulk, List<OrdineAcqConsegnaBulk>>> mapOrdine =
                     consegne.get().collect(Collectors.groupingBy(o -> o.getOrdineAcqRiga().getOrdineAcq(),
                             Collectors.groupingBy(o -> o.getOrdineAcqRiga())));
