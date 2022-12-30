@@ -3095,6 +3095,12 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                         throw new DetailedRuntimeException(e);
                                     }
                                 });
+                        entry.getValue()
+                                .stream()
+                                        .forEach(fatturaPassivaRigaBulk -> {
+                                            fatturaPassivaRigaBulk.setObbligazione_scadenziario(nuovaScadenza);
+                                            fatturaPassivaRigaBulk.setToBeUpdated();
+                                        });
                         scadenzarioBulk = nuovaScadenza;
                     } catch (RemoteException|PersistencyException e) {
                         throw handleException(e);
