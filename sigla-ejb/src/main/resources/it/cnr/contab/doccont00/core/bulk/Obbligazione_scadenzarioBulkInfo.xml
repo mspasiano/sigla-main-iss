@@ -341,7 +341,19 @@
                 label="Nr."
         />
     </columnSet>
-
+    <columnSet
+            name="obbligazione_ordine_dettaglio">
+        <columnFieldProperty name="esercizio"/>
+        <columnFieldProperty name="cd_cds"/>
+        <columnFieldProperty name="esercizio_originale"/>
+        <columnFieldProperty name="pg_obbligazione"/>
+        <columnFieldProperty name="pg_obbligazione_scadenzario"/>
+        <columnFieldProperty name="dt_scadenza"/>
+        <columnFieldProperty name="im_scadenza" columnStyle="width:80px; text-align: right; padding-right:20px"/>
+        <columnFieldProperty name="importo_disponibile" columnStyle="width:80px; text-align: right; padding-right:20px"/>
+        <columnFieldProperty name="ds_scadenza"/>
+        <columnFieldProperty name="cd_terzo" label="Beneficiario" property="obbligazione.cd_terzo"/>
+    </columnSet>
     <formFieldProperty
             name="cd_cds"
     />
