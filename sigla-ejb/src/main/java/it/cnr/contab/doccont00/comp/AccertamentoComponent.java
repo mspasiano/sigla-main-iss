@@ -27,6 +27,7 @@ import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
 import it.cnr.contab.config00.pdcfin.bulk.*;
@@ -52,10 +53,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.contab.varstanz00.bulk.*;
 import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.PrimaryKeyHashtable;
-import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
@@ -4752,6 +4750,338 @@ public SQLBuilder selectVariazioneResiduaByClause (UserContext userContext, Acce
 		}
 		return Boolean.TRUE;
 
+	}
+
+	/**
+	 * Aggiorna l'accertamento in base alla selezione delle voci effettuate dall'utente.
+	 * L'utente, in fase di selezione voci, può o meno indicare l'importo da imputare per ogni Cdr/Gae/Voce.
+	 * Gli importi indicati dall'utente per CDR/GAE/Voce vengono presi in considerazione solo se
+	 * l'accertamento è formata da un'unica scadenza.
+	 * In caso di più scadenze vengono assegnate solo le combinazioni scelte CDR/Gae/Voce mentre gli importi vengono
+	 * ricalcolati con le modalità abituali (es. percentuale GAE all'interno del Bilancio).
+	 *
+	 * @param userContext
+	 * @param accertamento
+	 * @param vociList
+	 * @return
+	 * @throws it.cnr.jada.comp.ComponentException
+	 */
+	public AccertamentoBulk riportaSelezioneVoci(UserContext userContext, AccertamentoBulk accertamento, java.util.List vociList)  throws it.cnr.jada.comp.ComponentException{
+		AccertamentoHome accertamentoHome = (AccertamentoHome) getHome( userContext, accertamento.getClass());
+		Accertamento_scadenzarioHome asHome = (Accertamento_scadenzarioHome) getHome( userContext, Accertamento_scadenzarioBulk.class );
+
+		// carica i capitoli di spesa del CDS
+		accertamento = listaCapitoliPerCdsVoce( userContext, accertamento );
+		accertamento.refreshCapitoliDiSpesaCdsSelezionatiColl(vociList);
+
+		// carica i cdr
+		accertamento.setCdrColl( listaCdrPerCapitoli( userContext,  accertamento));
+		accertamento.refreshCdrSelezionatiColl(vociList);
+
+		// carica le linee di attività da PDG
+		accertamento.setLineeAttivitaColl( listaLineeAttivitaPerCapitoliCdr( userContext,  accertamento));
+		accertamento.refreshLineeAttivitaSelezionateColl(vociList);
+
+		accertamento.setInternalStatus( ObbligazioneBulk.INT_STATO_LATT_CONFERMATE );
+		accertamento.setIm_iniziale_accertamento( accertamento.getIm_accertamento());
+		accertamento.setCd_iniziale_elemento_voce( accertamento.getCd_elemento_voce());
+		accertamento.setCd_terzo_iniziale( accertamento.getCd_terzo());
+
+		BigDecimal totaleSelVoci = new BigDecimal( 0 ).setScale(2,BigDecimal.ROUND_HALF_UP);
+
+		//Carico la lista delle voci con gli importi da ripartirre
+		PrimaryKeyHashtable hashVociList = new PrimaryKeyHashtable();
+
+		if (!vociList.isEmpty() && vociList.get(0) instanceof V_assestatoBulk) {
+			for ( Iterator s = vociList.iterator(); s.hasNext(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk) s.next();
+				hashVociList.put(voceSel, new BigDecimal(0));
+				if (Utility.nvl(voceSel.getImp_da_assegnare()).compareTo(new BigDecimal(0))!=-1)
+					totaleSelVoci = totaleSelVoci.add( Utility.nvl(voceSel.getImp_da_assegnare()) );
+			}
+		}
+
+		//Valorizzo il campo Percentuale che utilizzerò per individuare gli importi da attribuire ad ogni scadenza
+		if (totaleSelVoci.compareTo(Utility.ZERO)>0)
+		{
+			for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+				voceSel.setPrc_da_assegnare(Utility.nvl(voceSel.getImp_da_assegnare()).divide(totaleSelVoci, 4, java.math.BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)));
+			}
+		}
+
+		if (totaleSelVoci.compareTo(accertamento.getIm_accertamento())>0)
+			accertamento.setIm_accertamento(totaleSelVoci);
+
+		//Crea l'eventuale scadenza mancante
+		creaScadenzaResiduale(userContext, accertamento);
+
+		//Rigenero i dettagli di tutte le scadenze
+		for ( Iterator s = accertamento.getAccertamento_scadenzarioColl().iterator(); s.hasNext(); )
+			generaDettagliScadenzaAccertamento( userContext, accertamento, ((Accertamento_scadenzarioBulk)s.next()), false);
+
+		if (totaleSelVoci.compareTo(new BigDecimal(0))>0) {
+
+			Accertamento_scadenzarioBulk as = null;
+			Accertamento_scad_voceBulk asv;
+
+			BigDecimal impDaAssegnareAcc = totaleSelVoci;
+			BigDecimal impAssegnatoAcc = new BigDecimal( 0 );
+
+			//DEVO PRIMA VERIFICARE CHE L'IMPORTO SELEZIONATO SIA ALMENO SUFFICIENTE A COLMARE LA QUOTA ASSOCIATA A DOC.AMM.
+			BigDecimal impAssociatoDocAmm = new BigDecimal( 0 );
+			for ( Iterator iteratorOs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorOs.hasNext(); )
+				impAssociatoDocAmm = impAssociatoDocAmm.add(((Accertamento_scadenzarioBulk)iteratorOs.next()).getIm_associato_doc_amm());
+
+			if (impAssociatoDocAmm.compareTo(impDaAssegnareAcc)>0)
+				throw new ApplicationException("Non è possibile attribuire all'accertamento un importo " + new it.cnr.contab.util.EuroFormat().format(impDaAssegnareAcc) +
+						" inferiore a quanto risulta associato a documenti amministrativi " + new it.cnr.contab.util.EuroFormat().format(impAssociatoDocAmm) + ".");
+
+			//AGGIORNO PRIMA LE SCADENZE ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+			for ( Iterator iteratorOs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorOs.hasNext(); ) {
+
+				as = (Accertamento_scadenzarioBulk)iteratorOs.next();
+
+				//SELEZIONO QUELLE ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+				if (as.getIm_associato_doc_amm().compareTo(new BigDecimal(0))>0){
+
+					//SE L'IMPORTO DELLA SCADENZA è MAGGIORE DI QUANTO DEVE ESSERE ANCORA RIPARTITO
+					//NE RIDUCO L'IMPORTO CONTROLLANDO DI NON RENDERLO INFERIORE A QUANTO ASSOCIATO A
+					//DOCUMENTI AMMINISTRATIVI
+					if (as.getIm_scadenza().compareTo(impDaAssegnareAcc)>0){
+						if (as.getIm_associato_doc_amm().compareTo(impDaAssegnareAcc)<0){
+							throw new ApplicationException("Non è possibile inserire un importo " +	new it.cnr.contab.util.EuroFormat().format(impDaAssegnareAcc) +
+									"inferiore a quanto risulta associato a documenti amministrativi " + new it.cnr.contab.util.EuroFormat().format(impAssociatoDocAmm) + ".");
+						}
+						as.setIm_scadenza(impDaAssegnareAcc);
+					}
+
+					spalmaImportiSuScadenza(userContext, as, hashVociList);
+					as.setToBeUpdated();
+					impDaAssegnareAcc = impDaAssegnareAcc.subtract(as.getIm_scadenza());
+					impAssegnatoAcc = impAssegnatoAcc.add(as.getIm_scadenza());
+				}
+			}
+
+			BulkList recDaEliminare = new BulkList();
+			//	POI LE SCADENZE NON ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+			for ( Iterator iteratorAs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorAs.hasNext(); ) {
+				as = (Accertamento_scadenzarioBulk)iteratorAs.next();
+
+				//SELEZIONO QUELLE NON ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+				if (as.getIm_associato_doc_amm().compareTo(new BigDecimal(0))<=0){
+					if (impDaAssegnareAcc.compareTo(Utility.ZERO)==0) {
+						for ( Iterator iteratorAsv = as.getAccertamento_scad_voceColl().iterator(); iteratorAsv.hasNext(); )
+							((Accertamento_scad_voceBulk)iteratorAsv.next()).setToBeDeleted();
+						as.setToBeDeleted();
+						recDaEliminare.add(as);
+					}
+					else
+					{
+						//SE L'IMPORTO DELLA SCADENZA è MAGGIORE DI QUANTO DEVE ESSERE ANCORA RIPARTITO
+						//NE RIDUCO L'IMPORTO
+						if (as.getIm_scadenza().compareTo(impDaAssegnareAcc)>0)
+							as.setIm_scadenza(impDaAssegnareAcc);
+
+						spalmaImportiSuScadenza(userContext, as, hashVociList);
+						as.setToBeUpdated();
+						impDaAssegnareAcc = impDaAssegnareAcc.subtract(as.getIm_scadenza());
+						impAssegnatoAcc = impAssegnatoAcc.add(as.getIm_scadenza());
+					}
+				}
+			}
+
+			//Elimino dallo scadenzario dell'obbligazione le scadenze segnate come da eliminare
+			for ( Iterator iteratorDel = recDaEliminare.iterator(); iteratorDel.hasNext(); )
+				accertamento.getAccertamento_scadenzarioColl().remove(iteratorDel.next());
+
+			accertamento.setIm_accertamento(impAssegnatoAcc.setScale(2,BigDecimal.ROUND_HALF_UP));
+			accertamento.setFl_calcolo_automatico(Boolean.FALSE);
+		}
+		else
+		{
+			if ( accertamento.getFl_calcolo_automatico().booleanValue() && !accertamento.isAccertamentoResiduo())
+				accertamento = calcolaPercentualeImputazioneAccertamento( userContext, accertamento );
+		}
+		return accertamento;
+	}
+
+	/*
+	 * Crea una scadenza di importo pari alla quota residua dell'impegno ancora da scadenziare.
+	 * Attribuisce come descrizione e data scadenza la descrizione e data di emissione dell'obbligazione
+	 */
+	public AccertamentoBulk creaScadenzaResiduale(UserContext userContext, AccertamentoBulk accertamento)  throws it.cnr.jada.comp.ComponentException{
+		BigDecimal imResiduo = accertamento.getIm_accertamento();
+		Accertamento_scadenzarioBulk os;
+
+		for ( Iterator s = accertamento.getAccertamento_scadenzarioColl().iterator(); s.hasNext(); )
+			imResiduo = imResiduo.subtract(((Accertamento_scadenzarioBulk) s.next()).getIm_scadenza());
+
+		if (imResiduo.compareTo(Utility.ZERO)>0) {
+			Accertamento_scadenzarioBulk scadenza = new Accertamento_scadenzarioBulk();
+			accertamento.addToAccertamento_scadenzarioColl(scadenza);
+			scadenza.setDt_scadenza_incasso(accertamento.getDt_registrazione());
+			scadenza.setDs_scadenza(accertamento.getDs_accertamento());
+			scadenza.setIm_scadenza(imResiduo);
+
+			Accertamento_scadenzarioBulk scadIniziale = new Accertamento_scadenzarioBulk();
+			scadIniziale.setIm_scadenza( scadenza.getIm_scadenza());
+			scadenza.setScadenza_iniziale( scadIniziale);
+			scadenza.setToBeCreated();
+
+			generaDettagliScadenzaAccertamento( userContext, accertamento, scadenza, accertamento.isAccertamentoResiduo()?false:true);
+		}
+		return accertamento;
+	}
+
+	/**
+	 * Metodo che spalma su una scadenza gli importi dei CDR/GAE/Voce secondo le percentuali indicate.
+	 *    PreCondition:
+	 *      E' stato richiesto di assegnare alla scadenza indicata gli importi dei CDR/GAE/Voce tenendo conto
+	 *      della ripartizione percentuale e degli importi da assegnare indicati nella HashList
+	 *    PostCondition:
+	 *      Viene verificato che gli importi da ripartire dei CDR/GAE/Voce siano sufficienti a coprire l'importo
+	 *      della scadenza. Quindi viene caricato lo scadenzario/voce aggiornando l'importo assegnato alla voce
+	 *      della HashList
+	 *
+	 * @param userContext
+	 * @param as <code>Accertamento_scadenzarioBulk</code>lo scadenzario da aggiornare
+	 * @param hashVociList la lista di oggetti V_assestatoBulk da cui prendere le percentuali e gli importi
+	 * 		  da spalmare.
+	 * @return la scadenza <code>Accertamento_scadenzarioBulk</code> aggiornata
+	 * @throws it.cnr.jada.comp.ComponentException
+	 */
+	private Accertamento_scadenzarioBulk spalmaImportiSuScadenza(UserContext userContext,
+																 Accertamento_scadenzarioBulk as,
+																 PrimaryKeyHashtable hashVociList) throws it.cnr.jada.comp.ComponentException
+	{
+		Accertamento_scad_voceBulk asv;
+
+		BigDecimal impDaAssegnareScadenza = as.getIm_scadenza();
+		BigDecimal impAssegnatoScadenza = new BigDecimal(0);
+
+		//AGGIORNO LO SCADENZARIO VOCI IN PERCENTUALE ALLE SELEZIONI EFFETTUATE
+		for ( Iterator iteratorOsv = as.getAccertamento_scad_voceColl().iterator(); iteratorOsv.hasNext(); )
+		{
+			asv = (Accertamento_scad_voceBulk) iteratorOsv.next();
+			asv.setIm_voce( Utility.ZERO );
+			asv.setToBeUpdated();
+
+			for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+				BigDecimal impDaAssegnareVoce = Utility.nvl(voceSel.getImp_da_assegnare()).subtract((BigDecimal) hashVociList.get( voceSel ));
+				BigDecimal prcDaAssegnareVoce = as.getIm_scadenza().multiply(voceSel.getPrc_da_assegnare().divide(new BigDecimal(100)));
+
+				if (prcDaAssegnareVoce.compareTo(impDaAssegnareVoce)>0)
+					prcDaAssegnareVoce = impDaAssegnareVoce;
+				if (prcDaAssegnareVoce.compareTo(impDaAssegnareScadenza)>0)
+					prcDaAssegnareVoce = impDaAssegnareScadenza;
+
+				if (prcDaAssegnareVoce.compareTo(Utility.ZERO)>0 &&
+						voceSel.getEsercizio().equals(asv.getEsercizio()) &&
+						voceSel.getCd_centro_responsabilita().equals(asv.getCd_centro_responsabilita()) &&
+						voceSel.getCd_linea_attivita().equals(asv.getCd_linea_attivita()) &&
+						voceSel.getTi_appartenenza().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_appartenenza()) &&
+						voceSel.getTi_gestione().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_gestione()) &&
+						voceSel.getCd_voce().equals(asv.getAccertamento_scadenzario().getAccertamento().getCd_voce()))
+				{
+					//Importo scadenza moltiplicato per la percentuale ottenuto dalla divisione tra
+					//l'importo assegnato al CDR/VOCE/GAE e l'importo totale
+					asv.setIm_voce( prcDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+					//importo assegnato CDR/VOCE/LINEA
+					hashVociList.put(voceSel, ((BigDecimal) hashVociList.get( voceSel )).add(asv.getIm_voce()));
+					break;
+				}
+			}
+
+			impDaAssegnareScadenza = impDaAssegnareScadenza.subtract(asv.getIm_voce());
+			impAssegnatoScadenza = impAssegnatoScadenza.add(asv.getIm_voce());
+		}
+
+		//Se la scadenza non è stata completamente coperta, vado a recuperare sulle combinazioni CDR/VOCE/GAE
+		//gli importi ancora disponibili
+		if (as.getIm_scadenza().compareTo(impAssegnatoScadenza)>0) {
+			for ( Iterator iteratorOsv = as.getAccertamento_scad_voceColl().iterator(); iteratorOsv.hasNext(); )
+			{
+				asv = (Accertamento_scad_voceBulk) iteratorOsv.next();
+				BigDecimal impDaAssegnareVoce = new BigDecimal(0);
+				for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+				{
+					V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+					impDaAssegnareVoce = Utility.nvl(voceSel.getImp_da_assegnare()).subtract((BigDecimal) hashVociList.get( voceSel ));
+
+					if (impDaAssegnareVoce.compareTo(impDaAssegnareScadenza)>0)
+						impDaAssegnareVoce = impDaAssegnareScadenza;
+
+					if (impDaAssegnareVoce.compareTo(Utility.ZERO)>0 &&
+							voceSel.getEsercizio().equals(asv.getEsercizio()) &&
+							voceSel.getCd_centro_responsabilita().equals(asv.getCd_centro_responsabilita()) &&
+							voceSel.getCd_linea_attivita().equals(asv.getCd_linea_attivita()) &&
+							voceSel.getTi_appartenenza().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_appartenenza()) &&
+							voceSel.getTi_gestione().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_gestione()) &&
+							voceSel.getCd_voce().equals(asv.getAccertamento_scadenzario().getAccertamento().getCd_voce()))
+					{
+						//Importo scadenza moltiplicato per la percentuale ottenuto dalla divisione tra
+						//l'importo assegnato al CDR/VOCE/GAE e l'importo totale
+						asv.setIm_voce( asv.getIm_voce().add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP)));
+						asv.setToBeUpdated();
+
+						//importo assegnato CDR/VOCE/LINEA
+						hashVociList.put(voceSel, ((BigDecimal) hashVociList.get( voceSel )).add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP)));
+
+						impDaAssegnareScadenza = impDaAssegnareScadenza.subtract(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+						impAssegnatoScadenza = impAssegnatoScadenza.add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+						break;
+					}
+				}
+			}
+		}
+
+		as.setIm_scadenza(impAssegnatoScadenza.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+		if (as.getIm_scadenza().compareTo(as.getIm_associato_doc_amm())==-1)
+			throw new ApplicationException("Non è possibile attribuire all'accertamento un importo inferiore a quanto "
+					+ "risulta associato a documenti amministrativi.");
+
+
+		//Aggiusto le percentuali
+		for ( Iterator j = as.getAccertamento_scad_voceColl().iterator(); j.hasNext(); )
+		{
+			asv = (Accertamento_scad_voceBulk) j.next();
+			if ( as.getIm_scadenza().doubleValue() != 0 )
+				asv.setPrc( (asv.getIm_voce().multiply( new BigDecimal(100)).divide( as.getIm_scadenza(), 2, BigDecimal.ROUND_HALF_UP)));
+			else
+				asv.setPrc( new BigDecimal(0));
+		}
+		return as;
+	}
+
+	public SQLBuilder selectAssestatoEntrateByClause (UserContext userContext, AccertamentoBulk accertamento, V_assestatoBulk assestato, CompoundFindClause clause) throws ComponentException, PersistencyException{
+		SQLBuilder sql = getHome(userContext, V_assestatoBulk.class).createSQLBuilder();
+		sql.addClause( clause );
+		sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+		sql.addClause(FindClause.AND, "esercizio_res", SQLBuilder.EQUALS, accertamento.getEsercizio_originale());
+		sql.addClause(FindClause.AND, "ti_gestione", SQLBuilder.EQUALS, CostantiTi_gestione.TI_GESTIONE_ENTRATE);
+		sql.addClause(FindClause.AND, "ti_appartenenza", SQLBuilder.EQUALS, "C");
+		sql.addClause(FindClause.AND, "cd_elemento_voce", SQLBuilder.EQUALS, accertamento.getCd_elemento_voce());
+		if (accertamento.getCd_unita_organizzativa() != null){
+			BulkHome bulkHome = getHome(userContext, V_struttura_organizzativaBulk.class);
+			SQLBuilder sqlStruttura = bulkHome.createSQLBuilder();
+			sqlStruttura.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+			sqlStruttura.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, accertamento.getCd_uo_origine());
+			sqlStruttura.addSQLClause(FindClause.AND, "CD_CENTRO_RESPONSABILITA", SQLBuilder.ISNOTNULL, true);
+			List<V_struttura_organizzativaBulk> strutture = bulkHome.fetchAll(sqlStruttura);
+			sql.openParenthesis(FindClause.AND);
+			for (V_struttura_organizzativaBulk v_struttura_organizzativaBulk : strutture)
+				sql.addClause(FindClause.OR, "cd_centro_responsabilita", SQLBuilder.EQUALS, v_struttura_organizzativaBulk.getCd_centro_responsabilita());
+			sql.closeParenthesis();
+		}
+		return sql;
 	}
 
 }

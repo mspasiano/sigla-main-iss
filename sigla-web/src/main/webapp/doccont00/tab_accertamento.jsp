@@ -141,8 +141,26 @@
 	
 	<tr>
 		<% if (bp.isFlNuovoPdg()) { %>
-			<td>	<% bp.getController().writeFormLabel( out, "find_elemento_voce"); %></td>
-			<td>	<% bp.getController().writeFormInput( out, "default","find_elemento_voce", bp.isROFindCapitolo(),null,null); %></td>				 
+            <td><% bp.getController().writeFormLabel( out, "find_elemento_voce"); %></td>
+            <td colspan=2>
+                <table>
+                <tr>
+                <td>
+                    <% bp.getController().writeFormInput(out,"default","find_elemento_voce",bp.isROFindCapitolo(),null,null); %>
+                </td>
+                <td>
+                <%JSPUtils.button(out,
+                        bp.getParentRoot().isBootstrap() ? "fa fa-external-link faa-shake" : "img/find16.gif",
+                        bp.getParentRoot().isBootstrap() ? "fa fa-external-link faa-shake" : "img/find16.gif",
+                        bp.getParentRoot().isBootstrap() ? "Disponibilità Voce":"Disponibilità<BR>Voce",
+                        "if (disableDblClick()) submitForm('doConsultaInserisciVoce')",
+                        "btn-outline-primary btn-title faa-parent animated-hover",
+                        true,
+                        bp.getParentRoot().isBootstrap());%>
+                </td>
+                </tr>
+                </table>
+            </td>
 		<% } else { %>
 			<td>	<% bp.getController().writeFormLabel( out, "find_capitolo"); %></td>
 			<td>	<% bp.getController().writeFormInput( out, "default","find_capitolo", bp.isROFindCapitolo(),null,null); %></td>				 

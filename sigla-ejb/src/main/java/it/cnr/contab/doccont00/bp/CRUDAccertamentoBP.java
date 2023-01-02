@@ -18,21 +18,11 @@
 package it.cnr.contab.doccont00.bp;
 
 
-import java.rmi.RemoteException;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Vector;
-
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Ass_ev_evBulk;
 import it.cnr.contab.config00.sto.bulk.CdrBulk;
-import it.cnr.contab.docamm00.bp.CRUDDocumentoGenericoAttivoBP;
-import it.cnr.contab.docamm00.bp.CRUDFatturaAttivaIBP;
-import it.cnr.contab.docamm00.bp.CRUDNotaDiCreditoAttivaBP;
-import it.cnr.contab.docamm00.bp.CRUDNotaDiCreditoBP;
-import it.cnr.contab.docamm00.bp.CRUDNotaDiDebitoAttivaBP;
-import it.cnr.contab.docamm00.bp.IDocumentoAmministrativoBP;
+import it.cnr.contab.docamm00.bp.*;
 import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_attiva_IBulk;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -43,7 +33,6 @@ import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
-import it.cnr.jada.action.Config;
 import it.cnr.jada.action.MessageToUser;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -53,6 +42,11 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
 
+import java.rmi.RemoteException;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Vector;
+
 /**
  * Business Process che gestisce le attività di CRUD per l'entita' Accertamento
  */
@@ -60,24 +54,18 @@ import it.cnr.jada.util.jsp.Button;
 public class CRUDAccertamentoBP extends CRUDVirtualAccertamentoBP {
 	private final CRUDScadenzeController scadenzario = new CRUDScadenzeController("Scadenzario",Accertamento_scadenzarioBulk.class,"accertamento_scadenzarioColl",this);
 	private final SimpleDetailCRUDController scadenzarioDettaglio = new SimpleDetailCRUDController("ScadenzarioDettaglio",Accertamento_scad_voceBulk.class,"accertamento_scad_voceColl",scadenzario);
-
 	private final SimpleDetailCRUDController pdgVincoli= new SimpleDetailCRUDController("Vincoli",Pdg_vincoloBulk.class,"pdgVincoliColl",this);
 	private final SimpleDetailCRUDController pdgVincoliPerenti= new SimpleDetailCRUDController("VincoliPerenti",Accertamento_vincolo_perenteBulk.class,"accertamentoVincoliPerentiColl",this);
-
 	private final SimpleDetailCRUDController centriDiResponsabilita = new SimpleDetailCRUDController("CentriDiResponsabilita",CdrBulk.class,"cdrColl",this);
 	private final SimpleDetailCRUDController lineeDiAttivita = new SimpleDetailCRUDController("LineeDiAttivita",V_pdg_accertamento_etrBulk.class,"lineeAttivitaColl",this);
 	private final SimpleDetailCRUDController nuoveLineeDiAttivita = new SimpleDetailCRUDController("NuoveLineeDiAttivita",Linea_attivitaBulk.class,"nuoveLineeAttivitaColl",this);
-
 	private final SimpleDetailCRUDController crudAccertamento_pluriennale = new SimpleDetailCRUDController("AccertamentiPluriennali", Accertamento_pluriennaleBulk.class,"accertamentiPluriennali",this);
-
-
 
 	// "editingScadenza" viene messo a True solo quando si modifica una scadenza (bottone "editing scadenza")
 	private boolean editingScadenza = false;
 	private boolean siope_attiva = false;
 	private boolean enableVoceNext = false;
-
-
+	private java.util.List vociSelezionate;
 
 	public CRUDAccertamentoBP() {
 	super();
@@ -1022,5 +1010,25 @@ public boolean isCopiaAccertamentoButtonHidden() {
 		return crudAccertamento_pluriennale;
 	}
 
+	public java.util.List getVociSelezionate() {
+		return vociSelezionate;
+	}
 
+	public void setVociSelezionate(java.util.List list) {
+		vociSelezionate = list;
+	}
+
+	public void riportaSelezioneVoci(ActionContext context, java.util.List vociList) throws BusinessProcessException, it.cnr.jada.bulk.ValidationException {
+		try {
+			getModel().validate();
+			annullaImputazioneFinanziariaCapitoli(context);
+			AccertamentoBulk accertamento = ((AccertamentoComponentSession) createComponentSession()).riportaSelezioneVoci(context.getUserContext(), (AccertamentoBulk) getModel(), vociList);
+			setModel(context, accertamento);
+			getCentriDiResponsabilita().setSelection(((Vector) accertamento.getCdrSelezionatiColl()).elements());
+			getLineeDiAttivita().setSelection(((Vector) accertamento.getLineeAttivitaSelezionateColl()).elements());
+			setDirty(true);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 }

@@ -2223,9 +2223,12 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				} else {
 					throw new ComponentException("La uo indicata non ha il terzo corrispondente");
 				}
-				contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
-				contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
-				contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
+				if ( contratto.getCodfisPivaRupExt()!=null && (!contratto.getCodfisPivaRupExt().isEmpty()))
+					contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
+				if ( contratto.getCodfisPivaFirmatarioExt()!=null && (!contratto.getCodfisPivaFirmatarioExt().isEmpty()))
+					contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
+				if ( contratto.getCodfisPivaAggiudicatarioExt()!=null && (!contratto.getCodfisPivaAggiudicatarioExt().isEmpty()))
+					contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
 
 
 				gestioneCigSuContrattoDaFlows(userContext, contratto);
