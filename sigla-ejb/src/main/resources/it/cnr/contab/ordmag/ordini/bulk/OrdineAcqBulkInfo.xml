@@ -365,7 +365,7 @@
 		enabledOnSearch="true"
 		label="Ragione Sociale"
 		caseSensitiveSearch="false" />
-<!--	<fieldProperty
+	<fieldProperty
 		name="modalitaPagamento"
 		property="modalitaPagamento"
 		printProperty="cd_ds_modalita_pagamento"
@@ -374,7 +374,7 @@
 		inputSize="30"
 		inputType="SELECT"
 		nullable="false"
-		label="Mod. pagamento" /> -->
+		label="Mod. pagamento" />
 	<fieldProperty
 		name="terminiPagamento"
 		property="terminiPagamento"
@@ -434,8 +434,8 @@
 		property="banca"
 		inputType="BUTTON"
 		img="img/find16.gif"
-		iconClass="fa fa-search text-primary"
-		buttonClass="btn-outline-secondary btn-title text-primary"
+		iconClass="fa fa-search"
+		buttonClass="btn-outline-primary btn-title"
 		label="Conto/i..."
 		href="javascript:submitForm('doSearch(main.listabanche)')" />
 
@@ -879,6 +879,10 @@
 		/>
 	<formFieldProperty
 			name="motivoAssenzaCig"/>
+	<formFieldProperty
+			name="terminiPagamento" />
+	<formFieldProperty
+			name="modalitaPagamento" />
 
 	<findFieldProperty
 		name="cdCds" />

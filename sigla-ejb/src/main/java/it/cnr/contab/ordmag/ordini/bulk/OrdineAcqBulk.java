@@ -25,6 +25,7 @@ import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.core.bulk.V_persona_fisicaBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_termini_pagamentoBulk;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.config00.bulk.CigBulk;
@@ -104,7 +105,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     protected BulkList richiesteDaTrasformareInOrdineColl = new BulkList();
     private Boolean aggiornaImpegniInAutomatico = false;
     protected TerzoBulk fornitore;
-    //	private java.util.Collection modalita;
+    private java.util.Collection modalita;
     private java.util.Collection termini;
     private ObbligazioniTable ordineObbligazioniHash = null;
     private PrimaryKeyHashMap deferredSaldi = new PrimaryKeyHashMap();
@@ -142,7 +143,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     /**
      * [MODALITA_PAGAMENTO Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    private Modalita_pagamentoBulk modalitaPagamento = new Modalita_pagamentoBulk();
+    private Rif_modalita_pagamentoBulk modalitaPagamento = new Rif_modalita_pagamentoBulk();
     /**
      * [TERMINI_PAGAMENTO Descrive i termini di pagamento previsti per un dato terzo.]
      **/
@@ -300,7 +301,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Created by BulkGenerator 2.0 [07/12/2009]
      * Restituisce il valore di: [Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    public Modalita_pagamentoBulk getModalitaPagamento() {
+    public Rif_modalita_pagamentoBulk getModalitaPagamento() {
         return modalitaPagamento;
     }
 
@@ -308,7 +309,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Created by BulkGenerator 2.0 [07/12/2009]
      * Setta il valore di: [Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    public void setModalitaPagamento(Modalita_pagamentoBulk modalitaPagamento) {
+    public void setModalitaPagamento(Rif_modalita_pagamentoBulk modalitaPagamento) {
         this.modalitaPagamento = modalitaPagamento;
     }
 
@@ -603,7 +604,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdModalitaPag]
      **/
     public java.lang.String getCdModalitaPag() {
-        Modalita_pagamentoBulk modalitaPagamento = this.getModalitaPagamento();
+        Rif_modalita_pagamentoBulk modalitaPagamento = this.getModalitaPagamento();
         if (modalitaPagamento == null)
             return null;
         return getModalitaPagamento().getCd_modalita_pag();
@@ -1097,22 +1098,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public int addToRigheOrdineColl(OrdineAcqRigaBulk nuovoRigo) {
-
-
-//		nuovoRigo.setTi_associato_manrev(nuovoRigo.NON_ASSOCIATO_A_MANDATO);
-//		nuovoRigo.setTerzo(new TerzoBulk());
-//		if (getTi_entrate_spese()==ENTRATE){
-//			nuovoRigo.setTerzo_uo_cds(getTerzo_uo_cds());
-//		}
         nuovoRigo.setOrdineAcq(this);
-
-//		try {
-//			java.sql.Timestamp ts = it.cnr.jada.util.ejb.EJBCommonServices.getServerTimestamp();
-//			nuovoRigo.setDt_da_competenza_coge((getDt_da_competenza_coge() == null)?ts : getDt_da_competenza_coge());
-//			nuovoRigo.setDt_a_competenza_coge((getDt_a_competenza_coge() == null)?ts : getDt_a_competenza_coge());
-//		} catch (javax.ejb.EJBException e) {
-//			throw new it.cnr.jada.DetailedRuntimeException(e);
-//		}
         nuovoRigo.setStato(OrdineAcqRigaBulk.STATO_INSERITA);
         int max = 0;
         for (Iterator i = righeOrdineColl.iterator(); i.hasNext(); ) {
@@ -1147,12 +1133,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
                 getFornitore().getCrudStatus() == OggettoBulk.NORMAL;
     }
 
-    //	public java.util.Collection getModalita() {
-//		return modalita;
-//	}
-//	public void setModalita(java.util.Collection modalita) {
-//		this.modalita = modalita;
-//	}
+    public java.util.Collection getModalita() {
+		return modalita;
+	}
+	public void setModalita(java.util.Collection modalita) {
+		this.modalita = modalita;
+	}
     public java.util.Collection getTermini() {
         return termini;
     }

@@ -41,7 +41,7 @@
 			propertyName="divisa.cd_divisa" />
 		<columnMapping
 			columnName="CD_MODALITA_PAG"
-			propertyName="modalitaPagamento.rif_modalita_pagamento.cd_modalita_pag" />
+			propertyName="modalitaPagamento.cd_modalita_pag" />
 		<columnMapping
 			columnName="CD_TERZO"
 			propertyName="fornitore.cd_terzo" />

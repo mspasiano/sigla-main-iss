@@ -21,7 +21,13 @@
  */
 package it.cnr.contab.ordmag.ordini.bulk;
 import java.sql.Connection;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
 import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperBulk;
 import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperHome;
 import it.cnr.contab.ordmag.anag00.NumerazioneOrdBulk;
@@ -32,9 +38,12 @@ import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdHome;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.PersistentCache;
@@ -111,5 +120,22 @@ public class OrdineAcqHome extends BulkHome {
 	public void delete(Persistent persistent, UserContext userContext) throws PersistencyException {
 		((OrdineAcqBulk)persistent).setStato(OrdineAcqBulk.STATO_ANNULLATO);
 		 super.update(persistent, userContext);
+	}
+
+	public Collection findModalita(UserContext userContext, OrdineAcqBulk ordineAcqBulk) throws PersistencyException {
+		try {
+			return Optional.ofNullable(ordineAcqBulk)
+					.flatMap(ordineAcqBulk1 -> Optional.ofNullable(ordineAcqBulk1.getFornitore()))
+					.map(terzoBulk -> {
+						try {
+							TerzoHome terzoHome = (TerzoHome) getHomeCache().getHome(TerzoBulk.class);
+							return terzoHome.findRif_modalita_pagamento(terzoBulk);
+						} catch (PersistencyException | IntrospectionException e) {
+							throw new DetailedRuntimeException(e);
+						}
+					}).orElse(Collections.emptyList());
+		} catch (DetailedRuntimeException ex) {
+			throw new PersistencyException(ex);
+		}
 	}
 }

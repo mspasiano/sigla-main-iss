@@ -63,4 +63,7 @@ public interface OrdineAcqComponentSession extends it.cnr.jada.ejb.CRUDComponent
 	Dettaglio_contrattoBulk recuperoDettaglioContratto(UserContext userContext, OrdineAcqRigaBulk riga) throws PersistencyException, RemoteException, ComponentException;
 	FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine) throws PersistencyException, RemoteException, it.cnr.jada.comp.ComponentException;
 	FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine, Boolean magazzino) throws PersistencyException, RemoteException, it.cnr.jada.comp.ComponentException;
+
+	java.util.List findListabanche(it.cnr.jada.UserContext param0, OrdineAcqBulk param1) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
+
 }

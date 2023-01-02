@@ -31,8 +31,9 @@
 	import it.cnr.jada.util.RemoteIterator;
 
 	import java.rmi.RemoteException;
+	import java.util.List;
 
-	public class TransactionalOrdineAcqComponentSession extends it.cnr.jada.ejb.TransactionalCRUDComponentSession implements OrdineAcqComponentSession {
+public class TransactionalOrdineAcqComponentSession extends it.cnr.jada.ejb.TransactionalCRUDComponentSession implements OrdineAcqComponentSession {
 	public void gestioneStampaOrdine(UserContext userContext, OrdineAcqBulk ordine) throws RemoteException,it.cnr.jada.comp.ComponentException{
 		try {
 			invoke("gestioneStampaOrdine",new Object[] {
@@ -381,4 +382,22 @@
 				}
 			}
 		}
+
+	@Override
+	public List findListabanche(UserContext param0, OrdineAcqBulk param1) throws ComponentException, RemoteException {
+		try {
+			return (List) invoke("findListabanche", new Object[]{
+					param0, param1});
+		} catch (RemoteException e) {
+			throw e;
+		} catch (java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch (ComponentException ex) {
+				throw ex;
+			} catch (Throwable ex) {
+				throw new RemoteException("Uncaugth exception", ex);
+			}
+		}
 	}
+}

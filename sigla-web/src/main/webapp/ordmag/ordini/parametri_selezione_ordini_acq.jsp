@@ -23,294 +23,56 @@
   bp.openFormWindow(pageContext);%>
 
 	<div class="Group card p-2 mt-2" style="width:100%">
-		<table>
-			<tr>
-				<td>
-					<%
-						bp.getController().writeFormLabel(out, "findUnitaOperativaOrd");
-					%>
-				</td>
-				<td colspan="5">
-					<%
-						bp.getController().writeFormInput(out, "findUnitaOperativaOrd");
-					%>
-				</td>
-			</tr>
-			<tr>
-				<td>
-					<%
-						bp.getController().writeFormLabel(out, "findMagazzino");
-					%>
-				</td>
-				<td colspan="5">
-					<%
-						bp.getController().writeFormInput(out, "findMagazzino");
-					%>
-				</td>
-			</tr>
-		</table>
+        <div class="form-row">
+            <div class="col-md-6"><% bp.getController().writeFormField(out, "findUnitaOperativaOrd", Boolean.FALSE);%></div>
+            <div class="col-md-6"><% bp.getController().writeFormField(out, "findMagazzino", Boolean.FALSE);%></div>
+        </div>
 	</div>
 
-	<div class="Group card p-2" style="width:100%">
-		<table width="100%">
-			<tr>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "daDataOrdine");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "daDataOrdine");
-                    %>
-                </td>
-                <td class="pl-5">
-                    <%
-                        bp.getController().writeFormLabel(out, "aDataOrdine");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "aDataOrdine");
-                    %>
-                </td>
-            </tr>
-
-			<tr>
-				<td>
-                            <%
-                                bp.getController().writeFormLabel(out, "findUnitaOperativaRicevente");
-                            %>
-                        </td>
-                        <td>
-                            <%
-                                bp.getController().writeFormInput(out, "findUnitaOperativaRicevente");
-                            %>
-                        </td>
-				<td class="pl-5">
-					<%
-						bp.getController().writeFormLabel(out, "findNumerazioneOrd");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "findNumerazioneOrd");
-					%>
-				</td>
-			</tr>
-
-			<tr>
-				<td>
-					<%
-						bp.getController().writeFormLabel(out, "daDataOrdineDef");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "daDataOrdineDef");
-					%>
-				</td>
-				<td class="pl-5">
-					<%
-						bp.getController().writeFormLabel(out, "aDataOrdineDef");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "aDataOrdineDef");
-					%>
-				</td>
-			</tr>
-			<tr>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "daDataPrevConsegna");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "daDataPrevConsegna");
-                    %>
-                </td>
-                <td class="pl-5">
-                    <%
-                        bp.getController().writeFormLabel(out, "aDataPrevConsegna");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "aDataPrevConsegna");
-                    %>
-                </td>
-            </tr>
-            <tr>
-                    <td>
-                        <%
-                            bp.getController().writeFormLabel(out, "findDaBeneServizio");
-                        %>
-                    </td>
-                    <td>
-                        <%
-                            bp.getController().writeFormInput(out, "findDaBeneServizio");
-                        %>
-                    </td>
-                    <td class="pl-5">
-                        <%
-                            bp.getController().writeFormLabel(out, "findABeneServizio");
-                        %>
-                    </td>
-                    <td>
-                        <%
-                            bp.getController().writeFormInput(out, "findABeneServizio");
-                        %>
-                    </td>
-                </tr>
-			<tr>
-				<td>
-					<%
-						bp.getController().writeFormLabel(out, "daNumeroOrdine");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "daNumeroOrdine");
-					%>
-				</td>
-				<td class="pl-5">
-					<%
-						bp.getController().writeFormLabel(out, "aNumeroOrdine");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "aNumeroOrdine");
-					%>
-				</td>
-			</tr>
-
-			<tr>
-				<td>
-					<%
-						bp.getController().writeFormLabel(out, "findTerzo");
-					%>
-				</td>
-				<td>
-					<%
-						bp.getController().writeFormInput(out, "findTerzo");
-					%>
-				</td>
-				<td>
-                    <%
-                        bp.getController().writeFormLabel(out, "statoOrdine");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "statoOrdine");
-                    %>
-                </td>
-			</tr>
-			<tr>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "tipoConsegna");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "tipoConsegna");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "statoConsegna");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "statoConsegna");
-                    %>
-                </td>
-            </tr>
-			<tr>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "findResponsabile");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "findResponsabile");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormLabel(out, "findCup");
-                    %>
-                </td>
-                <td>
-                    <%
-                        bp.getController().writeFormInput(out, "findCup");
-                    %>
-                </td>
-            </tr>
- 			<tr>
-                 <td>
-                     <%
-                         bp.getController().writeFormLabel(out, "findCig");
-                     %>
-                 </td>
-                 <td>
-                     <%
-                         bp.getController().writeFormInput(out, "findCig");
-                     %>
-                 </td>
-                 <td>
-                     <%
-                         bp.getController().writeFormLabel(out, "findContratto");
-                     %>
-                 </td>
-                 <td>
-                     <%
-                         bp.getController().writeFormInput(out, "findContratto");
-                     %>
-                 </td>
-             </tr>
-  			<tr>
-                  <td>
-                      <%
-                          bp.getController().writeFormLabel(out, "findTipoOrdine");
-                      %>
-                  </td>
-                  <td>
-                      <%
-                          bp.getController().writeFormInput(out, "findTipoOrdine");
-                      %>
-                  </td>
-                  <td>
-                      <%
-                          bp.getController().writeFormLabel(out, "findProceduraAmministrativa");
-                      %>
-                  </td>
-                  <td>
-                      <%
-                          bp.getController().writeFormInput(out, "findProceduraAmministrativa");
-                      %>
-                  </td>
-              </tr>
-  			<tr>
-              <td>
-                  <%
-                      bp.getController().writeFormLabel(out, "findImpegno");
-                  %>
-              </td>
-              <td colspan=8>
-                  <%
-                      bp.getController().writeFormInput(out, "findImpegno");
-                  %>
-              </td>
-             </tr>
-		</table>
+	<div class="Group card p-2">
+        <div class="form-row form-group">
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "daDataOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "aDataOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-8"><% bp.getController().writeFormField(out, "findUnitaOperativaRicevente", Boolean.FALSE);%></div>
+        </div>
+        <div class="form-row form-group">
+            <div class="col-md-8"><% bp.getController().writeFormField(out, "findNumerazioneOrd", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "daDataOrdineDef", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "aDataOrdineDef", Boolean.FALSE);%></div>
+        </div>
+        <div class="form-row form-group">
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "daDataPrevConsegna", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "aDataPrevConsegna", Boolean.FALSE);%></div>
+            <div class="col-md-4"><% bp.getController().writeFormField(out, "findDaBeneServizio", Boolean.FALSE);%></div>
+            <div class="col-md-4"><% bp.getController().writeFormField(out, "findABeneServizio", Boolean.FALSE);%></div>
+        </div>
+    </div>
+	<div class="Group card p-2">
+        <div class="form-row form-group">
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "daNumeroOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "aNumeroOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-6"><% bp.getController().writeFormField(out, "findTerzo", Boolean.FALSE);%></div>
+            <div class="col-md-2 h-100"><% bp.getController().writeFormField(out, "statoOrdine", Boolean.FALSE);%></div>
+        </div>
+        <div class="form-row form-group">
+            <div class="col-md-2 h-100"><% bp.getController().writeFormField(out, "tipoConsegna", Boolean.FALSE);%></div>
+            <div class="col-md-2 h-100"><% bp.getController().writeFormField(out, "statoConsegna", Boolean.FALSE);%></div>
+            <div class="col-md-5"><% bp.getController().writeFormField(out, "findResponsabile", Boolean.FALSE);%></div>
+            <div class="col-md-3"><% bp.getController().writeFormField(out, "findCup", Boolean.FALSE);%></div>
+        </div>
+        <div class="form-row form-group">
+            <div class="col-md-4"><% bp.getController().writeFormField(out, "findCig", Boolean.FALSE);%></div>
+            <div class="col-md-4"><% bp.getController().writeFormField(out, "findTipoOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-4"><% bp.getController().writeFormField(out, "findProceduraAmministrativa", Boolean.FALSE);%></div>
+        </div>
+    </div>
+  	<div class="Group card p-2">
+          <div class="form-row form-group">
+            <div class="col-md-12"><% bp.getController().writeFormField(out, "findContratto", Boolean.FALSE);%></div>
+        </div>
+        <div class="form-row form-group">
+            <div class="col-md-12"><% bp.getController().writeFormField(out, "findImpegno", Boolean.FALSE);%></div>
+        </div>
 	</div>
 	<% bp.closeFormWindow(pageContext); %>
 </body>
