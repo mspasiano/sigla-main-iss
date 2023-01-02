@@ -27,6 +27,7 @@ import it.cnr.contab.anagraf00.tabter.bulk.ComuneBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.ComuneHome;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
@@ -162,16 +163,20 @@ public class MagazzinoHome extends BulkHome {
 		sql.addClause(FindClause.AND, "cdCds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
 
 		if (unitaOperativa != null){
-			AbilUtenteUopOperBulk abil = (AbilUtenteUopOperBulk)getHomeCache().getHome(AbilUtenteUopOperBulk.class).findByPrimaryKey(new AbilUtenteUopOperBulk(userContext.getUser(), unitaOperativa.getCdUnitaOperativa(), tipoOperazione));
-			if (abil == null) {
-				sql.addSQLClause(FindClause.AND, "1!=1");
-			} else if (Boolean.FALSE.equals(abil.getTuttiMagazzini())) {
-				sql.addTableToHeader("ABIL_UTENTE_UOP_OPER_MAG", "B");
-				sql.addSQLJoin("MAGAZZINO.CD_CDS", "B.CD_CDS");
-				sql.addSQLJoin("MAGAZZINO.CD_MAGAZZINO", "B.CD_MAGAZZINO");
-				sql.addSQLClause(FindClause.AND, "B.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, abil.getCdTipoOperazione());
-				sql.addSQLClause(FindClause.AND, "B.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, abil.getCdUnitaOperativa());
-				sql.addSQLClause(FindClause.AND, "B.CD_UTENTE", SQLBuilder.EQUALS, abil.getCdUtente());
+			UtenteBulk utente = (UtenteBulk) (getHomeCache().getHome(UtenteBulk.class).findByPrimaryKey(new UtenteBulk(CNRUserContext.getUser(userContext))));
+
+			if (!utente.isSupervisore()) {
+				AbilUtenteUopOperBulk abil = (AbilUtenteUopOperBulk)getHomeCache().getHome(AbilUtenteUopOperBulk.class).findByPrimaryKey(new AbilUtenteUopOperBulk(userContext.getUser(), unitaOperativa.getCdUnitaOperativa(), tipoOperazione));
+				if (abil == null) {
+					sql.addSQLClause(FindClause.AND, "1!=1");
+				} else if (Boolean.FALSE.equals(abil.getTuttiMagazzini())) {
+					sql.addTableToHeader("ABIL_UTENTE_UOP_OPER_MAG", "B");
+					sql.addSQLJoin("MAGAZZINO.CD_CDS", "B.CD_CDS");
+					sql.addSQLJoin("MAGAZZINO.CD_MAGAZZINO", "B.CD_MAGAZZINO");
+					sql.addSQLClause(FindClause.AND, "B.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, abil.getCdTipoOperazione());
+					sql.addSQLClause(FindClause.AND, "B.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, abil.getCdUnitaOperativa());
+					sql.addSQLClause(FindClause.AND, "B.CD_UTENTE", SQLBuilder.EQUALS, abil.getCdUtente());
+				}
 			}
 		}
 
