@@ -109,6 +109,19 @@ public class OrdineAcqHome extends BulkHome {
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
 		return sql;
 	}
+	public SQLBuilder selectNumerazioneOrdByClause(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametriSelezioneOrdiniAcqBulk,
+												   NumerazioneOrdHome numerazioneHome, NumerazioneOrdBulk numerazioneBulk,
+												   CompoundFindClause compoundfindclause) throws PersistencyException,ApplicationException{
+		SQLBuilder sql = numerazioneHome.selectByClause(userContext, compoundfindclause);
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS,
+				Optional.ofNullable(parametriSelezioneOrdiniAcqBulk.getUnitaOperativaOrdine())
+						.map(unitaOperativaOrdBulk -> unitaOperativaOrdBulk.getCdUnitaOperativa())
+						.orElse(null)
+		);
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
+		return sql;
+	}
 
 	@Override
 	public SQLBuilder selectByClause(UserContext usercontext, CompoundFindClause compoundfindclause)

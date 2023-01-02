@@ -22,7 +22,28 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
                                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
+    <changeSet author="marco.spasiano" id="modify_type_column_import_mandato_siope">
+        <modifyDataType tableName="MANDATO_SIOPE" columnName="importo" newDataType="numeric(15,2)"/>
+    </changeSet>
+
+    <changeSet author="marco.spasiano" id="modify_type_column_import_mandato_cup">
+        <modifyDataType tableName="MANDATO_CUP" columnName="importo" newDataType="numeric(15,2)"/>
+    </changeSet>
+
     <changeSet author="ciro.salvio" id="modify_type_column_import_mandato_siope_cup">
         <modifyDataType tableName="MANDATO_SIOPE_CUP" columnName="importo" newDataType="numeric(15,2)"/>
+    </changeSet>
+
+
+    <changeSet author="marco.spasiano" id="modify_type_column_import_reversale_siope">
+        <modifyDataType tableName="REVERSALE_SIOPE" columnName="importo" newDataType="numeric(15,2)"/>
+    </changeSet>
+
+    <changeSet author="marco.spasiano" id="modify_type_column_import_reversale_cup">
+        <modifyDataType tableName="REVERSALE_CUP" columnName="importo" newDataType="numeric(15,2)"/>
+    </changeSet>
+
+    <changeSet author="ciro.salvio" id="modify_type_column_import_reversale_siope_cup">
+        <modifyDataType tableName="REVERSALE_SIOPE_CUP" columnName="importo" newDataType="numeric(15,2)"/>
     </changeSet>
 </databaseChangeLog>

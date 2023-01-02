@@ -158,10 +158,10 @@ begin
 		aMessage := 'Ribaltamento completato con successo, verificare e eseguire commit';
 		ibmutl200.loginf(aPgEsec,aMessage,'','');
 	elsif aStato = 'W' then
-		rollback;
-		aMessage := 'Ribaltamento completato, ma con problemi - vedi BATCH_LOG_RIGA con pg_esecuzione '||aPgEsec||'. Eseguito rollback.';
+		aMessage := 'Ribaltamento completato, ma con problemi - vedi BATCH_LOG_RIGA con pg_esecuzione '||aPgEsec||'.';
 		ibmutl200.loginf(aPgEsec,aMessage,'','');
 	else -- aStato = 'E'
+		rollback;
 		ibmutl200.LOGERR(aPgEsec,aMessage,'','');
 		ibmerr001.RAISE_ERR_GENERICO(aMessage);
 	end if;

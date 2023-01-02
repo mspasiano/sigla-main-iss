@@ -2819,10 +2819,9 @@ public class OrdineAcqComponent
         Optional.ofNullable(parametri.getImpegno()).map(Obbligazione_scadenzarioBulk::getPg_obbligazione)
                 .ifPresent(e -> {
                     sql.addClause(FindClause.AND, "pgObbligazione", SQLBuilder.EQUALS, e);
-                    sql.addClause(FindClause.AND, "cdCdsObbl", SQLBuilder.EQUALS, Optional.ofNullable(parametri.getImpegno().getCd_cds()));
+                    sql.addClause(FindClause.AND, "cdCdsObbl", SQLBuilder.EQUALS, Optional.ofNullable(parametri.getImpegno().getCd_cds()).get());
                     sql.addClause(FindClause.AND, "esercizioObbl", SQLBuilder.EQUALS, Optional.ofNullable(parametri.getImpegno().getEsercizio()).get());
                     sql.addClause(FindClause.AND, "esercizioOrigObbl", SQLBuilder.EQUALS, Optional.ofNullable(parametri.getImpegno().getEsercizio_originale()).get());
-                    sql.addClause(FindClause.AND, "pgObbligazioneScad", SQLBuilder.EQUALS, Optional.ofNullable(parametri.getImpegno().getPg_obbligazione_scadenzario()).get());
                 });
 
 
@@ -2924,7 +2923,12 @@ public class OrdineAcqComponent
         NumerazioneOrdHome numerazioneHome = (NumerazioneOrdHome) getHome(userContext, NumerazioneOrdBulk.class);
         SQLBuilder sql = null;
         try {
-            sql = home.selectNumerazioneOrdByClause(userContext, (OrdineAcqBulk) bulk, numerazioneHome, new NumerazioneOrdBulk(), new CompoundFindClause());
+            if (bulk instanceof OrdineAcqBulk) {
+                sql = home.selectNumerazioneOrdByClause(userContext, (OrdineAcqBulk) bulk, numerazioneHome, new NumerazioneOrdBulk(), new CompoundFindClause());
+            } else if (bulk instanceof ParametriSelezioneOrdiniAcqBulk){
+                sql = home.selectNumerazioneOrdByClause(userContext, (ParametriSelezioneOrdiniAcqBulk) bulk, numerazioneHome, new NumerazioneOrdBulk(), new CompoundFindClause());
+            }
+
         } catch (PersistencyException e) {
             throw new ComponentException(e);
         }

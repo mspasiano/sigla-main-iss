@@ -408,16 +408,7 @@
       and a.numero = b.numero
       and a.cd_unita_operativa = c.cd_unita_operativa
    UNION ALL
-     SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio,
-          (
-            select decode(count(1), 1, 'FAT_ORDINE', 'FATTURA_P')
-                from FATTURA_ORDINE
-                where CD_CDS = b.CD_CDS
-                  and CD_UNITA_ORGANIZZATIVA = b.CD_UNITA_ORGANIZZATIVA
-                  and ESERCIZIO = b.ESERCIZIO
-                  and PG_FATTURA_PASSIVA = b.PG_FATTURA_PASSIVA
-                  and PROGRESSIVO_RIGA = b.PROGRESSIVO_RIGA
-          ),
+     SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio,'FATTURA_P',
           a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
           a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
           a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,
