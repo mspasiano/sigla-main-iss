@@ -387,6 +387,7 @@
             name="ordineConsegna"
             property="consegnaDisplay"
             headerLabel="Ordine"
+            columnStyle="white-space: nowrap"
             label="Consegna"/>
     <columnFieldProperty
             name="dsBeneServizio"

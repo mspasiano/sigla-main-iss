@@ -412,6 +412,10 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 		return "table-cell-ellipsis";
 	}
 
+	public String getCssClassDsBeneServizio() {
+		return "table-cell-ellipsis";
+	}
+
 
 	public void calcolaRettifiche() {
 		final BigDecimal prezzoUnitario = Optional.ofNullable(getPrezzoUnitarioRett())

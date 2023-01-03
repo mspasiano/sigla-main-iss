@@ -413,7 +413,7 @@ public class BatchControlComponent extends CRUDComponent
                 } else {
                     for (Object value : batch_procedura_parametrobulk.getValoriRiutilizzabili()) {
                         Batch_procedura_parametroBulk batch_procedura_parametrobulk1 = (Batch_procedura_parametroBulk) value;
-                        if (batch_procedura_parametrobulk1.getValore().equals(batch_procedura_parametrobulk.getValore())) {
+                        if (batch_procedura_parametrobulk.getValore().equals(batch_procedura_parametrobulk1.getValore())) {
                             deleteBulk(usercontext, batch_procedura_parametrobulk1);
                             break;
                         }
