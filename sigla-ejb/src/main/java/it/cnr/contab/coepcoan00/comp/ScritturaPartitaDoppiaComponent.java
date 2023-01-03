@@ -50,7 +50,6 @@ import it.cnr.contab.gestiva00.core.bulk.Stampa_registri_ivaVBulk;
 import it.cnr.contab.missioni00.docs.bulk.*;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiBulk;
 import it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
@@ -97,7 +96,23 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			this.dtACompetenzaCoge = dtACompetenzaCoge;
 			this.imImponibile = imImponibile;
 			this.imImposta = imImposta;
+			this.rigaDocamm = null;
 		}
+
+		public DettaglioFinanziario(IDocumentoAmministrativoRigaBulk rigaDocamm, IDocumentoAmministrativoBulk partita, Integer cdTerzo, Elemento_voceBulk elementoVoce) {
+			super();
+			this.docamm = rigaDocamm.getFather();
+			this.partita = partita;
+			this.elementoVoce = elementoVoce;
+			this.cdTerzo = cdTerzo;
+			this.dtDaCompetenzaCoge = rigaDocamm.getDt_da_competenza_coge();
+			this.dtACompetenzaCoge = rigaDocamm.getDt_a_competenza_coge();
+			this.imImponibile = rigaDocamm.getIm_imponibile();
+			this.imImposta = rigaDocamm.getIm_iva();
+			this.rigaDocamm = rigaDocamm;
+		}
+
+		private final IDocumentoAmministrativoRigaBulk rigaDocamm;
 
 		private final IDocumentoAmministrativoBulk docamm;
 
@@ -114,6 +129,10 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		private final BigDecimal imImponibile;
 
 		private final BigDecimal imImposta;
+
+		public IDocumentoAmministrativoRigaBulk getRigaDocamm() {
+			return rigaDocamm;
+		}
 
 		public IDocumentoAmministrativoBulk getDocamm() {
 			return docamm;
@@ -1788,7 +1807,10 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 
 	private List<TestataPrimaNota> proposeTestataPrimaNotaDocumento(UserContext userContext, IDocumentoAmministrativoBulk docamm) throws ComponentException, ScritturaPartitaDoppiaNotRequiredException {
 		List<TestataPrimaNota> testataPrimaNotaList = new ArrayList<>();
+
 		final boolean isFatturaPassivaDaOrdini = Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).filter(Fattura_passivaBulk::isDaOrdini).isPresent();
+		final BulkList<FatturaOrdineBulk> listaFatturaOrdini = Optional.of(docamm).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::getFattura_passiva_ordini)
+				.orElse(new BulkList());
 
 		//Le fatture generate da compenso non creano scritture di prima nota in quanto create direttamente dal compenso stesso
 		if (Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::isGenerataDaCompenso).orElse(Boolean.FALSE))
@@ -1828,8 +1850,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 						throw new DetailedRuntimeException(e);
 					}
 				});
-				return new DettaglioFinanziario(docamm, partita, rigaDocAmm.getCd_terzo(), obbligazioneDB.getElemento_voce(), rigaDocAmm.getDt_da_competenza_coge(), rigaDocAmm.getDt_a_competenza_coge(),
-					rigaDocAmm.getIm_imponibile(), rigaDocAmm.getIm_iva());
+				return new DettaglioFinanziario(rigaDocAmm, partita, rigaDocAmm.getCd_terzo(), obbligazioneDB.getElemento_voce());
 			}
 			if (Optional.ofNullable(rigaDocAmm.getScadenzaDocumentoContabile()).filter(Accertamento_scadenzarioBulk.class::isInstance).isPresent()) {
 				AccertamentoBulk accertamentoDB = Optional.of(rigaDocAmm.getScadenzaDocumentoContabile().getFather()).filter(AccertamentoBulk.class::isInstance).map(AccertamentoBulk.class::cast)
@@ -1841,10 +1862,8 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 						throw new DetailedRuntimeException(e);
 					}
 				});
-				return new DettaglioFinanziario(docamm, partita, terzo.getCd_terzo(),
-					new Elemento_voceBulk(accertamentoDB.getCd_elemento_voce(), accertamentoDB.getEsercizio(), accertamentoDB.getTi_appartenenza(), accertamentoDB.getTi_gestione()),
-					rigaDocAmm.getDt_da_competenza_coge(), rigaDocAmm.getDt_a_competenza_coge(),
-					rigaDocAmm.getIm_imponibile(), rigaDocAmm.getIm_iva());
+				return new DettaglioFinanziario(rigaDocAmm, partita, terzo.getCd_terzo(),
+					new Elemento_voceBulk(accertamentoDB.getCd_elemento_voce(), accertamentoDB.getEsercizio(), accertamentoDB.getTi_appartenenza(), accertamentoDB.getTi_gestione()));
 			}
 			if (!Optional.ofNullable(rigaDocAmm.getScadenzaDocumentoContabile()).isPresent() && docamm instanceof Documento_genericoBulk && docamm.getTipoDocumentoEnum().isGenericoEntrata() &&
 				(((Documento_generico_rigaBulk)rigaDocAmm).getAccertamento_scadenziario()!=null)) {
@@ -1857,10 +1876,8 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 						throw new DetailedRuntimeException(e);
 					}
 				});
-				return new DettaglioFinanziario(docamm, partita, terzo.getCd_terzo(),
-					new Elemento_voceBulk(accertamentoDB.getCd_elemento_voce(), accertamentoDB.getEsercizio(), accertamentoDB.getTi_appartenenza(), accertamentoDB.getTi_gestione()),
-					rigaDocAmm.getDt_da_competenza_coge(), rigaDocAmm.getDt_a_competenza_coge(),
-					rigaDocAmm.getIm_imponibile(), rigaDocAmm.getIm_iva());
+				return new DettaglioFinanziario(rigaDocAmm, partita, terzo.getCd_terzo(),
+					new Elemento_voceBulk(accertamentoDB.getCd_elemento_voce(), accertamentoDB.getEsercizio(), accertamentoDB.getTi_appartenenza(), accertamentoDB.getTi_gestione()));
 			}
 			return null;
 		}).filter(Objects::nonNull).collect(Collectors.toList());
@@ -1974,14 +1991,44 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 
 						//Registro Imponibile Fattura
 						Pair<Voce_epBulk, Voce_epBulk> pairContoCosto = this.findPairCosto(userContext, rigaDettFinVocePartita);
-						if (!isFatturaPassivaDaOrdini)
+
+						if (isFatturaPassivaDaOrdini && !listaFatturaOrdini.isEmpty()) {
+							righeDettFinVocePartita.stream().map(DettaglioFinanziario::getRigaDocamm).forEach(rigaDocamm->{
+								final List<FatturaOrdineBulk> listaFatturaOrdiniCollRiga = listaFatturaOrdini.stream()
+										.filter(el->el.getFatturaPassivaRiga().equalsByPrimaryKey(rigaDocamm)).collect(Collectors.toList());
+
+								if (listaFatturaOrdiniCollRiga.isEmpty())
+									testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, pairContoCosto.getFirst(), rigaDocamm.getIm_imponibile());
+								else {
+									listaFatturaOrdiniCollRiga.stream()
+										.forEach(fatturaOrdineBulk -> {
+											testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, fatturaOrdineBulk.getOrdineAcqConsegna().getContoBulk(), fatturaOrdineBulk.getImponibilePerRigaFattura());
+										});
+								}
+							});
+						} else
 							testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, pairContoCosto.getFirst(), imImponibile);
+
 						testataPrimaNota.openDettaglioPatrimonialePartita(userContext, docamm, partita, pairContoCosto.getSecond(), imImponibile, aCdTerzo);
 
 						//Il flag registraIva è sempre impostato a true se fattura istituzionale o isCommercialeWithAutofattura
 						if (imIva.compareTo(BigDecimal.ZERO)!=0 && registraIva) {
 							if (registraIvaACosto) {
-								if (!isFatturaPassivaDaOrdini)
+								if (isFatturaPassivaDaOrdini && !listaFatturaOrdini.isEmpty()) {
+									righeDettFinVocePartita.stream().map(DettaglioFinanziario::getRigaDocamm).forEach(rigaDocamm->{
+										final List<FatturaOrdineBulk> listaFatturaOrdiniCollRiga = listaFatturaOrdini.stream()
+												.filter(el->el.getFatturaPassivaRiga().equalsByPrimaryKey(rigaDocamm)).collect(Collectors.toList());
+
+										if (listaFatturaOrdiniCollRiga.isEmpty())
+											testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, pairContoCosto.getFirst(), rigaDocamm.getIm_iva());
+										else {
+											listaFatturaOrdiniCollRiga.stream()
+												.forEach(fatturaOrdineBulk -> {
+													testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, fatturaOrdineBulk.getOrdineAcqConsegna().getContoBulk(), fatturaOrdineBulk.getIvaPerRigaFattura());
+												});
+										}
+									});
+								} else
 									testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, pairContoCosto.getFirst(), imIva);
 							} else
 								testataPrimaNota.openDettaglioIva(userContext, docamm, partita, aContoIva, imIva, aCdTerzo, cdCoriIva);
@@ -2017,35 +2064,6 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 				})))));
 			}))));
 		})));
-
-		if (isFatturaPassivaDaOrdini && !testataPrimaNotaList.isEmpty()){
-			if (testataPrimaNotaList.size()>1)
-				throw new ApplicationException("Documento contabile " +	docamm.getCd_tipo_doc() + "/" + docamm.getEsercizio() + "/" + docamm.getCd_uo() + "/" + docamm.getPg_doc() +
-						" associato ad ordine con più terzi. Proposta prima nota non possibile.");
-			TestataPrimaNota testataPrimaNota = testataPrimaNotaList.get(0);
-
-			Fattura_passivaBulk fattura = Optional.of(docamm).map(Fattura_passivaBulk.class::cast).get();
-			final BulkList<FatturaOrdineBulk> listaFatturaOrdini = Optional.ofNullable(fattura.getFattura_passiva_ordini())
-					.orElse(new BulkList());
-			final List<OrdineAcqConsegnaBulk> listaConsegne = listaFatturaOrdini.stream().map(FatturaOrdineBulk::getOrdineAcqConsegna).collect(Collectors.toList());
-
-			Map<Integer, Map<Voce_epBulk, List<FatturaOrdineBulk>>> mapConto =
-					listaFatturaOrdini.stream().collect(Collectors.groupingBy(fatturaOrdineBulk->fatturaOrdineBulk.getOrdineAcqConsegna().getContoBulk().getEsercizio(),
-							Collectors.groupingBy(fatturaOrdineBulk2->fatturaOrdineBulk2.getOrdineAcqConsegna().getContoBulk())));
-
-			mapConto.keySet().forEach(aEseConto -> mapConto.get(aEseConto).keySet().forEach(conto -> {
-				List<FatturaOrdineBulk> righeFatturaOrdine = mapConto.get(aEseConto).get(conto);
-
-				BigDecimal imImponibile = righeFatturaOrdine.stream().map(FatturaOrdineBulk::getImponibilePerRigaFattura)
-						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, conto, imImponibile);
-
-				BigDecimal imIva = righeFatturaOrdine.stream().map(FatturaOrdineBulk::getIvaPerRigaFattura)
-						.reduce(BigDecimal.ZERO, BigDecimal::add);
-				if (imIva.compareTo(BigDecimal.ZERO)!=0  && registraIvaACosto)
-					testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, conto, imIva);
-			}));
-		}
 
 		//Se intraUe o ExtraUe senza Merce da paesi IntraUE devo controllare lettera pagamento
 		if (isIntraUE || (isExtraUE && !isMerceIntraUE)) {
