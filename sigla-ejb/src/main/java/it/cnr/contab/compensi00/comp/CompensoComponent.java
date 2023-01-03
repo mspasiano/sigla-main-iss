@@ -843,7 +843,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 		sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS,
 				it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
 		sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS,
-				"D");
+				ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 		sql.addSQLClause("AND", "OBBLIGAZIONE.RIPORTATO", sql.EQUALS, "N");
 		sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL,
 				null);
