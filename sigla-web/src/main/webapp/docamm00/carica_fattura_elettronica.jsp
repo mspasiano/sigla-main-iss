@@ -65,6 +65,16 @@
                         true,
                         bp.getParentRoot().isBootstrap());%>
 			</td>
+<td>
+                <%JSPUtils.button(out,
+                        bp.getParentRoot().isBootstrap() ? "fa fa-external-link faa-shake" : "img/import24.gif",
+                        bp.getParentRoot().isBootstrap() ? "fa fa-external-link faa-shake" : "img/import24.gif",
+                        "Carica Fattura da Folder",
+                        "if (disableDblClick()) submitForm('doCaricaFatturaFolder')",
+                        "btn-primary btn-block btn-title faa-parent animated-hover",
+                        true,
+                        bp.getParentRoot().isBootstrap());%>
+			</td>
 		</tr>				
 	</table>
 </div>

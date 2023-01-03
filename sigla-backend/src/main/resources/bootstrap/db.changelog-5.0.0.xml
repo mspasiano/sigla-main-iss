@@ -5897,6 +5897,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
         </addColumn>
     </changeSet>
 
+
     <include file="bootstrap/add_index_on_movimento_coge.xml"/>
     <include file="bootstrap/add_accessi_partitario_terzo.xml"/>
     <include file="bootstrap/add_column_cd_contributo_ritenuta_iva_on_tipo_sezionale.xml"/>
@@ -5943,5 +5944,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_fl_attesa_nota_to_fattura_riga.xml"/>
     <!-- Autore : MARCO SPASIANO - Modificati i cmpi importo su SIOPE e SIOPE_CUP  -->
     <include file="bootstrap/modify_type_column_importo_madato_siope_cup.xml"/>
+    <!-- Autore : VALENTINA TOMADA - Configurazione path fatture passive da migrare -->
+    <include file="bootstrap/add_conf_gest_path_fatture_migrazione.xml"/>
 
 </databaseChangeLog>
