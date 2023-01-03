@@ -2682,11 +2682,13 @@ public class OrdineAcqComponent
 
     private SQLBuilder builderRicercaOrdineFromUserLogged(UserContext userContext, String tipoSelesione) throws ComponentException {
 
-        OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome) getHome(userContext, OrdineAcqConsegnaBulk.class);
+        OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome) getHome(userContext, OrdineAcqConsegnaBulk.class, "CONSULTAZIONE_DATI_ORDINI_COMPLETI");
         SQLBuilder sql = ordineAcqConsegnaHome.createSQLBuilder();
         sql.addClause(FindClause.AND, "stato", SQLBuilder.NOT_EQUALS, OrdineAcqConsegnaBulk.STATO_ANNULLATA);
         sql.generateJoin(OrdineAcqConsegnaBulk.class, OrdineAcqRigaBulk.class, "ordineAcqRiga", "ORDINE_ACQ_RIGA");
         sql.generateJoin(OrdineAcqRigaBulk.class, OrdineAcqBulk.class, "ordineAcq", "ORDINE_ACQ");
+        sql.generateJoin(OrdineAcqRigaBulk.class, Bene_servizioBulk.class, "beneServizio", "BENE_SERVIZIO");
+        sql.generateJoin(OrdineAcqRigaBulk.class, UnitaMisuraBulk.class, "unitaMisura", "UNITA_MISURA");
 
         if (ParametriSelezioneOrdiniAcqBP.VIS_ORDINI_RIGA_CONS.equalsIgnoreCase(tipoSelesione)) {
             Unita_organizzativa_enteHome home = (Unita_organizzativa_enteHome) getHome(userContext, Unita_organizzativa_enteBulk.class);
@@ -2707,8 +2709,6 @@ public class OrdineAcqComponent
     }
 
     public RemoteIterator ricercaOrdiniAcqCons(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametri, String tipoSelesione) throws ComponentException {
-        //OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome)getHome(userContext, OrdineAcqConsegnaBulk.class);
-        //SQLBuilder sql = ordineAcqConsegnaHome.createSQLBuilder();
         SQLBuilder sql = builderRicercaOrdineFromUserLogged(userContext, tipoSelesione);
         sql.addClause(FindClause.AND, "stato", SQLBuilder.NOT_EQUALS, OrdineAcqConsegnaBulk.STATO_ANNULLATA);
         if (ParametriSelezioneOrdiniAcqBP.EVA_FORZATA_ORDINI.equalsIgnoreCase(tipoSelesione)) {
@@ -2716,8 +2716,6 @@ public class OrdineAcqComponent
             sql.addSQLClause(FindClause.AND, "ORDINE_ACQ.STATO", SQLBuilder.EQUALS, OrdineAcqBulk.STATO_DEFINITIVO);
         }
 
-        //sql.generateJoin(OrdineAcqConsegnaBulk.class, OrdineAcqRigaBulk.class, "ordineAcqRiga", "ORDINE_ACQ_RIGA");
-        //sql.generateJoin(OrdineAcqRigaBulk.class, OrdineAcqBulk.class, "ordineAcq", "ORDINE_ACQ");
         sql.generateJoin(OrdineAcqRigaBulk.class, Voce_ivaBulk.class, "voceIva", "VOCE_IVA");
         sql.generateJoin(OrdineAcqBulk.class, TerzoBulk.class, "fornitore", "fornitore");
 

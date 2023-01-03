@@ -14,12 +14,14 @@
 		it.cnr.contab.doccont00.core.bulk.ReversaleIBulk reversale = (it.cnr.contab.doccont00.core.bulk.ReversaleIBulk)bp.getModel();
 %>
 	<div class="Group">		
-	<table border="0" cellspacing="0" cellpadding="2">
+	<table border="0" cellspacing="0" cellpadding="2" class="w-100">
 
 		<tr>
 			<td><% bp.getController().writeFormLabel( out, "terzo_cd_terzo"); %></td>
 			<td><% bp.getController().writeFormInput( out, "terzo_cd_terzo"); %>
-			    <% bp.getController().writeFormInput( out, "terzo_ds_terzo"); %></td>						
+			    <% bp.getController().writeFormInput( out, "terzo_ds_terzo"); %></td>
+		</tr>
+		<tr>
 			<td><% bp.getController().writeFormLabel( out, "terzo_tipo_bollo"); %></td>
 			<td><% bp.getController().writeFormInput( out,"default", "terzo_tipo_bollo", reversale.isAnnullato(), null,"onchange=\"submitForm('doCambiaTipoBollo')\"" ); %>
 			    <% bp.getController().writeFormInput( out, "terzo_im_tipo_bollo"); %></td>						

@@ -56,6 +56,7 @@ public class Obbligazione_scadenzarioBulk extends Obbligazione_scadenzarioBase i
     private Integer esercizio_doc_passivo;
     private java.lang.Long pg_doc_passivo;
     private String cd_tipo_documento_amm;
+    private String dsp_tipo_documento_amm;
     private java.util.Hashtable tipoDocumentoKeys;
     private CigBulk cig = new CigBulk();
     private String motivo_assenza_cig;
@@ -470,5 +471,13 @@ public class Obbligazione_scadenzarioBulk extends Obbligazione_scadenzarioBase i
 
     public void setCd_numeratore_ordine(String cd_numeratore_ordine) {
         this.cd_numeratore_ordine = cd_numeratore_ordine;
+    }
+
+    public String getDsp_tipo_documento_amm() {
+        return dsp_tipo_documento_amm;
+    }
+
+    public void setDsp_tipo_documento_amm(String dsp_tipo_documento_amm) {
+        this.dsp_tipo_documento_amm = dsp_tipo_documento_amm;
     }
 }

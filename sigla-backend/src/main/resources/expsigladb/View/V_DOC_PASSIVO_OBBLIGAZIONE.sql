@@ -2,7 +2,45 @@
 --  DDL for View V_DOC_PASSIVO_OBBLIGAZIONE
 --------------------------------------------------------
 
-  CREATE OR REPLACE FORCE VIEW "V_DOC_PASSIVO_OBBLIGAZIONE" ("CD_CDS", "CD_UNITA_ORGANIZZATIVA", "ESERCIZIO", "CD_TIPO_DOCUMENTO_AMM", "PG_DOCUMENTO_AMM", "CD_NUMERATORE", "PG_VER_REC", "CD_CDS_ORIGINE", "CD_UO_ORIGINE", "TI_FATTURA", "STATO_COFI", "CD_CDS_OBBLIGAZIONE", "ESERCIZIO_OBBLIGAZIONE", "ESERCIZIO_ORI_OBBLIGAZIONE", "PG_OBBLIGAZIONE", "PG_OBBLIGAZIONE_SCADENZARIO", "DT_SCADENZA", "FL_PGIRO", "CD_TIPO_DOCUMENTO_CONT", "DT_FATTURA_FORNITORE", "NR_FATTURA_FORNITORE", "CD_TERZO", "CD_TERZO_CESSIONARIO", "PG_BANCA", "CD_MODALITA_PAG", "TI_PAGAMENTO", "IM_IMPONIBILE_DOC_AMM", "IM_IVA_DOC_AMM", "IM_TOTALE_DOC_AMM", "IM_SCADENZA", "IM_ASSOCIATO_DOC_CONTABILE", "PG_LETTERA", "TI_ENTRATA_SPESA", "TI_SOSPESO_RISCONTRO", "CD_SOSPESO", "FL_SELEZIONE", "FL_FAI_REVERSALE") AS 
+  CREATE OR REPLACE FORCE VIEW "V_DOC_PASSIVO_OBBLIGAZIONE" (
+    "CD_CDS",
+    "CD_UNITA_ORGANIZZATIVA",
+    "ESERCIZIO",
+    "CD_TIPO_DOCUMENTO_AMM",
+    "DSP_TIPO_DOCUMENTO_AMM",
+    "PG_DOCUMENTO_AMM",
+    "CD_NUMERATORE",
+    "PG_VER_REC",
+    "CD_CDS_ORIGINE",
+    "CD_UO_ORIGINE",
+    "TI_FATTURA",
+    "STATO_COFI",
+    "CD_CDS_OBBLIGAZIONE",
+    "ESERCIZIO_OBBLIGAZIONE",
+    "ESERCIZIO_ORI_OBBLIGAZIONE",
+    "PG_OBBLIGAZIONE",
+    "PG_OBBLIGAZIONE_SCADENZARIO",
+    "DT_SCADENZA",
+    "FL_PGIRO",
+    "CD_TIPO_DOCUMENTO_CONT",
+    "DT_FATTURA_FORNITORE",
+    "NR_FATTURA_FORNITORE",
+    "CD_TERZO",
+    "CD_TERZO_CESSIONARIO",
+    "PG_BANCA",
+    "CD_MODALITA_PAG",
+    "TI_PAGAMENTO",
+    "IM_IMPONIBILE_DOC_AMM",
+    "IM_IVA_DOC_AMM",
+    "IM_TOTALE_DOC_AMM",
+    "IM_SCADENZA",
+    "IM_ASSOCIATO_DOC_CONTABILE",
+    "PG_LETTERA",
+    "TI_ENTRATA_SPESA",
+    "TI_SOSPESO_RISCONTRO",
+    "CD_SOSPESO",
+    "FL_SELEZIONE",
+    "FL_FAI_REVERSALE") AS
   SELECT
 --==================================================================================================
 --
@@ -82,7 +120,7 @@
 --
 --==================================================================================================
             a.cd_cds, a.cd_unita_organizzativa, a.esercizio,
-            a.cd_tipo_documento_amm, a.pg_documento_amm,
+            a.cd_tipo_documento_amm, a.dsp_tipo_documento_amm, a.pg_documento_amm,
             a.cd_numeratore, a.pg_ver_rec,
             a.cd_cds_origine, a.cd_uo_origine, a.ti_fattura, a.stato_cofi,
             a.cd_cds_obbligazione, a.esercizio_obbligazione,
@@ -118,6 +156,7 @@
             a.esercizio,
             a.cd_tipo_documento_amm,
             a.pg_documento_amm,
+            a.dsp_tipo_documento_amm,
             a.cd_numeratore,
             a.pg_ver_rec,
             a.cd_cds_origine,

@@ -180,6 +180,12 @@
 		keysProperty="tipoDocumentoKeys"
 		label="Tipo" />
 	<fieldProperty
+		name="dsp_tipo_documento_amm"
+		property="dsp_tipo_documento_amm"
+		inputType="SELECT"
+		keysProperty="tipoDocumentoKeys"
+		label="Tipo" />
+	<fieldProperty
 		name="ds_tipo_documento_amm"
 		property="ds_tipo_documento_amm"
 		inputType="ROTEXT"
@@ -262,6 +268,8 @@
 	<formFieldProperty
 		name="cd_tipo_documento_amm" />
 	<formFieldProperty
+		name="dsp_tipo_documento_amm" />
+	<formFieldProperty
 		name="partita_iva" />
 	<formFieldProperty
 		name="codice_fiscale" />		
@@ -341,7 +349,7 @@
 	<findFieldProperty
 		name="dt_scadenza" />
 	<findFieldProperty
-		name="cd_tipo_documento_amm" />
+		name="dsp_tipo_documento_amm" />
 	<findFieldProperty
 		name="ti_pagamento" />
 	<findFieldProperty

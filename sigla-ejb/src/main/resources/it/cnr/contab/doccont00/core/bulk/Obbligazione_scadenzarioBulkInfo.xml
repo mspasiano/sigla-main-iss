@@ -127,6 +127,13 @@
             inputType="TEXT"
     />
     <fieldProperty
+            name="dsp_tipo_documento_amm"
+            property="dsp_tipo_documento_amm"
+            label="Tipo doc. passivo"
+            keysProperty="tipoDocumentoKeys"
+            inputType="TEXT"
+    />
+    <fieldProperty
             name="im_associato_doc_contabile"
             property="im_associato_doc_contabile"
             label="im_associato_doc_contabile"
@@ -317,7 +324,7 @@
 		/>
         <columnFieldProperty
                 headerLabel="Doc. Passivo"
-                name="cd_tipo_documento_amm"
+                name="dsp_tipo_documento_amm"
                 label="Tipo"
         />
         <columnFieldProperty

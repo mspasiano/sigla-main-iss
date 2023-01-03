@@ -172,11 +172,11 @@ public java.lang.String getCognome() {
  */
 public java.lang.String getDs_tipo_documento_amm() 
 {
-	if ( Numerazione_doc_ammBulk.TIPO_FATTURA_PASSIVA.equals( getCd_tipo_documento_amm()))
+	if ( Numerazione_doc_ammBulk.TIPO_FATTURA_PASSIVA.equals( getDsp_tipo_documento_amm()))
 		return (String) getFatturaPassivaKeys().get( getTi_fattura() );
-	else if ( Numerazione_doc_ammBulk.TIPO_FATTURA_ATTIVA.equals( getCd_tipo_documento_amm()))	
+	else if ( Numerazione_doc_ammBulk.TIPO_FATTURA_ATTIVA.equals( getDsp_tipo_documento_amm()))
 		return (String) getFatturaAttivaKeys().get( getTi_fattura() );
-	return (String) getTipoDocumentoKeys().get( getCd_tipo_documento_amm() );
+	return (String) getTipoDocumentoKeys().get( getDsp_tipo_documento_amm() );
 }
 /**
  * <!-- @TODO: da completare -->

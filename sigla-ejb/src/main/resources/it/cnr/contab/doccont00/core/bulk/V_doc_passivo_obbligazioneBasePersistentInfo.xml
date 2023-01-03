@@ -141,6 +141,11 @@
 			sqlTypeName="VARCHAR"
 			columnSize="10" />
 		<columnMapping
+			columnName="DSP_TIPO_DOCUMENTO_AMM"
+			propertyName="dsp_tipo_documento_amm"
+			sqlTypeName="VARCHAR"
+			columnSize="10" />
+		<columnMapping
 			columnName="IM_TOTALE_DOC_AMM"
 			propertyName="im_totale_doc_amm"
 			sqlTypeName="DECIMAL"
@@ -263,6 +268,8 @@
 		name="dt_scadenza" />
 	<persistentProperty
 		name="cd_tipo_documento_amm" />
+	<persistentProperty
+		name="dsp_tipo_documento_amm" />
 	<persistentProperty
 		name="im_totale_doc_amm" />
 	<persistentProperty

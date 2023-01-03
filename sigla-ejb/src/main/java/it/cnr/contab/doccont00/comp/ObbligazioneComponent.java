@@ -2657,6 +2657,7 @@ public OggettoBulk inizializzaBulkPerModifica (UserContext aUC,OggettoBulk obbli
 				os.setEsercizio_doc_passivo( docPassivo.getEsercizio());
 				os.setPg_doc_passivo( docPassivo.getPg_documento_amm());
 				os.setCd_tipo_documento_amm(docPassivo.getCd_tipo_documento_amm());
+				os.setDsp_tipo_documento_amm(docPassivo.getDsp_tipo_documento_amm());
 			}
 			V_doc_passivo_obbligazioneBulk docOrdine = osHome.findDoc_ordine( os );
 			if ( docOrdine != null)

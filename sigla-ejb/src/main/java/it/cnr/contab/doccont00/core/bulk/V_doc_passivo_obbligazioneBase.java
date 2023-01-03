@@ -48,6 +48,9 @@ public class V_doc_passivo_obbligazioneBase extends OggettoBulk implements Persi
     // CD_TIPO_DOCUMENTO_AMM VARCHAR(10)
     private java.lang.String cd_tipo_documento_amm;
 
+    // DSP_TIPO_DOCUMENTO_AMM VARCHAR(10)
+    private java.lang.String dsp_tipo_documento_amm;
+
     // CD_TIPO_DOCUMENTO_CONT VARCHAR(10) NOT NULL
     private java.lang.String cd_tipo_documento_cont;
 
@@ -713,5 +716,13 @@ public class V_doc_passivo_obbligazioneBase extends OggettoBulk implements Persi
 
     public void setCd_numeratore(String cd_numeratore) {
         this.cd_numeratore = cd_numeratore;
+    }
+
+    public String getDsp_tipo_documento_amm() {
+        return dsp_tipo_documento_amm;
+    }
+
+    public void setDsp_tipo_documento_amm(String dsp_tipo_documento_amm) {
+        this.dsp_tipo_documento_amm = dsp_tipo_documento_amm;
     }
 }
