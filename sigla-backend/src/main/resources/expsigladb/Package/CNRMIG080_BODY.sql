@@ -264,7 +264,7 @@ procedure CREAANAGRAFICO(aAnaDip cnr_anadip%rowtype, aData Date, aUtente VARCHAR
 	  lTerzo.CD_ANAG 	   			  := aAnagrafico.cd_anag;
 	  lTerzo.DT_FINE_RAPPORTO   	  := aAnagrafico.dt_fine_rapporto;
 	  lTerzo.TI_TERZO		    	  := 'E';
-	  lTerzo.CD_PRECEDENTE	    	  := aAnaDip.matricola;
+	  lTerzo.CD_PRECEDENTE	    	  := 'MATRICOLA'|| aAnaDip.matricola;
 	  lTerzo.DENOMINAZIONE_SEDE 	  := aAnaDip.nominativo;
 	  lTerzo.VIA_SEDE				  := aAnaDip.ind_resid;
 	  --lTerzo.NUMERO_CIVICO_SEDE 	  := NULL;
@@ -1090,7 +1090,7 @@ procedure MODIFICATERZO(aAnaDip cnr_anadip%rowtype,aAnagrafico anagrafico%rowtyp
 --	  lTerzo.CD_ANAG 	   			  := aAnagrafico.cd_anag;
 --	  lTerzo.DT_FINE_RAPPORTO   	  := aAnagrafico.dt_fine_rapporto;
 --	  lTerzo.TI_TERZO		    	  := 'E';
-	  lTerzo.CD_PRECEDENTE	    	  := aAnaDip.matricola;
+	  lTerzo.CD_PRECEDENTE	    	  := 'MATRICOLA'|| aAnaDip.matricola;
 	  lTerzo.DENOMINAZIONE_SEDE 	  := aAnaDip.nominativo;
 	  lTerzo.VIA_SEDE				  := aAnaDip.ind_resid;
 	 -- lTerzo.NUMERO_CIVICO_SEDE 	  := NULL;
