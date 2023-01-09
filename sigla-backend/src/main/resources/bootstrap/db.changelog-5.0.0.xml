@@ -5946,5 +5946,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/modify_type_column_importo_madato_siope_cup.xml"/>
     <!-- Autore : VALENTINA TOMADA - Configurazione path fatture passive da migrare -->
     <include file="bootstrap/add_conf_gest_path_fatture_migrazione.xml"/>
-
+    <!-- Autore : CIRO SALVIO - Descrizione CUP 250 -->
+    <include file="bootstrap/modify_length_descrizione_cup.xml"/>
 </databaseChangeLog>

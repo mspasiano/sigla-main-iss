@@ -39,7 +39,7 @@
 		enabledOnSearch="true"
 		cols="60"
 		rows="5"
-		maxLength="200"
+		maxLength="500"
 		enabledOnEdit="false"
 		nullable="false"
 		label="Descrizione" />
