@@ -2683,7 +2683,12 @@ public class OrdineAcqComponent
 
     private SQLBuilder builderRicercaOrdineFromUserLogged(UserContext userContext, String tipoSelesione) throws ComponentException {
 
-        OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome) getHome(userContext, OrdineAcqConsegnaBulk.class, "CONSULTAZIONE_DATI_ORDINI_COMPLETI");
+        OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome) getHome(userContext, OrdineAcqConsegnaBulk.class,
+                Optional.ofNullable(tipoSelesione)
+                        .filter(s -> s.equalsIgnoreCase(ParametriSelezioneOrdiniAcqBP.VIS_ORDINI_RIGA_CONS))
+                        .map(s -> "CONSULTAZIONE_DATI_ORDINI_COMPLETI")
+                        .orElse("default")
+                );
         SQLBuilder sql = ordineAcqConsegnaHome.createSQLBuilder();
         sql.addClause(FindClause.AND, "stato", SQLBuilder.NOT_EQUALS, OrdineAcqConsegnaBulk.STATO_ANNULLATA);
         sql.generateJoin(OrdineAcqConsegnaBulk.class, OrdineAcqRigaBulk.class, "ordineAcqRiga", "ORDINE_ACQ_RIGA");

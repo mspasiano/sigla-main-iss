@@ -115,6 +115,10 @@
 			name="CONSULTAZIONE_DATI_ORDINI_COMPLETI"
 			tableName="ORDINE_ACQ_CONSEGNA"
 			extends="default">
+		<removeColumnMapping
+			columnName="STATO"
+			propertyName="stato"
+		/>
 		<columnMapping
 				columnName="ORDINE_ACQ.DATA_ORDINE"
 				propertyName="ordineAcqRiga.ordineAcq.dataOrdine"
@@ -131,7 +135,7 @@
 				sqlTypeName="DECIMAL"
 				columnSize="6"/>
 		<columnMapping
-				columnName="ORDINE_ACQ.STATO"
+				columnName="ORDINE_ACQ.STATO STATO_ORDINE"
 				propertyName="ordineAcqRiga.ordineAcq.stato"
 				sqlTypeName="VARCHAR"
 				columnSize="3"/>
@@ -192,6 +196,11 @@
 				propertyName="ordineAcq.notaRiga"
 				sqlTypeName="VARCHAR"
 				columnSize="30"/>
+		<columnMapping
+				columnName="ORDINE_ACQ_CONSEGNA.STATO"
+				propertyName="stato"
+				sqlTypeName="VARCHAR"
+				columnSize="3"/>
 	</columnMap>
 	<persistentProperty
 		name="ordineAcqRiga"
