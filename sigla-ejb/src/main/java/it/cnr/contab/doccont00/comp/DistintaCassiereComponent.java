@@ -1516,6 +1516,8 @@ public class DistintaCassiereComponent extends
                         sql.addClause(docPassivo.buildFindClauses(null));
                     sql.addClause(clausole);
                     sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT");
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
                     if (!tesoreriaUnica(userContext, distinta)) {
                         sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
                         sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
