@@ -1788,7 +1788,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
         return propostaFatturaDaOrdini;
     }
 
-    public void associaOrdineFattura(ActionContext context, EvasioneOrdineRigaBulk evasioneOrdineRigaBulk) throws BusinessProcessException {
+    public OrdineAcqConsegnaBulk associaOrdineFattura(ActionContext context, EvasioneOrdineRigaBulk evasioneOrdineRigaBulk) throws BusinessProcessException {
         OrdineAcqConsegnaBulk ordineAcqConsegna = evasioneOrdineRigaBulk.getOrdineAcqConsegna();
         Fattura_passivaBulk fattura = (Fattura_passivaBulk) getModel();
         FatturaOrdineBulk fatturaOrdineBulk = new FatturaOrdineBulk();
@@ -1810,9 +1810,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
         try {
             if (createComponentSession().isLockedBulk(context.getUserContext(), ordineAcqConsegna))
                 throw new ApplicationException("Le righe di consegna selezionate sono utilizzate al momento da un'altro utente!");
-            ordineAcqConsegna = (OrdineAcqConsegnaBulk) createComponentSession().modificaConBulk(context.getUserContext(), ordineAcqConsegna);
             fatturaOrdineBulk.setOrdineAcqConsegna(ordineAcqConsegna);
-
+            return ordineAcqConsegna;
         } catch (ComponentException|RemoteException e) {
             throw handleException(e);
         }

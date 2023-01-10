@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ejb.EJBException;
@@ -969,13 +970,17 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             return context.findDefaultForward();
 
         try {
-                selectedElements.get().forEach(evasioneOrdineRigaBulk -> {
-                    try {
-                        crudFatturaPassivaBP.get().associaOrdineFattura(context, evasioneOrdineRigaBulk);
-                    } catch (BusinessProcessException e) {
-                        throw new DetailedRuntimeException(e);
-                    }
-                });
+            final List<OrdineAcqConsegnaBulk> ordineAcqConsegnaBulks = selectedElements.get()
+                    .map(evasioneOrdineRigaBulk -> {
+                        try {
+                            return crudFatturaPassivaBP.get().associaOrdineFattura(context, evasioneOrdineRigaBulk);
+                        } catch (BusinessProcessException e) {
+                            throw new DetailedRuntimeException(e);
+                        }
+                    }).collect(Collectors.toList());
+            crudFatturaPassivaBP.get().createComponentSession()
+                    .modificaConBulk(context.getUserContext(), ordineAcqConsegnaBulks.toArray(new OrdineAcqConsegnaBulk [ordineAcqConsegnaBulks.size()]));
+
             return context.findDefaultForward();
         } catch (Throwable _ex) {
             return handleException(context, _ex);
