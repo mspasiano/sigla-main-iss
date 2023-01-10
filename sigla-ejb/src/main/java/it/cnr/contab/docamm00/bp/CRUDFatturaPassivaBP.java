@@ -21,13 +21,6 @@ import it.cnr.contab.chiusura00.ejb.RicercaDocContComponentSession;
 import it.cnr.contab.coepcoan00.bp.CRUDScritturaPDoppiaBP;
 import it.cnr.contab.coepcoan00.bp.EconomicaAvereDetailCRUDController;
 import it.cnr.contab.coepcoan00.bp.EconomicaDareDetailCRUDController;
-import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaFromDocumentoComponent;
-import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
-import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
-import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaFromDocumentoComponentSession;
-import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.docamm00.actions.CRUDFatturaPassivaAction;
 import it.cnr.contab.docamm00.docs.bulk.*;
@@ -40,25 +33,17 @@ import it.cnr.contab.doccont00.bp.IDefferedUpdateSaldiBP;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.ejb.BuonoCaricoScaricoComponentSession;
-import it.cnr.contab.missioni00.docs.bulk.AnticipoBulk;
-import it.cnr.contab.missioni00.docs.bulk.MissioneBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.service.SpringUtil;
-import it.cnr.jada.UserContext;
-import it.cnr.jada.comp.ApplicationRuntimeException;
-import it.cnr.jada.persistency.sql.*;
-import it.cnr.jada.util.Config;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.ejb.EJBCommonServices;
-import it.cnr.jada.util.jsp.Button;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
 import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
-import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
@@ -72,8 +57,6 @@ import it.cnr.jada.util.action.CollapsableDetailCRUDController;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import org.slf4j.LoggerFactory;
 
-import javax.batch.api.partition.PartitionAnalyzer;
-import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Source;
@@ -90,9 +73,8 @@ import java.math.BigInteger;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
+import org.springframework.data.util.Pair;
 /**
  * Gestisce le catene di elementi correlate con la fattura passiva in uso.
  */
@@ -1788,7 +1770,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
         return propostaFatturaDaOrdini;
     }
 
-    public OrdineAcqConsegnaBulk associaOrdineFattura(ActionContext context, EvasioneOrdineRigaBulk evasioneOrdineRigaBulk) throws BusinessProcessException {
+    public Pair<FatturaOrdineBulk, OrdineAcqConsegnaBulk> associaOrdineFattura(ActionContext context, EvasioneOrdineRigaBulk evasioneOrdineRigaBulk) throws BusinessProcessException {
         OrdineAcqConsegnaBulk ordineAcqConsegna = evasioneOrdineRigaBulk.getOrdineAcqConsegna();
         Fattura_passivaBulk fattura = (Fattura_passivaBulk) getModel();
         FatturaOrdineBulk fatturaOrdineBulk = new FatturaOrdineBulk();
@@ -1803,15 +1785,12 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
         fatturaOrdineBulk.setImTotaleConsegna(ordineAcqConsegna.getImTotaleConsegna());
         fatturaOrdineBulk.setStatoAss("TOT");
 
-        fattura.addToFattura_passiva_ordini(fatturaOrdineBulk);
-
         ordineAcqConsegna.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_ASSOCIATA_TOTALMENTE);
         ordineAcqConsegna.setToBeUpdated();
         try {
             if (createComponentSession().isLockedBulk(context.getUserContext(), ordineAcqConsegna))
                 throw new ApplicationException("Le righe di consegna selezionate sono utilizzate al momento da un'altro utente!");
-            fatturaOrdineBulk.setOrdineAcqConsegna(ordineAcqConsegna);
-            return ordineAcqConsegna;
+            return Pair.of(fatturaOrdineBulk, ordineAcqConsegna);
         } catch (ComponentException|RemoteException e) {
             throw handleException(e);
         }

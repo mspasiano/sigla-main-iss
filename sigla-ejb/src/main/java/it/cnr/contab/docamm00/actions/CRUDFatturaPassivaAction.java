@@ -106,6 +106,7 @@ import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.springframework.data.util.Pair;
 
 public class CRUDFatturaPassivaAction extends EconomicaAction {
     private transient static final Logger logger = LoggerFactory.getLogger(CRUDFatturaPassivaAction.class);
@@ -970,7 +971,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             return context.findDefaultForward();
 
         try {
-            final List<OrdineAcqConsegnaBulk> ordineAcqConsegnaBulks = selectedElements.get()
+            Fattura_passivaBulk fattura = (Fattura_passivaBulk) crudFatturaPassivaBP.get().getModel();
+            final List<Pair<FatturaOrdineBulk, OrdineAcqConsegnaBulk>> pairs = selectedElements.get()
                     .map(evasioneOrdineRigaBulk -> {
                         try {
                             return crudFatturaPassivaBP.get().associaOrdineFattura(context, evasioneOrdineRigaBulk);
@@ -978,9 +980,17 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                             throw new DetailedRuntimeException(e);
                         }
                     }).collect(Collectors.toList());
-            crudFatturaPassivaBP.get().createComponentSession()
-                    .modificaConBulk(context.getUserContext(), ordineAcqConsegnaBulks.toArray(new OrdineAcqConsegnaBulk [ordineAcqConsegnaBulks.size()]));
+            List<OrdineAcqConsegnaBulk> ordineAcqConsegnaBulks = pairs.stream()
+                    .map(Pair::getSecond)
+                    .collect(Collectors.toList());
 
+            final List<OrdineAcqConsegnaBulk> oggettoBulks = Arrays.asList((OrdineAcqConsegnaBulk[]) crudFatturaPassivaBP.get().createComponentSession()
+                    .modificaConBulk(context.getUserContext(), ordineAcqConsegnaBulks.toArray(new OrdineAcqConsegnaBulk[ordineAcqConsegnaBulks.size()])));
+            for (int i = 0; i < pairs.size(); i++) {
+                final FatturaOrdineBulk fatturaOrdineBulk = pairs.get(i).getFirst();
+                fattura.addToFattura_passiva_ordini(fatturaOrdineBulk);
+                fatturaOrdineBulk.setOrdineAcqConsegna(oggettoBulks.get(i));
+            }
             return context.findDefaultForward();
         } catch (Throwable _ex) {
             return handleException(context, _ex);
