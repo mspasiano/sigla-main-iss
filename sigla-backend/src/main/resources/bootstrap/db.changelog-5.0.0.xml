@@ -5948,4 +5948,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_conf_gest_path_fatture_migrazione.xml"/>
     <!-- Autore : CIRO SALVIO - Descrizione CUP 250 -->
     <include file="bootstrap/modify_length_descrizione_cup.xml"/>
+    <!-- Autore : CIRO SALVIO - add stampa ordine su print priority -->
+    <include file="bootstrap/add_print_priority_stampa_ordine.xml"/>
 </databaseChangeLog>
