@@ -96,4 +96,6 @@
     <!-- Autore : CIRO SALVIO-Configurazione TIPO_RAPPORTO_TESORERIA+ -->
     <include file="iss/update_configurazioneCnr_tipo_rapporto_tesoriera.xml"/>
     <include file="iss/update_albero_main_ordine_distinteBI_BT.xml"/>
+    <!-- Autore : VALENTINA TOMADA-update stampa ordine -->
+    <include file="iss/update_print_priority_stampa_ordine.xml"/>
 </databaseChangeLog>
