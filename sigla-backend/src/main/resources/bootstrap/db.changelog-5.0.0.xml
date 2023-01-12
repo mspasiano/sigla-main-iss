@@ -5950,4 +5950,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/modify_length_descrizione_cup.xml"/>
     <!-- Autore : CIRO SALVIO - add stampa ordine su print priority -->
     <include file="bootstrap/add_print_priority_stampa_ordine.xml"/>
+    <!-- Autore : MARCO SPASIANO - Modificato il campo quantità sulle righe di fattura -->
+    <include file="bootstrap/modify_type_column_quantita_fattura_passiva_riga.xml"/>
 </databaseChangeLog>

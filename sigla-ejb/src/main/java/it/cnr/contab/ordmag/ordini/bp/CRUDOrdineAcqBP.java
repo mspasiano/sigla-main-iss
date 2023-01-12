@@ -583,6 +583,16 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		return (ordine == null || ordine.getNumero() == null || !ordine.isStatoAllaFirma());
 	}
 
+	@Override
+	public boolean isSaveButtonEnabled() {
+		return super.isSaveButtonEnabled() &&
+				Optional.ofNullable(getModel())
+						.filter(OrdineAcqBulk.class::isInstance)
+						.map(OrdineAcqBulk.class::cast)
+						.map(ordineAcqBulk -> !ordineAcqBulk.isStatoDefinitivo())
+						.orElse(Boolean.TRUE);
+	}
+
 	protected it.cnr.jada.util.jsp.Button[] createToolbar() {
 		Button[] toolbar = super.createToolbar();
 		Button[] newToolbar = new Button[ toolbar.length + 1 ];

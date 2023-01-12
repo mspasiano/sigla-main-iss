@@ -90,7 +90,7 @@
 			propertyName="quantita"
 			sqlTypeName="DECIMAL"
 			columnSize="15"
-			columnScale="2"
+			columnScale="5"
 			nullable="false" />
 		<columnMapping
 			columnName="CD_VOCE_IVA"

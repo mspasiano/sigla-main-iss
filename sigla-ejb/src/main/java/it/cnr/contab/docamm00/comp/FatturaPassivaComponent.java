@@ -8073,8 +8073,8 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         boolean noSegno = false;
         TerzoBulk terzoFatturaElettronica = fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getPrestatore();
         try {
-            terzoFatturaElettronica = (TerzoBulk) getHome(aUC, terzoFatturaElettronica).findByPrimaryKey(terzoFatturaElettronica);
             if (terzoFatturaElettronica != null) {
+                terzoFatturaElettronica = (TerzoBulk) getHome(aUC, TerzoBulk.class).findByPrimaryKey(terzoFatturaElettronica);
                 AnagraficoBulk anagraficoTerzoFatturaElettronica = (AnagraficoBulk) getHome(aUC, AnagraficoBulk.class).findByPrimaryKey(terzoFatturaElettronica.getAnagrafico());
                 if (anagraficoTerzoFatturaElettronica != null &&
                         ((fatturaPassiva.getFornitore().getAnagrafico().getCodice_fiscale() != null &&
@@ -8153,7 +8153,9 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         //}
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
         if (fatturaPassiva.getDocumentoEleTestata().getNumeroDocumento().compareTo(fatturaPassiva.getNr_fattura_fornitore()) != 0)
-            throw new it.cnr.jada.comp.ApplicationException("Numero Fattura fornitore diverso da quello inserito nel documento elettronico: " + fatturaPassiva.getDocumentoEleTestata().getNumeroDocumento() + "!");
+            throw new ApplicationMessageFormatException("Numero Fattura fornitore {0} diverso da quello inserito nel documento elettronico: {1}!",
+                    fatturaPassiva.getNr_fattura_fornitore(),
+                    fatturaPassiva.getDocumentoEleTestata().getNumeroDocumento());
 
         if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDataDocumento()).compareTo(DateUtils.truncate(fatturaPassiva.getDt_fattura_fornitore())) != 0) {
             throw new ApplicationMessageFormatException(
@@ -8162,7 +8164,8 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                     sdf.format(fatturaPassiva.getDocumentoEleTestata().getDataDocumento())
             );
         }
-        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione()).compareTo(DateUtils.truncate(fatturaPassiva.getData_protocollo())) != 0) {
+        if (DateUtils.truncate(fatturaPassiva.getDocumentoEleTestata().getDocumentoEleTrasmissione().getDataRicezione())
+                .compareTo(DateUtils.truncate(fatturaPassiva.getData_protocollo())) != 0) {
             throw new ApplicationMessageFormatException(
                     "Data Ricezione {0} diversa da quella presente nel documento elettronico {1}, registrazione non possibile!",
                     sdf.format(fatturaPassiva.getData_protocollo()),

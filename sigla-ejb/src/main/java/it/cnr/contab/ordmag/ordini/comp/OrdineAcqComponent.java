@@ -355,7 +355,8 @@ public class OrdineAcqComponent
                 for (java.util.Iterator c = riga.getRigheConsegnaColl().iterator(); c.hasNext(); ) {
                     OggettoBulk consbulk = (OggettoBulk) c.next();
                     OrdineAcqConsegnaBulk cons = (OrdineAcqConsegnaBulk) consbulk;
-                    if (cons.getObbligazioneScadenzario() == null || cons.getObbligazioneScadenzario().getPg_obbligazione() == null) {
+                    if ((cons.getObbligazioneScadenzario() == null || cons.getObbligazioneScadenzario().getPg_obbligazione() == null) &&
+                            cons.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA)) {
                         cons.setObbligazioneScadenzario(riga.getDspObbligazioneScadenzario());
                     }
                     controlliValiditaConsegna(userContext, cons);
