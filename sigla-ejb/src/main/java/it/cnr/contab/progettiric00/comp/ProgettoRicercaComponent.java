@@ -2501,11 +2501,13 @@ public SQLBuilder selectModuloForPrintByClause (UserContext userContext,Stampa_e
 			}
 
 			if(progetto_anagraficoBulk.getDataInizio() == null){
-				throw new ApplicationException("Impostare data inizio nel progetto");
+				throw new ApplicationException("Impostare per l'Anagrafica la data inizio nel progetto");
 			}
-			if(progetto_anagraficoBulk.getDataFine() == null){
-				throw new ApplicationException("Impostare data fine nel progetto");
-			}
+			// SI RENDE NON OBBLIGATORIA LA DATA FINE
+
+			//if(progetto_anagraficoBulk.getDataFine() == null){
+			//		throw new ApplicationException("Impostare data fine nel progetto");
+			//}
 		}
 
 	}
