@@ -1909,7 +1909,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		} else {
 			optAutofattura = Optional.empty();
 			isSplitPayment = Boolean.FALSE;
-			registraIva = Boolean.TRUE;
+			registraIva = Boolean.FALSE;
 		}
 
 		final boolean isFatturaPassivaIstituzionale = Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::isIstituzionale).orElse(Boolean.FALSE);
@@ -1937,8 +1937,8 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		final String cdCoriIva, cdCoriIvaSplit;
 		final Voce_epBulk aContoIva, aContoIvaSplit;
 		try {
-			cdCoriIva = this.findCodiceTributoIva(userContext);
-			cdCoriIvaSplit = isSplitPayment?this.findCodiceTributoIvaSplit(userContext):null;
+			cdCoriIva = registraIva?this.findCodiceTributoIva(userContext):null;
+			cdCoriIvaSplit = registraIva && isSplitPayment?this.findCodiceTributoIvaSplit(userContext):null;
 
 			aContoIva = registraIva?this.findContoIva(userContext, docamm):null;
 			aContoIvaSplit = registraIva && isSplitPayment?this.findContoIvaSplit(userContext, docamm):null;
@@ -2022,10 +2022,8 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 										if (listaFatturaOrdiniCollRiga.isEmpty())
 											testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, pairContoCosto.getFirst(), rigaDocamm.getIm_iva());
 										else {
-											listaFatturaOrdiniCollRiga.stream()
-												.forEach(fatturaOrdineBulk -> {
-													testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, fatturaOrdineBulk.getOrdineAcqConsegna().getContoBulk(), fatturaOrdineBulk.getIvaPerRigaFattura());
-												});
+											listaFatturaOrdiniCollRiga
+												.forEach(fatturaOrdineBulk -> testataPrimaNota.openDettaglioCostoRicavo(userContext, docamm, fatturaOrdineBulk.getOrdineAcqConsegna().getContoBulk(), fatturaOrdineBulk.getIvaPerRigaFattura()));
 										}
 									});
 								} else
