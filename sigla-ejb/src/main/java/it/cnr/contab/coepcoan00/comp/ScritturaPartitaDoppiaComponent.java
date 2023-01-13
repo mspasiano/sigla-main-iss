@@ -1809,7 +1809,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		List<TestataPrimaNota> testataPrimaNotaList = new ArrayList<>();
 
 		final boolean isFatturaPassivaDaOrdini = Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).filter(Fattura_passivaBulk::isDaOrdini).isPresent();
-		final BulkList<FatturaOrdineBulk> listaFatturaOrdini = Optional.of(docamm).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::getFattura_passiva_ordini)
+		final BulkList<FatturaOrdineBulk> listaFatturaOrdini = Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::getFattura_passiva_ordini)
 				.orElse(new BulkList());
 
 		//Le fatture generate da compenso non creano scritture di prima nota in quanto create direttamente dal compenso stesso
