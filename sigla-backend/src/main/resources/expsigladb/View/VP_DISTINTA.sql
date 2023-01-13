@@ -3,7 +3,7 @@
 --------------------------------------------------------
 
   CREATE OR REPLACE FORCE VIEW "VP_DISTINTA" ("TIPO_DOC", "ESERCIZIO", "CD_CDS", "CD_UNITA_ORGANIZZATIVA", "DS_UNITA_ORGANIZZATIVA", "PG_DISTINTA", "PG_DISTINTA_DEF", "DT_INVIO", "IM_TOT_DOC", "IM_TOT_RIT", "PG_DOC", "TI_DOC", "DS_DOC", "DT_EMISSIONE", "DT_ANNULLAMENTO", "DT_RITRASMISSIONE", "STATO", "PG_DISTINTA_PREC", "IM_DOC", "IM_RITENUTE", "CODICE_FISCALE", "DS_ANAGRAFICA", "ABI", "CAB", "NUMERO_CONTO", "IBAN", "FL_FLUSSO", "UO_DOCCONT") AS 
-  SELECT
+  SELECT DISTINCT
 --
 -- Date: 07/05/2008
 -- Version: 2.0
@@ -149,7 +149,7 @@
          b.numero_conto like '%'||val03 ))
          AND b.fl_cancellato = 'N')
    UNION ALL
-   SELECT 'R', dc.esercizio, dc.cd_cds, dc.cd_unita_organizzativa,
+   SELECT DISTINCT 'R', dc.esercizio, dc.cd_cds, dc.cd_unita_organizzativa,
           uo.ds_unita_organizzativa, dc.pg_distinta, dc.pg_distinta_def,
           dc.dt_invio,
           NVL (dcp.im_rev_ini_sos + dcp.im_rev_ini_tra + dcp.im_rev_ini_rit,
