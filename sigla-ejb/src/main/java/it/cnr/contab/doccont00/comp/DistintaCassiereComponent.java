@@ -1523,13 +1523,11 @@ public class DistintaCassiereComponent extends
                         sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
                     } else {
                         sql.addClause(FindClause.AND, "dt_firma", SQLBuilder.ISNOTNULL, null);
-                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        sql.openParenthesis(FindClause.AND);
+                            sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                            sql.addSQLClause(FindClause.OR, "esito_operazione", SQLBuilder.EQUALS, EsitoOperazione.NON_ACQUISITO.value());
+                        sql.closeParenthesis();
                     }
-                    sql.openParenthesis(FindClause.AND);
-                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
-                        sql.addClause(FindClause.OR, "esito_operazione", SQLBuilder.EQUALS, EsitoOperazione.NON_ACQUISITO.value());
-                    sql.closeParenthesis();
-
                     sql.openParenthesis(FindClause.AND);
                     sql.addClause(FindClause.AND, "stato_var_sos", SQLBuilder.ISNULL, null);
                     sql.addClause(FindClause.OR, "stato_var_sos", SQLBuilder.EQUALS, StatoVariazioneSostituzione.SOSTITUZIONE_DEFINITIVA.value());
