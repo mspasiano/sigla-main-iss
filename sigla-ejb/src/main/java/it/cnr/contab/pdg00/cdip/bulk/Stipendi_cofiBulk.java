@@ -31,7 +31,7 @@ public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 		statoKeys.put(STATO_LIQUIDATO,"Liquidato");
 		statoKeys.put(STATO_NON_LIQUIDATO,"Non liquidato");
 	}
-	private static final java.util.Dictionary meseKeys = new it.cnr.jada.util.OrderedHashtable();
+	public static final java.util.Dictionary meseKeys = new it.cnr.jada.util.OrderedHashtable();
 	public static final int GENNAIO = 1;
 	public static final int FEBBRAIO = 2;
 	public static final int MARZO = 3;
@@ -43,7 +43,8 @@ public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 	public static final int SETTEMBRE = 9;
 	public static final int OTTOBRE = 10;
 	public static final int NOVEMBRE = 11;
-	public static final int DICEMBRE = 12;
+	public static final int TREDICESIMA = 12;
+	public static final int DICEMBRE = 13;
 
 	static {
 		meseKeys.put(new Integer(GENNAIO),"Gennaio");
@@ -57,27 +58,27 @@ public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 		meseKeys.put(new Integer(SETTEMBRE),"Settembre");
 		meseKeys.put(new Integer(OTTOBRE),"Ottobre");
 		meseKeys.put(new Integer(NOVEMBRE),"Novembre");
+		meseKeys.put(new Integer(TREDICESIMA),"Tredicesima");
 		meseKeys.put(new Integer(DICEMBRE),"Dicembre");
 	}	
-public Stipendi_cofiBulk() {
-	super();
-}
-public Stipendi_cofiBulk(java.lang.Integer esercizio,java.lang.Integer mese) {
-	super(esercizio,mese);
-}
-/**
- * Insert the method's description here.
- * Creation date: (21/10/2002 12:34:48)
- * @return java.util.Dictionary
- */
-public final java.util.Dictionary getStatoKeys() {
-	return statoKeys;
-}
+	public Stipendi_cofiBulk() {
+		super();
+	}
+	public Stipendi_cofiBulk(java.lang.Integer esercizio,java.lang.Integer mese) {
+		super(esercizio,mese);
+	}
+	public final java.util.Dictionary getStatoKeys() {
+		return statoKeys;
+	}
 	/**
 	 * @return
 	 */
 	public static java.util.Dictionary getMeseKeys() {
 		return meseKeys;
+	}
+
+	public String getMeseRealeText() {
+		return  (String)getMeseKeys().get(this.getMese_reale());
 	}
 
 	public boolean isLiquidato() {
@@ -86,5 +87,9 @@ public final java.util.Dictionary getStatoKeys() {
 
 	public boolean isNonLiquidato() {
 		return Stipendi_cofiBulk.STATO_NON_LIQUIDATO.equals(this.getStato());
+	}
+
+	public String getRecordKey() {
+		return (String)getMeseKeys().get(this.getMese_reale())+" - Flusso: "+this.getProg_flusso();
 	}
 }

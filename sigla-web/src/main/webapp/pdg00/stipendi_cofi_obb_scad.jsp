@@ -25,12 +25,8 @@ SimpleCRUDBP bp = (SimpleCRUDBP)BusinessProcess.getBusinessProcess(request);
 	 <table class="Panel">
     <%--  <table border="0" cellspacing="0" cellpadding="2" align=center> --%>
       <tr>
-        <td><% bp.getController().writeFormLabel(out,"esercizio");%></td>
-        <td colspan="3"><% bp.getController().writeFormInput(out,"esercizio");%></td>
-      </tr>      
-      <tr>
-        <td><% bp.getController().writeFormLabel(out,"mese");%></td>
-        <td><% bp.getController().writeFormInput(out,"mese");%></td>
+        <td><% bp.getController().writeFormLabel(out,"find_stipendi_cofi");%></td>
+        <td><% bp.getController().writeFormInput(out,"find_stipendi_cofi");%></td>
       </tr>
       <tr>
         <td><% bp.getController().writeFormLabel(out,"find_stipendi_obb");%></td>
