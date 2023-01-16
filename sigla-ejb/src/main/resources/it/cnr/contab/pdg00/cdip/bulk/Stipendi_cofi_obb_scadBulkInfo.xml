@@ -22,34 +22,17 @@
 		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd" shortDescription="Stipendi Parte Spesa"
           longDescription="Stipendi Parte Spesa">
 	<fieldProperty
-		name="esercizio"
-		property="esercizio"
-		inputType="ROTEXT"
-		inputSize="4"
-		maxLength="4"
-		label="Esercizio" />
-	<fieldProperty
-		name="mese"
+		name="find_stipendi_cofi"
 		property="stipendi_cofi"
-		printProperty="mese"
-		optionsProperty="tipoStipendi_cofi"
-		keysProperty="meseKeys"
-		maxLength="30"
-		inputSize="30"
-		inputType="SELECT"
-		nullable="false"
-	 	enabledOnSearch="false"
-		label="Mese"/>
-	<fieldProperty
-		name="meseFind"
-		property="mese"
-		maxLength="30"
-		inputSize="30"
-		inputType="SELECT"
-		nullable="true"
+		inputType="SEARCHTOOL"
+		formName="searchtool"
+		label="Flusso Stipendi"
+		caseSensitiveSearch="false"
+		enabledOnInsert="true"
+		enabledOnEdit="false"
 		enabledOnSearch="true"
-        keysProperty="meseKeys"
-		label="Mese"/>		
+		enabledOnFreeSearch="true"
+		nullable="false"/>
 	<fieldProperty
 		name="find_stipendi_obb"
 		property="stipendi_cofi_obb"
@@ -58,34 +41,57 @@
 		label="Impegno" 
 		caseSensitiveSearch="false"		
 		enabledOnInsert="true"
-      	enabledOnEdit="true"
+      	enabledOnEdit="false"
 		enabledOnSearch="true" 
 		enabledOnFreeSearch="true"		
 		nullable="false"/>
+
+	<fieldProperty
+		name="mese"
+		property="stipendi_cofi.mese"
+		inputType="TEXT"
+		label="Progr." />
+	<fieldProperty
+		name="esercizio"
+		property="stipendi_cofi.esercizio"
+		inputType="TEXT"
+		label="Esercizio" />
+	<fieldProperty
+		name="mese_reale"
+		property="stipendi_cofi.mese_reale"
+		inputType="TEXT"
+		keysProperty="meseKeys"
+		label="Mese" />
+	<fieldProperty
+		name="prog_flusso"
+		property="stipendi_cofi.prog_flusso"
+		inputType="TEXT"
+		label="Progr. Flusso" />
+
 	<fieldProperty
 		name="cd_cds_obbligazione"
-		property="cd_cds_obbligazione"
+		property="stipendi_cofi_obb.cd_cds_obbligazione"
 		inputType="TEXT"
 		inputSize="30"
 		maxLength="30"
 		label="Cds obbligazione" />
 	<fieldProperty
 		name="esercizio_obbligazione"
-		property="esercizio_obbligazione"
+		property="stipendi_cofi_obb.esercizio_obbligazione"
 		inputType="TEXT"
 		inputSize="4"
 		maxLength="4"
 		label="Esercizio obbligazione" />
 	<fieldProperty
 		name="esercizio_ori_obbligazione"
-		property="esercizio_ori_obbligazione"
+		property="stipendi_cofi_obb.esercizio_ori_obbligazione"
 		inputType="TEXT"
 		inputSize="4"
 		maxLength="4"
 		label="Esercizio origine obbligazione" />
 	<fieldProperty
 		name="pg_obbligazione"
-		property="pg_obbligazione"
+		property="stipendi_cofi_obb.pg_obbligazione"
 		inputType="TEXT"
 		inputSize="10"
 		maxLength="10"
@@ -100,21 +106,22 @@
 		enabledOnSearch="true"
 		enabledOnEdit="true"
 		label="Importo" />
-	<form
-		name="searchtool" >
-		<formFieldProperty
-			name="esercizio"
-			inputType="TEXT" />
-		<formFieldProperty
-			name="mese"
-			inputType="TEXT" />			
-	</form>	
+
+
 	<formFieldProperty
-		name="esercizio" />
+		name="find_stipendi_cofi" />
+	<formFieldProperty
+		name="find_stipendi_obb" />
+
 	<formFieldProperty
 		name="mese" />
 	<formFieldProperty
-		name="find_stipendi_obb" />
+		name="esercizio" />
+	<formFieldProperty
+		name="mese_reale" />
+	<formFieldProperty
+		name="prog_flusso" />
+
 	<formFieldProperty
 		name="cd_cds_obbligazione" />
 	<formFieldProperty
@@ -125,8 +132,15 @@
 		name="pg_obbligazione" />
 	<formFieldProperty
 		name="im_totale" />
+
 	<findFieldProperty
-		name="meseFind" />
+		name="mese" />
+	<findFieldProperty
+		name="esercizio" />
+	<findFieldProperty
+		name="mese_reale" />
+	<findFieldProperty
+		name="prog_flusso" />
 	<findFieldProperty
 		name="cd_cds_obbligazione" />
 	<findFieldProperty
@@ -137,10 +151,15 @@
 		name="pg_obbligazione" />
 	<findFieldProperty
 		name="im_totale" />
+
 	<columnFieldProperty
-		name="esercizio" />		
+		name="mese" />
 	<columnFieldProperty
-		name="meseFind" />
+		name="esercizio" />
+	<columnFieldProperty
+		name="mese_reale" />
+	<columnFieldProperty
+		name="prog_flusso" />
 	<columnFieldProperty
 		name="cd_cds_obbligazione" />
 	<columnFieldProperty
@@ -151,6 +170,7 @@
 		name="pg_obbligazione" />
 	<columnFieldProperty
 		name="im_totale" />
+
 	<columnSet name="elaborazione_flussi">
 		<columnFieldProperty name="cd_cds_obbligazione"/>
 		<columnFieldProperty name="esercizio_obbligazione"/>

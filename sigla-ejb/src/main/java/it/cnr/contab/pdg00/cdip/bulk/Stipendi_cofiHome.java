@@ -42,7 +42,7 @@ public Stipendi_cofiHome(java.sql.Connection conn) {
 	public java.util.Collection findStipendiCofiAnno(int esercizio) throws PersistencyException{
 		SQLBuilder sql = createSQLBuilder();
 		sql.addSQLClause(FindClause.AND,"ESERCIZIO",SQLBuilder.EQUALS,esercizio);
-		sql.addOrderBy("MESE DESC");
+		sql.addOrderBy("MESE_REALE");
 		return fetchAll(sql);
 	}
 

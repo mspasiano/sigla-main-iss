@@ -17,29 +17,26 @@
 
 package it.cnr.contab.pdg00.comp;
 
-import java.sql.PreparedStatement;
-import java.util.List;
-import java.util.Optional;
-
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
-import it.cnr.contab.config00.esercizio.bulk.*;
-import it.cnr.contab.config00.ejb.*;
-import it.cnr.contab.config00.latt.bulk.Tipo_linea_attivitaBulk;
-import it.cnr.contab.utenze00.bulk.*;
-import it.cnr.contab.config00.sto.bulk.*;
-import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
+import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.esercizio.bulk.EsercizioHome;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneHome;
-import it.cnr.contab.doccont00.core.bulk.Stampa_registro_accertamentiBulk;
-import it.cnr.contab.doccont00.tabrif.bulk.Tipo_bolloBulk;
 import it.cnr.contab.pdg00.cdip.bulk.*;
-import it.cnr.contab.utenze00.bp.*;
-import it.cnr.jada.*;
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.comp.*;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.BulkHome;
+import it.cnr.jada.bulk.BulkList;
+import it.cnr.jada.bulk.BusyResourceException;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.*;
+
+import java.util.Optional;
 
 public class CRUDCostoDelDipendenteComponent extends it.cnr.jada.comp.CRUDComponent implements ICRUDCostoDelDipendenteMgr {
 /**
@@ -75,18 +72,6 @@ protected void initializeKeysAndOptionsInto(UserContext usercontext, OggettoBulk
 			throw new ComponentException(e);
 		}
 	}
-	if (oggettobulk instanceof Stipendi_cofi_obb_scadBulk)
-	{
-		try {
-			Stipendi_cofiHome stipendi_cofiHome = (Stipendi_cofiHome)getHome(usercontext, it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiBulk.class);
-			java.util.Collection stipendi_cofi;
-			stipendi_cofi = stipendi_cofiHome.findStipendiCofiAnno(usercontext);
-			((Stipendi_cofi_obb_scadBulk)oggettobulk).setTipoStipendi_cofi(stipendi_cofi);
-			((Stipendi_cofi_obb_scadBulk)oggettobulk).setEsercizio(CNRUserContext.getEsercizio(usercontext));
-		} catch (PersistencyException e) {
-			throw new ComponentException(e);
-		}
-	}
 	super.initializeKeysAndOptionsInto(usercontext,oggettobulk);
 }
 public Stipendi_cofiVirtualBulk caricaDettagliFiltrati(UserContext userContext,OggettoBulk bulk, CompoundFindClause clause) throws ComponentException{
@@ -94,7 +79,7 @@ public Stipendi_cofiVirtualBulk caricaDettagliFiltrati(UserContext userContext,O
 		Stipendi_cofiVirtualBulk stipendi_cofiVirtual = (Stipendi_cofiVirtualBulk)bulk;
 		BulkHome home = getHome(userContext,Stipendi_cofi_obbBulk.class);
 		SQLBuilder sql = home.createSQLBuilder();
-		sql.addClause("AND","esercizio",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
 		sql.addClause(clause);
 		stipendi_cofiVirtual.setStipendi_obbligazioni(new BulkList(home.fetchAll(sql)));
 		return stipendi_cofiVirtual;
@@ -159,18 +144,16 @@ public OggettoBulk inizializzaBulkPerModifica(UserContext userContext,OggettoBul
 private boolean isDipendenteModificabile(UserContext userContext,String matricola,Integer mese) throws it.cnr.jada.comp.ComponentException {
 	try {
 		SQLBuilder sql_exists = getHome(userContext,Ass_cdp_laBulk.class).createSQLBuilder();
-		sql_exists.addClause("AND","id_matricola",sql_exists.EQUALS,matricola);
-		sql_exists.addClause("AND","esercizio",sql_exists.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql_exists.addClause("AND","mese",sql_exists.EQUALS,mese);
+		sql_exists.addClause(FindClause.AND,"id_matricola",SQLBuilder.EQUALS,matricola);
+		sql_exists.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql_exists.addClause(FindClause.AND,"mese",SQLBuilder.EQUALS,mese);
 		if (sql_exists.executeExistsQuery(getConnection(userContext)))
 			return false;
 		sql_exists = getHome(userContext,Ass_cdp_uoBulk.class).createSQLBuilder();
-		sql_exists.addClause("AND","id_matricola",sql_exists.EQUALS,matricola);
-		sql_exists.addClause("AND","esercizio",sql_exists.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql_exists.addClause("AND","mese",sql_exists.EQUALS,mese);
-		if (sql_exists.executeExistsQuery(getConnection(userContext)))
-			return false;
-		return true;
+		sql_exists.addClause(FindClause.AND,"id_matricola",SQLBuilder.EQUALS,matricola);
+		sql_exists.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql_exists.addClause(FindClause.AND,"mese",SQLBuilder.EQUALS,mese);
+		return !sql_exists.executeExistsQuery(getConnection(userContext));
 	} catch(java.sql.SQLException e) {
 		throw handleException(e);
 	}
@@ -191,16 +174,16 @@ protected boolean isEsercizioChiuso(UserContext userContext,Unita_organizzativaB
 private void lockMatricola(UserContext userContext,String id_matricola,Integer mese) throws ComponentException, BusyResourceException {
 	try {
 		SQLBuilder sql = getHome(userContext,Costo_del_dipendenteBulk.class).createSQLBuilder();
-		sql.addSQLClause("AND","ESERCIZIO",sql.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
-		sql.addSQLClause("AND","ID_MATRICOLA",sql.EQUALS,id_matricola);
-		sql.addSQLClause("AND","MESE",sql.EQUALS,mese);
+		sql.addSQLClause(FindClause.AND,"ESERCIZIO",SQLBuilder.EQUALS,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause(FindClause.AND,"ID_MATRICOLA",SQLBuilder.EQUALS,id_matricola);
+		sql.addSQLClause(FindClause.AND,"MESE",SQLBuilder.EQUALS,mese);
 		sql.setForUpdate(true);
 		LoggableStatement stm = sql.prepareStatement(getConnection(userContext));
 		try {
 			java.sql.ResultSet rs = stm.executeQuery();
 			while (rs.next());
 		} finally {
-			try{stm.close();}catch( java.sql.SQLException e ){};
+			try{stm.close();}catch( java.sql.SQLException e ){}
 		}
 	} catch(java.sql.SQLException e) {
 		throw new BusyResourceException();
@@ -233,7 +216,7 @@ public OggettoBulk modificaConBulk(UserContext userContext,OggettoBulk bulk) thr
 		if (!isDipendenteModificabile(userContext,dipendente.getId_matricola(),dipendente.getMese()))
 			throw new ApplicationException("Dipendente non modificabile perchè è già stata fatta una ripartizione dei costi.");
 		if (dipendente.getUnita_organizzativa() == null ||
-			dipendente.getUnita_organizzativa().getCrudStatus() != dipendente.NORMAL)
+			dipendente.getUnita_organizzativa().getCrudStatus() != OggettoBulk.NORMAL)
 			throw new ApplicationException("E' necessario specificare una unità organizzativa.");
 
 		// 05/09/2003
@@ -244,8 +227,8 @@ public OggettoBulk modificaConBulk(UserContext userContext,OggettoBulk bulk) thr
 		lockMatricola(userContext,dipendente.getId_matricola(),dipendente.getMese());
 		V_dipendenteBulk dipendente_orig = (V_dipendenteBulk)getHome(userContext,dipendente).findByPrimaryKey(dipendente);
 
-		for (java.util.Iterator i = dipendente.getCosti_per_elemento_voce().iterator();i.hasNext();)
-			checkSQLConstraints(userContext,(Costo_del_dipendenteBulk)i.next());
+		for (Object o : dipendente.getCosti_per_elemento_voce())
+			checkSQLConstraints(userContext, (Costo_del_dipendenteBulk) o);
 
 		if (dipendente_orig.getUnita_organizzativa() != null &&
 			dipendente_orig.getCd_unita_organizzativa().equals(dipendente.getCd_unita_organizzativa())) {
@@ -254,12 +237,12 @@ public OggettoBulk modificaConBulk(UserContext userContext,OggettoBulk bulk) thr
 			if (isEsercizioChiuso(userContext,dipendente_orig.getUnita_organizzativa()))
 				throw new ApplicationException("Non è possibile modificare l'unità organizzativa della matricola perchè l'esercizio è chiuso.");
 
-			for (java.util.Iterator i = dipendente.getCosti_per_elemento_voce().iterator();i.hasNext();) {
-				Costo_del_dipendenteBulk cdd = (Costo_del_dipendenteBulk)i.next();
-				deleteBulk(userContext,cdd);
+			for (Object o : dipendente.getCosti_per_elemento_voce()) {
+				Costo_del_dipendenteBulk cdd = (Costo_del_dipendenteBulk) o;
+				deleteBulk(userContext, cdd);
 				cdd.setCd_unita_organizzativa(dipendente.getCd_unita_organizzativa());
 				cdd.setUser(CNRUserContext.getUser(userContext));
-				insertBulk(userContext,cdd);
+				insertBulk(userContext, cdd);
 			}
 		}
 		return bulk;
@@ -269,22 +252,18 @@ public OggettoBulk modificaConBulk(UserContext userContext,OggettoBulk bulk) thr
 }
 protected Query select(UserContext userContext,CompoundFindClause clauses,OggettoBulk bulk) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
 	if (bulk instanceof Stipendi_cofi_coriBulk || bulk instanceof Stipendi_cofi_obb_scadBulk){
-		if (clauses == null) {
-			if (bulk != null)
-				clauses = bulk.buildFindClauses(null);
-		}		
+		if (clauses == null)
+			clauses = bulk.buildFindClauses(null);
 		SQLBuilder sql = getHome(userContext,bulk).selectByClause(clauses);
-		sql.addClause("AND","esercizio",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addClause(FindClause.AND,"esercizio", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
 		return sql;		
 	}
 	if (bulk instanceof Stipendi_cofiVirtualBulk){
-		if (clauses == null) {
-			if (bulk != null)
-				clauses = bulk.buildFindClauses(null);
-		}		
+		if (clauses == null)
+			clauses = bulk.buildFindClauses(null);
 		Stipendi_cofiVirtualBulk stipendi_cofiVirtual = (Stipendi_cofiVirtualBulk)bulk;
 		SQLBuilder sql = getHome(userContext,Stipendi_cofi_obbBulk.class).selectByClause(clauses);
-		sql.addClause("AND","esercizio",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
 		BulkHome home = getHome(userContext,Stipendi_cofi_obbBulk.class);
 		stipendi_cofiVirtual.setStipendi_obbligazioni(new BulkList(home.fetchAll(sql)));
 		getHomeCache(userContext).fetchAll(userContext);
@@ -299,16 +278,16 @@ protected Query select(UserContext userContext,CompoundFindClause clauses,Oggett
 		throw new ApplicationException("E' necessario specificare almeno una clausola di ricerca.");
 	SQLBuilder sql = getHome(userContext,bulk).selectByClause(clauses);
 	V_dipendenteBulk dipendente = (V_dipendenteBulk)bulk;
-	sql.addClause("AND","esercizio",sql.EQUALS,CNRUserContext.getEsercizio(userContext));
+	sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
 	if (dipendente.getMese() == null)
-		sql.addClause("AND","mese",sql.NOT_EQUALS,new Integer(0));
+		sql.addClause(FindClause.AND,"mese",SQLBuilder.NOT_EQUALS, 0);
 	return sql;
 }
 public SQLBuilder selectStipendi_cofi_obbByClause(UserContext userContext, Stipendi_cofi_obb_scadBulk obb_scad, Stipendi_cofi_obbBulk obb, CompoundFindClause clauses) throws ComponentException {
 
 	Stipendi_cofi_obbHome home = (Stipendi_cofi_obbHome)getHome(userContext, Stipendi_cofi_obbBulk.class);
 	SQLBuilder sql = home.createSQLBuilder();
-	sql.addClause("AND", "esercizio", sql.EQUALS, obb_scad.getEsercizio());
+	sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, obb_scad.getEsercizio());
 	sql.addClause(clauses);
 	return sql;
 }
@@ -319,8 +298,8 @@ public SQLBuilder selectObbligazioniByClause(UserContext userContext, Stipendi_c
 	SQLBuilder sql = home.createSQLBuilder();
 	sql.addTableToHeader("UNITA_ORGANIZZATIVA");
 	sql.addSQLJoin("OBBLIGAZIONE.CD_CDS","UNITA_ORGANIZZATIVA.CD_UNITA_ORGANIZZATIVA");
-	sql.addSQLClause("AND", "esercizio", sql.EQUALS, stiObb.getEsercizio());
-	sql.addSQLClause("AND", "UNITA_ORGANIZZATIVA.CD_TIPO_UNITA", sql.EQUALS, it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome.TIPO_UO_SAC );
+	sql.addSQLClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, stiObb.getEsercizio());
+	sql.addSQLClause(FindClause.AND, "UNITA_ORGANIZZATIVA.CD_TIPO_UNITA", SQLBuilder.EQUALS, it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome.TIPO_UO_SAC );
 	sql.addClause(clauses);
 	return sql;
 }
