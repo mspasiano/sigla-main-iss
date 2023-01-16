@@ -6999,18 +6999,19 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
         try {
             Fattura_passivaHome fattpasHome = (Fattura_passivaHome) getHome(aUC, Fattura_passivaBulk.class);
-            Timestamp dtMin = fattpasHome.findDataRegFatturaPrecedente(fatturaPassiva);
+            if (!fatturaPassiva.isRiportataInScrivania()) {
+                Timestamp dtMin = fattpasHome.findDataRegFatturaPrecedente(fatturaPassiva);
+                if (!(dtMin == null) && fatturaPassiva.getDt_registrazione().before(dtMin)) {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    throw new it.cnr.jada.comp.ApplicationException("Data registrazione inferiore a quella del documento precedentemente registrato " + sdf.format(dtMin) + "!");
+                }
 
-            if (!(dtMin == null) && fatturaPassiva.getDt_registrazione().before(dtMin)) {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-                throw new it.cnr.jada.comp.ApplicationException("Data registrazione inferiore a quella del documento precedentemente registrato " + sdf.format(dtMin) + "!");
-            }
+                Timestamp dtMax = fattpasHome.findDataRegFatturaSuccessiva(fatturaPassiva);
 
-            Timestamp dtMax = fattpasHome.findDataRegFatturaSuccessiva(fatturaPassiva);
-
-            if (!(dtMax == null) && fatturaPassiva.getDt_registrazione().after(dtMax)) {
-                java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
-                throw new it.cnr.jada.comp.ApplicationException("Data registrazione successiva a quella del documento successivamente registrato " + sdf.format(dtMax) + "!");
+                if (!(dtMax == null) && fatturaPassiva.getDt_registrazione().after(dtMax)) {
+                    java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
+                    throw new it.cnr.jada.comp.ApplicationException("Data registrazione successiva a quella del documento successivamente registrato " + sdf.format(dtMax) + "!");
+                }
             }
         } catch (it.cnr.jada.persistency.PersistencyException ex) {
             throw handleException(ex);
