@@ -58,7 +58,7 @@
 		name="esercizio" />
 	<columnFieldProperty
 		name="nome_file" 
-		style="width:300px" />
+		headerStyle="w-80" />
 	<columnFieldProperty
 		name="data_inizio_rif" />
 	<columnFieldProperty

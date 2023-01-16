@@ -180,6 +180,8 @@ public class CaricaFileCassiereBP extends it.cnr.jada.util.action.SelezionatoreL
         try {
             setIterator(context,
                     createComponentSession().cercaFile_Cassiere(context.getUserContext(), null));
+            setOrderBy(context, "data_inizio_rif", -1);
+            reset(context);
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
         }
