@@ -185,7 +185,7 @@
       name="CRUDConfigOrganoBP" className="it.cnr.contab.config00.bp.CRUDConfigTipoContrattoBP">
     <forward name="default" path="/util/form.jsp"/>
 		<init-param name="bulkClassName" value="it.cnr.contab.config00.contratto.bulk.OrganoBulk" />
-		<init-param name="componentSessionName" value="CNRCONFIG00_EJB_ContrattoComponentSession" />								
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
 		<init-param name="defaultAction" value="CRUDConfigOrganoAction" />
   </businessProcess>
 
@@ -197,7 +197,7 @@
       name="CRUDConfigAttoAmministrativoBP" className="it.cnr.contab.config00.bp.CRUDConfigTipoContrattoBP">
     <forward name="default" path="/util/form.jsp"/>
 		<init-param name="bulkClassName" value="it.cnr.contab.config00.contratto.bulk.Tipo_atto_amministrativoBulk" />
-		<init-param name="componentSessionName" value="CNRCONFIG00_EJB_ContrattoComponentSession" />								
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
 		<init-param name="defaultAction" value="CRUDConfigAttoAmministrativoAction" />
   </businessProcess>
   
@@ -209,7 +209,7 @@
       name="CRUDConfigTipoContrattoBP" className="it.cnr.contab.config00.bp.CRUDConfigTipoContrattoBP">
     <forward name="default" path="/util/form.jsp"/>
 		<init-param name="bulkClassName" value="it.cnr.contab.config00.contratto.bulk.Tipo_contrattoBulk" />
-		<init-param name="componentSessionName" value="CNRCONFIG00_EJB_ContrattoComponentSession" />								
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
 		<init-param name="defaultAction" value="CRUDConfigTipo_ContrattoAction" />
   </businessProcess>
 
@@ -221,7 +221,7 @@
       name="CRUDConfigProcedureAmministrativeBP" className="it.cnr.contab.config00.bp.CRUDConfigTipoContrattoBP">
     <forward name="default" path="/util/form.jsp"/>
 		<init-param name="bulkClassName" value="it.cnr.contab.config00.contratto.bulk.Procedure_amministrativeBulk" />
-		<init-param name="componentSessionName" value="CNRCONFIG00_EJB_ContrattoComponentSession" />								
+		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
 		<init-param name="defaultAction" value="CRUDConfigProcedure_amministrativeAction" />
   </businessProcess>
         
