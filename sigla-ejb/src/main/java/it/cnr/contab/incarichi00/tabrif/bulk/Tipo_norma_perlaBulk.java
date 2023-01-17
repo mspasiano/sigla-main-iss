@@ -20,7 +20,10 @@
  * Date 18/07/2007
  */
 package it.cnr.contab.incarichi00.tabrif.bulk;
-public class Tipo_norma_perlaBulk extends Tipo_norma_perlaBase {
+
+import it.cnr.contab.util.ICancellatoLogicamente;
+
+public class Tipo_norma_perlaBulk extends Tipo_norma_perlaBase implements ICancellatoLogicamente {
     public final static java.util.Dictionary <String,String> TIPI_ASSOCIAZIONE;
     public final static String ASS_INCARICHI = "INC";
     public final static String ASS_CONTRATTI = "CTR";
@@ -39,5 +42,15 @@ public class Tipo_norma_perlaBulk extends Tipo_norma_perlaBase {
 	}
 	public java.util.Dictionary getTipiAssociazioneKeys(){
 		return TIPI_ASSOCIAZIONE;
+	}
+
+	@Override
+	public boolean isCancellatoLogicamente() {
+		return false;
+	}
+
+	@Override
+	public void cancellaLogicamente() {
+
 	}
 }
