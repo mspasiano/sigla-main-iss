@@ -2132,7 +2132,7 @@ public class OrdineAcqComponent
 
         ObbligazioniTable obbligazioniHash = ordine.getOrdineObbligazioniHash();
         Vector dettagli = (Vector) obbligazioniHash.get(scadenza);
-        java.math.BigDecimal impTotaleDettagli = calcolaTotalePer(dettagli, false);
+        java.math.BigDecimal impTotaleDettagli = calcolaTotalePer(dettagli, ordine.isCommerciale());
         return impTotaleDettagli;
     }
 

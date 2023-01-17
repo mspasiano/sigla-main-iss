@@ -31,7 +31,7 @@ function doStampaOrdine() {
 <body class="Form">
 <%
     boolean isNumeroPresent = Optional.ofNullable(ordine).map(o -> Optional.ofNullable(o.getDataOrdineDef()).isPresent()).orElse(Boolean.FALSE);
-    String statocss = isNumeroPresent ? "col-md-4" : "col-md-6";
+    String statocss = isNumeroPresent ? "col-md-2" : "col-md-4";
     bp.openFormWindow(pageContext);
 %>
 	<div class="Group card p-2 mb-2">
@@ -40,6 +40,7 @@ function doStampaOrdine() {
             <div class="col-md-1"><% bp.getController().writeFormField(out, "numero", Boolean.FALSE);%></div>
             <div class="col-md-2"><% bp.getController().writeFormField(out, "dataOrdine", Boolean.FALSE);%></div>
             <div class="col-md-2"><% bp.getController().writeFormField(out, "percProrata", Boolean.FALSE);%></div>
+            <div class="col-md-2 h-100"><% bp.getController().writeFormField(out, "tiAttivita", Boolean.FALSE);%></div>
             <div class="<%=statocss%> h-100">
                 <%
 				   if (bp.isInserting()) {

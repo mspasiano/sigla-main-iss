@@ -44,6 +44,7 @@ import it.cnr.contab.ordmag.anag00.NotaPrecodificataBulk;
 import it.cnr.contab.ordmag.anag00.NumerazioneOrdBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.richieste.bulk.VRichiestaPerOrdiniBulk;
+import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.action.ActionContext;
@@ -60,6 +61,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OrdineAcqBulk extends OrdineAcqBase
         implements IDocumentoAmministrativoBulk,
@@ -996,6 +998,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     public OggettoBulk initializeForInsert(CRUDBP bp, ActionContext context) {
         setFl_mepa(false);
         setStato(STATO_INSERITO);
+        setTiAttivita(TipoIVA.ISTITUZIONALE.value());
         java.sql.Timestamp dataReg = null;
         try {
             dataReg = it.cnr.jada.util.ejb.EJBCommonServices.getServerDate();
@@ -1189,8 +1192,26 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return NumerazioneOrdBulk.TIPO;
     }
 
+    public boolean isCommerciale() {
+        return Optional.ofNullable(getTiAttivita())
+                .map(s -> s.equals(TipoIVA.COMMERCIALE.value()))
+                .orElse(Boolean.FALSE);
+    }
     public boolean isNotAbledToModifyTipoIstCom() {
-        return (true);
+        return getRigheOrdineColl()
+                        .stream()
+                        .filter(ordineAcqRigaBulk -> Optional.ofNullable(ordineAcqRigaBulk.getDspObbligazioneScadenzario())
+                                .flatMap(obbligazioneScadenzarioBulk -> Optional.ofNullable(obbligazioneScadenzarioBulk.getEsercizio_originale())).isPresent())
+                        .findAny().isPresent()||
+                getRigheOrdineColl()
+                        .stream()
+                        .map(ordineAcqRigaBulk -> ordineAcqRigaBulk.getRigheConsegnaColl())
+                        .collect(Collectors.toList())
+                        .stream()
+                        .flatMap(List::stream)
+                        .filter(ordineAcqConsegnaBulk -> Optional.ofNullable(ordineAcqConsegnaBulk.getObbligazioneScadenzario())
+                                .flatMap(obbligazioneScadenzarioBulk -> Optional.ofNullable(obbligazioneScadenzarioBulk.getEsercizio_originale())).isPresent())
+                        .findAny().isPresent();
     }
 
     @Override
