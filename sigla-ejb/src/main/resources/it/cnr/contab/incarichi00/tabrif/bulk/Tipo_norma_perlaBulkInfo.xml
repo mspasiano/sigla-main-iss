@@ -33,8 +33,8 @@
 		name="ds_tipo_norma"
 		property="ds_tipo_norma"
 		inputType="TEXT"
-		inputSize="50"
-		maxLength="50"
+		inputSize="150"
+		maxLength="150"
 		enabledOnSearch="true"
 		nullable="false"
 		label="Descrizione" />
