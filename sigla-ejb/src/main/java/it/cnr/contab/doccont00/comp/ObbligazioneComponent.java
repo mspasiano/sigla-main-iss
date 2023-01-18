@@ -4756,11 +4756,11 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 
 	//segnalo impossibilità di modificare importo se ci sono doc amministrativi associati
 	if ( //!scadenzario.getObbligazione().isFromDocAmm() &&
-		!scadenzario.isFromDocAmm() && !scadenzario.getFlAssociataOrdine() &&
+		!scadenzario.isFromDocAmm() &&
 		scadenzario.getScadenza_iniziale() != null && 
 		scadenzario.getIm_scadenza().compareTo(scadenzario.getScadenza_iniziale().getIm_scadenza()) != 0 &&
 //		scadenzario.getIm_associato_doc_amm().compareTo( new BigDecimal(0)) > 0 &&
-		scadenzario.getPg_doc_passivo() != null
+		(scadenzario.getPg_doc_passivo() != null || scadenzario.getPg_ordine()!=null)
 	)
 		throw new ApplicationException( "Impossibile variare importo di una scadenza con doc. amministrativi associati");
 
@@ -4772,14 +4772,14 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 		scadenzario.getPg_mandato() != null
 	)
 		throw new ApplicationException( "Impossibile variare importo di una scadenza con mandati associati");
-		
-		
+
+
 	// riordino lo scadenzario
 	/* simona 13.2.2002 */
 	/* commentato l'ordinamento delle scadenze perche' può generare problemi quando l'accertamento e' richiamato dai documenti
-	   amministrativi con una scadenza selezionata */	
-//	obbligazione.setObbligazione_scadenzarioColl( scadenzario.ordinaPerDataScadenza( obbligazione.getObbligazione_scadenzarioColl()));	
-	
+	   amministrativi con una scadenza selezionata */
+//	obbligazione.setObbligazione_scadenzarioColl( scadenzario.ordinaPerDataScadenza( obbligazione.getObbligazione_scadenzarioColl()));
+
 	/*
 	// segnala errore se scadenze duplicate o se importo <= 0
 	for ( Iterator i = obbligazione.getObbligazione_scadenzarioColl().iterator(); i.hasNext(); )
@@ -4794,10 +4794,10 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 
 	/* rimosso questo controllo per consentire comunque l'inserimento/modifica dell'importo a 0 -
 	   questo è utile quando è già stato creato il mandato e pertanto non è possibile effettuare la cancellazione
-	   fisica della scadenza (per i vincoli di integrità referenziale con le righe del mandato, pertanto 
+	   fisica della scadenza (per i vincoli di integrità referenziale con le righe del mandato, pertanto
 	   l'unica alternativa è quella di impostare a 0 la scadenza */
-	   /*	
-/*			
+	   /*
+/*
 	if ( scadenzario.getIm_scadenza().doubleValue() == 0  && scadenzario.getPg_doc_passivo() == null)
 			throw handleException( new it.cnr.jada.comp.ApplicationException( "L'importo della scadenza deve essere maggiore a 0 "));
 
