@@ -32,7 +32,6 @@ import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.ordmag.ordini.bulk.*;
 import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
 import it.cnr.contab.ordmag.ordini.service.OrdineAcqCMISService;
-import it.cnr.contab.ordmag.richieste.service.RichiesteCMISService;
 import it.cnr.contab.reports.bulk.Print_spoolerBulk;
 import it.cnr.contab.reports.bulk.Report;
 import it.cnr.contab.reports.service.PrintService;
@@ -51,6 +50,7 @@ import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.GenerazioneReportException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.action.FormController;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
 import it.cnr.jada.util.upload.UploadedFile;
@@ -64,6 +64,8 @@ import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.ServletException;
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
+import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Iterator;
@@ -96,8 +98,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		this.dettaglioContrattoCollapse = dettaglioContrattoCollapse;
 	}
 
-	public boolean isInputReadonly()
-	{
+	public boolean isInputReadonly() {
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
 		if(ordine == null || isSearching())
 			return super.isInputReadonly();
@@ -105,8 +106,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	}
 
 	private final SimpleDetailCRUDController righe= new OrdineAcqRigaCRUDController("Righe", OrdineAcqRigaBulk.class, "righeOrdineColl", this){
-		public void validateForDelete(ActionContext context, OggettoBulk oggetto) throws ValidationException 
-		{
+		public void validateForDelete(ActionContext context, OggettoBulk oggetto) throws ValidationException  {
 			OrdineAcqRigaBulk riga = (OrdineAcqRigaBulk)oggetto;
 			if (riga.getDspObbligazioneScadenzario() != null && riga.getDspObbligazioneScadenzario().getPg_obbligazione() != null){
 				throw new ValidationException( "Impossibile cancellare una riga associata ad impegni");
@@ -145,7 +145,6 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	};
 
 	private final SimpleDetailCRUDController consegne = new SimpleDetailCRUDController("Consegne",OrdineAcqConsegnaBulk.class,"righeConsegnaColl",righe){
-
 		@Override
 		public int addDetail(OggettoBulk oggettobulk) throws BusinessProcessException {
 			OrdineAcqConsegnaBulk consegna = (OrdineAcqConsegnaBulk)oggettobulk;
@@ -159,23 +158,16 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 				consegna.setContoBulk(dettaglio.getDspConto());
 			}
 
-			int index = super.addDetail(oggettobulk);
-			return index;
+			return super.addDetail(oggettobulk);
 		}
-		
+
 	};
 
-	private final ObbligazioniCRUDController obbligazioniController = new ObbligazioniCRUDController(
-			"Obbligazioni",
-			it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk.class,
-			"ordineObbligazioniHash", this) {
-
-				@Override
-				public boolean isGrowable() {
+	private final ObbligazioniCRUDController obbligazioniController = new ObbligazioniCRUDController("Obbligazioni",	Obbligazione_scadenzarioBulk.class,"ordineObbligazioniHash", this) {
+		@Override
+		public boolean isGrowable() {
 					return false;
 				}
-		
-		
 	};
 
 	private final SimpleDetailCRUDController dettaglioAllegatiController = new SimpleDetailCRUDController("AllegatiDettaglio", AllegatoOrdineDettaglioBulk.class,"archivioAllegati",righe)
@@ -195,6 +187,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			oggettobulk.validate();
 			super.validate(actioncontext, oggettobulk);
 		}
+
 		@Override
 		public OggettoBulk removeDetail(int i) {
 			if (!getModel().isNew()){
@@ -208,6 +201,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			}
 			return super.removeDetail(i);
 		}
+
 		@Override
 		public int addDetail(OggettoBulk oggettobulk) throws BusinessProcessException {
 			int add = super.addDetail(oggettobulk);
@@ -224,6 +218,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	public CRUDOrdineAcqBP() {
 		this(OrdineAcqConsegnaBulk.class);
 	}
+
 	protected void setTab() {
 		setTab("tab","tabOrdineAcq");
 		setTab("tabOrdineAcqDettaglio","tabOrdineDettaglio");
@@ -231,39 +226,25 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 
 	public CRUDOrdineAcqBP(Class dettObbligazioniControllerClass) {
 		super("Tr");
-
 		setTab();
-		dettaglioObbligazioneController = new SimpleDetailCRUDController(
-				"DettaglioObbligazioni", dettObbligazioniControllerClass,
-				"ordineObbligazioniHash", obbligazioniController) {
-
+		dettaglioObbligazioneController = new SimpleDetailCRUDController("DettaglioObbligazioni", dettObbligazioniControllerClass,"ordineObbligazioniHash", obbligazioniController) {
 			public java.util.List getDetails() {
-
-				OrdineAcqBulk ordine = (OrdineAcqBulk) CRUDOrdineAcqBP.this
-						.getModel();
+				OrdineAcqBulk ordine = (OrdineAcqBulk) CRUDOrdineAcqBP.this.getModel();
 				java.util.Vector lista = new java.util.Vector();
 				if (ordine != null) {
-					java.util.Hashtable h = ordine
-							.getOrdineObbligazioniHash();
+					java.util.Hashtable h = ordine.getOrdineObbligazioniHash();
 					if (h != null && getParentModel() != null)
 						lista = (java.util.Vector) h.get(getParentModel());
 				}
 				return lista;
 			}
-
 			@Override
 			public boolean isGrowable() {
 				return false;
-				
-//				return super.isGrowable()
-//						&& !((it.cnr.jada.util.action.CRUDBP) getParentController()
-//								.getParentController()).isSearching();
 			}
-
+			@Override
 			public boolean isShrinkable() {
-
-				return super.isShrinkable()
-						&& !((it.cnr.jada.util.action.CRUDBP) getParentController()
+				return super.isShrinkable() && !((it.cnr.jada.util.action.CRUDBP) getParentController()
 								.getParentController()).isSearching();
 			}
 		};
@@ -276,66 +257,41 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	 * @param function
 	 *            java.lang.String
 	 */
-	public CRUDOrdineAcqBP(String function)
-			throws BusinessProcessException {
+	public CRUDOrdineAcqBP(String function)	throws BusinessProcessException {
 		super(function + "Tr");
-
 		setTab();
-		dettaglioObbligazioneController = new SimpleDetailCRUDController(
-				"DettaglioObbligazioni", OrdineAcqConsegnaBulk.class,
-				"ordineObbligazioniHash", obbligazioniController) {
-
+		dettaglioObbligazioneController = new SimpleDetailCRUDController("DettaglioObbligazioni", OrdineAcqConsegnaBulk.class, "ordineObbligazioniHash", obbligazioniController) {
 			public java.util.List getDetails() {
-
-				OrdineAcqBulk ordine = (OrdineAcqBulk) CRUDOrdineAcqBP.this
-						.getModel();
+				OrdineAcqBulk ordine = (OrdineAcqBulk) CRUDOrdineAcqBP.this.getModel();
 				java.util.Vector lista = new java.util.Vector();
 				if (ordine != null) {
-					java.util.Hashtable h = ordine
-							.getOrdineObbligazioniHash();
+					java.util.Hashtable h = ordine.getOrdineObbligazioniHash();
 					if (h != null && getParentModel() != null)
 						lista = (java.util.Vector) h.get(getParentModel());
 				}
 				return lista;
 			}
-
 			@Override
 			public boolean isGrowable() {
 				return false;
-				
-//				return super.isGrowable()
-//						&& !((it.cnr.jada.util.action.CRUDBP) getParentController()
-//								.getParentController()).isSearching();
 			}
-
-
+			@Override
 			public boolean isShrinkable() {
-
-				return super.isShrinkable()
-						&& !((it.cnr.jada.util.action.CRUDBP) getParentController()
+				return super.isShrinkable() && !((it.cnr.jada.util.action.CRUDBP) getParentController()
 								.getParentController()).isSearching();
 			}
 		};
-
 	}
 
-	
-	
-	
-	public void create(it.cnr.jada.action.ActionContext context)
-			throws	it.cnr.jada.action.BusinessProcessException {
-
-		try { 
+	public void create(it.cnr.jada.action.ActionContext context) throws	it.cnr.jada.action.BusinessProcessException {
+		try {
 			getModel().setToBeCreated();
-			setModel(
-					context,
-					((OrdineAcqComponentSession)createComponentSession()).creaConBulk(
-							context.getUserContext(),
-							getModel()));
+			setModel(context, createComponentSession().creaConBulk(context.getUserContext(),getModel()));
 		} catch(Exception e) {
 			throw handleException(e);
 		}
 	}
+
 	public final SimpleDetailCRUDController getRighe() {
 		return righe;
 	}
@@ -363,16 +319,11 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 					ordineAcq.addToArchivioAllegati(allegatoStampaOrdine);
 		}
 	}
-	public void update(it.cnr.jada.action.ActionContext context)
-			throws	it.cnr.jada.action.BusinessProcessException {
 
+	public void update(it.cnr.jada.action.ActionContext context) throws	it.cnr.jada.action.BusinessProcessException {
 		try {
 			getModel().setToBeUpdated();
-			setModel(
-					context,
-					((OrdineAcqComponentSession)createComponentSession()).modificaConBulk(
-							context.getUserContext(),
-							getModel()));
+			setModel(context,createComponentSession().modificaConBulk(context.getUserContext(),getModel()));
 			allegatoStampaOrdine(context.getUserContext());
 			archiviaAllegati(context);
 			archiviaAllegatiDettaglio();
@@ -393,28 +344,26 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 
 
 	@Override
-	public StoreService getBeanStoreService(ActionContext actioncontext)
-			throws BusinessProcessException{
+	public StoreService getBeanStoreService(ActionContext actioncontext) throws BusinessProcessException{
 		return SpringUtil.getBean("ordineAcqCMISService", OrdineAcqCMISService.class);
 	}
 
 
 	@Override
 	protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
-		if (storeService.hasAspect( storageObject,(( OrdineAcqCMISService)storeService).ASPECT_STAMPA_ORDINI))
+		if (storeService.hasAspect(storageObject,OrdineAcqCMISService.ASPECT_STAMPA_ORDINI))
 			return true;
-
 		return super.excludeChild(storageObject);
 	}
 
 	@Override
 	protected void completeAllegato(AllegatoOrdineBulk allegato, StorageObject storageObject) throws ApplicationException {
-			allegato.setAspectName(Optional.ofNullable(storageObject.<List<String>>getPropertyValue(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value()))
-					.map(list -> list.stream().filter(
-							o -> AllegatoOrdineBulk.aspectNamesKeys.get(o) != null
-							).findAny().orElse(OrdineAcqCMISService.ASPECT_ALLEGATI_ORDINI)
-					).orElse(null));
-			super.completeAllegato(allegato, storageObject);
+		allegato.setAspectName(Optional.ofNullable(storageObject.<List<String>>getPropertyValue(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value()))
+				.map(list -> list.stream().filter(
+						o -> AllegatoOrdineBulk.aspectNamesKeys.get(o) != null
+						).findAny().orElse(OrdineAcqCMISService.ASPECT_ALLEGATI_ORDINI)
+				).orElse(null));
+		super.completeAllegato(allegato, storageObject);
 	}
 
 	@Override
@@ -438,7 +387,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		is.close();
 		os.flush();
 	}
-	public String getNomeAllegatoDettaglio() throws ApplicationException{
+	public String getNomeAllegatoDettaglio() {
 		AllegatoOrdineDettaglioBulk dettaglio = (AllegatoOrdineDettaglioBulk)getDettaglioAllegatiController().getModel();
 		if (dettaglio!= null){
 			return dettaglio.getNome();
@@ -470,24 +419,27 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	protected Boolean isPossibileCancellazione(AllegatoGenericoBulk allegato) {
 		return true;
 	}
+
 	protected Boolean isPossibileCancellazioneDettaglioAllegato(AllegatoGenericoBulk allegato) {
 		return true;
 	}
+
 	public SimpleDetailCRUDController getDettaglioAllegatiController() {
 		return dettaglioAllegatiController;
 	}
+
 	@Override
 	protected Boolean isPossibileModifica(AllegatoGenericoBulk allegato){
 		return true;
 	}
+
 	@Override
 	protected void gestioneCancellazioneAllegati(AllegatoParentBulk allegatoParentBulk) throws ApplicationException {
 		OrdineAcqBulk ordine = (OrdineAcqBulk)allegatoParentBulk;
 		super.gestioneCancellazioneAllegati(allegatoParentBulk);
 	}
-	public void gestionePostSalvataggio(it.cnr.jada.action.ActionContext context)
-			throws	it.cnr.jada.action.BusinessProcessException {
 
+	public void gestionePostSalvataggio(it.cnr.jada.action.ActionContext context) throws	it.cnr.jada.action.BusinessProcessException {
 		try {
 			OrdineAcqBulk ordine = (OrdineAcqBulk)getModel(); 
 //			((OrdineAcqComponentSession)createComponentSession()).gestioneStampaOrdine(context.getUserContext(), ordine);
@@ -495,6 +447,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			throw handleException(e);
 		}
 	}
+
 	public void stampaRichiesta(ActionContext actioncontext) throws Exception {
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
 		InputStream is = (( OrdineAcqCMISService)storeService).getStreamOrdine(ordine);
@@ -511,8 +464,8 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			os.flush();
 		}
 	}
-	public boolean isStampaOrdineButtonHidden() {
 
+	public boolean isStampaOrdineButtonHidden() {
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
 		return (ordine == null || ordine.getNumero() == null);
 	}
@@ -528,11 +481,13 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		fileName = fileName + ".pdf";
 		return fileName;
 	}
+
 	private String getOutputFileNameOrdine(String reportName, OrdineAcqBulk ordine) {
 		String fileName = preparaFileNamePerStampa(reportName);
 		fileName = PDF_DATE_FORMAT.format(new java.util.Date()) + '_' + ordine.recuperoIdOrdineAsString() + '_' + fileName;
 		return fileName;
 	}
+
 	public void stampaOrdine(ActionContext actioncontext) throws Exception {
 		OrdineAcqBulk ordine = (OrdineAcqBulk) getModel();
 		((HttpActionContext)actioncontext).getResponse().setContentType("application/pdf");
@@ -542,7 +497,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		if ( is==null) {
 			UserContext userContext = actioncontext.getUserContext();
 			File f = stampaOrdine(userContext, ordine);
-			IOUtils.copy(new FileInputStream(f), os);
+			IOUtils.copy(Files.newInputStream(f.toPath()), os);
 		}else{
 			IOUtils.copy(is, os);
 		}
@@ -550,6 +505,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		os.flush();
 
 	}
+
 	public File stampaOrdine(
 			UserContext userContext,
 			OrdineAcqBulk ordine) throws ComponentException {
@@ -578,7 +534,6 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		}
 	}
 	public boolean isSalvaDefinitivoButtonHidden() {
-
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
 		return (ordine == null || ordine.getNumero() == null || !ordine.isStatoAllaFirma());
 	}
@@ -602,23 +557,20 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		return newToolbar;
 
 	}
-	public boolean areBottoniObbligazioneAbilitati()
-	{
+	public boolean areBottoniObbligazioneAbilitati() {
 		OrdineAcqBulk ordine = (OrdineAcqBulk) getModel();
-
-		return 	ordine != null && 
+		return 	ordine != null &&
 				!isSearching() && 
 				!isViewing() ;
 	}
-	public boolean isBottoneObbligazioneAggiornaManualeAbilitato()
-	{
-		OrdineAcqBulk ordine = (OrdineAcqBulk) getModel();
 
-		return(	ordine != null && !isSearching() && 
+	public boolean isBottoneObbligazioneAggiornaManualeAbilitato() {
+		OrdineAcqBulk ordine = (OrdineAcqBulk) getModel();
+		return(	ordine != null && !isSearching() &&
 				!isViewing() );
 	}
-	public IDefferUpdateSaldi getDefferedUpdateSaldiBulk() {
 
+	public IDefferUpdateSaldi getDefferedUpdateSaldiBulk() {
 		if (isDeleting() && getParent() != null)
 			return getDefferedUpdateSaldiParentBP()
 					.getDefferedUpdateSaldiBulk();
@@ -626,7 +578,6 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	}
 
 	public IDefferedUpdateSaldiBP getDefferedUpdateSaldiParentBP() {
-
 		if (isDeleting() && getParent() != null)
 			return ((IDefferedUpdateSaldiBP) getParent())
 					.getDefferedUpdateSaldiParentBP();
@@ -634,7 +585,6 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	}
 
 	public it.cnr.contab.docamm00.docs.bulk.Risultato_eliminazioneVBulk getDeleteManager() {
-
 		if (deleteManager == null)
 			deleteManager = new it.cnr.contab.docamm00.docs.bulk.Risultato_eliminazioneVBulk();
 		else
@@ -651,14 +601,9 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			it.cnr.jada.UserContext userContext,
 			it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_obbligazioniVBulk filtro)
 			throws it.cnr.jada.action.BusinessProcessException {
-
 		try {
-
 			return ((OrdineAcqComponentSession)createComponentSession()).cercaObbligazioni(userContext, filtro);
-
-		} catch (it.cnr.jada.comp.ComponentException e) {
-			throw handleException(e);
-		} catch (java.rmi.RemoteException e) {
+		} catch (ComponentException | RemoteException e) {
 			throw handleException(e);
 		}
 	}
@@ -669,22 +614,19 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			it.cnr.jada.bulk.OggettoBulk bulk,
 			it.cnr.jada.bulk.OggettoBulk context, java.lang.String property)
 			throws it.cnr.jada.action.BusinessProcessException {
-
 		try {
-
-			return it.cnr.jada.util.ejb.EJBCommonServices.openRemoteIterator(
-					actionContext, ((OrdineAcqComponentSession)createComponentSession()).cerca(actionContext.getUserContext(),
+			return it.cnr.jada.util.ejb.EJBCommonServices.openRemoteIterator(actionContext, createComponentSession().cerca(actionContext.getUserContext(),
 							clauses, bulk, context, property));
-		} catch (it.cnr.jada.comp.ComponentException e) {
-			throw handleException(e);
-		} catch (java.rmi.RemoteException e) {
+		} catch (ComponentException | RemoteException e) {
 			throw handleException(e);
 		}
 	}
+
 	@Override
 	public Accertamento_scadenzarioBulk getAccertamento_scadenziario_corrente() {
 		return null;
 	}
+
 	@Override
 	public IDocumentoAmministrativoBulk getBringBackDocAmm() {
 		return getDocumentoAmministrativoCorrente();
@@ -719,9 +661,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		isDeleting = newIsDeleting;
 	}
 	@Override
-	public void validaObbligazionePerDocAmm(ActionContext actionContext, OggettoBulk bulk)
-			throws BusinessProcessException {
-		return;
+	public void validaObbligazionePerDocAmm(ActionContext actionContext, OggettoBulk bulk)	throws BusinessProcessException {
 	}
 	public ObbligazioniCRUDController getObbligazioniController() {
 		return obbligazioniController;
@@ -767,14 +707,9 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			ActionContext context,
 			Categoria_gruppo_inventBulk categoria_gruppo_inventBulk)
 			throws it.cnr.jada.action.BusinessProcessException {
-
 		try {
-
 			return ((OrdineAcqComponentSession)createComponentSession()).recuperoContoDefault(context.getUserContext(), categoria_gruppo_inventBulk);
-
-		} catch (it.cnr.jada.comp.ComponentException| PersistencyException e) {
-			throw handleException(e);
-		} catch (java.rmi.RemoteException e) {
+		} catch (ComponentException | PersistencyException | RemoteException e) {
 			throw handleException(e);
 		}
 	}
@@ -783,14 +718,9 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			ActionContext context,
 			OrdineAcqRigaBulk riga)
 			throws it.cnr.jada.action.BusinessProcessException {
-
 		try {
-
 			return ((OrdineAcqComponentSession)createComponentSession()).recuperoDettaglioContratto(context.getUserContext(), riga);
-
-		} catch (it.cnr.jada.comp.ComponentException| PersistencyException e) {
-			throw handleException(e);
-		} catch (java.rmi.RemoteException e) {
+		} catch (ComponentException | PersistencyException | RemoteException e) {
 			throw handleException(e);
 		}
 	}
@@ -806,8 +736,7 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 
 	private void archiviaAllegatiDettaglio() throws ApplicationException, BusinessProcessException {
 		OrdineAcqBulk ordine = (OrdineAcqBulk)getModel();
-		for (Object oggetto : ordine.getRigheOrdineColl()) {
-			OrdineAcqRigaBulk dettaglio = (OrdineAcqRigaBulk)oggetto;
+		for (OrdineAcqRigaBulk dettaglio : ordine.getRigheOrdineColl()) {
 			for (AllegatoGenericoBulk allegato : dettaglio.getArchivioAllegati()) {
 				if (allegato.isToBeCreated()){
 					try {
@@ -851,9 +780,8 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 
 		for (Iterator<OrdineAcqRigaBulk> iterator = ordine.getRigheOrdineColl().deleteIterator(); iterator.hasNext();) {
 			OrdineAcqRigaBulk dettaglio = iterator.next();
-			for (Iterator<AllegatoGenericoBulk> iteratorAll = dettaglio.getArchivioAllegati().iterator(); iteratorAll.hasNext();) {
-				AllegatoGenericoBulk allegato = iteratorAll.next();
-				if (allegato.isToBeDeleted()){
+			for (AllegatoGenericoBulk allegato : dettaglio.getArchivioAllegati()) {
+				if (allegato.isToBeDeleted()) {
 					storeService.delete(allegato.getStorageKey());
 					allegato.setCrudStatus(OggettoBulk.NORMAL);
 				}
@@ -868,5 +796,18 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			dettaglio.setArchivioAllegati(((OrdineAcqCMISService)storeService).recuperoAllegatiDettaglioOrdine(dettaglio));
 		}
 		return super.initializeModelForEditAllegati(actioncontext, oggettobulk, path);
+	}
+
+	@Override
+	protected void basicEdit(ActionContext actioncontext, OggettoBulk oggettobulk, boolean flag) throws BusinessProcessException {
+		super.basicEdit(actioncontext, oggettobulk, flag);
+		if (this.isInputReadonly())
+			this.setStatus(FormController.VIEW);
+	}
+
+	@Override
+	protected void resetTabs(ActionContext actioncontext) {
+		super.resetTabs(actioncontext);
+		setTab("tab", "tabOrdineAcq");
 	}
 }
