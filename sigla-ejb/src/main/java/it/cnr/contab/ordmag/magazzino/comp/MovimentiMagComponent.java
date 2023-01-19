@@ -843,7 +843,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
     		sql.addSQLClause("AND","DT_RIFERIMENTO",SQLBuilder.LESS_EQUALS,parametri.getaDataCompetenza());
     	} 
     	if (parametri.getTerzo() != null && parametri.getTerzo().getCd_terzo() != null){
-    		sql.addSQLClause("AND","CD_TERZO",SQLBuilder.EQUALS,parametri.getTerzo().getCd_terzo());
+    		sql.addSQLClause("AND","MOVIMENTI_MAG.CD_TERZO",SQLBuilder.EQUALS,parametri.getTerzo().getCd_terzo());
     	} 
     	if (parametri.getTipoMovimentoMag() != null && parametri.getTipoMovimentoMag().getCdTipoMovimento() != null){
      	}
