@@ -337,7 +337,8 @@
 	<columnFieldProperty
 		name="naturaOperNonImpSdi" />
 	<columnFieldProperty
-		name="rifNormOperNonImpSdi" />
+		name="rifNormOperNonImpSdi"
+		label="Rif. Norm. SDI"/>
 	<columnFieldProperty
 		name="fl_solo_italia" />
 	<columnFieldProperty
@@ -347,7 +348,8 @@
 	<columnFieldProperty
 		name="ti_bollo" />	
 	<columnFieldProperty
-		name="fl_obb_dichiarazione_intento" />			
+		name="fl_obb_dichiarazione_intento"
+		label="Obb. Int."/>
 	<findFieldProperty
 		name="cd_voce_iva" />	
 	<findFieldProperty

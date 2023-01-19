@@ -110,7 +110,8 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
 
         try {
             if (num != null) {
-                ordine.setTiAttivita(num.getTi_istituz_commerc());
+                if (!ordine.isNotAbledToModifyTipoIstCom())
+                    ordine.setTiAttivita(num.getTi_istituz_commerc());
                 ordine.setPercProrata(num.getPercProrata());
             }
             return context.findDefaultForward();
