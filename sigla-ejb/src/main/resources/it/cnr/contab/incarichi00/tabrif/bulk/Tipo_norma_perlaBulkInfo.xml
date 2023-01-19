@@ -32,9 +32,10 @@
 	<fieldProperty
 		name="ds_tipo_norma"
 		property="ds_tipo_norma"
-		inputType="TEXT"
-		inputSize="50"
-		maxLength="50"
+		inputType="TEXTAREA"
+		cols="80"
+		rows="2"
+		maxLength="150"
 		enabledOnSearch="true"
 		nullable="false"
 		label="Descrizione" />

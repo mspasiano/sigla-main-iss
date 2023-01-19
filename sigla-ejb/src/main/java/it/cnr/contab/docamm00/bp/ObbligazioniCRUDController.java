@@ -116,7 +116,7 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,
                 HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-edit" : "img/redo16.gif",
-                (bp.isViewing() || enabled) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
+                (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
                 true,
                 "Aggiorna in manuale",
                 "btn btn-outline-primary  btn-sm btn-title",
@@ -125,7 +125,7 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                 context,
                 HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-pencil" : "img/refresh16.gif",
                 (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doModificaScadenzaInAutomatico(" + getInputPrefix() + ")')" : null,
-                false,
+                true,
                 "Aggiorna in automatico",
                 "btn btn-outline-info btn-sm btn-title",
                 HttpActionContext.isFromBootstrap(context));
