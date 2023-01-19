@@ -123,7 +123,8 @@ begin
 	where cd_cds 	   	   		 = aFa.cd_cds
 	  and cd_unita_organizzativa = aFa.cd_unita_organizzativa
 	  and esercizio 			 = aFa.esercizio
-	  and pg_fattura_attiva 	 = aFa.pg_fattura_attiva;
+	  and pg_fattura_attiva 	 = aFa.pg_fattura_attiva
+	  and (cd_cds_obbligazione is not null or cd_cds_accertamento is not null);
 
 	if aFA.ti_fattura <> 'C'
 	   or (aFa.ti_fattura = 'C' and aCdsObblig is null) then
