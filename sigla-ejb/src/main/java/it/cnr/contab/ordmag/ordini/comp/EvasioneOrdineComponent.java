@@ -305,11 +305,7 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 								} else {
 									ordineConsegna.setQuantitaOrig(ordineConsegna.getQuantita());
 								}
-							}
 
-							ordineConsegna.setQuantita(ordineConsegna.getQuantitaEvasa());
-							ordineConsegna.setStato(OrdineAcqConsegnaBulk.STATO_EVASA);
-							if (ordineConsegna.isQuantitaEvasaMinoreOrdine()) {
 								ParametriCalcoloImportoOrdine parametriOrdineConsegna = (ParametriCalcoloImportoOrdine) parametriRiga.clone();
 								parametriOrdineConsegna.setQtaOrd(ordineConsegna.getQuantita());
 								try {
@@ -325,6 +321,9 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 									throw new DetailedRuntimeException(e);
 								}
 							}
+
+							ordineConsegna.setQuantita(ordineConsegna.getQuantitaEvasa());
+							ordineConsegna.setStato(OrdineAcqConsegnaBulk.STATO_EVASA);
 							ordineConsegna.setToBeUpdated();
 
 							//rimuovo la vecchia consegna
