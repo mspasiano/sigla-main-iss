@@ -240,7 +240,7 @@ public class UtenteHome extends BulkHome implements ConsultazioniRestHome {
 	 * @return List lista di Utente
 	 */
 
-	public java.util.Collection findUtenteByCDRIncludeFirstLevel(String cdr) throws IntrospectionException, PersistencyException
+	public java.util.Collection<UtenteBulk> findUtenteByCDRIncludeFirstLevel(String cdr) throws IntrospectionException, PersistencyException
 	{
 		SQLBuilder sql = SqlTofindUtenteByCDR(cdr);
 

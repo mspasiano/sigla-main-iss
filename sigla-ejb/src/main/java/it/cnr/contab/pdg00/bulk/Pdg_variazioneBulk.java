@@ -25,6 +25,7 @@ import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.pdcfin.bulk.NaturaBulk;
 import it.cnr.contab.config00.sto.bulk.CdrBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.pdg00.bp.PdGVariazioneBP;
 import it.cnr.contab.pdg00.cdip.bulk.Ass_pdg_variazione_cdrBulk;
 import it.cnr.contab.pdg01.bulk.Tipo_variazioneBulk;
@@ -107,6 +108,7 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
     private java.util.Dictionary ti_causale_respintaKeys = new it.cnr.jada.util.OrderedHashtable();
     private ProgettoBulk progettoRimodulatoForSearch;
     private Progetto_rimodulazioneBulk progettoRimodulazione;
+    private ObbligazioneBulk obbligazione;
 
     private boolean isBulkforSearch = false;
     private BigDecimal somma_spesa_var_piu;
@@ -207,16 +209,10 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
         return ds_causaleKeys;
     }
 
-    /**
-     * @return
-     */
     public final java.util.Dictionary getTi_causale_respintaKeys() {
         return ti_causale_respintaKeys;
     }
 
-    /**
-     * @param dictionary
-     */
     public void setTi_causale_respintaKeys(java.util.Dictionary dictionary) {
         ti_causale_respintaKeys = dictionary;
     }
@@ -259,30 +255,18 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
         return tiMotivazioneVariazioneForSearchKeys;
     }
 
-    /**
-     * @return BulkList
-     */
     public BulkList<Ass_pdg_variazione_cdrBulk> getAssociazioneCDR() {
         return associazioneCDR;
     }
 
-    /**
-     * @param list list
-     */
     public void setAssociazioneCDR(BulkList list) {
         associazioneCDR = list;
     }
 
-    /**
-     * @return
-     */
     public BulkList getArchivioConsultazioni() {
         return archivioConsultazioni;
     }
 
-    /**
-     * @param list
-     */
     public void setArchivioConsultazioni(BulkList list) {
         archivioConsultazioni = list;
     }
@@ -357,184 +341,106 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
         setStato(STATO_ANNULLATA);
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_costi_diff() {
         return somma_costi_diff;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_costi_diff(BigDecimal decimal) {
         somma_costi_diff = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_costi_var_meno() {
         return somma_costi_var_meno;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_costi_var_meno(BigDecimal decimal) {
         somma_costi_var_meno = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_costi_var_piu() {
         return somma_costi_var_piu;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_costi_var_piu(BigDecimal decimal) {
         somma_costi_var_piu = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_entrata_diff() {
         return somma_entrata_diff;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_entrata_diff(BigDecimal decimal) {
         somma_entrata_diff = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_entrata_var_meno() {
         return somma_entrata_var_meno;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_entrata_var_meno(BigDecimal decimal) {
         somma_entrata_var_meno = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_entrata_var_piu() {
         return somma_entrata_var_piu;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_entrata_var_piu(BigDecimal decimal) {
         somma_entrata_var_piu = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_ricavi_diff() {
         return somma_ricavi_diff;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_ricavi_diff(BigDecimal decimal) {
         somma_ricavi_diff = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_ricavi_var_meno() {
         return somma_ricavi_var_meno;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_ricavi_var_meno(BigDecimal decimal) {
         somma_ricavi_var_meno = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_ricavi_var_piu() {
         return somma_ricavi_var_piu;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_ricavi_var_piu(BigDecimal decimal) {
         somma_ricavi_var_piu = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_spesa_diff() {
         return somma_spesa_diff;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_spesa_diff(BigDecimal decimal) {
         somma_spesa_diff = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_spesa_var_meno() {
         return somma_spesa_var_meno;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_spesa_var_meno(BigDecimal decimal) {
         somma_spesa_var_meno = decimal;
     }
 
-    /**
-     * @return
-     */
     public BigDecimal getSomma_spesa_var_piu() {
         return somma_spesa_var_piu;
     }
 
-    /**
-     * @param decimal
-     */
     public void setSomma_spesa_var_piu(BigDecimal decimal) {
         somma_spesa_var_piu = decimal;
     }
 
-    /**
-     * @return
-     */
     public boolean isCdsAbilitatoAdApprovare() {
         return isCdsAbilitatoAdApprovare;
     }
 
-    /**
-     * @param b
-     */
     public void setCdsAbilitatoAdApprovare(boolean b) {
         isCdsAbilitatoAdApprovare = b;
     }
@@ -809,8 +715,7 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
     }
 
     public V_pdg_variazione_riepilogoBulk removeFromEntrateRipartite(int index) {
-        V_pdg_variazione_riepilogoBulk dett = (V_pdg_variazione_riepilogoBulk) riepilogoEntrate.remove(index);
-        return dett;
+        return (V_pdg_variazione_riepilogoBulk) riepilogoEntrate.remove(index);
     }
 
     public boolean isMotivazioneVariazionePersonale() {
@@ -918,5 +823,53 @@ public class Pdg_variazioneBulk extends Pdg_variazioneBase implements ICancellat
 
     public boolean isVariazioneFirmata() {
         return Optional.ofNullable(getDt_firma()).isPresent();
+    }
+
+    public ObbligazioneBulk getObbligazione() {
+        return obbligazione;
+    }
+
+    public void setObbligazione(ObbligazioneBulk obbligazione) {
+        this.obbligazione = obbligazione;
+    }
+
+    @Override
+    public String getCd_cds_obbligazione() {
+        return Optional.ofNullable(this.getObbligazione()).map(ObbligazioneBulk::getCd_cds).orElse(null);
+    }
+
+    @Override
+    public void setCd_cds_obbligazione(String cd_cds_obbligazione) {
+        Optional.ofNullable(this.getObbligazione()).ifPresent(el->el.setCd_cds(cd_cds_obbligazione));
+    }
+
+    @Override
+    public Integer getEsercizio_obbligazione() {
+        return Optional.ofNullable(this.getObbligazione()).map(ObbligazioneBulk::getEsercizio).orElse(null);
+    }
+
+    @Override
+    public void setEsercizio_obbligazione(Integer esercizio_obbligazione) {
+        Optional.ofNullable(this.getObbligazione()).ifPresent(el->el.setEsercizio(esercizio_obbligazione));
+    }
+
+    @Override
+    public Integer getEsercizio_ori_obbligazione() {
+        return Optional.ofNullable(this.getObbligazione()).map(ObbligazioneBulk::getEsercizio_originale).orElse(null);
+    }
+
+    @Override
+    public void setEsercizio_ori_obbligazione(Integer esercizio_ori_obbligazione) {
+        Optional.ofNullable(this.getObbligazione()).ifPresent(el->el.setEsercizio_originale(esercizio_ori_obbligazione));
+    }
+
+    @Override
+    public Long getPg_obbligazione() {
+        return Optional.ofNullable(this.getObbligazione()).map(ObbligazioneBulk::getPg_obbligazione).orElse(null);
+    }
+
+    @Override
+    public void setPg_obbligazione(Long pg_obbligazione) {
+        Optional.ofNullable(this.getObbligazione()).ifPresent(el->el.setPg_obbligazione(pg_obbligazione));
     }
 }

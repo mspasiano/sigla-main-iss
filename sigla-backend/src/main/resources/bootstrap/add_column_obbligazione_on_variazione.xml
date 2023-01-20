@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2022  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet id="add-column-obbligazione-on-variazione" author="raffaele.pagano">
+        <addColumn tableName="pdg_variazione">
+            <column name="cd_cds_obbligazione" remarks="Centro di spesa di riferimento dell'obbligazione." type="VARCHAR(30)"/>
+            <column name="esercizio_obbligazione" remarks="Esercizio di riferimento dell'obbligazione." type="SMALLINT"/>
+            <column name="esercizio_ori_obbligazione" remarks="Esercizio originale di riferimento dell'obbligazione." type="SMALLINT"/>
+            <column name="pg_obbligazione" remarks="Progressivo identificativo dell'obbligazione." type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet author="raffaele.pagano" id="create_constraint_obbligazione-on-variazione">
+        <addForeignKeyConstraint baseColumnNames="cd_cds_obbligazione,esercizio_obbligazione,esercizio_ori_obbligazione,pg_obbligazione"
+                                 baseTableName="pdg_variazione"
+                                 constraintName="FK_PDG_VARIAZIONE04" deferrable="false" initiallyDeferred="false"
+                                 onDelete="NO ACTION" onUpdate="NO ACTION"
+                                 referencedColumnNames="cd_cds,esercizio,esercizio_originale,pg_obbligazione"
+                                 referencedTableName="obbligazione"/>
+    </changeSet>
+</databaseChangeLog>

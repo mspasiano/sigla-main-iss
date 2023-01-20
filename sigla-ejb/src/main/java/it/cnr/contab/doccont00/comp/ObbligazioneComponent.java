@@ -17,6 +17,50 @@
 
 package it.cnr.contab.doccont00.comp;
 
+import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.config00.bulk.*;
+import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
+import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
+import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
+import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseBulk;
+import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseHome;
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
+import it.cnr.contab.config00.pdcfin.bulk.*;
+import it.cnr.contab.config00.pdcfin.cla.bulk.Classificazione_vociBulk;
+import it.cnr.contab.config00.sto.bulk.*;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
+import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.ejb.SaldoComponentSession;
+import it.cnr.contab.incarichi00.bulk.Ass_incarico_uoBulk;
+import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioBulk;
+import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioHome;
+import it.cnr.contab.pdg00.bulk.Pdg_preventivo_spe_detBulk;
+import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
+import it.cnr.contab.pdg01.bulk.Pdg_modulo_spese_gestBulk;
+import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
+import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
+import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cmpBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.Utility;
+import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.*;
+import it.cnr.jada.comp.*;
+import it.cnr.jada.persistency.IntrospectionException;
+import it.cnr.jada.persistency.ObjectNotFoundException;
+import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.util.DateUtils;
+import it.cnr.jada.util.ejb.EJBCommonServices;
+
+import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
@@ -28,90 +72,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoHome;
-import it.cnr.contab.anagraf00.core.bulk.Anagrafico_terzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
-import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
-import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
-import it.cnr.contab.config00.bulk.Parametri_cdsHome;
-import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
-import it.cnr.contab.config00.bulk.Parametri_cnrHome;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
-import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
-import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
-import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseBulk;
-import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseHome;
-import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
-import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
-import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewHome;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceHome;
-import it.cnr.contab.config00.pdcfin.bulk.FunzioneBulk;
-import it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk;
-import it.cnr.contab.config00.pdcfin.bulk.NaturaBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Voce_fBulk;
-import it.cnr.contab.config00.pdcfin.cla.bulk.Classificazione_vociBulk;
-import it.cnr.contab.config00.sto.bulk.CdrBulk;
-import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.contab.config00.sto.bulk.CdsHome;
-import it.cnr.contab.config00.sto.bulk.EnteBulk;
-import it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
-import it.cnr.contab.config00.sto.bulk.V_struttura_organizzativaBulk;
-import it.cnr.contab.doccont00.bp.CRUDObbligazioneBP;
-import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
-import it.cnr.contab.doccont00.core.bulk.*;
-import it.cnr.contab.doccont00.ejb.SaldoComponentSession;
-import it.cnr.contab.incarichi00.bulk.Ass_incarico_uoBulk;
-import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioBulk;
-import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioHome;
-import it.cnr.contab.pdg00.bulk.Pdg_preventivo_spe_detBulk;
-import it.cnr.contab.pdg01.bulk.Pdg_modulo_spese_gestBulk;
-import it.cnr.contab.prevent00.bulk.*;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
-import it.cnr.contab.progettiric00.core.bulk.Progetto_anagraficoBulk;
-import it.cnr.contab.utenze00.bp.CNRUserContext;
-import it.cnr.contab.utenze00.bulk.UtenteBulk;
-import it.cnr.contab.util.ApplicationMessageFormatException;
-import it.cnr.contab.util.Utility;
-import it.cnr.jada.UserContext;
-import it.cnr.jada.action.ActionContext;
-import it.cnr.jada.action.Forward;
-import it.cnr.jada.bulk.BulkHome;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.PrimaryKeyHashMap;
-import it.cnr.jada.bulk.PrimaryKeyHashtable;
-import it.cnr.jada.bulk.ValidationException;
-import it.cnr.jada.comp.ApplicationException;
-import it.cnr.jada.comp.ApplicationRuntimeException;
-import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.comp.ICRUDMgr;
-import it.cnr.jada.comp.IPrintMgr;
-import it.cnr.jada.persistency.IntrospectionException;
-import it.cnr.jada.persistency.ObjectNotFoundException;
-import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.LoggableStatement;
-import it.cnr.jada.persistency.sql.PersistentHome;
-import it.cnr.jada.persistency.sql.Query;
-import it.cnr.jada.persistency.sql.SQLBroker;
-import it.cnr.jada.persistency.sql.SQLBuilder;
-import it.cnr.jada.util.DateUtils;
-import it.cnr.jada.util.ejb.EJBCommonServices;
 
 /* Gestisce documenti di tipo
 	OBB - bilancio Cds
@@ -1196,14 +1156,28 @@ public void cancellaObbligazioneProvvisoria (UserContext aUC,ObbligazioneBulk ob
 		//imposto a TO_BE_DELETED l'obbligazione e tutte le sue scadenze e tutte le sue scad_voce
 		obbligazione.setToBeDeleted();
 
-
 		obbligazione.getObbligazioniPluriennali().stream().forEach(e->{
 			e.setToBeDeleted();
 		});
 
-		//		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione );
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
+
+		//Creo la variazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
+
 		makeBulkPersistent( aUC, obbligazione );
-		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione, CANCELLAZIONE );		
+		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione, CANCELLAZIONE );
+
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
 	}
 	catch ( ObjectNotFoundException e )
 	{
@@ -1770,9 +1744,9 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 {
 	ObbligazioneBulk obbligazione = (ObbligazioneBulk) bulk;
 	try {
-	verificaStatoEsercizio( 
-							uc, 
-							((CNRUserContext)uc).getEsercizio(), 
+	verificaStatoEsercizio(
+							uc,
+							((CNRUserContext)uc).getEsercizio(),
 							obbligazione.getCd_cds());
 	} catch (Exception e) {
 		throw handleException(e);
@@ -1781,12 +1755,14 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 	validaCampi(uc, obbligazione);
 	validaObbligazionePluriennale(uc, obbligazione);
 
+	Pdg_variazioneBulk pdgVariazioneObbl = null;
 
 	try {
-		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(uc) && obbligazione.getGaeDestinazioneFinale()!=null &&
-				obbligazione.getGaeDestinazioneFinale().getCd_linea_attivita()!=null) {
-			Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(uc, obbligazione);
-			//Essendo stata effettuata la variazione possiamo cambiare sull'impegno lìimputazione della GAE emttendo quella di destinazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(uc) &&
+				obbligazione.getGaeDestinazioneFinale()!=null && obbligazione.getGaeDestinazioneFinale().getCd_linea_attivita()!=null) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(uc, obbligazione);
+
+			//Siccome sto creando l'obbligazione cambio l'imputazione della GAE mettendo quella di destinazione
 			final WorkpackageBulk gaeFinale = obbligazione.getGaeDestinazioneFinale();
 			obbligazione.getObbligazione_scadenzarioColl().stream().flatMap(el -> el.getObbligazione_scad_voceColl().stream())
 					.forEach(osv -> {
@@ -1820,7 +1796,6 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 
 	obbligazione = (ObbligazioneBulk) super.creaConBulk( uc, bulk );
 
-
 	//esegue il check di disponibilita di cassa
 	controllaDisponibilitaCassaPerVoce( uc, obbligazione, INSERIMENTO );
 	verificaCoperturaContratto( uc, obbligazione);
@@ -1834,18 +1809,29 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 	obbligazione.setIm_iniziale_obbligazione( obbligazione.getIm_obbligazione());
 	obbligazione.setCd_iniziale_elemento_voce( obbligazione.getCd_elemento_voce());
 
-	
 	if (obbligazione.isCompetenza()) 
 	  controllaAssunzioneImpegni(uc);
 	
 	if (obbligazione.isObbligazioneResiduoImproprio()) 
 	  controllaAssunzioneImpResImpro(uc);
+
 	validaCreaModificaOrigineFonti(uc, obbligazione);	
+
 	try {
 		obbligazione = validaCreaModificaElementoVoceNext(uc, obbligazione);
+
+		//Aggiorno la descrizione ed il legame con l'obbligazione della variazione
+		if (Optional.ofNullable(pdgVariazioneObbl).isPresent()) {
+			pdgVariazioneObbl.setDs_variazione("Variazione automatica generata in fase di creazione obbligazione "+obbligazione.toString()+".");
+			pdgVariazioneObbl.setRiferimenti("Variazione automatica generata in fase di creazione obbligazione "+obbligazione.toString()+".");
+			pdgVariazioneObbl.setObbligazione(obbligazione);
+			pdgVariazioneObbl.setToBeUpdated();
+			this.updateBulk(uc, pdgVariazioneObbl);
+		}
 	} catch ( Exception e ) {
 		throw handleException( e )	;
-	}			
+	}
+
 	return obbligazione;
 }
 /** 
@@ -3261,6 +3247,17 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		//verifica la correttezza dell'obbligazione
 		verificaObbligazione( aUC, obbligazione );
 
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
+
+		//Aggiorno la variazione se legata
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
+
 		//verifica la correttezza dell'imputazione finanziaria
 		validaImputazioneFinanziaria( aUC, obbligazione );
 
@@ -3313,7 +3310,12 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		validaCreaModificaOrigineFonti(aUC, obbligazione);
 		
 		obbligazione = validaCreaModificaElementoVoceNext(aUC, obbligazione);
-		
+
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
+
 		return obbligazione;
 	}
 	catch ( Exception e )
@@ -4031,21 +4033,25 @@ public ObbligazioneBulk stornaObbligazioneDefinitiva(
         obbligazione.storna();
         obbligazione.setDt_cancellazione( DateServices.getDt_valida(aUC));
 
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
 
-/*        //e' necessario aggiornare prima i dettagli e poi la testata per consentire lo storico delle modifiche
-        makeBulkListPersistent(aUC, obbligazione.getObbligazione_scadenzarioColl());
+		//Creo la variazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
 
-        obbligazione.setUser(aUC.getUser());
-        updateBulk(aUC, obbligazione);
+		makeBulkPersistent( aUC, obbligazione);
+        aggiornaCapitoloSaldoObbligazione(aUC, obbligazione, MODIFICA);
 
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
 
- */
-      makeBulkPersistent( aUC, obbligazione);
-      /*
-	  if ( !aUC.isTransactional() )	
-		 aggiornaStatoCOAN_COGEDocAmm( aUC, obbligazione );
-		*/
-        aggiornaCapitoloSaldoObbligazione(aUC, obbligazione, MODIFICA);		
         return obbligazione;
     } catch (Exception e) {
         throw handleException(e);

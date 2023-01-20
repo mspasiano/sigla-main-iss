@@ -235,7 +235,7 @@ public class Ass_pdg_variazione_cdrBulk extends Ass_pdg_variazione_cdrBase {
 		this.righeVariazioneEtrGest = righeVariazioneEtrGest;
 	}
 
-	public SimpleBulkList getRigheVariazioneSpeGest() {
+	public SimpleBulkList<Pdg_variazione_riga_gestBulk> getRigheVariazioneSpeGest() {
 		return righeVariazioneSpeGest;
 	}
 	

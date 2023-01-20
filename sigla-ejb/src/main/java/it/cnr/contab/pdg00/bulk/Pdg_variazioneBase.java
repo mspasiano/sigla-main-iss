@@ -114,82 +114,111 @@ public class Pdg_variazioneBase extends Pdg_variazioneKey implements Keyed {
 	// NOTE VARCHAR2(2000)
 	private java.lang.String note;
 
+	// CD_CDS_OBBLIGAZIONE VARCHAR(30)
+	private java.lang.String cd_cds_obbligazione;
+
+	// ESERCIZIO_OBBLIGAZIONE DECIMAL(4,0)
+	private java.lang.Integer esercizio_obbligazione;
+
+	// ESERCIZIO_ORI_OBBLIGAZIONE DECIMAL(4,0)
+	private java.lang.Integer esercizio_ori_obbligazione;
+
+	// PG_OBBLIGAZIONE DECIMAL(10,0)
+	private java.lang.Long pg_obbligazione;
+
 	public Pdg_variazioneBase() {
 		super();
 	}
+
 	public Pdg_variazioneBase(java.lang.Integer esercizio, java.lang.Long pg_variazione_pdg) {
 		super(esercizio, pg_variazione_pdg);
 	}
+
 	public java.sql.Timestamp getDt_apertura () {
 		return dt_apertura;
 	}
+
 	public void setDt_apertura(java.sql.Timestamp dt_apertura)  {
 		this.dt_apertura=dt_apertura;
 	}
+
 	public java.sql.Timestamp getDt_chiusura () {
 		return dt_chiusura;
 	}
+
 	public void setDt_chiusura(java.sql.Timestamp dt_chiusura)  {
 		this.dt_chiusura=dt_chiusura;
 	}
+
 	public java.sql.Timestamp getDt_approvazione () {
 		return dt_approvazione;
 	}
+
 	public void setDt_approvazione(java.sql.Timestamp dt_approvazione)  {
 		this.dt_approvazione=dt_approvazione;
 	}
+
 	public java.sql.Timestamp getDt_annullamento () {
 		return dt_annullamento;
 	}
+
 	public void setDt_annullamento(java.sql.Timestamp dt_annullamento)  {
 		this.dt_annullamento=dt_annullamento;
 	}
+
 	public java.lang.String getDs_variazione () {
 		return ds_variazione;
 	}
+
 	public void setDs_variazione(java.lang.String ds_variazione)  {
 		this.ds_variazione=ds_variazione;
 	}
+
 	public java.lang.String getDs_delibera () {
 		return ds_delibera;
 	}
+
 	public void setDs_delibera(java.lang.String ds_delibera)  {
 		this.ds_delibera=ds_delibera;
 	}
+
 	public java.lang.String getStato () {
 		return stato;
 	}
+
 	public void setStato(java.lang.String stato)  {
 		this.stato=stato;
 	}
+
 	public java.lang.String getRiferimenti () {
 		return riferimenti;
 	}
+
 	public void setRiferimenti(java.lang.String riferimenti)  {
 		this.riferimenti=riferimenti;
 	}
+
 	public java.lang.String getCd_causale_respinta () {
 		return cd_causale_respinta;
 	}
+
 	public void setCd_causale_respinta(java.lang.String cd_causale_respinta)  {
 		this.cd_causale_respinta=cd_causale_respinta;
 	}
+
 	public java.lang.String getDs_causale_respinta () {
 		return ds_causale_respinta;
 	}
+
 	public void setDs_causale_respinta(java.lang.String ds_causale_respinta)  {
 		this.ds_causale_respinta=ds_causale_respinta;
 	}
-	/**
-	 * @return
-	 */
+
 	public java.lang.String getCd_centro_responsabilita() {
 		return cd_centro_responsabilita;
 	}
 	
-	/**
-	 * @param string
-	 */
+
 	public void setCd_centro_responsabilita(java.lang.String string) {
 		cd_centro_responsabilita = string;
 	}
@@ -197,25 +226,31 @@ public class Pdg_variazioneBase extends Pdg_variazioneKey implements Keyed {
 	public java.sql.Timestamp getDt_app_formale () {
 		return dt_app_formale;
 	}
+
 	public void setDt_app_formale(java.sql.Timestamp dt_app_formale)  {
 		this.dt_app_formale=dt_app_formale;
 	}
+
 	public java.lang.String getTipologia () {
 		return tipologia;
 	}
+
 	public void setTipologia(java.lang.String tipologia)  {
 		this.tipologia=tipologia;
 	}
+
 	public java.lang.String getTipologia_fin() {
 		return tipologia_fin;
 	}
+
 	public void setTipologia_fin(java.lang.String string) {
 		tipologia_fin = string;
 	}
+
 	public java.lang.String getCd_elemento_voce() {
 		return cd_elemento_voce;
 	}
-	
+
 	public void setCd_elemento_voce(java.lang.String cd_elemento_voce) {
 		this.cd_elemento_voce = cd_elemento_voce;
 	}
@@ -235,21 +270,27 @@ public class Pdg_variazioneBase extends Pdg_variazioneKey implements Keyed {
 	public void setTi_gestione(java.lang.String ti_gestione) {
 		this.ti_gestione = ti_gestione;
 	}
+
 	public Boolean getFl_visto_dip_variazioni() {
 		return fl_visto_dip_variazioni;
 	}
+
 	public void setFl_visto_dip_variazioni(Boolean fl_visto_dip_variazioni) {
 		this.fl_visto_dip_variazioni = fl_visto_dip_variazioni;
 	}
+
 	public java.lang.String getStato_invio() {
 		return stato_invio;
 	}
+
 	public void setStato_invio(java.lang.String statoInvio) {
 		stato_invio = statoInvio;
 	}
+
 	public java.sql.Timestamp getDt_firma() {
 		return dt_firma;
 	}
+
 	public void setDt_firma(java.sql.Timestamp dt_firma) {
 		this.dt_firma = dt_firma;
 	}
@@ -332,5 +373,37 @@ public class Pdg_variazioneBase extends Pdg_variazioneKey implements Keyed {
 
 	public void setNote(String note) {
 		this.note = note;
+	}
+
+	public String getCd_cds_obbligazione() {
+		return cd_cds_obbligazione;
+	}
+
+	public void setCd_cds_obbligazione(String cd_cds_obbligazione) {
+		this.cd_cds_obbligazione = cd_cds_obbligazione;
+	}
+
+	public Integer getEsercizio_obbligazione() {
+		return esercizio_obbligazione;
+	}
+
+	public void setEsercizio_obbligazione(Integer esercizio_obbligazione) {
+		this.esercizio_obbligazione = esercizio_obbligazione;
+	}
+
+	public Integer getEsercizio_ori_obbligazione() {
+		return esercizio_ori_obbligazione;
+	}
+
+	public void setEsercizio_ori_obbligazione(Integer esercizio_ori_obbligazione) {
+		this.esercizio_ori_obbligazione = esercizio_ori_obbligazione;
+	}
+
+	public Long getPg_obbligazione() {
+		return pg_obbligazione;
+	}
+
+	public void setPg_obbligazione(Long pg_obbligazione) {
+		this.pg_obbligazione = pg_obbligazione;
 	}
 }

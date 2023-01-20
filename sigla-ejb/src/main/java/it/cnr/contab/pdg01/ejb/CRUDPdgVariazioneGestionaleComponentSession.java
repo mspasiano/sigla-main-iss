@@ -35,4 +35,6 @@ public interface CRUDPdgVariazioneGestionaleComponentSession extends it.cnr.cont
 	it.cnr.contab.prevent00.bulk.V_assestatoBulk trovaAssestato(it.cnr.jada.UserContext param0, it.cnr.contab.pdg01.bulk.Pdg_variazione_riga_gestBulk param1) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 	void allineaSaldiVariazioneApprovata(UserContext userContext, Ass_pdg_variazione_cdrBulk ass) throws ComponentException, RemoteException;
 	Pdg_variazioneBulk generaVariazioneAutomaticaDaObbligazione(UserContext userContext, ObbligazioneBulk obbligazione) throws ComponentException, RemoteException;
+	it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk salvaDefinitivo(it.cnr.jada.UserContext param0,it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk param1, boolean param3) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
+	it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk approva(it.cnr.jada.UserContext param0,it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk param1, boolean param3) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 }
