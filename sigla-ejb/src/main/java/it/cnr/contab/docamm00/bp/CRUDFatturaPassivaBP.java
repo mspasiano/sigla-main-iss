@@ -1726,9 +1726,16 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                 .anyMatch(s -> s.equals(storageObject.getKey()))) {
             return true;
         }
+        if (Optional.ofNullable(storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()))
+                .orElseGet(() -> storageObject.<String>getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
+                .equalsIgnoreCase("D:sigla_fatture_attachment:document"))
+            return true;
+        /*
         if (storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value())
                 .equalsIgnoreCase("D:sigla_fatture_attachment:document"))
             return true;
+
+         */
         return super.excludeChild(storageObject);
     }
 
