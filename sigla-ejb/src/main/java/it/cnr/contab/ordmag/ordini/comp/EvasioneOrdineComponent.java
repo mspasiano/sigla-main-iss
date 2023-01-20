@@ -307,7 +307,7 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 								}
 
 								ParametriCalcoloImportoOrdine parametriOrdineConsegna = (ParametriCalcoloImportoOrdine) parametriRiga.clone();
-								parametriOrdineConsegna.setQtaOrd(ordineConsegna.getQuantita());
+								parametriOrdineConsegna.setQtaOrd(ordineConsegna.getQuantitaEvasa());
 								try {
 									ImportoOrdine importo = ordineComponent.calcoloImportoOrdine(userContext, parametriOrdineConsegna);
 									ordineConsegna.setImImponibile(importo.getImponibile());
