@@ -154,6 +154,7 @@
 			  <tr>
 		         <td><% bp.getController().writeFormLabel(out,"tipoNormaPerla");%></td>
 		         <td><% bp.getController().writeFormInput(out,"default","tipoNormaPerla", bp.isPublishHidden(),null,null);%></td>
+		         <td><% bp.getController().writeFormInput(out,"default","crea_norma_perla", bp.isPublishHidden(),null,null);%></td>
 		      </tr>
 		      <%}%>
 			  <tr>         

@@ -600,6 +600,12 @@
                 nullable="true"
                 enabledOnSearch="true"
                 label="Norma o Titolo a base dell'attribuzione" />
+
+        <fieldProperty
+                name="crea_norma_perla"
+                property="tipoNormaPerla"
+                inputType="CRUDTOOL"
+                CRUDBusinessProcessName="CRUDConfigTipoNormaPerlaBP"/>
         <fieldProperty
                 name="direttore"
                 property="direttore"
@@ -845,7 +851,9 @@
         <formFieldProperty
                 name="procedura_amministrativa"/>
         <formFieldProperty
-                name="crea_procedura_amministrativa"/>                
+                name="crea_procedura_amministrativa"/>
+        <formFieldProperty
+                name="crea_norma_perla"/>
         <formFieldProperty
                 name="cd_proc_amm"/>
         <formFieldProperty
