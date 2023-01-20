@@ -127,6 +127,7 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			fillModel(actioncontext);
 			List<BollaScaricoMagBulk> listaBolleScarico = gestioneSalvataggio(actioncontext);
 			CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)actioncontext.getBusinessProcess();
+			bp.setModel(actioncontext, bp.initializeModelForInsert(actioncontext, new EvasioneOrdineBulk()));
 			if (!listaBolleScarico.isEmpty()){
 				SelezionatoreListaBP nbp = (SelezionatoreListaBP)actioncontext.createBusinessProcess("BolleScaricoGenerate");
 				nbp.setMultiSelection(false);
@@ -141,8 +142,9 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 				if (columnsetName != null)
 					nbp.setColumns(bulkInfo.getColumnFieldPropertyDictionary(columnsetName));
 				return actioncontext.addBusinessProcess(nbp);
-			} else 
+			} else {
 				bp.setMessage("Operazione Effettuata");
+			}
 			return actioncontext.findDefaultForward();
 		}
 		catch(ValidationException validationexception)

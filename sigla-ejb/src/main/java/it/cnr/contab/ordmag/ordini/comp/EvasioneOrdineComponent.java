@@ -331,8 +331,10 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 
 							//inserisco la nuova consegna
 							ordineRigaComp.getRigheConsegnaColl().add(ordineConsegna);
-							ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegna);
-							ordineComp.setAggiornaImpegniInAutomatico(true);
+							if (ordineConsegna.getQuantitaOrig() != null) {
+								ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegna);
+								ordineComp.setAggiornaImpegniInAutomatico(true);
+							}
 							try {
 								Bene_servizioHome bene_servizioHome = (Bene_servizioHome) getHome(userContext, Bene_servizioBulk.class);
 								Bene_servizioBulk bene_servizioBulk = (Bene_servizioBulk) bene_servizioHome.findByPrimaryKey(ordineRigaComp.getBeneServizio());
