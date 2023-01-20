@@ -40,8 +40,10 @@ import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome;
 import it.cnr.contab.doccont00.ejb.NumTempDocContComponentSession;
 import it.cnr.contab.pdg00.bulk.Pdg_preventivo_detBulk;
+import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.pdg01.bulk.Pdg_modulo_spese_gestBulk;
 
+import it.cnr.contab.pdg01.bulk.Pdg_variazione_riga_gestBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BulkList;
@@ -1746,6 +1748,16 @@ public SQLBuilder selectAllEqualsObbligazioniByClause( ObbligazioneBulk bulk, Ob
 		sql.addSQLClause("AND", "PG_OBBLIGAZIONE", sql.EQUALS, bulk.getPg_obbligazione());
 
 		sql.setOrderBy("ANNO", OrderConstants.ORDER_DESC);
+		return dettHome.fetchAll(sql);
+	}
+
+	public List<Pdg_variazioneBulk> findVariazioniCollegate(ObbligazioneBulk bulk) throws PersistencyException {
+		PersistentHome dettHome = getHomeCache().getHome(Pdg_variazioneBulk.class);
+		SQLBuilder sql = dettHome.createSQLBuilder();
+		sql.addClause(FindClause.AND, "cd_cds_obbligazione", SQLBuilder.EQUALS, bulk.getCd_cds() );
+		sql.addClause(FindClause.AND, "esercizio_obbligazione", SQLBuilder.EQUALS, bulk.getEsercizio() );
+		sql.addClause(FindClause.AND, "esercizio_ori_obbligazione", SQLBuilder.EQUALS, bulk.getEsercizio_originale() );
+		sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.EQUALS, bulk.getPg_obbligazione() );
 		return dettHome.fetchAll(sql);
 	}
 }

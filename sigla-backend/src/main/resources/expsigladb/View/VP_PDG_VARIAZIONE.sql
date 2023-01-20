@@ -36,6 +36,10 @@ CREATE OR REPLACE FORCE VIEW vp_pdg_variazione (esercizio,
                                                 fl_cda,
                                                 assegnazione,
                                                 im_incassato,
+                                                cd_cds_obbligazione,
+                                                esercizio_obbligazione,
+                                                esercizio_ori_obbligazione,
+                                                pg_obbligazione,
                                                 note
                                                )
 AS
@@ -64,6 +68,7 @@ AS
           v.cd_elemento_voce, v.fl_visto_dip_variazioni, v.stato_invio,
           v.dt_firma, v.ti_motivazione_variazione, v.id_matricola, v.id_bando,v.ds_causale,
           v.pg_progetto_rimodulazione, v.pg_rimodulazione, v.fl_cda, v.assegnazione,
-          v.im_incassato, v.note
+          v.im_incassato, v.cd_cds_obbligazione, v.esercizio_obbligazione, v.esercizio_ori_obbligazione,
+          v.pg_obbligazione, v.note
      FROM pdg_variazione v, cdr c
     WHERE v.cd_centro_responsabilita = c.cd_centro_responsabilita;
