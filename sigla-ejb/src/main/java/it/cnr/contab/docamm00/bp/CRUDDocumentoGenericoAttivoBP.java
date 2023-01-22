@@ -38,7 +38,11 @@ import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
 import it.cnr.contab.doccont00.core.bulk.IDefferUpdateSaldi;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.service.SpringUtil;
+import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.Utility;
+import it.cnr.contab.util00.bp.AllegatiCRUDBP;
+import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.BulkList;
@@ -51,6 +55,7 @@ import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
 import it.cnr.jada.util.jsp.JSPUtils;
+import it.cnr.si.spring.storage.StorageDriver;
 
 import javax.ejb.EJBException;
 import java.rmi.RemoteException;
@@ -58,9 +63,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public class CRUDDocumentoGenericoAttivoBP
-        extends SimpleCRUDBP
+        extends AllegatiCRUDBP<AllegatoGenericoBulk, Documento_genericoBulk>
         implements IDocumentoAmministrativoBP, IGenericSearchDocAmmBP, IDefferedUpdateSaldiBP, VoidableBP, IDocAmmEconomicaBP {
     private final SimpleDetailCRUDController dettaglio = new DocumentoGenericoAttivoRigaCRUDController("Dettaglio", Documento_generico_rigaBulk.class, "documento_generico_dettColl", this);
 
@@ -122,6 +128,29 @@ public class CRUDDocumentoGenericoAttivoBP
         };
     }
 
+    @Override
+    protected String getStorePath(Documento_genericoBulk allegatoParentBulk, boolean create) throws BusinessProcessException {
+        return Arrays.asList(
+                SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
+                Optional.ofNullable(allegatoParentBulk)
+                        .map(s -> s.getCd_unita_organizzativa())
+                        .orElse(""),
+                "Documenti Generici Attivi",
+                Optional.ofNullable(allegatoParentBulk.getEsercizio())
+                        .map(esercizio -> String.valueOf(esercizio))
+                        .orElse("0"),
+                allegatoParentBulk.getCd_tipo_documento_amm(),
+                String.valueOf(allegatoParentBulk.getPg_doc())
+        ).stream().collect(
+                Collectors.joining(StorageDriver.SUFFIX)
+        );
+    }
+
+    @Override
+    protected Class<AllegatoGenericoBulk> getAllegatoClass() {
+        return AllegatoGenericoBulk.class;
+    }
+
     protected void basicEdit(it.cnr.jada.action.ActionContext context, OggettoBulk bulk, boolean doInitializeForEdit) throws it.cnr.jada.action.BusinessProcessException {
         try {
             Documento_genericoBulk doc = (Documento_genericoBulk) bulk;
@@ -145,7 +174,6 @@ public class CRUDDocumentoGenericoAttivoBP
 
     public void create(it.cnr.jada.action.ActionContext context)
             throws it.cnr.jada.action.BusinessProcessException {
-
         try {
             getModel().setToBeCreated();
             setModel(
@@ -154,6 +182,7 @@ public class CRUDDocumentoGenericoAttivoBP
                             context.getUserContext(),
                             getModel(),
                             getUserConfirm()));
+            archiviaAllegati(context);
         } catch (Exception e) {
             throw handleException(e);
         } finally {
@@ -210,6 +239,7 @@ public class CRUDDocumentoGenericoAttivoBP
     public void delete(ActionContext context) throws it.cnr.jada.action.BusinessProcessException {
         int crudStatus = getModel().getCrudStatus();
         try {
+
             getModel().setToBeDeleted();
             createComponentSession().eliminaConBulk(context.getUserContext(), getModel());
         } catch (Exception e) {
@@ -807,6 +837,7 @@ public class CRUDDocumentoGenericoAttivoBP
                             context.getUserContext(),
                             getModel(),
                             getUserConfirm()));
+            archiviaAllegati(context);
         } catch (Exception e) {
             throw handleException(e);
         } finally {
@@ -1125,6 +1156,7 @@ public class CRUDDocumentoGenericoAttivoBP
     private static final String[] TAB_TESTATA = new String[]{ "tabDocumentoAttivo","Documento Generico","/docamm00/tab_documento_attivo.jsp" };
     private static final String[] TAB_DETTAGLIO = new String[]{ "tabDocumentoAttivoDettaglio","Dettaglio","/docamm00/tab_documento_attivo_dettaglio.jsp" };
     private static final String[] TAB_ACCERTAMENTI = new String[]{ "tabDocumentoGenericoAccertamenti","Accertamenti","/docamm00/tab_documento_generico_accertamenti.jsp" };
+    private static final String[] TAB_ALLEGATI = new String[]{ "tabAllegat","Allegati","/util00/tab_allegati.jsp"};
 
     public String[][] getTabs() {
         TreeMap<Integer, String[]> pages = new TreeMap<Integer, String[]>();
@@ -1132,6 +1164,7 @@ public class CRUDDocumentoGenericoAttivoBP
         pages.put(i++, TAB_TESTATA);
         pages.put(i++, TAB_DETTAGLIO);
         pages.put(i++, TAB_ACCERTAMENTI);
+        pages.put(i++, TAB_ALLEGATI);
         if (attivaEconomicaParallela) {
             pages.put(i++, CRUDScritturaPDoppiaBP.TAB_ECONOMICA);
         }
