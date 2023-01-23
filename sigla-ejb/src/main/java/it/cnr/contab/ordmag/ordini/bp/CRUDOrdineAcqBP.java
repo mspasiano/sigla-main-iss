@@ -20,6 +20,7 @@ package it.cnr.contab.ordmag.ordini.bp;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.pdcep.bulk.ContoBulk;
 import it.cnr.contab.docamm00.bp.IDocumentoAmministrativoBP;
+import it.cnr.contab.docamm00.bp.IGenericSearchDocAmmBP;
 import it.cnr.contab.docamm00.bp.ObbligazioniCRUDController;
 import it.cnr.contab.docamm00.bp.VoidableBP;
 import it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoBulk;
@@ -49,7 +50,9 @@ import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.GenerazioneReportException;
+import it.cnr.jada.ejb.CRUDComponentSession;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.action.BulkBP;
 import it.cnr.jada.util.action.FormController;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
@@ -76,7 +79,7 @@ import java.util.UUID;
 /**
  * Gestisce le catene di elementi correlate con il documento in uso.
  */
-public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAcqBulk> implements IDocumentoAmministrativoBP, VoidableBP, IDefferedUpdateSaldiBP  {
+public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAcqBulk> implements IDocumentoAmministrativoBP, VoidableBP, IDefferedUpdateSaldiBP, IGenericSearchDocAmmBP {
 
 	private static final DateFormat PDF_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
@@ -809,5 +812,20 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	protected void resetTabs(ActionContext actioncontext) {
 		super.resetTabs(actioncontext);
 		setTab("tab", "tabOrdineAcq");
+	}
+
+	@Override
+	public String getColumnsetForGenericSearch() {
+		return "default";
+	}
+
+	@Override
+	public String getPropertyForGenericSearch() {
+		return "fornitore";
+	}
+
+	@Override
+	public CRUDComponentSession initializeModelForGenericSearch(BulkBP bp, ActionContext context) throws BusinessProcessException {
+		return createComponentSession();
 	}
 }

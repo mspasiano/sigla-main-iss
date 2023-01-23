@@ -1363,14 +1363,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
 
     @Override
     public String getManagerName() {
-        // TODO Auto-generated method stub
-        return null;
+        return "CRUDOrdineAcqBP";
     }
 
     @Override
     public String getManagerOptions() {
-        // TODO Auto-generated method stub
-        return null;
+        return "VTh";
     }
 
     @Override
