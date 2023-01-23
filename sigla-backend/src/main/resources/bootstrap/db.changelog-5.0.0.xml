@@ -5962,4 +5962,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/modify_length_desc_tipo_norma_in_tipo_norma_perla.xml"/>
     <!-- Autore : RAFFAELE PAGANO - Aggiunta la chiave dell'obbligazione sulle variazione create in automatico in fase di creazione/aggiornamento obbligazione -->
     <include file="bootstrap/add_column_obbligazione_on_variazione.xml"/>
+    <!-- Autore : MARCO SPASIANO - Aggiunto il campo attributo_long_11 sulla tabella temporanea delle stampe -->
+    <include file="bootstrap/add_column_attributo_long_11_on_tmp_report_generico.xml"/>
+
 </databaseChangeLog>
