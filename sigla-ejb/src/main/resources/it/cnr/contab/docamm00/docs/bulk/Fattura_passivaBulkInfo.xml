@@ -29,7 +29,7 @@
             inputSize="30"
             inputType="TEXT"
             enabledOnSearch="true"
-            enabledOnFreeSearch="false"
+            enabledOnFreeSearch="true"
             label="CDS"/>
     <fieldProperty
             name="stato_cofi"
@@ -583,7 +583,7 @@
             inputSize="30"
             inputType="TEXT"
             enabledOnSearch="true"
-            enabledOnFreeSearch="false"
+            enabledOnFreeSearch="true"
             label="UO"/>
     <fieldProperty
             name="ti_fattura"
@@ -1211,8 +1211,8 @@
 
     <findFieldProperty name="esercizio"/>
     <findFieldProperty name="esercizio_fattura_fornitore"/>
-    <findFieldProperty name="cd_cds"/>
-    <findFieldProperty name="cd_unita_organizzativa"/>
+    <findFieldProperty name="cd_cds" label="Centro di Spesa"/>
+    <findFieldProperty name="cd_unita_organizzativa" label="Unità Organizzativa"/>
     <findFieldProperty name="pg_fattura_passiva"/>
     <findFieldProperty name="numero_protocollo"/>
     <findFieldProperty name="fornitore"/>
@@ -1550,6 +1550,10 @@
     <columnFieldProperty
             name="esercizio"/>
     <columnFieldProperty
+            name="cd_cds"/>
+    <columnFieldProperty
+            name="cd_unita_organizzativa"/>
+    <columnFieldProperty
             name="pg_fattura_passiva"/>
     <columnFieldProperty
             name="numero_protocollo"/>
@@ -1600,6 +1604,7 @@
     <columnFieldProperty name="progr_univoco"/>
     <columnFieldProperty name="identificativoSdi"/>
     <columnFieldProperty name="progressivo"/>
+
     <form
             name="documentoSearchtool">
         <formFieldProperty

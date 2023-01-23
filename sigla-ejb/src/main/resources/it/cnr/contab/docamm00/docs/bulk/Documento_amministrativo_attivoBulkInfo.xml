@@ -21,5 +21,6 @@
 		xmlns="https://contab.cnr.it/schema/SIGLA" 
 		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
 	<columnFieldProperty
-		name="ti_fattura" />
+		name="ti_fattura"
+		label="Tipo Fattura"/>
 </bulkInfo>

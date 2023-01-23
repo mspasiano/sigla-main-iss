@@ -952,14 +952,15 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 
 		setEsercizio(it.cnr.contab.utenze00.bulk.CNRUserInfo.getEsercizio(context));
 		setCd_cds(null); // ho aggiunto CD_CDS nelle findFieldProperties -> imposto a NULL per escluderlo dai filtri di ricerca
-
+		it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk uo = it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context);
+		if (uo.isUoEnte())
+			setCd_uo_origine(null);
 		if (bp instanceof CRUDDocumentoGenericoPassivoBP && ((CRUDDocumentoGenericoPassivoBP)bp).isSpesaBP()){
 			setStato_cofi(this.STATO_CONTABILIZZATO);
 			setTipo_documento(new Tipo_documento_ammBulk());
 			setCd_tipo_documento_amm(this.GENERICO_S);
 			setStato_pagamento_fondo_eco(FONDO_ECO);
 			setStato_liquidazione(LIQ);
-			it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk uo = it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context);
 			setCd_cds(uo.getCd_unita_padre());
 			setCd_cds_origine(uo.getCd_unita_padre());
 			if (it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome.TIPO_UO_SAC.equalsIgnoreCase(uo.getCd_tipo_unita())){
