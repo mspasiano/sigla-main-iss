@@ -2924,15 +2924,32 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
 
     private BigDecimal calcolaSconto(BigDecimal importo, FatturaOrdineBulk fatturaOrdineBulk) {
         return importo.
-                multiply(BigDecimal.ONE.subtract(Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett())
-                        .map(sconto1 -> sconto1.divide(Utility.CENTO))
-                        .orElse(BigDecimal.ZERO))).
+                multiply(BigDecimal.ONE.subtract(
+                        Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett())
+                            .map(sconto1 -> sconto1.divide(Utility.CENTO))
+                            .orElseGet(() ->
+                                    Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getSconto1())
+                                            .map(sconto1 -> sconto1.divide((Utility.CENTO)))
+                                            .orElse(BigDecimal.ZERO)
+                            )
+                        )
+                ).
                 multiply(BigDecimal.ONE.subtract(Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett())
                         .map(sconto2 -> sconto2.divide(Utility.CENTO))
-                        .orElse(BigDecimal.ZERO))).
+                        .orElseGet(() ->
+                                Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getSconto2())
+                                        .map(sconto2 -> sconto2.divide((Utility.CENTO)))
+                                        .orElse(BigDecimal.ZERO)
+                        )
+                )).
                 multiply(BigDecimal.ONE.subtract(Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett())
                         .map(sconto3 -> sconto3.divide(Utility.CENTO))
-                        .orElse(BigDecimal.ZERO)));
+                        .orElseGet(() ->
+                                Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getSconto3())
+                                        .map(sconto3 -> sconto3.divide((Utility.CENTO)))
+                                        .orElse(BigDecimal.ZERO)
+                        )
+                ));
     }
     public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura) throws ComponentException {
         if (!fattura.getFattura_passiva_ordini().isEmpty()) {
