@@ -30,6 +30,7 @@ import it.cnr.contab.doccont00.intcass.bulk.V_mandato_reversaleBulk;
 import it.cnr.contab.missioni00.docs.bulk.MissioneBulk;
 import it.cnr.contab.missioni00.ejb.MissioneComponentSession;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
+import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
 import it.cnr.contab.pdg00.bulk.ArchiviaStampaPdgVariazioneBulk;
 import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.pdg00.ejb.PdGVariazioniComponentSession;
@@ -94,6 +95,8 @@ public class ToDoResource implements ToDoLocal {
     MissioneComponentSession missioneComponentSession;
     @EJB
     Configurazione_cnrComponentSession configurazione_cnrComponentSession;
+    @EJB
+    OrdineAcqComponentSession ordineAcqComponentSession;
 
     public Response all(@Context HttpServletRequest request) {
         return Response.ok(
@@ -522,7 +525,7 @@ public class ToDoResource implements ToDoLocal {
                     OrdineAcqBulk ordineAcqBulk = new OrdineAcqBulk();
                     ordineAcqBulk.setStato(OrdineAcqBulk.STATO_ALLA_FIRMA);
                     BulkLoaderIterator remoteIteratorReversale =
-                            Optional.ofNullable(crudComponentSession.cerca(
+                            Optional.ofNullable(ordineAcqComponentSession.cerca(
                                             userContext,
                                             null,
                                             ordineAcqBulk))
