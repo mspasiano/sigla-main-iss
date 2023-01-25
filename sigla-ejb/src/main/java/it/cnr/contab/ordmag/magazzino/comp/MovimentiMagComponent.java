@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 
 import it.cnr.contab.config00.sto.bulk.EnteBulk;
@@ -403,6 +404,24 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 		if (movimentoDaAnnullare.getBollaScaricoMag() != null && movimentoDaAnnullare.getBollaScaricoMag().getPgBollaSca() != null ){
 			annullaRigaBollaDiScarico(userContext, movimentoDaAnnullare);
 		}
+		/**
+		 * Cerco la riga di evasione legata al movimento per effettuare l'annullamento
+		 */
+		final EvasioneOrdineRigaHome evasioneOrdineRigaHome = Optional.ofNullable(getHome(userContext, EvasioneOrdineRigaBulk.class))
+				.filter(EvasioneOrdineRigaHome.class::isInstance)
+				.map(EvasioneOrdineRigaHome.class::cast)
+				.orElseThrow(() -> new ComponentException("EvasioneOrdineRigaHome not found!"));
+		final List<EvasioneOrdineRigaBulk> evasioneOrdineRigaBulks =
+				evasioneOrdineRigaHome.findByMovimentiMag(movimentoDaAnnullare)
+						.stream()
+						.map(evasioneOrdineRigaBulk -> {
+							evasioneOrdineRigaBulk.setStato(OrdineAcqConsegnaBulk.STATO_ANNULLATA);
+							evasioneOrdineRigaBulk.setToBeUpdated();
+							return evasioneOrdineRigaBulk;
+						}).collect(Collectors.toList());
+		if (!evasioneOrdineRigaBulks.isEmpty())
+			super.modificaConBulk(userContext, evasioneOrdineRigaBulks.toArray(new EvasioneOrdineRigaBulk[evasioneOrdineRigaBulks.size()]));
+
 		return movimentoDiStorno;
 	}
 	private void aggiornaOrdineCaricoDaAnnullare(UserContext userContext, MovimentiMagBulk movimentoDaAnnullare)

@@ -26,6 +26,7 @@ import java.util.List;
 
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_IBulk;
+import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
@@ -55,5 +56,12 @@ public class EvasioneOrdineRigaHome extends BulkHome {
 			return (EvasioneOrdineRigaBulk)lista.get(0);
 		}
 		return null;
+	}
+
+
+	public List<EvasioneOrdineRigaBulk> findByMovimentiMag(MovimentiMagBulk movimentiMagBulk) throws PersistencyException {
+		SQLBuilder sqlBuilder = createSQLBuilder();
+		sqlBuilder.addClause(FindClause.AND, "movimentiMag", SQLBuilder.EQUALS, movimentiMagBulk);
+		return fetchAll(sqlBuilder);
 	}
 }
