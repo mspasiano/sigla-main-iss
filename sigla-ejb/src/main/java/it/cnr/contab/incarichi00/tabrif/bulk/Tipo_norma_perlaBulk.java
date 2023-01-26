@@ -31,7 +31,7 @@ public class Tipo_norma_perlaBulk extends Tipo_norma_perlaBase implements ICance
 	static {
 		TIPI_ASSOCIAZIONE = new it.cnr.jada.util.OrderedHashtable();
 		TIPI_ASSOCIAZIONE.put(ASS_INCARICHI,"Incarichi");
-		TIPI_ASSOCIAZIONE.put(ASS_CONTRATTI,"Borse di Studio");
+		TIPI_ASSOCIAZIONE.put(ASS_CONTRATTI,"Contratti");
 	}
 
 	public Tipo_norma_perlaBulk() {
