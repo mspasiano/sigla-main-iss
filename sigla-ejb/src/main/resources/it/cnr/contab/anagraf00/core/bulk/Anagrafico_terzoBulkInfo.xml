@@ -48,12 +48,15 @@
 		property="dt_canc"
 		label="Data cancellazione"
 		inputType="TEXT"
+		readonlyProperty="new"
 		formatName="date_short" />
 	<fieldProperty 
 		name="find_terzo" 
 		property="terzo" 
-		inputType="SEARCHTOOL" 
-		enabledOnSearch="true" 
+		inputType="SEARCHTOOL"
+		formName="searchtool"
+		enabledOnSearch="true"
+		readonlyProperty="notNew"
 		label="Associato" />
 	<fieldProperty
 		name="ds_terzo"
