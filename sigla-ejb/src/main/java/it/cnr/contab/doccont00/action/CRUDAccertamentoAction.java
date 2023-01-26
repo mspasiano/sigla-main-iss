@@ -20,6 +20,7 @@ package it.cnr.contab.doccont00.action;
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.pdcfin.bulk.V_voce_f_partita_giroBulk;
@@ -28,10 +29,12 @@ import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.prevent00.bulk.Pdg_vincoloBulk;
 import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
 import it.cnr.contab.utenze00.bulk.CNRUserInfo;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.action.HookForward;
 import it.cnr.jada.bulk.BulkCollections;
+import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.util.StrServ;
@@ -41,6 +44,7 @@ import it.cnr.jada.util.action.OptionBP;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Azione che gestisce le richieste relative alla Gestione Documenti Contabili
@@ -1194,8 +1198,6 @@ public Forward doSelectLineeDiAttivita(ActionContext context)
 
     public Forward doOnAnnoAccertamentoPluriennaleChange(ActionContext actioncontext) {
         try {
-
-
             CRUDAccertamentoBP  bp = (CRUDAccertamentoBP ) getBusinessProcess(actioncontext);
             AccertamentoBulk model=(AccertamentoBulk)bp.getModel();
             Accertamento_pluriennaleBulk riga = (Accertamento_pluriennaleBulk) bp.getCrudAccertamento_pluriennale().getModel();
@@ -1219,4 +1221,99 @@ public Forward doSelectLineeDiAttivita(ActionContext context)
         }
     }
 
+    public Forward doConsultaInserisciVoce(ActionContext context) {
+        try {
+            fillModel(context);
+            CRUDAccertamentoBP bp = (CRUDAccertamentoBP)context.getBusinessProcess();
+            AccertamentoBulk accertamento = (AccertamentoBulk)bp.getModel();
+
+            bp.getModel().validate();
+
+            if (accertamento == null || accertamento.getCd_elemento_voce()==null)
+                throw new ValidationException("E' necessario selezionare una voce");
+
+            if (accertamento.getCapitolo().getCrudStatus() != OggettoBulk.NORMAL )
+                doSearch( context, "main.find_elemento_voce" );
+            if ( bp.getMessage() != null ) {
+                bp.setMessage("La ricerca della Voce del Piano non ha fornito alcun risultato.");
+                return context.findDefaultForward();
+            }
+
+            SelezionatoreAssestatoDocContBP nbp = (SelezionatoreAssestatoDocContBP)context.createBusinessProcess("SelezionatoreAssestatoDocContBP",
+                    new Object[]{
+                            "M",
+                            getBusinessProcess(context).getModel(),
+                            accertamento.getIm_accertamento(),
+                            CostantiTi_gestione.TI_GESTIONE_ENTRATE});
+
+            if (bp instanceof CRUDAccertamentoResiduoBP)
+                nbp.impostaModalitaMappa(context, nbp.MODALITA_CONSULTAZIONE);
+            else {
+                nbp.caricaSelezioniEffettuate(context, accertamento);
+                nbp.impostaModalitaMappa(context, nbp.MODALITA_INSERIMENTO_IMPORTI);
+                context.addHookForward("seleziona",this,"doRiportaSelezioneVoci");
+            }
+
+            return context.addBusinessProcess(nbp);
+        } catch(Throwable e) {
+            return handleException(context,e);
+        }
+    }
+
+    public Forward doRiportaSelezioneVoci(ActionContext context)  throws java.rmi.RemoteException {
+        try {
+            fillModel( context );
+            HookForward caller = (HookForward)context.getCaller();
+            CRUDAccertamentoBP bp = (CRUDAccertamentoBP)context.getBusinessProcess();
+            AccertamentoBulk accertamento = (AccertamentoBulk)bp.getModel();
+            Collection capitoliIniziali = ((AccertamentoBulk)bp.getModel()).getCapitoliDiEntrataCdsSelezionatiColl();
+
+            java.util.List vociList = (java.util.List)caller.getParameter("selectedElements");
+            if (vociList!=null && !vociList.isEmpty()) {
+                bp.setVociSelezionate(vociList);
+                if (bp.getVociSelezionate().get(0) instanceof V_assestatoBulk) {
+                    BigDecimal totaleSel = new BigDecimal( 0 );
+                    for ( Iterator s = bp.getVociSelezionate().iterator(); s.hasNext(); ) {
+                        V_assestatoBulk voceSel = (V_assestatoBulk) s.next();
+                        totaleSel = totaleSel.add( Utility.nvl(voceSel.getImp_da_assegnare()) );
+                    }
+                    if (totaleSel.compareTo(new BigDecimal(0))==1 &&
+                            totaleSel.compareTo(accertamento.getIm_accertamento())!=0)
+                        if  (accertamento.hasDettagli())
+                            return openConfirm(context,"Attenzione!! I dettagli delle scadenze saranno persi e l'importo dell'accertamento verrà aggiornato al nuovo valore selezionato di " + new it.cnr.contab.util.EuroFormat().format(totaleSel) + ". Vuoi continuare?",OptionBP.CONFIRM_YES_NO,"doConfirmRiportaSelezioneVoci");
+                        else
+                            return openConfirm(context,"Attenzione!! L'importo dell'accertamento verrà aggiornato al nuovo valore selezionato di " + new it.cnr.contab.util.EuroFormat().format(totaleSel) + ". Vuoi continuare?",OptionBP.CONFIRM_YES_NO,"doConfirmRiportaSelezioneVoci");
+                }
+                if (accertamento.hasDettagli() )
+                    return openConfirm(context,"Attenzione i dettagli delle scadenze saranno persi. Vuoi continuare?",OptionBP.CONFIRM_YES_NO,"doConfirmRiportaSelezioneVoci");
+                else if (accertamento.getCdrSelezionatiColl().size() > 0)
+                    return openConfirm(context,"Attenzione l'imputazione finanziaria corrente verrà persa. Vuoi continuare?",OptionBP.CONFIRM_YES_NO,"doConfirmRiportaSelezioneVoci");
+                return doConfirmRiportaSelezioneVoci(context,OptionBP.YES_BUTTON);
+            }
+            return context.findDefaultForward();
+        } catch(Exception e) {
+            return handleException(context,e);
+        }
+    }
+
+    public Forward doConfirmRiportaSelezioneVoci(ActionContext context,int option) {
+        try
+        {
+            if (option == OptionBP.YES_BUTTON)
+            {
+                CRUDAccertamentoBP bp = (CRUDAccertamentoBP)context.getBusinessProcess();
+                bp.riportaSelezioneVoci(context, bp.getVociSelezionate());
+                /*serve per impostare la mappa con la scadenza creata già evidenziata*/
+                if (((AccertamentoBulk)bp.getModel()).hasDettagli()){
+                    bp.getScadenzario().getSelection().setFocus(0);
+                    bp.getScadenzario().setSelection(context);
+                }
+                bp.setTab("tab","tabScadenziario");
+                bp.setTab("tabScadenzario","tabScadenza");
+            }
+            return context.findDefaultForward();
+        } catch(Throwable e) {
+            return handleException(context,e);
+        }
+    }
 }

@@ -17,50 +17,28 @@
 
 package it.cnr.contab.doccont00.core.bulk;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
-
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_credito_rigaBulk;
-import it.cnr.contab.service.SpringUtil;
-import it.cnr.contab.spring.service.UtilService;
-import it.cnr.contab.utenze00.bp.CNRUserContext;
-
-
-
-
-
-import java.util.*;
-import java.util.stream.IntStream;
-
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk;
-import it.cnr.contab.config00.pdcfin.bulk.V_voce_f_partita_giroBulk;
 import it.cnr.contab.config00.sto.bulk.CdrBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.docamm00.docs.bulk.Nota_di_credito_rigaBulk;
 import it.cnr.contab.prevent00.bulk.Pdg_vincoloBulk;
+import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
+import it.cnr.contab.service.SpringUtil;
+import it.cnr.contab.spring.service.UtilService;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
-import it.cnr.jada.bulk.BulkCollection;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.bulk.*;
 import it.cnr.jada.persistency.Persister;
+
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.IntStream;
 
 public class AccertamentoBulk extends AccertamentoBase implements IDocumentoContabileBulk, AllegatoParentBulk {
 	private static final long serialVersionUID = 1L;
@@ -74,7 +52,7 @@ public class AccertamentoBulk extends AccertamentoBase implements IDocumentoCont
 	private CdsBulk cdsEnte;
 	private it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa = new it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk();
 	
-	private BulkList<Accertamento_scadenzarioBulk> accertamento_scadenzarioColl = new BulkList<Accertamento_scadenzarioBulk>();
+	private BulkList<Accertamento_scadenzarioBulk> accertamento_scadenzarioColl = new BulkList<>();
 	private BulkList<Pdg_vincoloBulk> pdgVincoliColl = new BulkList();
 	private BulkList<Accertamento_vincolo_perenteBulk> accertamentoVincoliPerentiColl = new BulkList();
 	
@@ -86,6 +64,7 @@ public class AccertamentoBulk extends AccertamentoBase implements IDocumentoCont
 
 	//valori salvati alla rilettura da db
 	private java.math.BigDecimal im_iniziale_accertamento;
+	private String cd_iniziale_elemento_voce;
 	private Integer cd_terzo_iniziale;
 	private boolean checkDisponibilitaContrattoEseguito = false;
 	
@@ -107,10 +86,10 @@ public class AccertamentoBulk extends AccertamentoBase implements IDocumentoCont
 	public final static int INT_STATO_LATT_CONFERMATE		= 4;
 
 	private int internalStatus = INT_STATO_UNDEFINED;
-	private BulkList<AllegatoGenericoBulk> archivioAllegati = new BulkList<AllegatoGenericoBulk>();
+	private BulkList<AllegatoGenericoBulk> archivioAllegati = new BulkList<>();
 	private boolean enableVoceNext = false;
 
-	private BulkList<Accertamento_pluriennaleBulk> accertamentiPluriennali = new BulkList<Accertamento_pluriennaleBulk>();
+	private BulkList<Accertamento_pluriennaleBulk> accertamentiPluriennali = new BulkList<>();
 
 
 
@@ -127,14 +106,7 @@ public CdsBulk getCdsEnte() {
 public void setCdsEnte(CdsBulk cdsEnte) {
 	this.cdsEnte = cdsEnte;
 }
-/**
- * <!-- @TODO: da completare -->
- * 
- *
- * @param scadenza	
- * @return 
- */
-public int addToAccertamento_scadenzarioColl( Accertamento_scadenzarioBulk scadenza ) 
+public int addToAccertamento_scadenzarioColl( Accertamento_scadenzarioBulk scadenza )
 {
 	accertamento_scadenzarioColl.add(scadenza);
 	scadenza.setAccertamento(this);
@@ -149,14 +121,6 @@ public int addToAccertamento_scadenzarioColl( Accertamento_scadenzarioBulk scade
 	return accertamento_scadenzarioColl.size()-1;
 }
 
-/**
- * <!-- @TODO: da completare -->
- * 
- *
- * @param context	L'ActionContext della richiesta
- * @param notaDiCredito	
- * @param dettagli	
- */
 public void completeFrom(
 	it.cnr.jada.action.ActionContext context,
 	it.cnr.contab.docamm00.docs.bulk.Nota_di_creditoBulk notaDiCredito,
@@ -304,7 +268,6 @@ public java.lang.String getDs_debitore()
 	*/
 }
 /**
- * <!-- @TODO: da completare -->
  * Restituisce il valore della proprietà 'im_iniziale_accertamento'
  *
  * @return Il valore della proprietà 'im_iniziale_accertamento'
@@ -313,7 +276,6 @@ public java.math.BigDecimal getIm_iniziale_accertamento() {
 	return im_iniziale_accertamento;
 }
 /**
- * <!-- @TODO: da completare -->
  * Restituisce il valore della proprietà 'im_parz_scadenze'
  *
  * @return Il valore della proprietà 'im_parz_scadenze'
@@ -590,16 +552,14 @@ public void setCapitolo(it.cnr.contab.config00.pdcfin.bulk.V_voce_f_partita_giro
 	capitolo = newCapitolo;
 }
 /**
- * <!-- @TODO: da completare -->
  * Imposta il valore della proprietà 'cd_linea_attivita'
  *
- * @param cd_linea_attivita	Il valore da assegnare a 'cd_linea_attivita'
+ * @param cd_terzo	Il valore da assegnare a 'cd_terzo'
  */
 public void setCd_terzo(java.lang.Integer cd_terzo) {
 	this.getDebitore().setCd_terzo(cd_terzo);
 }
 /**
- * <!-- @TODO: da completare -->
  * Imposta il valore della proprietà 'cd_terzo_iniziale'
  *
  * @param newCd_terzo_iniziale	Il valore da assegnare a 'cd_terzo_iniziale'
@@ -650,7 +610,6 @@ public void setIm_iniziale_accertamento(java.math.BigDecimal newIm_iniziale_acce
 	im_iniziale_accertamento = newIm_iniziale_accertamento;
 }
 /**
- * <!-- @TODO: da completare -->
  * Imposta il valore della proprietà 'im_reversali'
  *
  * @param newIm_reversali	Il valore da assegnare a 'im_reversali'
@@ -658,24 +617,6 @@ public void setIm_iniziale_accertamento(java.math.BigDecimal newIm_iniziale_acce
 public void setIm_reversali(java.math.BigDecimal newIm_reversali) {
 	im_reversali = newIm_reversali;
 }
-/**
- * <!-- @TODO: da completare -->
- * Imposta il valore della proprietà 'linee_attivitaColl'
- *
- * @param newLinee_attivitaColl	Il valore da assegnare a 'linee_attivitaColl'
- */
-/*
-public void setLinee_attivitaColl(java.util.Vector newLinee_attivitaColl) 
-{
-	Vector coll = new Vector();
-	coll = newLinee_attivitaColl;
-	
-	if((coll != null) && (coll.size() > 0))
-		coll = ordinaLineeAttivitaPerCodice(coll);
-		
-	linee_attivitaColl = coll;
-}
-*/
 public void setTi_appartenenza(java.lang.String ti_appartenenza) {
 	this.getCapitolo().setTi_appartenenza(ti_appartenenza);
 }
@@ -1098,7 +1039,7 @@ public it.cnr.contab.config00.sto.bulk.CdsBulk getCds() {
 public void setCds(it.cnr.contab.config00.sto.bulk.CdsBulk newCds) {
 	cds = newCds;
 }
-public void refreshCdrSelezionatiColl() 
+public void refreshCdrSelezionatiColl()
 {
 	Hashtable cdrTable = new Hashtable(); // hashtable per evitare i doppi
 	
@@ -1119,6 +1060,33 @@ public void refreshCdrSelezionatiColl()
 	for ( Enumeration e = cdrTable.keys(); e.hasMoreElements(); )
 		cdrSelezionatiColl.add( cdrTable.get( e.nextElement() ));
 }
+	/**
+	 * Seleziona tra tutti i capitoli di spesa collegati quelli presenti in vociList
+	 *
+	 * @param vociList List contenente oggetti di tipo V_assestatoBulk
+	 * @return void  riempie l'oggetto cdrSelezionatiColl
+	 */
+	public void refreshCdrSelezionatiColl(java.util.List vociList)
+	{
+		Hashtable cdrTable = new Hashtable(); // hashtable per evitare i doppi
+
+		// individuo l'elenco dei capitoli di spesa selezionati per l'intera obbligazione
+		for ( Iterator s = vociList.iterator(); s.hasNext(); )
+		{
+			OggettoBulk voceSel = (OggettoBulk) s.next();
+			for ( Iterator c = cdrColl.iterator(); c.hasNext(); )
+			{
+				CdrBulk cdr = ( CdrBulk) c.next();
+				if (voceSel instanceof V_assestatoBulk)
+					if ( ((V_assestatoBulk)voceSel).getCd_centro_responsabilita().equals( cdr.getCd_centro_responsabilita() ))
+						cdrTable.put ( ((V_assestatoBulk)voceSel).getCd_centro_responsabilita(), cdr );
+			}
+		}
+
+		cdrSelezionatiColl = new Vector();
+		for ( Enumeration e = cdrTable.keys(); e.hasMoreElements(); )
+			cdrSelezionatiColl.add( cdrTable.get( e.nextElement() ));
+	}
 public java.util.Collection getCdrDiScrivaniaSelezionatiColl( String cd_unita_organizzativa ) {
 	List cdrColl = new LinkedList();
 	cdrColl = (List) getCdrSelezionatiColl();
@@ -1148,6 +1116,35 @@ public void refreshLineeAttivitaSelezionateColl()
 		lineeAttivitaSelezionateColl.add( laTable.get( e.nextElement() ));
 
 }
+	/**
+	 * Seleziona tra tutti i capitoli di spesa collegati quelli presenti in vociList
+	 *
+	 * @param vociList List contenente oggetti di tipo V_assestatoBulk
+	 * @return void  riempie l'oggetto lineeAttivitaSelezionateColl
+	 */
+	public void refreshLineeAttivitaSelezionateColl(java.util.List vociList)
+	{
+		Hashtable laTable = new Hashtable(); // hashtable per evitare i doppi
+
+		// individuo l'elenco dei capitoli di spesa selezionati per l'intera obbligazione
+		for ( Iterator s = vociList.iterator(); s.hasNext(); )
+		{
+			OggettoBulk voceSel = (OggettoBulk) s.next();
+			for ( Iterator l = lineeAttivitaColl.iterator(); l.hasNext(); )
+			{
+				V_pdg_accertamento_etrBulk latt = (V_pdg_accertamento_etrBulk) l.next();
+				if (voceSel instanceof V_assestatoBulk)
+					if ( ((V_assestatoBulk)voceSel).getCd_centro_responsabilita().equals( latt.getCd_centro_responsabilita() ) &&
+							((V_assestatoBulk)voceSel).getCd_linea_attivita().equals( latt.getCd_linea_attivita() ) )
+						laTable.put ( ((V_assestatoBulk)voceSel).getCd_centro_responsabilita() + ((V_assestatoBulk)voceSel).getCd_linea_attivita(), latt );
+			}
+		}
+
+		lineeAttivitaSelezionateColl = new Vector();
+		for ( Enumeration e = laTable.keys(); e.hasMoreElements(); )
+			lineeAttivitaSelezionateColl.add( laTable.get( e.nextElement() ));
+
+	}
 public void refreshCapitoliDiEntrataCdsSelezionatiColl() 
 {
 	Hashtable capitoli = new Hashtable(); // hashtable per evitare i doppi
@@ -1443,4 +1440,81 @@ public void setCd_cds(java.lang.String cd_cds) {
 		return dett;
 	}
 
+	/**
+	 * Metodo per ottenere le combinazioni CDR/Voce/Gae presenti nell'accertamento e l'importo attribuito.
+	 *
+	 * @return PrimaryKeyHashtable con key = oggetti <code>Accertamento_scad_voceBulk</code> da cui prelevare
+	 * le combinazioni CDR/Voce/Gae e value = importo assegnato all'accertamento
+	 *
+	 */
+	public PrimaryKeyHashtable getRipartizioneCdrVoceLinea() {
+		BigDecimal totaleScad = new BigDecimal(0);
+		Accertamento_scad_voceBulk asv;
+		Accertamento_scadenzarioBulk as;
+		Accertamento_scad_voceBulk key = new Accertamento_scad_voceBulk();
+		PrimaryKeyHashtable prcImputazioneFinanziariaTable = new PrimaryKeyHashtable();
+		for ( Iterator s = this.getAccertamento_scadenzarioColl().iterator(); s.hasNext(); )
+		{
+			as = (Accertamento_scadenzarioBulk) s.next();
+			for ( Iterator d = as.getAccertamento_scad_voceColl().iterator(); d.hasNext(); )
+			{
+				asv = (Accertamento_scad_voceBulk) d.next();
+				// totale per Cdr e per scadenza
+				key = new Accertamento_scad_voceBulk(asv.getCd_cds(),
+						asv.getCd_centro_responsabilita(),
+						asv.getCd_linea_attivita(),
+						asv.getEsercizio(),
+						asv.getEsercizio_originale(),
+						asv.getPg_accertamento(),
+						new Long(1));
+
+				totaleScad = (BigDecimal) prcImputazioneFinanziariaTable.get( key );
+				if ( totaleScad == null || totaleScad.compareTo(new BigDecimal(0)) == 0)
+					prcImputazioneFinanziariaTable.put( key, Utility.nvl(asv.getIm_voce()));
+				else
+				{
+					totaleScad = totaleScad.add( Utility.nvl(asv.getIm_voce()) );
+					prcImputazioneFinanziariaTable.put( key, totaleScad );
+				}
+			}
+		}
+		return prcImputazioneFinanziariaTable;
+	}
+
+	/**
+	 * Seleziona tra tutti i capitoli di spesa collegati quelli presenti in vociList
+	 *
+	 * @param vociList List contenente oggetti di tipo V_assestatoBulk
+	 * @return void  riempie l'oggetto capitoliDiEntrataCdsSelezionatiColl
+	 */
+	public void refreshCapitoliDiSpesaCdsSelezionatiColl(java.util.List vociList)
+	{
+		Hashtable capitoli = new Hashtable(); // hashtable per evitare i doppi
+
+		// individuo l'elenco dei capitoli di spesa selezionati per l'intera obbligazione
+		for ( Iterator s = vociList.iterator(); s.hasNext(); )
+		{
+			OggettoBulk voceSel = (OggettoBulk)s.next();
+			for ( Iterator c = capitoliDiEntrataCdsColl.iterator(); c.hasNext(); )
+			{
+				it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk voce = ( it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk) c.next();
+				if (voceSel instanceof V_assestatoBulk)
+					if ( ((V_assestatoBulk)voceSel).getCd_voce().equals( voce.getCd_voce() ))
+						capitoli.put ( ((V_assestatoBulk)voceSel).getCd_voce(), voce );
+			}
+		}
+
+		capitoliDiEntrataCdsSelezionatiColl = new Vector();
+		for ( Enumeration e = capitoli.keys(); e.hasMoreElements(); )
+			capitoliDiEntrataCdsSelezionatiColl.add( capitoli.get( e.nextElement() ));
+
+	}
+
+	public String getCd_iniziale_elemento_voce() {
+		return cd_iniziale_elemento_voce;
+	}
+
+	public void setCd_iniziale_elemento_voce(String cd_iniziale_elemento_voce) {
+		this.cd_iniziale_elemento_voce = cd_iniziale_elemento_voce;
+	}
 }
