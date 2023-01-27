@@ -1369,13 +1369,40 @@ public class OrdineAcqComponent
         return sql;
     }
 
-    public SQLBuilder selectFornitoreByClause(UserContext userContext, OggettoBulk bulk, TerzoBulk terzo, CompoundFindClause clauses) throws ComponentException {
+    public SQLBuilder selectFornitoreByClause(UserContext userContext, OrdineAcqBulk bulk, TerzoBulk terzo, CompoundFindClause clauses) throws ComponentException {
 
         TerzoHome home = (TerzoHome) getHome(userContext, TerzoBulk.class, "V_TERZO_CF_PI");
         SQLBuilder sql = home.createSQLBuilder();
         sql.addSQLClause("AND", "DT_FINE_RAPPORTO", SQLBuilder.ISNULL, null);
         sql.addSQLClause("AND", "CD_UNITA_ORGANIZZATIVA", SQLBuilder.ISNULL, null);
         sql.addClause(clauses);
+
+        final Optional<TerzoBulk> optionalTerzoContrattoBulk = Optional.ofNullable(bulk)
+                .flatMap(o -> Optional.ofNullable(o.getContratto()))
+                .flatMap(c -> Optional.ofNullable(c.getFigura_giuridica_esterna()));
+        if (optionalTerzoContrattoBulk.isPresent()) {
+            if (optionalTerzoContrattoBulk
+                    .flatMap(t -> Optional.ofNullable(t.getAnagrafico()))
+                    .flatMap(a -> Optional.ofNullable(a.getFl_studio_associato()))
+                    .orElse(Boolean.FALSE)
+            ) {
+                sql.setHeader("select distinct V_TERZO_CF_PI.*");
+                sql.addTableToHeader("ANAGRAFICO_TERZO");
+                sql.openParenthesis(FindClause.AND);
+                sql.openParenthesis(FindClause.AND);
+                sql.addSQLJoin("V_TERZO_CF_PI.CD_TERZO", "ANAGRAFICO_TERZO.CD_TERZO");
+                sql.addSQLClause(FindClause.AND, "ANAGRAFICO_TERZO.CD_ANAG", SQLBuilder.EQUALS, optionalTerzoContrattoBulk.get().getCd_anag());
+                sql.openParenthesis(FindClause.AND);
+                sql.addSQLClause(FindClause.AND, "ANAGRAFICO_TERZO.DT_CANC", SQLBuilder.ISNULL, null);
+                sql.addSQLClause(FindClause.OR, "ANAGRAFICO_TERZO.DT_CANC", SQLBuilder.GREATER_EQUALS, EJBCommonServices.getServerDate());
+                sql.closeParenthesis();
+                sql.closeParenthesis();
+                sql.addSQLClause(FindClause.OR, "V_TERZO_CF_PI.CD_TERZO", SQLBuilder.EQUALS, optionalTerzoContrattoBulk.get().getCd_terzo());
+                sql.closeParenthesis();
+            } else {
+                sql.addSQLClause(FindClause.AND, "V_TERZO_CF_PI.CD_TERZO", SQLBuilder.EQUALS, optionalTerzoContrattoBulk.get().getCd_terzo());
+            }
+        }
         return sql;
     }
 
