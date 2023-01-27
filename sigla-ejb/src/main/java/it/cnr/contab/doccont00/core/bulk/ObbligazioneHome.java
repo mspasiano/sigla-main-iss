@@ -294,6 +294,30 @@ public class ObbligazioneHome extends BulkHome {
             } catch (java.sql.SQLException e) {
             }
 		}
+        /* Aggiorno variazione di bilancio automatica */
+        try {
+            sql = new java.io.StringWriter();
+            pw = new java.io.PrintWriter(sql);
+            pw.write("UPDATE " + EJBCommonServices.getDefaultSchema() + "PDG_VARIAZIONE SET ");
+            pw.write("PG_OBBLIGAZIONE = ? ");
+            pw.write(" WHERE ESERCIZIO=? AND PG_OBBLIGAZIONE =?");
+            pw.flush();
+
+            ps = new LoggableStatement(getConnection(), sql.toString(), true, this.getClass());
+            pw.close();
+            ps.setLong(1, pg.longValue());
+            ps.setInt(2, obbligazioneTemporanea.getEsercizio().intValue());
+            ps.setLong(3, obbligazioneTemporanea.getPg_obbligazione().longValue());
+            ps.execute();
+        } catch (java.sql.SQLException e) {
+            throw it.cnr.jada.persistency.sql.SQLExceptionHandler.getInstance().handleSQLException(e, obbligazioneTemporanea);
+        } finally {
+            try {
+                ps.close();
+            } catch (java.sql.SQLException e) {
+            }
+        }
+
         if (deleteTemp) {
             delete(obbligazioneTemporanea, userContext);
             obbligazioneTemporanea.setPg_obbligazione(pg);
