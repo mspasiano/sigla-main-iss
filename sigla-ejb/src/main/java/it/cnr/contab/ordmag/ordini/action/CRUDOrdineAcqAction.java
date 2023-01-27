@@ -136,6 +136,8 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
             // cancella anche il fornitore
             ordine.setFornitore(new TerzoBulk());
             ordine.setRagioneSociale(null);
+            ordine.setNome(null);
+            ordine.setCognome(null);
             ordine.setCodiceFiscale(null);
             ordine.setPartitaIva(null);
             return context.findDefaultForward();
@@ -804,6 +806,13 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
             throws java.rmi.RemoteException {
 
         try {
+            final Boolean isStudioAssociato = Optional.ofNullable(ordine)
+                    .flatMap(o -> Optional.ofNullable(o.getContratto()))
+                    .flatMap(o -> Optional.ofNullable(o.getFigura_giuridica_esterna()))
+                    .flatMap(t -> Optional.ofNullable(t.getAnagrafico()))
+                    .flatMap(a -> Optional.ofNullable(a.getFl_studio_associato()))
+                    .orElse(Boolean.FALSE);
+
             TerzoBulk tb = new TerzoBulk();
             tb.setAnagrafico(new AnagraficoBulk());
             ordine.setFornitore(tb);
@@ -812,7 +821,7 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
             ordine.setRagioneSociale(null);
             ordine.setCodiceFiscale(null);
             ordine.setPartitaIva(null);
-            if (ordine.getContratto() != null && ordine.getContratto().getPg_contratto() != null) {
+            if(!isStudioAssociato) {
                 ordine.setContratto(new ContrattoBulk());
                 doBlankSearchFind_contratto(context, ordine);
             }
