@@ -327,9 +327,9 @@ public class FirmaDigitaleDOC1210BP extends AbstractFirmaDigitaleDocContBP {
 				fields.add(valorizzaField(pdAcroForm, "DATA MM " + (i+1), String.valueOf(valoreMese), false));
 			}
 			// GESTIONE ANNO
-			for(int i=0;i<dataSplit[2].length();i++){
+			for(int i=2,x=0;i<dataSplit[2].length();i++,x++){
 				char valoreAnno = dataSplit[2].charAt(i);
-				fields.add(valorizzaField(pdAcroForm, "DATA AA " + (i+1), String.valueOf(valoreAnno), false));
+				fields.add(valorizzaField(pdAcroForm, "DATA AA " + (x+1), String.valueOf(valoreAnno), false));
 			}
 		}catch (Exception e){
 			throw new ApplicationMessageFormatException(
