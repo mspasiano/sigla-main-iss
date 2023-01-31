@@ -19,6 +19,7 @@ package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.docamm00.docs.bulk.Numerazione_doc_ammBulk;
 import it.cnr.contab.docamm00.docs.bulk.Tipo_documento_ammBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BusyResourceException;
@@ -124,7 +125,7 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
             return null;
     }
 
-    public V_doc_passivo_obbligazioneBulk findDoc_ordine(Obbligazione_scadenzarioBulk os) throws IntrospectionException, PersistencyException {
+    public List<V_doc_passivo_obbligazioneBulk> findDocs_ordine(Obbligazione_scadenzarioBulk os) throws PersistencyException {
         PersistentHome docHome = getHomeCache().getHome(V_doc_passivo_obbligazioneBulk.class);
         SQLBuilder sql = docHome.createSQLBuilder();
         sql.addSQLClause("AND", "CD_CDS_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getCd_cds());
@@ -134,9 +135,19 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
         sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
         sql.addOrderBy("FL_SELEZIONE DESC");
-        List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
-        return l.stream().findFirst().orElse(null);
+        return docHome.fetchAll(sql);
     }
+    public V_doc_passivo_obbligazioneBulk findDoc_ordine(Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        return findDocs_ordine(os).stream().findFirst().orElse(null);
+    }
+
+    public List<OrdineAcqConsegnaBulk> findConsegne(Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        PersistentHome docHome = getHomeCache().getHome(OrdineAcqConsegnaBulk.class);
+        SQLBuilder sql = docHome.createSQLBuilder();
+        sql.addClause(FindClause.AND, "obbligazioneScadenzario", SQLBuilder.EQUALS, os);
+        return docHome.fetchAll(sql);
+    }
+
     /**
      * <!-- @TODO: da completare -->
      *
