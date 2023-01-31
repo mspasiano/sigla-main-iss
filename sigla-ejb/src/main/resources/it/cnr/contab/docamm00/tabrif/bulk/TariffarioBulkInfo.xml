@@ -175,6 +175,7 @@
 			inputSize="10" />
 		<formFieldProperty
 			name="ds_tariffario"
+			inputType="TEXT"
 			inputSize="45"/>
 	</form>
 </bulkInfo>
