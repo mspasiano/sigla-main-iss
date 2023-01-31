@@ -206,8 +206,10 @@ public class CRUDPdgVariazioneGestionaleComponent extends PdGVariazioniComponent
 	}
 
 	public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk, boolean sendMessage) throws ComponentException {
-		if (((Pdg_variazioneBulk)bulk).getDs_delibera()==null)
-			((Pdg_variazioneBulk)bulk).setDs_delibera(".");
+		if (( bulk instanceof Pdg_variazioneBulk)) {
+			if (((Pdg_variazioneBulk) bulk).getDs_delibera() == null)
+				((Pdg_variazioneBulk) bulk).setDs_delibera(".");
+		}
 		return super.creaConBulk(userContext, bulk, sendMessage);
 	}
 	public Pdg_variazioneBulk salvaDefinitivo(UserContext userContext, Pdg_variazioneBulk pdg) throws ComponentException {
