@@ -852,7 +852,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                 scadenza.setIm_associato_doc_contabile(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
                                 updateImportoAssociatoDocAmm(userContext, scadenza);
                             }
-                        } catch (IntrospectionException | PersistencyException ex) {
+                        } catch (PersistencyException ex) {
                             throw handleException(ex);
                         }
                     }
@@ -3089,10 +3089,25 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         /**
                          * Aggiorno l'importo associato ai documenti amministrativi sulla vecchia scadenza
                          */
+                        Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome) getHome( userContext, Obbligazione_scadenzarioBulk.class );
                         Obbligazione_scadenzarioBulk oldScadenza = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, scadenzarioBulk);
-                        oldScadenza.setIm_associato_doc_amm(oldScadenza.getIm_scadenza());
+                        final BigDecimal imAssociatoDocAmm = osHome.findConsegne(oldScadenza)
+                                .stream()
+                                .filter(ordineAcqConsegnaBulk -> {
+                                    return !righeDiConsegna.stream()
+                                            .filter(ordineAcqConsegnaBulk1 -> ordineAcqConsegnaBulk1.equalsByPrimaryKey(ordineAcqConsegnaBulk))
+                                            .findAny().isPresent();
+                                })
+                                .map(OrdineAcqConsegnaBulk::getImTotaleConsegna)
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        final BigDecimal diffOrdiniAssociati = oldScadenza.getIm_scadenza().subtract(imAssociatoDocAmm);
+
+                        oldScadenza.setIm_associato_doc_amm(imAssociatoDocAmm);
                         oldScadenza.setToBeUpdated();
-                        super.modificaConBulk(userContext, oldScadenza);
+                        oldScadenza = (Obbligazione_scadenzarioBulk) super.modificaConBulk(userContext, oldScadenza);
+                        if (diffOrdiniAssociati.compareTo(BigDecimal.ZERO) > 0) {
+                            sess.sdoppiaScadenzaInAutomatico(userContext, oldScadenza, imAssociatoDocAmm);
+                        }
 
                         nuovaScadenza.setIm_associato_doc_amm(nuovaScadenza.getIm_scadenza());
                         nuovaScadenza.setFlAssociataOrdine(Boolean.TRUE);
