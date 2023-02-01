@@ -2308,14 +2308,17 @@ public class CRUDFatturaAttivaAction extends EconomicaAction {
                 java.util.List coll = (java.util.List) fpcs.findListabancheuo(context.getUserContext(), fattura);
                 if (coll == null || coll.isEmpty())
                     fattura.setBanca_uo(null);
-                else if (coll.size() == 1)
-                    fattura.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                 else {
-                    if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(fattura.getModalita_pagamento_uo().getTi_pagamento()))
+                    boolean isCNR = Utility.createParametriEnteComponentSession().getParametriEnte(context.getUserContext()).isEnteCNR();
+                    if (coll.size() == 1 || !isCNR)
                         fattura.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                     else {
-                        fattura = fpcs.setContoEnteIn(context.getUserContext(), fattura, coll);
-                        bp.setContoEnte(true);
+                        if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(fattura.getModalita_pagamento_uo().getTi_pagamento()))
+                            fattura.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
+                        else {
+                            fattura = fpcs.setContoEnteIn(context.getUserContext(), fattura, coll);
+                            bp.setContoEnte(true);
+                        }
                     }
                 }
             } else {

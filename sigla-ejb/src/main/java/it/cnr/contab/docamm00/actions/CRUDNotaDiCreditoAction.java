@@ -34,6 +34,7 @@ import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario01.bp.CRUDScaricoInventarioBP;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.inventario01.ejb.NumerazioneTempBuonoComponentSession;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
@@ -980,14 +981,17 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
                 bp.setContoEnte(false);
                 if (coll == null || coll.isEmpty())
                     notaDiCredito.setBanca_uo(null);
-                else if (coll.size() == 1)
-                    notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                 else {
-                    if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(notaDiCredito.getModalita_pagamento_uo().getTi_pagamento()))
+                    boolean isCNR = Utility.createParametriEnteComponentSession().getParametriEnte(context.getUserContext()).isEnteCNR();
+                    if (coll.size() == 1 || !isCNR)
                         notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                     else {
-                        notaDiCredito = fpcs.setContoEnteIn(context.getUserContext(), notaDiCredito, coll);
-                        bp.setContoEnte(true);
+                        if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(notaDiCredito.getModalita_pagamento_uo().getTi_pagamento()))
+                            notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
+                        else {
+                            notaDiCredito = fpcs.setContoEnteIn(context.getUserContext(), notaDiCredito, coll);
+                            bp.setContoEnte(true);
+                        }
                     }
                 }
             } else {
