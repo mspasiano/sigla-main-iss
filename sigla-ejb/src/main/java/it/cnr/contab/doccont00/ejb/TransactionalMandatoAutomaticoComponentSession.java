@@ -17,6 +17,7 @@
 
 package it.cnr.contab.doccont00.ejb;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoSpesaBulk;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -183,11 +184,12 @@ public class TransactionalMandatoAutomaticoComponentSession extends it.cnr.jada.
         }
     }
 
-    public java.util.List findBancaOptions(it.cnr.jada.UserContext param0, it.cnr.contab.doccont00.core.bulk.MandatoAutomaticoWizardBulk param1) throws RemoteException, it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException, it.cnr.jada.comp.ComponentException {
+    public java.util.List<BancaBulk> findBancaOptions(it.cnr.jada.UserContext param0, Integer param1, String param2) throws RemoteException, it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException, it.cnr.jada.comp.ComponentException {
         try {
-            return (java.util.List) invoke("findBancaOptions", new Object[]{
+            return (java.util.List<BancaBulk>) invoke("findBancaOptions", new Object[]{
                     param0,
-                    param1});
+                    param1,
+                    param2});
         } catch (java.rmi.RemoteException e) {
             throw e;
         } catch (java.lang.reflect.InvocationTargetException e) {

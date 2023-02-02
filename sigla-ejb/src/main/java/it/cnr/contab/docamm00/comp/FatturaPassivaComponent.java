@@ -48,6 +48,7 @@ import it.cnr.contab.docamm00.intrastat.bulk.*;
 import it.cnr.contab.docamm00.storage.StorageFolderFatturaPassiva;
 import it.cnr.contab.docamm00.tabrif.bulk.*;
 import it.cnr.contab.doccont00.comp.DocumentoContabileComponentSession;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.AccertamentoAbstractComponentSession;
@@ -62,6 +63,7 @@ import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.RemoveAccent;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
@@ -73,13 +75,13 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.FatturaNonTrovataException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.ejb.EJBCommonServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 
 import javax.ejb.EJBException;
 import java.io.FileNotFoundException;
@@ -8772,5 +8774,239 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             sql.addClause(clause);
         sql.addOrderBy("cd_Unita_Organizzativa, cd_Cig");
         return sql;
+    }
+
+
+    /**
+     * Modifica le righe di dettaglio associate a <code>docPassivoObb</code> in modo che la somma delle stesse sia pari al nuovo importo <code>newImporto</code> indicato.
+     * Le righe in eccesso vengono spostate su una nuova scadenza appositamente creata
+     *
+     * @param userContext il contesto
+     * @param docPassivoObb la riga per individuare i dettagli da aggiornare
+     * @param newImponibile l'imponibile nuovo che sarà la somma degli imponibili delle righe di dettaglio associate a <code>docPassivoObb</code>
+     * @param newImposta l'imposta nuova che sarà la somma delle imposte delle righe di dettaglio associate a <code>docPassivoObb</code>
+     * @return l'oggetto <code>docPassivoObb</code> aggiornato
+     */
+    public V_doc_passivo_obbligazioneBulk sdoppiaDettagliInAutomatico(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, BigDecimal newImponibile, BigDecimal newImposta) throws ComponentException {
+        try {
+            //sdoppio riga
+            if (docPassivoObb.isFatturaPassiva()) {
+                Fattura_passivaBulk fatturaPassivaBulk = (Fattura_passivaBulk)this.findByPrimaryKey(userContext, new Fattura_passiva_IBulk(docPassivoObb.getCd_cds(), docPassivoObb.getCd_unita_organizzativa(), docPassivoObb.getEsercizio(), docPassivoObb.getPg_documento_amm()));
+                List<Fattura_passiva_rigaIBulk> listRighe = ((Fattura_passivaHome) getHome(userContext, Fattura_passivaBulk.class)).findFatturaPassivaRigheList(docPassivoObb)
+                        .stream()
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio().equals(docPassivoObb.getEsercizio_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio_originale().equals(docPassivoObb.getEsercizio_ori_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getCd_cds().equals(docPassivoObb.getCd_cds_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione().equals(docPassivoObb.getPg_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione_scadenzario().equals(docPassivoObb.getPg_obbligazione_scadenzario()))
+                        .sorted(Comparator.comparing(Fattura_passiva_rigaBulk::getIm_imponibile))
+                        .collect(Collectors.toList());
+
+                //individuo le righe da lasciare sull'obbligazione selezionata
+                List<Fattura_passiva_rigaIBulk> listRigheScadOld = new ArrayList<>();
+                List<Fattura_passiva_rigaIBulk> listRigheScadNew = new ArrayList<>();
+                BigDecimal imponibileResiduo = newImponibile;
+                BigDecimal impostaResiduo = newImposta;
+                for (Fattura_passiva_rigaIBulk rigaOld : listRighe) {
+                    if (imponibileResiduo.add(impostaResiduo).compareTo(BigDecimal.ZERO) == 0)
+                        listRigheScadNew.add(rigaOld);
+                    else if (rigaOld.getIm_imponibile().compareTo(imponibileResiduo) <= 0 && rigaOld.getIm_iva().compareTo(impostaResiduo) <= 0) {
+                        listRigheScadOld.add(rigaOld);
+                        imponibileResiduo = imponibileResiduo.subtract(rigaOld.getIm_imponibile());
+                        impostaResiduo = impostaResiduo.subtract(rigaOld.getIm_iva());
+                    } else {
+                        BigDecimal imponibileResiduoSdoppia = rigaOld.getIm_imponibile().compareTo(imponibileResiduo) <= 0 ? rigaOld.getIm_imponibile() : imponibileResiduo;
+                        BigDecimal impostaResiduoSdoppia = rigaOld.getIm_iva().compareTo(impostaResiduo) <= 0 ? rigaOld.getIm_iva() : impostaResiduo;
+
+                        //sdoppio riga
+                        Pair<Fattura_passiva_rigaIBulk, Fattura_passiva_rigaIBulk> result = this.sdoppiaDettaglioFatturaPassiva(userContext, rigaOld, imponibileResiduoSdoppia, impostaResiduoSdoppia);
+
+                        //Il campo first che contiene la riga originaria la aggungo alla lista delle righe da rimanere
+                        listRigheScadOld.add(result.getFirst());
+                        //Il campo second che contiene la riga nuova la aggiungo alla lista delle righe da spostare
+                        listRigheScadNew.add(result.getSecond());
+
+                        imponibileResiduo = imponibileResiduo.subtract(result.getFirst().getIm_imponibile());
+                        impostaResiduo = impostaResiduo.subtract(result.getFirst().getIm_iva());
+                    }
+                }
+
+                //Obbligazioni - devo sdoppiare le scadenze se necessario
+                BigDecimal importoNuovoVecchiaScadenza = BigDecimal.ZERO;
+                BigDecimal importoNuovaScadenza = BigDecimal.ZERO;
+
+                for (Fattura_passiva_rigaIBulk rigaOld : listRigheScadOld) {
+                    Voce_ivaBulk voceIvaBulk = (Voce_ivaBulk)findByPrimaryKey(userContext, rigaOld.getVoce_iva());
+                    if (voceIvaBulk.getFl_autofattura() || fatturaPassivaBulk.quadraturaInDeroga())
+                        importoNuovoVecchiaScadenza = importoNuovoVecchiaScadenza.add(rigaOld.getIm_imponibile());
+                    else
+                        importoNuovoVecchiaScadenza = importoNuovoVecchiaScadenza.add(rigaOld.getSaldo());
+                }
+
+                for (Fattura_passiva_rigaIBulk rigaNew : listRigheScadNew) {
+                    Voce_ivaBulk voceIvaBulk = (Voce_ivaBulk)findByPrimaryKey(userContext, rigaNew.getVoce_iva());
+                    if (voceIvaBulk.getFl_autofattura() || fatturaPassivaBulk.quadraturaInDeroga())
+                        importoNuovaScadenza = importoNuovaScadenza.add(rigaNew.getIm_imponibile());
+                    else
+                        importoNuovaScadenza = importoNuovaScadenza.add(rigaNew.getSaldo());
+                }
+
+                if (importoNuovaScadenza.compareTo(BigDecimal.ZERO) > 0) {
+                    Obbligazione_scadenzarioBulk scadenzaVecchia = (Obbligazione_scadenzarioBulk) getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(listRigheScadOld.get(0).getObbligazione_scadenziario());
+
+                    DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+                    dati.setNuovoImportoScadenzaVecchia(importoNuovoVecchiaScadenza);
+                    Obbligazione_scadenzarioBulk scadenzaNuova = (Obbligazione_scadenzarioBulk) Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext,
+                            scadenzaVecchia, dati);
+                    //Ricarico la scadenza vecchia dal DB che nel frattempo potrebbe essere cambiata a seguito di sdoppiamneto
+                    scadenzaVecchia = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, scadenzaVecchia);
+
+                    //sposto le scadenza da non pagare su questa nuova obbligazione
+                    for (Fattura_passiva_rigaIBulk riga : listRigheScadNew) {
+                        riga.setObbligazione_scadenziario(scadenzaNuova);
+                        riga.setToBeUpdated();
+                        makeBulkPersistent(userContext, riga);
+                    }
+
+                    //aumento importo associato a scadenza nuova e lo riduco su scadenza vecchia
+                    scadenzaNuova.setIm_associato_doc_amm(importoNuovaScadenza);
+                    scadenzaNuova.setToBeUpdated();
+                    //e lo riduco su scadenza vecchia
+                    scadenzaVecchia.setIm_associato_doc_amm(importoNuovoVecchiaScadenza);
+                    scadenzaVecchia.setToBeUpdated();
+
+                    makeBulkPersistent(userContext, scadenzaNuova);
+                    makeBulkPersistent(userContext, scadenzaVecchia);
+                    docPassivoObb.setIm_imponibile_doc_amm(newImponibile);
+                    docPassivoObb.setIm_iva_doc_amm(newImposta);
+                    docPassivoObb.setIm_scadenza(scadenzaVecchia.getIm_scadenza());
+                    docPassivoObb.setIm_totale_doc_amm(scadenzaVecchia.getIm_associato_doc_amm());
+                }
+            }
+            return docPassivoObb;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    private Pair<Fattura_passiva_rigaIBulk, Fattura_passiva_rigaIBulk> sdoppiaDettaglioFatturaPassiva(UserContext userContext, Fattura_passiva_rigaIBulk rigaOld, BigDecimal newImponibile, BigDecimal newImposta) throws ComponentException {
+        try {
+            //recupero la testa della fattura
+            Fattura_passivaBulk fatturaPassivaBulk = (Fattura_passivaBulk)this.findByPrimaryKey(userContext, rigaOld.getFattura_passivaI());
+            List<Fattura_passiva_rigaIBulk> listRighe = this.findDettagli(userContext, fatturaPassivaBulk);
+            Voce_ivaBulk voceIvaBulk = (Voce_ivaBulk)findByPrimaryKey(userContext, rigaOld.getVoce_iva());
+
+            if (Optional.of(fatturaPassivaBulk).map(Fattura_passivaBulk::getStato_cofi).filter(el->el.equals(Fattura_passivaBulk.STATO_PAGATO)).isPresent())
+                throw new ApplicationException("Non è possibile sdoppiare righe in un documento pagato.");
+
+            if (fatturaPassivaBulk.isDaOrdini())
+                throw new ApplicationException("Non è possibile sdoppiare righe in una fattura da ordini.");
+
+            if (rigaOld.getIm_diponibile_nc().compareTo(rigaOld.getSaldo())!=0)
+                throw new ApplicationException("Non è possibile sdoppiare la riga "+rigaOld.getProgressivo_riga()+" della fattura passiva selezionata in quanto collegata a note credito.");
+
+            if (Optional.ofNullable(newImponibile).orElse(BigDecimal.ZERO).add(Optional.ofNullable(newImposta).orElse(BigDecimal.ZERO)).compareTo(BigDecimal.ZERO)<=0)
+                throw new ApplicationException("Il nuovo importo da assegnare alla riga "+rigaOld.getProgressivo_riga()+" deve essere positivo.");
+
+            if (Optional.ofNullable(newImponibile).orElse(BigDecimal.ZERO).add(Optional.ofNullable(newImposta).orElse(BigDecimal.ZERO)).compareTo(rigaOld.getSaldo()) != -1)
+                throw new ApplicationException("Il nuovo importo da assegnare alla riga "+rigaOld.getProgressivo_riga()+" deve essere inferiore al saldo originario "+
+                        new EuroFormat().format(rigaOld.getSaldo())+".");
+
+            //ed assegno gli importi previsti
+            //suddivido l'importo residuo tra imponibile ed iva tramite percentuale
+            BigDecimal newImponibileRigaVecchia = newImponibile;
+            BigDecimal newImpostaRigaVecchia = newImposta;
+
+            BigDecimal newImponibileRigaNuova = rigaOld.getIm_imponibile().subtract(newImponibileRigaVecchia);
+            BigDecimal newImpostaRigaNuova = rigaOld.getIm_iva().subtract(newImpostaRigaVecchia);
+
+            BigDecimal newPrezzoRigaVecchia = newImponibileRigaVecchia.divide(rigaOld.getQuantita(),2, BigDecimal.ROUND_HALF_UP);
+            BigDecimal newPrezzoRigaNuova = rigaOld.getPrezzo_unitario().subtract(newPrezzoRigaVecchia);
+
+            //sdoppio riga
+            Fattura_passiva_rigaIBulk rigaNew = Fattura_passiva_rigaIBulk.copyByRigaDocumento(rigaOld);
+            //associo la riga creata al documento
+            rigaNew.setFattura_passiva(fatturaPassivaBulk);
+
+            rigaNew.setQuantita(rigaOld.getQuantita());
+            rigaNew.setPrezzo_unitario(newPrezzoRigaNuova);
+            rigaNew.setProgressivo_riga(listRighe.stream().mapToLong(Fattura_passiva_rigaBulk::getProgressivo_riga).max().orElse(0)+1);
+            rigaNew.calcolaCampiDiRiga();
+
+            // setto im_disponibile prime per la verifica e dopo
+            rigaNew.setIm_diponibile_nc(rigaNew.getSaldo());
+            if (rigaNew.getIm_diponibile_nc().compareTo(newImponibileRigaNuova.add(newImpostaRigaNuova)) != 0) {
+                rigaNew.setIm_iva(rigaNew.getIm_iva().add(newImponibileRigaNuova.add(newImpostaRigaNuova).subtract(rigaNew.getIm_diponibile_nc())));
+                rigaNew.setIm_totale_divisa(newImponibileRigaNuova.add(newImpostaRigaNuova).subtract(rigaNew.getIm_iva()));
+                rigaNew.setFl_iva_forzata(Boolean.TRUE);
+                rigaNew.calcolaCampiDiRiga();
+            }
+            makeBulkPersistent(userContext, rigaNew);
+
+            // Riduco l'importo alla riga vecchia
+            // Aggiorno la vecchia riga di dettaglio ed in particolare l'importo della riga da sdoppiare del doc amministrativo
+            rigaOld.setPrezzo_unitario(newPrezzoRigaVecchia);
+            rigaOld.calcolaCampiDiRiga();
+            // setto im_diponibile prime per la verifica e dopo
+            rigaOld.setIm_diponibile_nc(rigaOld.getSaldo());
+            if (rigaOld.getIm_diponibile_nc().compareTo(newImponibileRigaVecchia.add(newImpostaRigaVecchia)) != 0) {
+                rigaOld.setIm_iva(rigaOld.getIm_iva().add(newImponibileRigaVecchia.add(newImpostaRigaVecchia).subtract(rigaOld.getIm_diponibile_nc())));
+                rigaOld.setIm_totale_divisa(newImponibileRigaVecchia.add(newImpostaRigaVecchia).subtract(rigaOld.getIm_iva()));
+                rigaOld.setFl_iva_forzata(Boolean.TRUE);
+                rigaOld.calcolaCampiDiRiga();
+            }
+
+            rigaOld.setIm_diponibile_nc(rigaOld.getSaldo());
+            rigaOld.setToBeUpdated();
+            makeBulkPersistent(userContext, rigaOld);
+
+            return Pair.of(rigaOld, rigaNew);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
+    /**
+     * Aggiorna la modalità di pagamento su tutte le righe della fattura alla quale fa riferimento l'oggetto V_doc_passivo_obbligazioneBulk
+     *
+     * @param userContext
+     * @param docPassivoObb l'oggetto V_doc_passivo_obbligazioneBulk di cui aggiornare le righe di riferimento
+     * @param newModalitaPag la nuova modalità di paamento da assegnare
+     * @param newBanca la nuova banca da assegnare
+     * @throws ComponentException non aggiorna se almeno una riga risulta pagata
+     */
+    public void aggiornaModalitaPagamento(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, Modalita_pagamentoBulk newModalitaPag, BancaBulk newBanca) throws ComponentException {
+        try {
+            if (docPassivoObb.isFatturaPassiva()) {
+                List<Fattura_passiva_rigaIBulk> listRighe = ((Fattura_passivaHome) getHome(userContext, Fattura_passivaBulk.class)).findFatturaPassivaRigheList(docPassivoObb)
+                        .stream()
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio().equals(docPassivoObb.getEsercizio_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio_originale().equals(docPassivoObb.getEsercizio_ori_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getCd_cds().equals(docPassivoObb.getCd_cds_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione().equals(docPassivoObb.getPg_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione_scadenzario().equals(docPassivoObb.getPg_obbligazione_scadenzario()))
+                        .collect(Collectors.toList());
+
+                Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)super.findByPrimaryKey(userContext, newModalitaPag.getRif_modalita_pagamento());
+                BancaBulk bancaBulk = (BancaBulk) super.findByPrimaryKey(userContext, newBanca);
+
+                for (Fattura_passiva_rigaIBulk riga:listRighe) {
+                    if (!riga.getCd_modalita_pag().equals(newModalitaPag.getCd_modalita_pag()) || !riga.getPg_banca().equals(newBanca.getPg_banca())) {
+                        if (riga.isPagata())
+                            throw new ApplicationException("Operazione non possibile! Il documento " +
+                                    docPassivoObb.getEsercizio() + "/" + docPassivoObb.getCd_cds() + "/" + docPassivoObb.getCd_tipo_documento_amm() + "/" + docPassivoObb.getPg_documento_amm() +
+                                    " presenta righe associate alla scadenza "+docPassivoObb.getPg_obbligazione_scadenzario()+" dell'obbligazione "+
+                                    docPassivoObb.getEsercizio_obbligazione()+"/"+docPassivoObb.getEsercizio_ori_obbligazione()+"/"+
+                                    docPassivoObb.getCd_cds_obbligazione()+"/"+docPassivoObb.getPg_obbligazione()+" che risultano già pagate. Non è possibile modificare la modalità di pagamento.");
+                        riga.setModalita_pagamento(rifModalitaPagamentoBulk);
+                        riga.setBanca(bancaBulk);
+                        riga.setToBeUpdated();
+                        makeBulkPersistent(userContext, riga);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
     }
 }

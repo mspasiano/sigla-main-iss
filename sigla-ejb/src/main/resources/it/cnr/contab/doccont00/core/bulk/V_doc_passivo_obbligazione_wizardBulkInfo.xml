@@ -25,9 +25,64 @@
 		property="mandatoRiga.pg_mandato"
 		inputType="TEXT"
 		label="Nr. mandato"/>
-		
+	<fieldProperty
+		name="modalitaPagamentoRigaMandatoWizard"
+		property="modalitaPagamentoRigaMandatoWizard"
+		maxLength="10"
+		inputSize="10"
+		inputType="SELECT"
+		optionsProperty="modalitaPagamentoOptions"
+		command="doCambiaModalitaPagamento"
+		printProperty="cd_modalita_pag"
+		label="Modalita pag."
+		nullable="false" />
+	<fieldProperty
+		name="bancaRigaMandatoWizard"
+		property="bancaRigaMandatoWizard"
+		inputType="SELECT"
+		optionsProperty="bancaOptions"
+		printProperty="ds_estesa"
+		label="Coordinate"
+		nullable="false" />
+	<fieldProperty
+		name="imponibileRigaMandatoWizard"
+		property="imponibileRigaMandatoWizard"
+		inputType="TEXT"
+		label="Imponibile"
+		command="doOnChangeImponibileRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+	<fieldProperty
+		name="impostaRigaMandatoWizard"
+		property="impostaRigaMandatoWizard"
+		inputType="TEXT"
+		label="Iva"
+		command="doOnChangeImpostaRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+	<fieldProperty
+		name="importoRigaMandatoWizard"
+		property="importoRigaMandatoWizard"
+		inputType="TEXT"
+		label="Importo Mandato"
+		command="doOnChangeImportoRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+
 	<formFieldProperty
 		name="pg_mandato" />
+	<formFieldProperty
+		name="modalitaPagamentoRigaMandatoWizard" />
+	<formFieldProperty
+		name="bancaRigaMandatoWizard" />
+	<formFieldProperty
+		name="imponibileRigaMandatoWizard" />
+	<formFieldProperty
+		name="imponibileRigaMandatoWizard" />
+	<formFieldProperty
+		name="impostaRigaMandatoWizard" />
+	<formFieldProperty
+		name="importoRigaMandatoWizard" />
 
     <columnSet name="mandatoAutomatico">
        <columnFieldProperty

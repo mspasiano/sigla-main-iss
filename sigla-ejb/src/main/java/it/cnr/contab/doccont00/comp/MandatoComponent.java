@@ -318,10 +318,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      * @param scadenza    <code>Obbligazione_scadenzarioBulk</code> la scadenza
      *                    dell'obbligazione pagata dalla riga del mandato
      */
-    private void aggiornaImportoObbligazionePerRiga(UserContext userContext,
-                                                    Mandato_rigaBulk riga, Obbligazione_scadenzarioBulk scadenza)
-            throws it.cnr.jada.persistency.PersistencyException,
-            ComponentException {
+    private void aggiornaImportoObbligazionePerRiga(UserContext userContext, Mandato_rigaBulk riga, Obbligazione_scadenzarioBulk scadenza) throws PersistencyException, ComponentException {
         /*
          * **Mandato Accreditamento ***** riga.crudStatus = - TO_BE_CREATED alla
          * creazione //- TO_BE_UPDATED alla modifica dell'importo (1) o
@@ -334,9 +331,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
          */
 
         if (riga.isToBeCreated())
-            scadenza.setIm_associato_doc_contabile(scadenza
-                    .getIm_associato_doc_contabile().add(
-                            riga.getIm_mandato_riga()));
+            scadenza.setIm_associato_doc_contabile(scadenza.getIm_associato_doc_contabile().add(riga.getIm_mandato_riga()));
         else if (riga.isToBeDeleted()) {
             // (29/10/2003 12.40.38) Giorgio Massussi
             // Sostituito getHome() con getTempHome() perchè se arrivo da
@@ -344,11 +339,8 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
             // riga del mandato sia stata appena caricata da db e
             // successivamente modificata; se uso
             // la stessa HomeCache la rilettura mi seppellisce le modifiche!
-            Mandato_rigaBulk rigaDaDB = (Mandato_rigaBulk) getTempHome(
-                    userContext, riga.getClass()).findByPrimaryKey(riga);
-            scadenza.setIm_associato_doc_contabile(scadenza
-                    .getIm_associato_doc_contabile().subtract(
-                            rigaDaDB.getIm_mandato_riga()));
+            Mandato_rigaBulk rigaDaDB = (Mandato_rigaBulk) getTempHome(userContext, riga.getClass()).findByPrimaryKey(riga);
+            scadenza.setIm_associato_doc_contabile(scadenza.getIm_associato_doc_contabile().subtract(rigaDaDB.getIm_mandato_riga()));
         } else if (riga.isToBeUpdated()) {
             java.math.BigDecimal importo = null;
             // (29/10/2003 12.40.38) Giorgio Massussi
@@ -357,14 +349,11 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
             // riga del mandato sia stata appena caricata da db e
             // successivamente modificata; se uso
             // la stessa HomeCache la rilettura mi seppellisce le modifiche!
-            Mandato_rigaBulk rigaDaDB = (Mandato_rigaBulk) getTempHome(
-                    userContext, riga.getClass()).findByPrimaryKey(riga);
-            if (riga.getMandato().getStato().equals(
-                    MandatoBulk.STATO_MANDATO_ANNULLATO)) // caso 2 -
+            Mandato_rigaBulk rigaDaDB = (Mandato_rigaBulk) getTempHome(userContext, riga.getClass()).findByPrimaryKey(riga);
+            if (riga.getMandato().getStato().equals(MandatoBulk.STATO_MANDATO_ANNULLATO)) // caso 2 -
                 // annullamento
                 importo = rigaDaDB.getIm_mandato_riga().negate();
-            else if (riga.getIm_mandato_riga().compareTo(
-                    rigaDaDB.getIm_mandato_riga()) == 0) // caso 3 - no modifica
+            else if (riga.getIm_mandato_riga().compareTo(rigaDaDB.getIm_mandato_riga()) == 0) // caso 3 - no modifica
                 // importo
                 return;
             /*
@@ -372,8 +361,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
              * riga.getIm_mandato_riga
              * ().subtract(rigaDaDB.getIm_mandato_riga());
              */
-            scadenza.setIm_associato_doc_contabile(scadenza
-                    .getIm_associato_doc_contabile().add(importo));
+            scadenza.setIm_associato_doc_contabile(scadenza.getIm_associato_doc_contabile().add(importo));
         }
     }
 
@@ -393,9 +381,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      * @param mandato     <code>MandatoBulk</code> il Mandato per cui aggiornare le
      *                    scadenze dell'obbligazione
      */
-    protected void aggiornaImportoObbligazioni(UserContext userContext,
-                                               MandatoBulk mandato) throws ComponentException {
-
+    protected void aggiornaImportoObbligazioni(UserContext userContext, MandatoBulk mandato) throws ComponentException {
         try {
             PrimaryKeyHashMap obbligazioniTable = new PrimaryKeyHashMap();
             PrimaryKeyHashMap obblScadTable = new PrimaryKeyHashMap();
@@ -403,60 +389,45 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
             Obbligazione_scadenzarioBulk scadenza;
             ObbligazioneBulk obbligazione;
 
-            for (Iterator i = mandato.getMandato_rigaColl().iterator(); i
-                    .hasNext(); ) {
+            for (Iterator i = mandato.getMandato_rigaColl().iterator(); i.hasNext(); ) {
                 riga = (Mandato_rigaBulk) i.next();
-                if (!riga.isToBeCreated() && !riga.isToBeUpdated()
-                        && !riga.isToBeDeleted())
+                if (!riga.isToBeCreated() && !riga.isToBeUpdated() && !riga.isToBeDeleted())
                     continue;
                 // scadenza
-                scadenza = new Obbligazione_scadenzarioBulk(riga.getCd_cds(),
-                        riga.getEsercizio_obbligazione(), riga
-                        .getEsercizio_ori_obbligazione(), riga
-                        .getPg_obbligazione(), riga
-                        .getPg_obbligazione_scadenzario());
+                scadenza = new Obbligazione_scadenzarioBulk(riga.getCd_cds(), riga.getEsercizio_obbligazione(), riga.getEsercizio_ori_obbligazione(),
+                        riga.getPg_obbligazione(), riga.getPg_obbligazione_scadenzario());
                 if (obblScadTable.get(scadenza) == null) {
                     // leggo la scadenza da db
-                    scadenza = (Obbligazione_scadenzarioBulk) getHome(
-                            userContext, Obbligazione_scadenzarioBulk.class)
-                            .findAndLock(scadenza);
+                    scadenza = (Obbligazione_scadenzarioBulk) getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(scadenza);
                     obblScadTable.put(scadenza, scadenza);
                 } else
                     // scadenza già letto da db
-                    scadenza = (Obbligazione_scadenzarioBulk) obblScadTable
-                            .get(scadenza);
+                    scadenza = (Obbligazione_scadenzarioBulk) obblScadTable.get(scadenza);
                 if (scadenza == null)
                     throw new ApplicationException("Non esiste la scadenza");
                 // obbligazione
                 obbligazione = scadenza.getObbligazione();
                 if (obbligazioniTable.get(obbligazione) == null) {
                     // leggo l'obbligazione da db
-                    obbligazione = (ObbligazioneBulk) getHome(userContext,
-                            ObbligazioneBulk.class).findAndLock(obbligazione);
+                    obbligazione = (ObbligazioneBulk) getHome(userContext, ObbligazioneBulk.class).findAndLock(obbligazione);
                     obbligazioniTable.put(obbligazione, obbligazione);
                 } else
                     // scadenza già letto da db
-                    obbligazione = (ObbligazioneBulk) obbligazioniTable
-                            .get(obbligazione);
+                    obbligazione = (ObbligazioneBulk) obbligazioniTable.get(obbligazione);
 
                 aggiornaImportoObbligazionePerRiga(userContext, riga, scadenza);
             }
-            for (Iterator i = obbligazioniTable.values().iterator(); i
-                    .hasNext(); ) {
+
+            for (Iterator i = obbligazioniTable.values().iterator(); i.hasNext(); ) {
                 obbligazione = (ObbligazioneBulk) i.next();
-                // obbligazione.setUser( userContext.getUser());
-                // updateBulk( userContext, obbligazione);
                 lockBulk(userContext, obbligazione);
             }
+
             for (Iterator i = obblScadTable.values().iterator(); i.hasNext(); ) {
                 scadenza = (Obbligazione_scadenzarioBulk) i.next();
                 scadenza.setUser(userContext.getUser());
-                if (scadenza.getIm_associato_doc_contabile().compareTo(
-                        scadenza.getIm_associato_doc_amm()) > 0
-                        || scadenza.getIm_associato_doc_contabile().compareTo(
-                        scadenza.getIm_scadenza()) > 0)
-                    throw new ApplicationException(
-                            "La scadenza con esercizio: " + scadenza.getEsercizio() +
+                if (scadenza.getIm_associato_doc_contabile().compareTo(scadenza.getIm_associato_doc_amm()) > 0)
+                    throw new ApplicationException("La scadenza con esercizio: " + scadenza.getEsercizio() +
                                     " Cds: " + scadenza.getCd_cds() +
                                     " Esercizio impegno: " + scadenza.getEsercizio_originale() +
                                     " Pg impegno: " + scadenza.getPg_obbligazione() +
@@ -464,14 +435,22 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                                     " ha importo associato ai doc. contabili ("+
                                     new EuroFormat().format(scadenza.getIm_associato_doc_contabile()) +
                                     ") maggiore dell'importo associato a doc.amm (" +
-                                    new EuroFormat().format(scadenza.getIm_associato_doc_amm())+") o dell'importo della scadenza ("+
-                                    new EuroFormat().format(scadenza.getIm_scadenza())+").");
+                                    new EuroFormat().format(scadenza.getIm_associato_doc_amm())+").");
+                else if (scadenza.getIm_associato_doc_contabile().compareTo(scadenza.getIm_scadenza()) > 0)
+                    throw new ApplicationException("La scadenza con esercizio: " + scadenza.getEsercizio() +
+                            " Cds: " + scadenza.getCd_cds() +
+                            " Esercizio impegno: " + scadenza.getEsercizio_originale() +
+                            " Pg impegno: " + scadenza.getPg_obbligazione() +
+                            " Pg scadenza: " + scadenza.getPg_obbligazione_scadenzario() +
+                            " ha importo associato ai doc. contabili ("+
+                            new EuroFormat().format(scadenza.getIm_associato_doc_contabile()) +
+                            ") maggiore dell'importo della scadenza ("+
+                            new EuroFormat().format(scadenza.getIm_scadenza())+").");
                 updateBulk(userContext, scadenza);
             }
         } catch (Exception e) {
             throw handleException(e);
         }
-
     }
 
     /**
@@ -748,9 +727,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      *                   dall'utente
      * @return mandato <code>MandatoBulk</code> il Mandato aggiornato
      */
-
-    public MandatoBulk aggiungiDocPassivi(UserContext aUC, MandatoBulk mandato,
-                                          List docPassivi) throws ComponentException {
+    public MandatoBulk aggiungiDocPassivi(UserContext aUC, MandatoBulk mandato, List docPassivi) throws ComponentException {
 
         Integer cd_terzo;
         String ti_pagamento, ti_competenza_residuo;
@@ -764,35 +741,22 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                 mandato.setMandato_terzo(null);
 
             if (mandato.getMandato_terzo() == null) {
-                cd_terzo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0))
-                        .getCodice_terzo_o_cessionario();
-                ti_pagamento = ((V_doc_passivo_obbligazioneBulk) docPassivi
-                        .get(0)).getTi_pagamento();
-                pGiro = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0))
-                        .getFl_pgiro();
-                ti_competenza_residuo = ((V_doc_passivo_obbligazioneBulk) docPassivi
-                        .get(0)).getTi_competenza_residuo();
-
+                cd_terzo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getCodice_terzo_o_cessionario();
+                ti_pagamento = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getTi_pagamento();
+                pGiro = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getFl_pgiro();
+                ti_competenza_residuo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getTi_competenza_residuo();
             } else {
                 cd_terzo = mandato.getMandato_terzo().getCd_terzo();
-                ti_pagamento = mandato
-                        .getMandato_rigaColl().get(0).getBanca()
-                        .getTi_pagamento();
-                pGiro = mandato.getMandato_rigaColl().get(
-                        0).getFl_pgiro();
+                ti_pagamento = mandato.getMandato_rigaColl().get(0).getBanca().getTi_pagamento();
+                pGiro = mandato.getMandato_rigaColl().get(0).getFl_pgiro();
                 ti_competenza_residuo = mandato.getTi_competenza_residuo();
             }
             for (Iterator i = docPassivi.iterator(); i.hasNext(); ) {
                 docPassivo = (V_doc_passivo_obbligazioneBulk) i.next();
-                if (!cd_terzo
-                        .equals(docPassivo.getCodice_terzo_o_cessionario()))
-                    throw new ApplicationException(
-                            "E' possibile selezionare solo doc passivi relativi ad un unico beneficiario");
-                if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato
-                        .getTi_mandato())
-                        && !ti_pagamento.equals(docPassivo.getTi_pagamento()))
-                    throw new ApplicationException(
-                            "E' possibile selezionare solo doc passivi relativi ad una stessa classe di pagamento");
+                if (!cd_terzo.equals(docPassivo.getCodice_terzo_o_cessionario()))
+                    throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad un unico beneficiario");
+                if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato.getTi_mandato()) && !ti_pagamento.equals(docPassivo.getTi_pagamento()))
+                    throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad una stessa classe di pagamento");
                 /*
                  * simona 9.10.02 if ( mandato.getTi_mandato().equals(
                  * mandato.TIPO_REGOLARIZZAZIONE ) &&
@@ -801,10 +765,8 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                  * "Per il mandato di regolarizzaione non e' possibile selezionare doc passivi su partite di giro e doc passivi su capitoli di bilancio"
                  * );
                  */
-                if (!ti_competenza_residuo.equals(docPassivo
-                        .getTi_competenza_residuo()))
-                    throw new ApplicationException(
-                            "E' possibile selezionare solo doc passivi dello stesso tipo COMPETENZA/RESIDUO.");
+                if (!ti_competenza_residuo.equals(docPassivo.getTi_competenza_residuo()))
+                    throw new ApplicationException("E' possibile selezionare solo doc passivi dello stesso tipo COMPETENZA/RESIDUO.");
                 // creo mandato_riga
                 riga = creaMandatoRiga(aUC, mandato, docPassivo);
                 //controllo cap /swift
@@ -812,46 +774,34 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         ((Rif_modalita_pagamentoBulk.BANCARIO.equals(riga.getBanca().getTi_pagamento())
                                 || (Rif_modalita_pagamentoBulk.IBAN.equals(riga.getBanca().getTi_pagamento()))))) {
 
-                    BancaBulk banca = (BancaBulk) getHome(aUC,
-                            BancaBulk.class).findByPrimaryKey(
-                            new BancaBulk(riga.getCd_terzo(), riga.getPg_banca()));
+                    BancaBulk banca = (BancaBulk) getHome(aUC,BancaBulk.class).findByPrimaryKey(new BancaBulk(riga.getCd_terzo(), riga.getPg_banca()));
 
                     if (banca != null && banca.getCodice_iban() != null && riga.getBanca().getAbi() != null && banca.getCodice_iban().startsWith("IT")) {
                         if (riga.getCd_terzo() != null) {
-                            TerzoBulk terzo = (TerzoBulk) getHome(aUC,
-                                    TerzoBulk.class).findByPrimaryKey(
-                                    new TerzoBulk(riga.getCd_terzo()));
+                            TerzoBulk terzo = (TerzoBulk) getHome(aUC,TerzoBulk.class).findByPrimaryKey(new TerzoBulk(riga.getCd_terzo()));
                             if (terzo.getPg_comune_sede() != null) {
-                                ComuneBulk comune = (ComuneBulk) getHome(aUC,
-                                        ComuneBulk.class).findByPrimaryKey(
-                                        new ComuneBulk(terzo.getPg_comune_sede()));
+                                ComuneBulk comune = (ComuneBulk) getHome(aUC,ComuneBulk.class).findByPrimaryKey(new ComuneBulk(terzo.getPg_comune_sede()));
                                 if (comune.getTi_italiano_estero().equals(NazioneBulk.ITALIA) && terzo.getCap_comune_sede() == null)
-                                    throw new ApplicationException(
-                                            "Attenzione per la modalità di pagamento presente sul documento è necessario indicare il cap sul terzo.");
+                                    throw new ApplicationException("Attenzione per la modalità di pagamento presente sul documento è necessario indicare il cap sul terzo.");
                             }
                         }
                     } else if (banca != null && banca.getCodice_iban() != null && riga.getBanca().getAbi() == null) {
-                        NazioneHome nazioneHome = (NazioneHome) getHome(aUC,
-                                NazioneBulk.class);
+                        NazioneHome nazioneHome = (NazioneHome) getHome(aUC,NazioneBulk.class);
                         SQLBuilder sqlExists = nazioneHome.createSQLBuilder();
-                        sqlExists.addSQLClause("AND", "NAZIONE.CD_ISO", SQLBuilder.EQUALS, banca.getCodice_iban().substring(0, 2));
-                        sqlExists.addSQLClause("AND", "NAZIONE.FL_SEPA", SQLBuilder.EQUALS, "Y");
+                        sqlExists.addSQLClause(FindClause.AND, "NAZIONE.CD_ISO", SQLBuilder.EQUALS, banca.getCodice_iban().substring(0, 2));
+                        sqlExists.addSQLClause(FindClause.AND, "NAZIONE.FL_SEPA", SQLBuilder.EQUALS, "Y");
                         if (sqlExists.executeCountQuery(getConnection(aUC)) != 0 && riga.getBanca().getCodice_swift() == null)
-                            throw new ApplicationException(
-                                    "Attenzione per la modalità di pagamento presente sul documento è necessario indicare il codice swift/bic.");
+                            throw new ApplicationException("Attenzione per la modalità di pagamento presente sul documento è necessario indicare il codice swift/bic.");
                     }
                 }
                 // estrae le eventuali note di credito/debito
-                docPassiviCollegati = ((MandatoIHome) getHome(aUC, mandato
-                        .getClass())).findDocPassiviCollegati(docPassivo);
+                docPassiviCollegati = ((MandatoIHome) getHome(aUC, mandato.getClass())).findDocPassiviCollegati(docPassivo);
                 for (Iterator j = docPassiviCollegati.iterator(); j.hasNext(); )
-                    creaMandatoRigaCollegato(aUC, mandato,
-                            (V_doc_passivo_obbligazioneBulk) j.next(), riga);
+                    creaMandatoRigaCollegato(aUC, mandato, (V_doc_passivo_obbligazioneBulk) j.next(), riga);
             }
             // creo mandato terzo
             if (mandato.getMandato_terzo() == null) {
-                Mandato_terzoBulk mTerzo = creaMandatoTerzo(aUC, mandato,
-                        cd_terzo);
+                Mandato_terzoBulk mTerzo = creaMandatoTerzo(aUC, mandato, cd_terzo);
                 mandato.setMandato_terzo(mTerzo);
             }
             mandato.setTi_competenza_residuo(ti_competenza_residuo);
@@ -1657,8 +1607,8 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
     public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk)
             throws ComponentException {
         try {
-            if (this instanceof MandatoAutomaticoComponent)
-                return super.creaConBulk(userContext, bulk);
+//            if (this instanceof MandatoAutomaticoComponent)
+//                return super.creaConBulk(userContext, bulk);
 
             if (bulk instanceof MandatoAccreditamentoWizardBulk) {
                 MandatoAccreditamentoWizardBulk wizard = (MandatoAccreditamentoWizardBulk) bulk;
@@ -2226,26 +2176,19 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      * @return riga <code>Mandato_rigaBulk</code> la riga di mandato creata
      */
 
-    private Mandato_rigaBulk creaMandatoRigaCollegato(UserContext userContext,
-                                                      MandatoBulk mandato, V_doc_passivo_obbligazioneBulk docPassivo,
-                                                      Mandato_rigaBulk rigaPrincipale) throws ComponentException {
+    private Mandato_rigaBulk creaMandatoRigaCollegato(UserContext userContext, MandatoBulk mandato, V_doc_passivo_obbligazioneBulk docPassivo, Mandato_rigaBulk rigaPrincipale) throws ComponentException {
         try {
-            if (rigaPrincipale.getIm_ritenute_riga().compareTo(
-                    new BigDecimal(0)) != 0)
-            // se la riga principale è una fattura passiva con ritenute,
-            // aggiungo/tolgo le ritenute delle note di credito/debito
-            {
+            if (rigaPrincipale.getIm_ritenute_riga().compareTo(new BigDecimal(0)) != 0) {
+                // se la riga principale è una fattura passiva con ritenute,
+                // aggiungo/tolgo le ritenute delle note di credito/debito
                 if (docPassivo.getIm_iva_doc_amm().compareTo(new BigDecimal(0)) != 0)
-                    rigaPrincipale.setIm_ritenute_riga(rigaPrincipale
-                            .getIm_ritenute_riga().add(
-                                    docPassivo.getIm_iva_doc_amm()));
+                    rigaPrincipale.setIm_ritenute_riga(rigaPrincipale.getIm_ritenute_riga().add(docPassivo.getIm_iva_doc_amm()));
             }
 
             return creaMandatoRiga(userContext, mandato, docPassivo);
         } catch (Exception e) {
             throw handleException(e);
         }
-
     }
 
     /*
@@ -5421,7 +5364,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
             if (isExistsFatturaEstera) {
                 if (codiciCIG.isEmpty() && motiviAssenzaCIG.isEmpty()) {
                     throw new ApplicationMessageFormatException("Al mandato e per il codice SIOPE {0} sono associate fatture " +
-                            "commerciali su cui non è posssibile determinare il CIG!", codiceSiope);
+                            "commerciali su cui non è possibile determinare il CIG!", codiceSiope);
                 }
                 if (codiciCIG.size() > 0 && motiviAssenzaCIG.size() > 0) {
                     throw new ApplicationMessageFormatException("Al mandato e per il codice SIOPE {0} sono associate fatture " +
