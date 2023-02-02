@@ -8302,7 +8302,8 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                     .orElse(Boolean.FALSE)) {
                 if (riga.getVoce_iva().getNaturaOperNonImpSdi() != null) {
                     key = riga.getVoce_iva().getNaturaOperNonImpSdi();
-                    if (riga.getBene_servizio().getFl_bollo()) {
+                    if (Optional.ofNullable(riga.getBene_servizio())
+                            .flatMap(bene_servizioBulk -> Optional.ofNullable(bene_servizioBulk.getFl_bollo())).orElse(Boolean.FALSE)) {
                         naturaBollo = key;
                     }
                     currentMap = mapNatura;
