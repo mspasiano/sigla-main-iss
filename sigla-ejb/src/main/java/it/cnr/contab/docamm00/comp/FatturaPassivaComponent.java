@@ -8608,6 +8608,10 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         sqlBuilder.addSQLClause(FindClause.AND, "ORDINE_ACQ.CD_TERZO", SQLBuilder.EQUALS, fatturaPassiva.getCd_terzo());
         sqlBuilder.addSQLClause(FindClause.AND, "ORDINE_ACQ.TI_ATTIVITA", SQLBuilder.EQUALS, fatturaPassiva.getTi_istituz_commerc());
 
+        sqlBuilder.addTableToHeader("UNITA_OPERATIVA_ORD");
+        sqlBuilder.addSQLJoin("UNITA_OPERATIVA_ORD.CD_UNITA_OPERATIVA", "ORDINE_ACQ.CD_UNITA_OPERATIVA");
+        sqlBuilder.addSQLClause(FindClause.AND, "UNITA_OPERATIVA_ORD.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
+
         sqlBuilder.addClause(findclause);
         return sqlBuilder;
     }
