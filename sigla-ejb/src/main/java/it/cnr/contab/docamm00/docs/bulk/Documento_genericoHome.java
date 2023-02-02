@@ -19,6 +19,8 @@ package it.cnr.contab.docamm00.docs.bulk;
 
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazioneBulk;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazione_wizardBulk;
 import it.cnr.contab.fondecon00.core.bulk.Fondo_spesaBulk;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.persistency.PersistencyException;
@@ -27,6 +29,10 @@ import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.LoggableStatement;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 public class Documento_genericoHome extends BulkHome implements
 		IDocumentoAmministrativoSpesaHome {
@@ -51,9 +57,6 @@ public class Documento_genericoHome extends BulkHome implements
 	/**
 	 * Inizializza la chiave primaria di un OggettoBulk per un inserimento. Da
 	 * usare principalmente per riempire i progressivi automatici.
-	 * 
-	 * @param bulk
-	 *            l'OggettoBulk da inizializzare
 	 */
 	public java.sql.Timestamp findForMaxDataRegistrazione(
 			it.cnr.jada.UserContext userContext, Documento_genericoBulk doc)
@@ -166,5 +169,25 @@ public class Documento_genericoHome extends BulkHome implements
 		sql.addClause(FindClause.AND, "cd_tipo_documento_amm", SQLBuilder.EQUALS, generico.getCd_tipo_documento_amm());
 
 		return home.fetchAll(sql);
+	}
+
+	public java.util.List<Documento_generico_rigaBulk> findDocumentoGenericoRigheList(V_doc_passivo_obbligazioneBulk docPassivo ) throws PersistencyException {
+		if (TipoDocumentoEnum.valueOf(docPassivo.getCd_tipo_documento_amm()).isDocumentoGenericoPassivo()) {
+			PersistentHome home = getHomeCache().getHome(Documento_generico_rigaBulk.class);
+			it.cnr.jada.persistency.sql.SQLBuilder sql = home.createSQLBuilder();
+			sql.addClause(FindClause.AND, "pg_documento_generico", SQLBuilder.EQUALS, docPassivo.getPg_documento_amm());
+			sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, docPassivo.getCd_cds());
+			sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, docPassivo.getEsercizio());
+			sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, docPassivo.getCd_unita_organizzativa());
+			sql.addClause(FindClause.AND, "cd_tipo_documento_amm", SQLBuilder.EQUALS, docPassivo.getCd_tipo_documento_amm());
+			sql.addClause(FindClause.AND, "cd_cds_obbligazione", SQLBuilder.EQUALS, docPassivo.getCd_cds_obbligazione());
+			sql.addClause(FindClause.AND, "esercizio_obbligazione", SQLBuilder.EQUALS, docPassivo.getEsercizio_obbligazione());
+			sql.addClause(FindClause.AND, "esercizio_ori_obbligazione", SQLBuilder.EQUALS, docPassivo.getEsercizio_ori_obbligazione());
+			sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.EQUALS, docPassivo.getPg_obbligazione());
+			sql.addClause(FindClause.AND, "pg_obbligazione_scadenzario()", SQLBuilder.EQUALS, docPassivo.getPg_obbligazione_scadenzario());
+
+			return home.fetchAll(sql);
+		}
+		return Collections.EMPTY_LIST;
 	}
 }

@@ -5530,10 +5530,11 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 			if (dati.getNuovoPgObbligazioneScadenzario()!=null)
 				scadenzaNuova.setPg_obbligazione_scadenzario(dati.getNuovoPgObbligazioneScadenzario());
 			else
-				scadenzaNuova.setPg_obbligazione_scadenzario(obbligazione.getObbligazione_scadenzarioColl().stream().mapToLong(Obbligazione_scadenzarioBulk::getPg_obbligazione).max().getAsLong()+1);
+				scadenzaNuova.setPg_obbligazione_scadenzario(obbligazione.getObbligazione_scadenzarioColl().stream().mapToLong(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario).max().getAsLong()+1);
 
 			scadenzaNuova.setToBeCreated();
 			makeBulkPersistent(userContext, scadenzaNuova);
+			scadenzaNuova = (Obbligazione_scadenzarioBulk)findByPrimaryKey(userContext, scadenzaNuova);
 
 			BigDecimal impDaRipartire = nuovoImportoScadenzaVecchia;
 			for (Iterator s = scadenzaVecchia.getObbligazione_scad_voceColl().iterator(); s.hasNext(); ) {

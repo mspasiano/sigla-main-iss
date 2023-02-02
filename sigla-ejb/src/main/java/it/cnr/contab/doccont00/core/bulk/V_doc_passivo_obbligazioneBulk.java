@@ -19,10 +19,12 @@ package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Numerazione_doc_ammBulk;
+import it.cnr.contab.docamm00.docs.bulk.TipoDocumentoEnum;
 import it.cnr.jada.bulk.OggettoBulk;
 
 import java.math.BigDecimal;
 import java.util.Hashtable;
+import java.util.Optional;
 
 public class V_doc_passivo_obbligazioneBulk extends V_doc_passivo_obbligazioneBase {
     static private java.util.Dictionary classeDiPagamentoKeys;
@@ -370,4 +372,11 @@ public class V_doc_passivo_obbligazioneBulk extends V_doc_passivo_obbligazioneBa
                 getCd_tipo_documento_cont().equals(Numerazione_doc_contBulk.TIPO_OBB);
     }
 
+    public boolean isDocumentoGenericoPassivo() {
+        return Optional.ofNullable(this.getCd_tipo_documento_amm()).map(el-> TipoDocumentoEnum.fromValue(this.getCd_tipo_documento_amm()).isDocumentoGenericoPassivo()).orElse(Boolean.FALSE);
+    }
+
+    public boolean isFatturaPassiva() {
+        return Optional.ofNullable(this.getCd_tipo_documento_amm()).map(el->TipoDocumentoEnum.fromValue(this.getCd_tipo_documento_amm()).isFatturaPassiva()).orElse(Boolean.FALSE);
+    }
 }

@@ -23,14 +23,27 @@
  */
 package it.cnr.contab.doccont00.core.bulk;
 
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
 
 public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbligazioneBulk {
-	Mandato_rigaBulk mandatoRiga;
+	protected Mandato_rigaBulk mandatoRiga;
 
-	String descrizioneRigaMandatoWizard;
+	protected String descrizioneRigaMandatoWizard;
 
-	String cdElementoVoce;
+	protected String cdElementoVoce;
+	protected BigDecimal imponibileRigaMandatoWizard;
+	protected BigDecimal impostaRigaMandatoWizard;
+	protected BigDecimal importoRigaMandatoWizard;
+	protected BancaBulk bancaRigaMandatoWizard = new BancaBulk();
+	protected Modalita_pagamentoBulk modalitaPagamentoRigaMandatoWizard = new Modalita_pagamentoBulk();
+	protected List modalitaPagamentoOptions;
+
+	protected List bancaOptions;
 
 	public V_doc_passivo_obbligazione_wizardBulk() {
 		super();
@@ -58,5 +71,69 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 
 	public void setCdElementoVoce(String cdElementoVoce) {
 		this.cdElementoVoce = cdElementoVoce;
+	}
+
+	public BigDecimal getImponibileRigaMandatoWizard() {
+		return imponibileRigaMandatoWizard;
+	}
+
+	public void setImponibileRigaMandatoWizard(BigDecimal imponibileRigaMandatoWizard) {
+		this.imponibileRigaMandatoWizard = imponibileRigaMandatoWizard;
+	}
+
+	public BigDecimal getImpostaRigaMandatoWizard() {
+		return impostaRigaMandatoWizard;
+	}
+
+	public void setImpostaRigaMandatoWizard(BigDecimal impostaRigaMandatoWizard) {
+		this.impostaRigaMandatoWizard = impostaRigaMandatoWizard;
+	}
+
+	public BancaBulk getBancaRigaMandatoWizard() {
+		return bancaRigaMandatoWizard;
+	}
+
+	public void setBancaRigaMandatoWizard(BancaBulk bancaRigaMandatoWizard) {
+		this.bancaRigaMandatoWizard = bancaRigaMandatoWizard;
+	}
+
+	public Long getPgBancaWizard() {
+		return Optional.ofNullable(this.getBancaRigaMandatoWizard()).map(BancaBulk::getPg_banca).orElse(null);
+	}
+
+	public Modalita_pagamentoBulk getModalitaPagamentoRigaMandatoWizard() {
+		return modalitaPagamentoRigaMandatoWizard;
+	}
+
+	public void setModalitaPagamentoRigaMandatoWizard(Modalita_pagamentoBulk modalitaPagamentoRigaMandatoWizard) {
+		this.modalitaPagamentoRigaMandatoWizard = modalitaPagamentoRigaMandatoWizard;
+	}
+
+	public String getCdModalitaPagamentoWizard() {
+		return Optional.ofNullable(this.getModalitaPagamentoRigaMandatoWizard()).map(Modalita_pagamentoBulk::getCd_modalita_pag).orElse(null);
+	}
+
+	public List<Modalita_pagamentoBulk> getModalitaPagamentoOptions() {
+		return modalitaPagamentoOptions;
+	}
+
+	public void setModalitaPagamentoOptions(List<Modalita_pagamentoBulk> modalitaPagamentoOptions) {
+		this.modalitaPagamentoOptions = modalitaPagamentoOptions;
+	}
+
+	public List<BancaBulk> getBancaOptions() {
+		return bancaOptions;
+	}
+
+	public void setBancaOptions(List<BancaBulk> bancaOptions) {
+		this.bancaOptions = bancaOptions;
+	}
+
+	public BigDecimal getImportoRigaMandatoWizard() {
+		return importoRigaMandatoWizard;
+	}
+
+	public void setImportoRigaMandatoWizard(BigDecimal importoRigaMandatoWizard) {
+		this.importoRigaMandatoWizard = importoRigaMandatoWizard;
 	}
 }

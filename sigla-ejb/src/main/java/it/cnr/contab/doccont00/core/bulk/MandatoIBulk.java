@@ -17,17 +17,12 @@
 
 package it.cnr.contab.doccont00.core.bulk;
 
-import java.math.*;
-import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
-import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
-import java.util.*;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
 import it.cnr.contab.preventvar00.bulk.Var_bilancioBulk;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
-import it.cnr.jada.bulk.*;
+import it.cnr.jada.bulk.ValidationException;
+
+import java.math.BigDecimal;
+import java.util.*;
 
 public class MandatoIBulk extends MandatoBulk {
 	protected Collection docPassiviColl = new ArrayList();
@@ -55,7 +50,7 @@ public MandatoIBulk(String cd_cds, Integer esercizio, Long pg_mandato) {
 /**
  * Aggiunge un nuovo dettaglio (Mandato_rigaBulk) alla lista di dettagli definiti per il mandato
  * inizializzandone alcuni campi
- * @param mr dettaglio da aggiungere alla lista
+ * @param riga dettaglio da aggiungere alla lista
  * @return int
  */
 
@@ -149,7 +144,7 @@ public boolean hasFattura_passiva()
 }
 /**
  * verifica se il documento passivo passato come parametro e' incluso nel mandato
- * @param V_doc_passivo_obbligazioneBulk documento passivo
+ * @param docPassivo documento passivo
  * @return true se il documento passivo e' incluso nel mandato, false altrimenti
  */
 public boolean isDocPassivoIncluso( V_doc_passivo_obbligazioneBulk docPassivo ) 

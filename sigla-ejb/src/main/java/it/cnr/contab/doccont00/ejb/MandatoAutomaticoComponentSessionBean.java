@@ -20,6 +20,7 @@ package it.cnr.contab.doccont00.ejb;
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.doccont00.comp.MandatoAutomaticoComponent;
 @Stateless(name="CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession")
 public class MandatoAutomaticoComponentSessionBean extends MandatoComponentSessionBean implements MandatoAutomaticoComponentSession {
@@ -30,10 +31,10 @@ public class MandatoAutomaticoComponentSessionBean extends MandatoComponentSessi
 public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
 	return new MandatoAutomaticoComponentSessionBean();
 }
-public java.util.List findBancaOptions(it.cnr.jada.UserContext param0,it.cnr.contab.doccont00.core.bulk.MandatoAutomaticoWizardBulk param1) throws it.cnr.jada.persistency.PersistencyException,it.cnr.jada.persistency.IntrospectionException,it.cnr.jada.comp.ComponentException,javax.ejb.EJBException {
+public java.util.List<BancaBulk> findBancaOptions(it.cnr.jada.UserContext param0, Integer param1, String param2) throws it.cnr.jada.persistency.PersistencyException,it.cnr.jada.persistency.IntrospectionException,it.cnr.jada.comp.ComponentException,javax.ejb.EJBException {
 	pre_component_invocation(param0,componentObj);
 	try {
-		java.util.List result = ((MandatoAutomaticoComponent)componentObj).findBancaOptions(param0,param1);
+		java.util.List<BancaBulk> result = ((MandatoAutomaticoComponent)componentObj).findBancaOptions(param0,param1,param2);
 		component_invocation_succes(param0,componentObj);
 		return result;
 	} catch(it.cnr.jada.comp.NoRollbackException e) {

@@ -6332,7 +6332,7 @@ public class DistintaCassiereComponent extends
 
                     if (codiciCIG.isEmpty() && motiviAssenzaCIG.isEmpty()) {
                         throw new ApplicationMessageFormatException("Generazione flusso interrotta in quanto al mandato {0}/{1}/{2} sono associate fatture " +
-                                "su cui non è posssibile determinare il CIG!",
+                                "su cui non è possibile determinare il CIG!",
                                 String.valueOf(bulk.getEsercizio()),
                                 String.valueOf(bulk.getCd_cds()),
                                 String.valueOf(bulk.getPg_documento_cont())
@@ -6465,7 +6465,7 @@ public class DistintaCassiereComponent extends
                         }
                         if (!cigCompenso.isPresent() && !motivoAssenzaCigCompenso.isPresent()){
                             throw new ApplicationMessageFormatException("Generazione flusso interrotta in quanto al mandato {0}/{1}/{2} è associato un compenso " +
-                                    "su cui non è posssibile determinare il CIG!",
+                                    "su cui non è possibile determinare il CIG!",
                                     String.valueOf(bulk.getEsercizio()),
                                     String.valueOf(bulk.getCd_cds()),
                                     String.valueOf(bulk.getPg_documento_cont())

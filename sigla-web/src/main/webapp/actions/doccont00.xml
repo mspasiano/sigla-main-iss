@@ -202,7 +202,7 @@
     </businessProcess>
     <businessProcess
             name="MandatoAutomaticoWizardBP" className="it.cnr.contab.doccont00.bp.MandatoAutomaticoWizardBP">
-        <forward name="default" path="/doccont00/main_mandato_automatico_wizard.jsp"/>
+        <forward name="default" path="/doccont00/mandato_automatico_wizard.jsp"/>
         <init-param name="bulkClassName" value="it.cnr.contab.doccont00.core.bulk.MandatoAutomaticoWizardBulk"/>
         <init-param name="componentSessionName" value="CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession"/>
         <init-param name="defaultAction" value="MandatoAutomaticoWizardAction"/>
