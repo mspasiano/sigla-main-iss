@@ -533,6 +533,7 @@
       AND b.cd_unita_organizzativa = fa.cd_unita_organizzativa
       AND b.esercizio = fa.esercizio
       AND b.pg_fattura_passiva = fa.pg_fattura_passiva
+      AND b.progressivo_riga = fa.progressivo_riga
       AND b.dt_cancellazione IS NULL
       AND nvl(a.fl_da_ordini,'Y')= 'Y'
       AND c.cd_cds(+) = a.cd_cds
