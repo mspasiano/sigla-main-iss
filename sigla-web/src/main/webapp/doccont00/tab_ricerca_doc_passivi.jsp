@@ -88,7 +88,7 @@
 		<tr>
 			<td colspan=2>
 			      <b class="h3 text-primary text-align-center d-block">Documenti passivi disponibili</b>
-			      <% bp.getDocumentiPassivi().writeHTMLTable(pageContext,null,false,false,false,"100%","200px", true); %>
+			      <% bp.getDocumentiPassivi().writeHTMLTable(pageContext,null,false,false,false,"100%","auto;max-height:50vh;", true); %>
 			</td>
 		</tr>
 		<tr>
