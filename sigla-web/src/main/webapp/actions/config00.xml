@@ -442,4 +442,18 @@
         <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
 
     </businessProcess>
+
+    <action
+            path="/CRUDConfigCtrDispoUOAction" actionClass="it.cnr.contab.config00.action.CRUDConfigCtrDispoUOAction">
+    </action>
+
+    <businessProcess name="CRUDConfigCtrDispoUOBP" className="it.cnr.contab.config00.bp.CRUDConfigCtrDispoUOBP">
+        <forward name="default" path="/config00/ctr_unita_organizzativa.jsp"/>
+        <init-param name="bulkClassName" value="it.cnr.contab.config00.consultazioni.bulk.VControlloDispUnitaOrgBulk" />
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
+        <init-param name="defaultAction" value="CRUDConfigCtrDispoUOAction" />
+    </businessProcess>
+
+
+
 </action-mappings>
