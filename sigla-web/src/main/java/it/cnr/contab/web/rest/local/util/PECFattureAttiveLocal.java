@@ -17,8 +17,13 @@
 
 package it.cnr.contab.web.rest.local.util;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.Authorization;
+import it.cnr.contab.client.docamm.FatturaAttiva;
 import it.cnr.contab.web.rest.config.AccessoAllowed;
 import it.cnr.contab.util.enumeration.AccessoEnum;
+import it.cnr.contab.web.rest.config.SIGLASecurityContext;
 
 import javax.ejb.Local;
 import javax.servlet.http.HttpServletRequest;
@@ -31,20 +36,42 @@ import javax.ws.rs.core.Response;
 @Path("/fatture-attive")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
+@Api("Fatturazione Attiva Elettronica")
 public interface PECFattureAttiveLocal {
 
     @GET
     @Path("/reinvia-pec")
     @AccessoAllowed(value= AccessoEnum.XXXHTTPSESSIONXXXXXX)
+    @ApiOperation(value = "Reinvia tramite PEC l'xml della fattura attiva a SDI",
+            notes = "Accesso consentito solo alle utenze abilitate con accesso XXXHTTPSESSIONXXXXXX",
+            response = Void.class,
+            authorizations = {
+                    @Authorization(value = "BASIC")
+            }
+    )
     Response reinviaPEC(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception;
 
     @GET
     @Path("/aggiorna-nome-file")
     @AccessoAllowed(value= AccessoEnum.XXXHTTPSESSIONXXXXXX)
+    @ApiOperation(value = "Aggiorna il nome del file su tutte le fatture attive con stato INV",
+            notes = "Accesso consentito solo alle utenze abilitate con accesso AMMFATTURDOCSFATATTV",
+            response = Void.class,
+            authorizations = {
+                    @Authorization(value = "BASIC")
+            }
+    )
     Response aggiornaNomeFile(@Context HttpServletRequest request) throws Exception;
 
     @GET
     @Path("/aggiorna-metadati")
     @AccessoAllowed(value= AccessoEnum.XXXHTTPSESSIONXXXXXX)
+    @ApiOperation(value = "Aggiorna i metadati della fattura attiva sul documentale",
+            notes = "Accesso consentito solo alle utenze abilitate con accesso AMMFATTURDOCSFATATTV",
+            response = Void.class,
+            authorizations = {
+                    @Authorization(value = "BASIC")
+            }
+    )
     Response aggiornaMetadati(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception;
 }
