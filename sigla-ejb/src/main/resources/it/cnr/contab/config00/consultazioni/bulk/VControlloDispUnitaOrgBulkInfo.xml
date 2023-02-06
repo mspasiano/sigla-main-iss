@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bulkInfo>
+	<fieldProperty
+			name="findUnitaOrganizzativa"
+			property="unitaOrganizzativa"
+			inputType="searchtool"
+			formName="searchtool"
+			enabledOnSearch="true"
+			label="Unità Organizzativa" />
+	<fieldProperty
+			name="cdUnitaOrganizzativa"
+			property="unitaOrganizzativa.cd_unita_organizzativa"
+			inputType="TEXT"
+			inputSize="30"
+			maxLength="30"
+			enabledOnEdit="false"
+			label="Codice Unità Organizzativa" />
+	<fieldProperty
+			name="ds_unita_organizzativa"
+			property="unitaOrganizzativa.ds_unita_organizzativa"
+			inputType="TEXT"
+			inputSize="30"
+			maxLength="30"
+			enabledOnEdit="false"
+			label="Unità Organizzativa" />
+	<fieldProperty
+			name="totOrdineImpegnoStessaUo"
+			property="totOrdineImpegnoStessaUo"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Ordine Impegno stessa UO" />
+	<fieldProperty
+			name="totOrdineImpegnoAltraUo"
+			property="totOrdineImpegnoAltraUo"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Ordine Impegno altra UO" />
+	<fieldProperty
+			name="totFattureOrdini"
+			property="totFattureOrdini"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Fatture Ordine" />
+	<fieldProperty
+			name="totFattureNoOrdini"
+			property="totFattureNoOrdini"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Fatture No Ordine" />
+	<fieldProperty
+			name="totDocumentiGenerici"
+			property="totDocumentiGenerici"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Documenti Generici" />
+	<fieldProperty
+			name="totImpegnoAssociatoCalcolato"
+			property="totImpegnoAssociatoCalcolato"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Impegno associato calcolato" />
+	<fieldProperty
+			name="totImpegnoAssociato"
+			property="totImpegnoAssociato"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Impegno associato" />
+	<fieldProperty
+			name="totImpegnoDaAssociare"
+			property="totImpegnoDaAssociare"
+			inputType="TEXT"
+			inputSize="0"
+			maxLength="0"
+			enabledOnEdit="false"
+			label="Totale Impegno da associare" />
+	<form
+			name="searchtool">
+	</form>
+	<formFieldProperty
+			name="findUnitaOrganizzativa" />
+	<formFieldProperty
+			name="cdUnitaOrganizzativa" />
+	<formFieldProperty
+			name="ds_unita_organizzativa" />
+
+	<formFieldProperty
+			name="totOrdineImpegnoStessaUo" />
+	<formFieldProperty
+			name="totOrdineImpegnoAltraUo" />
+	<formFieldProperty
+			name="totFattureOrdini" />
+	<formFieldProperty
+			name="totFattureNoOrdini" />
+	<formFieldProperty
+			name="totDocumentiGenerici" />
+	<formFieldProperty
+			name="totImpegnoAssociatoCalcolato" />
+	<formFieldProperty
+			name="totImpegnoAssociato" />
+	<formFieldProperty
+			name="totImpegnoDaAssociare" />
+	<findFieldProperty
+			name="cdUnitaOrganizzativa" />
+
+	<columnFieldProperty
+			name="cdUnitaOrganizzativa" />
+
+	<columnFieldProperty
+			name="totOrdineImpegnoStessaUo" />
+	<columnFieldProperty
+			name="totOrdineImpegnoAltraUo" />
+	<columnFieldProperty
+			name="totFattureOrdini" />
+	<columnFieldProperty
+			name="totFattureNoOrdini" />
+	<columnFieldProperty
+			name="totDocumentiGenerici" />
+	<columnFieldProperty
+			name="totImpegnoAssociatoCalcolato" />
+	<columnFieldProperty
+			name="totImpegnoAssociato" />
+	<columnFieldProperty
+			name="totImpegnoDaAssociare" />
+</bulkInfo>

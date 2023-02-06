@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SQLPersistentInfo
+	persistentClassName="it.cnr.contab.config00.consultazioni.bulk.VControlloDispUnitaOrgBase"
+	homeClassName="it.cnr.contab.config00.consultazioni.bulk.VControlloDispUnitaOrgHome">
+	<defaultColumnMap
+		tableName="V_CONTROLLO_DISP_UNITA_ORGANIZZATIVA">
+		<columnMapping
+				columnName="CD_UNITA_ORGANIZZATIVA"
+				propertyName="cdUnitaOrganizzativa"
+				sqlTypeName="VARCHAR"
+				columnSize="30"
+				nullable="true"
+				 />
+		<columnMapping
+			columnName="TOT_ORDINE_IMPEGNO_STESSA_UO"
+			propertyName="totOrdineImpegnoStessaUo"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_ORDINE_IMPEGNO_ALTRA_UO"
+			propertyName="totOrdineImpegnoAltraUo"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_FATTURE_ORDINI"
+			propertyName="totFattureOrdini"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_FATTURE_NO_ORDINI"
+			propertyName="totFattureNoOrdini"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_DOCUMENTI_GENERICI"
+			propertyName="totDocumentiGenerici"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_IMPEGNO_ASSOCIATO_CALCOLATO"
+			propertyName="totImpegnoAssociatoCalcolato"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_IMPEGNO_ASSOCIATO"
+			propertyName="totImpegnoAssociato"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+		<columnMapping
+			columnName="TOT_IMPEGNO_DA_ASSOCIARE"
+			propertyName="totImpegnoDaAssociare"
+			sqlTypeName="DECIMAL"
+			columnSize="0"
+			nullable="true" />
+	</defaultColumnMap>
+	<persistentProperty
+		name="cdUnitaOrganizzativa" />
+	<persistentProperty
+		name="totOrdineImpegnoStessaUo" />
+	<persistentProperty
+		name="totOrdineImpegnoAltraUo" />
+	<persistentProperty
+		name="totFattureOrdini" />
+	<persistentProperty
+		name="totFattureNoOrdini" />
+	<persistentProperty
+		name="totDocumentiGenerici" />
+	<persistentProperty
+		name="totImpegnoAssociatoCalcolato" />
+	<persistentProperty
+		name="totImpegnoAssociato" />
+	<persistentProperty
+		name="totImpegnoDaAssociare" />
+</SQLPersistentInfo>
