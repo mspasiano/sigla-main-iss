@@ -24,35 +24,41 @@
 	    <table class="Panel" width="100%">
 		    <tr class="w-100">
 			    <td><% bp.getController().writeFormLabel(out, "findUnitaOrganizzativa"); %></td>
-			    <td colspan="5"><% bp.getController().writeFormInput(out, "findUnitaOrganizzativa"); %></td>
+			    <td><% bp.getController().writeFormInput(out, "findUnitaOrganizzativa"); %></td>
 			</tr>
 			<tr class="w-100">
             	 <td><% bp.getController().writeFormLabel(out, "totOrdineImpegnoStessaUo"); %></td>
-            	 <td colspan="5"><% bp.getController().writeFormInput(out, "totOrdineImpegnoStessaUo"); %></td>
-
+            	 <td><% bp.getController().writeFormInput(out, "totOrdineImpegnoStessaUo"); %></td>
+            </tr>
+			<tr class="w-100">
 			     <td><% bp.getController().writeFormLabel(out, "totOrdineImpegnoAltraUo"); %></td>
-                 <td colspan="5"><% bp.getController().writeFormInput(out, "totOrdineImpegnoAltraUo"); %></td>
-
+                 <td><% bp.getController().writeFormInput(out, "totOrdineImpegnoAltraUo"); %></td>
+            </tr>
+			<tr class="w-100">
                  <td><% bp.getController().writeFormLabel(out, "totFattureOrdini"); %></td>
-                 <td colspan="5"><% bp.getController().writeFormInput(out, "totFattureOrdini"); %></td>
-
+                 <td><% bp.getController().writeFormInput(out, "totFattureOrdini"); %></td>
+            </tr>
+			<tr class="w-100">
                  <td><% bp.getController().writeFormLabel(out, "totFattureNoOrdini"); %></td>
-                 <td colspan="5"><% bp.getController().writeFormInput(out, "totFattureNoOrdini"); %></td>
+                 <td><% bp.getController().writeFormInput(out, "totFattureNoOrdini"); %></td>
 
 		    </tr>
 		    <tr class="w-100">
                     <td><% bp.getController().writeFormLabel(out, "totDocumentiGenerici"); %></td>
-                    <td colspan="5"><% bp.getController().writeFormInput(out, "totDocumentiGenerici"); %></td>
-
+                    <td><% bp.getController().writeFormInput(out, "totDocumentiGenerici"); %></td>
+            </tr>
+			<tr class="w-100">
                      <td><% bp.getController().writeFormLabel(out, "totImpegnoAssociatoCalcolato"); %></td>
-                     <td colspan="5"><% bp.getController().writeFormInput(out, "totImpegnoAssociatoCalcolato"); %></td>
-
+                     <td><% bp.getController().writeFormInput(out, "totImpegnoAssociatoCalcolato"); %></td>
+            </tr>
+			<tr class="w-100">
                      <td><% bp.getController().writeFormLabel(out, "totImpegnoAssociato"); %></td>
-                     <td colspan="5"><% bp.getController().writeFormInput(out, "totImpegnoAssociato"); %></td>
-
+                     <td><% bp.getController().writeFormInput(out, "totImpegnoAssociato"); %></td>
+            </tr>
+			<tr class="w-100">
                      <td><% bp.getController().writeFormLabel(out, "totImpegnoDaAssociare"); %></td>
-                     <td colspan="5"><% bp.getController().writeFormInput(out, "totImpegnoDaAssociare"); %></td>
-                </tr>
+                     <td><% bp.getController().writeFormInput(out, "totImpegnoDaAssociare"); %></td>
+            </tr>
 		</table>
 	</div>
 </body>
