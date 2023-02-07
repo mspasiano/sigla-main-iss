@@ -454,6 +454,18 @@
         <init-param name="defaultAction" value="CRUDConfigCtrDispoUOAction" />
     </businessProcess>
 
+    <action
+            path="/ConfigCtrDispObblScadAction" actionClass="it.cnr.jada.util.action.CRUDAction">
+    </action>
+
+    <businessProcess name="CRUDConfigCtrDispObblBP" className="it.cnr.contab.config00.bp.CRUDConfigCtrDispObblBP">
+        <forward name="default" path="/config00/ctr_obblig_scadenzario.jsp"/>
+        <init-param name="bulkClassName" value="it.cnr.contab.config00.consultazioni.bulk.VControlloDispObblScadBulk" />
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
+        <init-param name="defaultAction" value="ConfigCtrDispObblScadAction" />
+    </businessProcess>
+
+
 
 
 </action-mappings>

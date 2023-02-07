@@ -5966,4 +5966,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_column_attributo_long_11_on_tmp_report_generico.xml"/>
     <!-- Autore : VALENTINA TOMADA - nuova voce di menù per consultazione della vista V_CONTROLLO_DISP_UNITA_ORGANIZZATIVA  -->
     <include file="bootstrap/add_accesso_controllo_disp_unita_org.xml"/>
+    <!-- Autore : VALENTINA TOMADA - nuova voce di menù per consultazione della vista V_CONTROLLO_DISP_OBBLIGAZIONE_SCADENZARIO  -->
+    <include file="bootstrap/add_accesso_controllo_disp_obbl_scad.xml"/>
 </databaseChangeLog>
