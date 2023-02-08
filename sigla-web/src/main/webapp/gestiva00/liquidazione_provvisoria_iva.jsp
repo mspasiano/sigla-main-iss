@@ -26,7 +26,7 @@
 <% LiquidazioneProvvisoriaIvaBP bp = (LiquidazioneProvvisoriaIvaBP)BusinessProcess.getBusinessProcess(request);
 	 bp.openFormWindow(pageContext); %>
 
-	<div class="Group" style="width:100%">
+	<div class="Group card p-2" style="width:100%">
 		<table width="100%">
 			<tr>
 				<td>
@@ -58,7 +58,8 @@
 					<% bp.getController().writeFormInput(out,null,"data_a",false,null,"");%>
 				</td>
 			</tr>				
-			<tr>
+		</table>
+    </div>
 			<%JSPUtils.tabbed(
 					pageContext,
 					"tab",
@@ -70,7 +71,6 @@
 					"center",
 					"100%",
 					null );%>
-		</table>
 <%	bp.closeFormWindow(pageContext); %>
 </body>
 </html>

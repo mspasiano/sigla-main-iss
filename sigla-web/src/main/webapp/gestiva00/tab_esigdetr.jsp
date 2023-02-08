@@ -13,10 +13,10 @@
 				<td>					
 				</td>
 				<td>
-					<span class="FormLabel">Debito</span>
+					<span class="FormLabel h3 text-primary">Debito</span>
 				</td>
 				<td>
-					<span class="FormLabel">Credito</span>
+					<span class="FormLabel h3 text-primary">Credito</span>
 				</td>
 			</tr>	
 			<tr>

@@ -1019,7 +1019,7 @@ BEGIN
                aStringa:=aRecUnitaOrganizzativa.cd_unita_organizzativa;
             ELSE
                IF LENGTH(aStringa) < 1980 THEN
-                  aStringa:=aStringa || '/' || aRecUnitaOrganizzativa.cd_unita_organizzativa;
+                  aStringa:=aStringa || ' - ' || aRecUnitaOrganizzativa.cd_unita_organizzativa;
                END IF;
             END IF;
 
@@ -1030,7 +1030,7 @@ BEGIN
          IF aErrore = 'Y' THEN
             IBMERR001.RAISE_ERR_GENERICO
                (aMessaggio1 || aMessaggio2 || ' non è ammessa in quanto non è stata fatta la liquidazione ' ||
-                'definita per le seguenti UO ' || aStringa);
+                'definitiva per le seguenti UO: ' || aStringa);
          END IF;
 
       END;
