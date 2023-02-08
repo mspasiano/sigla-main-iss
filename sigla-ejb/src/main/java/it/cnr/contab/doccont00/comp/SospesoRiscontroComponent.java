@@ -2646,9 +2646,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         try {
                             Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, rev);
                         } catch (Exception e) {
-                            java.io.StringWriter sw = new java.io.StringWriter();
-                            e.getCause().printStackTrace(new java.io.PrintWriter(sw));
-                            throw new ComponentException("La reversale "+rev.getIdReversaleAsString()+" presenta un errore in fase di scrittura partita doppia: " + sw.toString());
+                            LOGGER.error("La reversale "+rev.getIdReversaleAsString()+" presenta un errore in fase di scrittura partita doppia: " + e.getMessage());
                         }
                         return aggiornaRigaProcessata(userContext, riga);
                     } else if (riga.isMandato()){
@@ -2738,8 +2736,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         try {
                             Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, man);
                         } catch (Exception e) {
-                            LOGGER.error("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia:", e);
-                            throw new ComponentException("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia: " + e.getMessage());
+                            LOGGER.error("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia:" + e.getMessage());
                         }
                         return aggiornaRigaProcessata(userContext, riga);
                     } else {
