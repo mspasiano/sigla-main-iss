@@ -154,7 +154,7 @@ BEGIN
      IBMUTL001.deferred_commit;
 
      IBMERR001.RAISE_ERR_GENERICO
-         ('Operazione sottomessa per esecuzione. Al completamento l''utente riceverא un messaggio di notifica ' ||
+         ('Operazione sottomessa per esecuzione. Al completamento l''utente riceverà un messaggio di notifica ' ||
           'dello stato dell''operazione');
 
    Else
