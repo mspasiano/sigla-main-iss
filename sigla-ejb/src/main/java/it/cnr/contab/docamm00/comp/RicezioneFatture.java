@@ -107,6 +107,17 @@ import org.springframework.format.datetime.standard.DateTimeFormatterRegistrar;
 public class RicezioneFatture implements it.cnr.contab.docamm00.ejb.RicezioneFatturePA, it.gov.fatturapa.RicezioneFatture {
     private transient final static Logger LOGGER = LoggerFactory.getLogger(RicezioneFatture.class);
 
+    private String cleanupContentType(String contentType) {
+        return Optional.ofNullable(contentType)
+                .map(s -> {
+                    final int i = s.indexOf(";");
+                    if (i != -1)
+                        return s.substring(0, i);
+                    return s;
+                })
+                .orElse("application/octet-stream");
+    }
+
     @SuppressWarnings("unchecked")
     public RispostaRiceviFattureType riceviFatture(FileSdIConMetadatiType parametersIn, String replyTo) {
         RispostaRiceviFattureType risposta = new RispostaRiceviFattureType();
@@ -131,7 +142,7 @@ public class RicezioneFatture implements it.cnr.contab.docamm00.ejb.RicezioneFat
                     isp7m,
                     parametersIn.getNomeFile(),
                     parametersIn.getFile().getInputStream(),
-                    parametersIn.getFile().getContentType(),
+                    cleanupContentType(parametersIn.getFile().getContentType()),
 
                     isp7m ? parametersIn.getNomeFile().substring(0, parametersIn.getNomeFile().lastIndexOf(".")) : parametersIn.getNomeFile(),
                     new ByteArrayInputStream(bStream.toByteArray()),
@@ -139,7 +150,7 @@ public class RicezioneFatture implements it.cnr.contab.docamm00.ejb.RicezioneFat
 
                     parametersIn.getNomeFileMetadati(),
                     new ByteArrayInputStream(bytesMetadata),
-                    parametersIn.getMetadati().getContentType(),
+                    cleanupContentType(parametersIn.getMetadati().getContentType()),
                     parametersIn.getIdentificativoSdI(),
                     Optional.ofNullable(fatturaElettronicaType)
                             .map(fatturaElettronicaTypeJAXBElement -> fatturaElettronicaTypeJAXBElement.getValue())
