@@ -43,6 +43,8 @@ import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -57,6 +59,7 @@ import java.util.List;
 import java.util.Optional;
 
 public class SospesoRiscontroComponent extends CRUDComponent implements ISospesoRiscontroMgr, ICRUDMgr, Cloneable, Serializable, IPrintMgr {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SospesoRiscontroComponent.class);
     /**
      * SospesoRiscontroComponent constructor comment.
      */
@@ -2735,9 +2738,8 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         try {
                             Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, man);
                         } catch (Exception e) {
-                            java.io.StringWriter sw = new java.io.StringWriter();
-                            e.getCause().printStackTrace(new java.io.PrintWriter(sw));
-                            throw new ComponentException("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia: " + sw.toString());
+                            LOGGER.error("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia:", e);
+                            throw new ComponentException("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia: " + e.getMessage());
                         }
                         return aggiornaRigaProcessata(userContext, riga);
                     } else {
