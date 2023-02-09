@@ -96,6 +96,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FatturaAttivaSingolaComponent
         extends ScritturaPartitaDoppiaFromDocumentoComponent
@@ -7638,7 +7640,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         }
     }
 
-    private void sendMailForNotificationOk(UserContext userContext, Fattura_attivaBulk fattura) {
+    public void sendMailForNotificationOk(UserContext userContext, Fattura_attivaBulk fattura) {
         /**
          * Invio mail di notifica Ricezione
          */
@@ -7654,41 +7656,63 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
             Collection utenti = utente_indirizzi_mailHome.findUtenteNotificaOkInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
             sendMailForNotificationFatturaElettronica(subject, text, utenti);
         } catch (Exception e) {
-            logger.info("Errore durante l'invio della mail di notifica ok. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
+            logger.warn("Errore durante l'invio della mail di notifica ok. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
         }
     }
 
-    private void sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) {
+    public List<String> sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) throws ComponentException{
         try {
+            final Optional<String> dominio = Optional.ofNullable(Utility.createConfigurazioneCnrComponentSession().getVal01(
+                    userContext,
+                    CNRUserContext.getEsercizio(userContext),
+                    null,
+                    Configurazione_cnrBulk.PK_COSTANTI,
+                    Configurazione_cnrBulk.SK_DOMINIO_EMAIL
+            ));
             String subject = "";
             String text = "";
-            String estremoFattura = fattura.getEsercizio() + "-" + fattura.getPg_fattura_attiva();
+            String estremoFattura = fattura.getEsercizio() + "/" + fattura.getCd_uo_origine() + "/" + fattura.getPg_fattura_attiva();
             subject = "[SIGLA] Notifica errore invio fattura attiva " + estremoFattura;
-            subject += " UO: " + fattura.getCd_unita_organizzativa();
             text = "Errore durante l'invio della fattura attiva elettronica: <b>" + estremoFattura + "</b>" +
                     ". Motivo: " + fattura.getNoteInvioSdi();
             Utente_indirizzi_mailHome utente_indirizzi_mailHome = (Utente_indirizzi_mailHome) getHome(userContext, Utente_indirizzi_mailBulk.class);
-            Collection utenti = utente_indirizzi_mailHome.findUtenteNotificaOkInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
-            sendMailForNotificationFatturaElettronica(subject, text, utenti);
+            Collection<Utente_indirizzi_mailBulk> utenti = utente_indirizzi_mailHome.findUtenteNotificaKoInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
+            final Optional<String> email = Optional.ofNullable(findByPrimaryKey(userContext, new UtenteBulk(fattura.getUtcr())))
+                    .filter(UtenteBulk.class::isInstance)
+                    .map(UtenteBulk.class::cast)
+                    .filter(utenteBulk -> Optional.ofNullable(utenteBulk.getCd_utente_uid()).isPresent())
+                    .map(utenteBulk -> {
+                        if (dominio.isPresent())
+                            return utenteBulk.getCd_utente_uid().concat(dominio.get());
+                        return utenteBulk.getCd_utente_uid();
+                    });
+            final List<String> emails = Stream.concat(
+                    utenti.stream().map(Utente_indirizzi_mailBulk::getIndirizzo_mail),
+                    email.isPresent() ? Collections.singletonList(email.get()).stream() : Stream.empty()
+            ).distinct().collect(Collectors.toList());
+
+            sendMailForNotificationFatturaElettronica(
+                    subject,
+                    text,
+                    emails
+            );
+            return emails;
         } catch (Exception e) {
-            logger.info("Errore durante l'invio della mail di notifica ko. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
+            logger.warn("Errore durante l'invio della mail di notifica ko. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
         }
+        return Collections.emptyList();
     }
 
-    private void sendMailForNotificationFatturaElettronica(String subject,
-                                                           String text, Collection utenti) throws AddressException {
-        String addressTO = null;
-        for (java.util.Iterator<Utente_indirizzi_mailBulk> i = utenti.iterator(); i.hasNext(); ) {
-            Utente_indirizzi_mailBulk utente_indirizzi = (Utente_indirizzi_mailBulk) i.next();
-            if (addressTO == null)
-                addressTO = new String();
-            else
-                addressTO = addressTO + ",";
-            addressTO = addressTO + utente_indirizzi.getIndirizzo_mail();
-        }
-        if (addressTO != null) {
-            SendMail.sendMail(subject, text, InternetAddress.parse(addressTO));
-        }
+    private void sendMailForNotificationFatturaElettronica(String subject, String text, List<String> address) throws AddressException {
+        SendMail.sendMail(subject, text, InternetAddress.parse(address.stream().collect(Collectors.joining(","))));
+    }
+
+    private void sendMailForNotificationFatturaElettronica(String subject, String text, Collection<Utente_indirizzi_mailBulk> utenti) throws AddressException {
+        sendMailForNotificationFatturaElettronica(
+                subject,
+                text,
+                utenti.stream().map(Utente_indirizzi_mailBulk::getIndirizzo_mail).collect(Collectors.toList())
+        );
     }
 
     public Fattura_attivaBulk aggiornaFatturaRifiutataDestinatarioSDI(UserContext userContext, Fattura_attivaBulk fattura, String noteSdi) throws PersistencyException, ComponentException, java.rmi.RemoteException {

@@ -20,6 +20,7 @@ package it.cnr.contab.docamm00.ejb;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Remote;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -144,4 +145,5 @@ BigDecimal getImportoBolloVirtuale(UserContext aUC, Fattura_attivaBulk fattura) 
 void controlliGestioneBolloVirtuale(UserContext aUC, Fattura_attivaBulk fatturaAttiva, BulkList dettaglio) throws ApplicationException, ComponentException,java.rmi.RemoteException;
 String recuperoEmailUtente(UserContext aUC, Fattura_attivaBulk fatturaAttiva) throws ApplicationException, ComponentException,java.rmi.RemoteException;
 void gestioneAvvisoInvioMailFattureAttive(UserContext aUC) throws ApplicationException, ComponentException,java.rmi.RemoteException;
+List<String> sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) throws ComponentException,java.rmi.RemoteException;
 }

@@ -96,6 +96,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_CDR_SERVIZIO_ENTE = "CDR_SERVIZIO_ENTE";
 
     public final static String PK_FATTURAZIONE_ELETTRONICA = "FATTURAZIONE_ELETTRONICA";
+    public final static String SK_DOMINIO_EMAIL = "DOMINIO_EMAIL";
 
     public final static String SK_MAIL_REFERENTE_TECNICO = "MAIL_REFERENTE_TECNICO";
     public final static String SK_TELEFONO_REFERENTE_TECNICO = "TELEFONO_REFERENTE_TECNICO";
