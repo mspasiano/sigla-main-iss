@@ -5407,7 +5407,12 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 
 			BigDecimal newImportoOsv = Utility.ZERO, totImporto = Utility.ZERO;
 			ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome( userContext, ObbligazioneBulk.class );
-			ObbligazioneBulk obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+			ObbligazioneBulk obbligazione = null;
+			if ( scadenzaVecchia.getObbligazione().isObbligazioneResiduo())
+				obbligazione = (ObbligazioneResBulk)obbligazioneHome.findObbligazioneRes(scadenzaVecchia.getObbligazione());
+			else
+				obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+
 			obbligazione = (ObbligazioneBulk)inizializzaBulkPerModifica(userContext, (OggettoBulk)obbligazione);
 
 			//cerco nell'obbligazione riletto la scadenza indicata
