@@ -5968,4 +5968,15 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_accesso_controllo_disp_unita_org.xml"/>
     <!-- Autore : VALENTINA TOMADA - nuova voce di menù per consultazione della vista V_CONTROLLO_DISP_OBBLIGAZIONE_SCADENZARIO  -->
     <include file="bootstrap/add_accesso_controllo_disp_obbl_scad.xml"/>
+    <!-- Autore : VALENTINA TOMADA - nuova voce di menù  GESTIONE IVA/ISS  -->
+    <include file="bootstrap/add_accesso_gestione_iva_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - nuova voce di menù  GESTIONE IVA/ISS - update codici Accesso  -->
+    <include file="bootstrap/update_accesso_gestione_iva_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - nuova voce di menù  GESTIONE IVA/ISS - update albero main  -->
+    <include file="bootstrap/update_albero_gestione_iva_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - BP accessp Stampa Registri Iva definitivi ISS  -->
+    <include file="bootstrap/update_bp_accesso_stampa_iva_def_iss.xml"/>
+
+
+
 </databaseChangeLog>

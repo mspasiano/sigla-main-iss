@@ -98,4 +98,6 @@
     <include file="iss/update_albero_main_ordine_distinteBI_BT.xml"/>
     <!-- Autore : VALENTINA TOMADA-update stampa ordine -->
     <include file="iss/update_print_priority_stampa_ordine.xml"/>
+    <!-- Autore : CIRO SALVIO-TI_ACCESSO=D CFGPROGERCOREPROGAMM -->
+    <include file="iss/update_ti_accesso_amministra_progetti.xml"></include>
 </databaseChangeLog>
