@@ -103,7 +103,8 @@ public class Utente_indirizzi_mailHome extends BulkHome {
 		sql.addClause("AND","flEsitoPosFattElettr",SQLBuilder.EQUALS,Boolean.TRUE);
 			return findUtente(codiceUo, sql);
 	}
-	public java.util.Collection findUtenteNotificaKoInvioFatturaElettronicaAttiva(String codiceUo) throws IntrospectionException, PersistencyException 
+
+	public java.util.Collection findUtenteNotificaKoInvioFatturaElettronicaAttiva(String codiceUo) throws IntrospectionException, PersistencyException
 	{
 		SQLBuilder sql = createSQLBuilder();
 		sql.addClause("AND","flEsitoNegFattElettr",SQLBuilder.EQUALS,Boolean.TRUE);

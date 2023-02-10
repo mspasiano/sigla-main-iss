@@ -1993,6 +1993,20 @@ public List findListaCondizioneConsegnaWS(UserContext userContext, String query,
 		}
 	}
 
-	
-	
+	@Override
+	public List<String> sendMailForNotificationKo(UserContext param0, Fattura_attivaBulk param1) throws ComponentException, RemoteException {
+		try {
+			return (List<String>) invoke("sendMailForNotificationKo",new Object[] {param0, param1});
+		} catch(java.rmi.RemoteException e) {
+			throw e;
+		} catch(java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch(it.cnr.jada.comp.ComponentException ex) {
+				throw ex;
+			} catch(Throwable ex) {
+				throw new java.rmi.RemoteException("Uncaugth exception",ex);
+			}
+		}
+	}
 }

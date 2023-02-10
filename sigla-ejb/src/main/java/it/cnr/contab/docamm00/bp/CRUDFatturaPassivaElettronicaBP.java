@@ -73,6 +73,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.text.Format;
@@ -100,6 +101,7 @@ import javax.xml.transform.stream.StreamSource;
 import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.TipoDocumentoType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.mail.EmailException;
+import org.springframework.web.util.UriUtils;
 
 public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatturaBulk, DocumentoEleTestataBulk> implements FatturaPassivaElettronicaBP{
 	private static final long serialVersionUID = 1L;
@@ -434,7 +436,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	public String getNomeFileAllegato() {
 		DocumentoEleAllegatiBulk allegato = (DocumentoEleAllegatiBulk)getCrudDocEleAllegatiColl().getModel();
 		if (allegato != null && allegato.getCmisNodeRef() != null)
-			return allegato.getNomeAttachment();
+			return UriUtils.encode(allegato.getNomeAttachment(), Charset.defaultCharset());
 		return null;
 	}
 

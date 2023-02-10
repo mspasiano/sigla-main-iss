@@ -22,6 +22,7 @@ import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_attivaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_attiva_IBulk;
 import it.cnr.contab.docamm00.ejb.DocAmmFatturazioneElettronicaComponentSession;
+import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
 import it.cnr.contab.docamm00.service.DocumentiCollegatiDocAmmService;
 import it.cnr.contab.docamm00.service.FatturaPassivaElettronicaService;
 import it.cnr.contab.service.SpringUtil;
@@ -57,6 +58,8 @@ public class PECFattureAttiveResource implements PECFattureAttiveLocal {
     private Configurazione_cnrComponentSession configurazione_cnrComponentSession;
     @EJB
     private DocAmmFatturazioneElettronicaComponentSession docAmmFatturazioneElettronicaComponentSession;
+    @EJB
+    private FatturaAttivaSingolaComponentSession fatturaAttivaSingolaComponentSession;
     @EJB
     CRUDComponentSession crudComponentSession;
     @Context
@@ -140,14 +143,35 @@ public class PECFattureAttiveResource implements PECFattureAttiveLocal {
     }
 
     @Override
-    public Response aggiornaMetadati(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva)  throws Exception {
+    public Response aggiornaMetadati(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception {
         CNRUserContext userContext = (CNRUserContext) securityContext.getUserPrincipal();
 
-        if (esercizio == null){
+        if (esercizio == null) {
             return Response.serverError().entity("Parametro esercizio obbligatorio").build();
         }
         docAmmFatturazioneElettronicaComponentSession.aggiornaMetadati(userContext, esercizio, cdCds, pgFatturaAttiva);
 
         return Response.ok().build();
+    }
+
+    @Override
+    public Response reinviaNotifica(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("cdUnitaOrganizzativa") String cdUnitaOrganizzativa, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception {
+        CNRUserContext userContext = (CNRUserContext) securityContext.getUserPrincipal();
+        Fattura_attiva_IBulk fatturaAttivaIBulk = new Fattura_attiva_IBulk();
+        fatturaAttivaIBulk.setEsercizio(esercizio);
+        fatturaAttivaIBulk.setCd_cds(cdCds);
+        fatturaAttivaIBulk.setCd_unita_organizzativa(cdUnitaOrganizzativa);
+        fatturaAttivaIBulk.setPg_fattura_attiva(pgFatturaAttiva);
+        final Optional<Fattura_attiva_IBulk> fatturaAttivaIBulk1 = Optional.ofNullable(fatturaAttivaSingolaComponentSession.findByPrimaryKey(userContext, fatturaAttivaIBulk))
+                .filter(Fattura_attiva_IBulk.class::isInstance)
+                .map(Fattura_attiva_IBulk.class::cast)
+                .filter(f -> f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_SCARTATA_DA_SDI) ||
+                        f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_RIFIUTATA_DESTINATARIO) ||
+                        f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_NON_RECAPITABILE));
+        if (fatturaAttivaIBulk1.isPresent()) {
+            final List<String> emails = fatturaAttivaSingolaComponentSession.sendMailForNotificationKo(userContext, fatturaAttivaIBulk1.get());
+            return Response.ok(emails).build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

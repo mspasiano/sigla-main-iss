@@ -4447,8 +4447,16 @@ public void verificaObbligazione (UserContext aUC,ObbligazioneBulk obbligazione)
 	if ( totalObbligazione.compareTo( obbligazione.getIm_obbligazione()) < 0 )
 		throw handleException( new it.cnr.jada.comp.ApplicationException( "La somma degli importi delle singole scadenze e' inferiore all'importo complessivo dell'impegno"))	;
 	if((obbligazione.getContratto() != null && obbligazione.getContratto().getFigura_giuridica_esterna()!= null && 
-	   !(obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getContratto().getFigura_giuridica_esterna())||verificaAssociato(aUC, obbligazione.getContratto().getFigura_giuridica_esterna(),obbligazione))))
-	     throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+"non è congruente con quello del contratto (Codice Terzo:"+obbligazione.getContratto().getFigura_giuridica_esterna().getCd_terzo()+")");
+	   !(
+			   obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getContratto().getFigura_giuridica_esterna())||
+			   verificaAssociato(aUC, obbligazione.getContratto().getFigura_giuridica_esterna(),obbligazione))
+		)
+	) {
+		throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+
+				"non è congruente con quello del contratto " +
+				"(Codice Terzo:"+obbligazione.getContratto().getFigura_giuridica_esterna().getCd_terzo()+")");
+	}
+
 	if ((obbligazione.getIncarico_repertorio() != null && obbligazione.getIncarico_repertorio().getTerzo()!= null &&
 			!(obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getIncarico_repertorio().getTerzo())||verificaAssociato(aUC, obbligazione.getIncarico_repertorio().getTerzo(),obbligazione))))
 		     throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+"non è congruente con quello dell'incarico (Codice Terzo:"+obbligazione.getIncarico_repertorio().getTerzo().getCd_terzo()+")");
@@ -5400,7 +5408,12 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 
 			BigDecimal newImportoOsv = Utility.ZERO, totImporto = Utility.ZERO;
 			ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome( userContext, ObbligazioneBulk.class );
-			ObbligazioneBulk obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+			ObbligazioneBulk obbligazione = null;
+			if ( scadenzaVecchia.getObbligazione().isObbligazioneResiduo())
+				obbligazione = (ObbligazioneResBulk)obbligazioneHome.findObbligazioneRes(scadenzaVecchia.getObbligazione());
+			else
+				obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+
 			obbligazione = (ObbligazioneBulk)inizializzaBulkPerModifica(userContext, (OggettoBulk)obbligazione);
 
 			//cerco nell'obbligazione riletto la scadenza indicata
@@ -5925,9 +5938,9 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 	private Boolean verificaAssociato(UserContext usercontext, TerzoBulk terzo, ObbligazioneBulk obbligazione)throws ComponentException {
 		try {
 			AnagraficoHome anagraficoHome = (AnagraficoHome) getHome(usercontext, AnagraficoBulk.class);
-			for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(obbligazione.getCreditore().getAnagrafico()).iterator(); i.hasNext();) {
+			for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(terzo.getAnagrafico()).iterator(); i.hasNext();) {
 				Anagrafico_terzoBulk associato = i.next();
-				if( associato.getCd_terzo().compareTo(terzo.getCd_terzo())==0)
+				if( associato.getCd_terzo().compareTo(obbligazione.getCd_terzo())==0)
 					return true;
 			}
 		} catch (IntrospectionException e) {

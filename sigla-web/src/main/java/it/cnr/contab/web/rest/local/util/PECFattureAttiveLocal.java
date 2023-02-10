@@ -31,6 +31,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 @Local
 @Path("/fatture-attive")
@@ -74,4 +75,16 @@ public interface PECFattureAttiveLocal {
             }
     )
     Response aggiornaMetadati(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception;
+
+    @GET
+    @Path("/reinvia-notifica-ko")
+    @AccessoAllowed(value= AccessoEnum.XXXHTTPSESSIONXXXXXX)
+    @ApiOperation(value = "Reinvia la notifica di esito negativo a tutte le utenza configurate a ricevere la notifica e all'utenza che ha creato la fattura",
+            notes = "Accesso consentito solo alle utenze abilitate con accesso AMMFATTURDOCSFATATTV",
+            response = List.class,
+            authorizations = {
+                    @Authorization(value = "BASIC")
+            }
+    )
+    Response reinviaNotifica(@Context HttpServletRequest request, @QueryParam("esercizio") Integer esercizio, @QueryParam("cdCds") String cdCds, @QueryParam("cdUnitaOrganizzativa")String cdUnitaOrganizzativa, @QueryParam("pgFatturaAttiva") Long pgFatturaAttiva) throws Exception;
 }
