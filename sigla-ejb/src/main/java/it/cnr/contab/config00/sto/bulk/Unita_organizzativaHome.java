@@ -376,7 +376,7 @@ public class Unita_organizzativaHome extends BulkHome {
 	 * @throws IntrospectionException
 	 */
 	public Unita_organizzativaBulk findUo_cdsByUo(Integer esercizio, String cd_unita_organizzativa) throws PersistencyException, IntrospectionException {
-		SQLBuilder sql = createSQLBuilder();
+		SQLBuilder sql = createSQLBuilderEsteso();
 		sql.addTableToHeader("UNITA_ORGANIZZATIVA", "CDS");
 		sql.addSQLJoin("CDS.CD_UNITA_PADRE", "UNITA_ORGANIZZATIVA.CD_UNITA_PADRE");
 		sql.addSQLClause("AND", "CDS.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, cd_unita_organizzativa);
