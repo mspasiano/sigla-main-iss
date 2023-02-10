@@ -2378,12 +2378,33 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Stipendi_cofi_obb_scadHome stipendi_cofi_obb_scadHome = (Stipendi_cofi_obb_scadHome)getHome(userContext, it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofi_obb_scadBulk.class);
 			java.util.Collection<Stipendi_cofi_obb_scadBulk> stipendiCofiObbScadColl = stipendi_cofi_obb_scadHome.findStipendiCofiObbScad(userContext, aEsercizio, aMese);
 
+			Integer cdTerzoStipendi = Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiStipendi(userContext);
+			TerzoBulk terzoStipendi = (TerzoBulk)getHome(userContext, TerzoBulk.class).findByPrimaryKey(new TerzoBulk(cdTerzoStipendi));
+			terzoStipendi.setAnagrafico((AnagraficoBulk) getHome(userContext, AnagraficoBulk.class).findByPrimaryKey(terzoStipendi.getAnagrafico()));
+
+			Collection<Modalita_pagamentoBulk> modalita_pagamentoStipendiBulks =
+					((TerzoHome) getHome(userContext, TerzoBulk.class)).findModalita_pagamento(terzoStipendi);
+
+			Modalita_pagamentoBulk modalitaPagamentoStipendiBulk = modalita_pagamentoStipendiBulks
+					.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
+
+			Collection<BancaBulk> bancaStipendiBulks =
+					((AnagraficoHome) getHome(userContext, AnagraficoBulk.class)).findBanca(terzoStipendi.getAnagrafico());
+
+			//Cerco la banca associata al terzo e la prendo in ordine inverso di data creazione se ne esistono troppe valide
+			BancaBulk bancaStipendiBulk = bancaStipendiBulks
+					.stream()
+					.filter(banca -> banca.getTerzo().equalsByPrimaryKey(terzoStipendi))
+					.filter(banca -> !banca.getFl_cancellato()).max(Comparator.comparing(BancaBulk::getDacr))
+					.orElse(null);
+
 			for (Stipendi_cofi_obb_scadBulk el : stipendiCofiObbScadColl) {
 				try {
 					ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome(userContext, ObbligazioneBulk.class);
 					ObbligazioneBulk obbligazione = obbligazioneHome.findObbligazione(el.getStipendi_cofi_obb().getObbligazioni());
 					obbligazione.setObbligazione_scadenzarioColl(new BulkList(obbligazioneHome.findObbligazione_scadenzarioList(obbligazione)));
 
+					//Carico l'oggetto Terzo che viene letto in passi successivi...
 					TerzoHome terzohome = (TerzoHome) getHome(userContext, TerzoBulk.class);
 					obbligazione.setCreditore((TerzoBulk) terzohome.findByPrimaryKey(obbligazione.getCreditore()));
 					obbligazione.getCreditore().setAnagrafico((AnagraficoBulk) getHome(userContext, AnagraficoBulk.class).findByPrimaryKey(obbligazione.getCreditore().getAnagrafico()));
@@ -2449,29 +2470,16 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						}
 					}
 
-					Collection<Modalita_pagamentoBulk> modalita_pagamentoBulks =
-							((TerzoHome) getHome(userContext, TerzoBulk.class)).findModalita_pagamento(obbligazione.getCreditore());
+					V_obbligazioneBulk vObbligazioneBulk = Optional.ofNullable(((V_obbligazioneHome) getHome(userContext, V_obbligazioneBulk.class)).findImpegno(scadenzario.get()))
+							.orElseThrow(()->new ApplicationException("L'obbligazione "+ obbligazione.getEsercizio() + "/" + obbligazione.getEsercizio_originale() + "/" +
+											obbligazione.getCd_cds() + "/" + obbligazione.getPg_obbligazione()+" risulta essere provvisoria."));
 
-					Modalita_pagamentoBulk modalitaPagamentoBulk = modalita_pagamentoBulks
-							.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
-
-					Collection<BancaBulk> bancaBulks =
-							((AnagraficoHome) getHome(userContext, AnagraficoBulk.class)).findBanca(obbligazione.getCreditore().getAnagrafico());
-
-					//Cerco la banca associata al terzo e la prendo in ordine inverso di data creazione se ne esistono troppe valide
-					BancaBulk bancaBulk = bancaBulks
-							.stream()
-							.filter(banca -> banca.getTerzo().equalsByPrimaryKey(obbligazione.getCreditore()))
-							.filter(banca -> !banca.getFl_cancellato()).max(Comparator.comparing(BancaBulk::getDacr))
-							.orElse(null);
-
-					V_obbligazioneBulk vObbligazioneBulk = ((V_obbligazioneHome) getHome(userContext, V_obbligazioneBulk.class)).findImpegno(scadenzario.get());
 					vObbligazioneBulk.setIm_da_trasferire(el.getIm_totale());
 
 					ObbligazioneWizard obbligazioneWizardBulk = new ObbligazioneWizard(vObbligazioneBulk);
-					obbligazioneWizardBulk.setTerzoWizardBulk(obbligazione.getCreditore());
-					obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoBulk);
-					obbligazioneWizardBulk.setBancaWizardBulk(bancaBulk);
+					obbligazioneWizardBulk.setTerzoWizardBulk(terzoStipendi);
+					obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoStipendiBulk);
+					obbligazioneWizardBulk.setBancaWizardBulk(bancaStipendiBulk);
 					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi mese:" + aMese);
 					obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:" + obbligazione.getCd_elemento_voce());
 

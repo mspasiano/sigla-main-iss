@@ -18,17 +18,18 @@
 package it.cnr.contab.fondecon00.core.bulk;
 
 
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
-
 import it.cnr.contab.doccont00.core.bulk.MandatoIBulk;
 import it.cnr.contab.doccont00.core.bulk.ReversaleIBulk;
 import it.cnr.contab.doccont00.core.bulk.SospesoBulk;
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.bulk.BulkCollection;
+import it.cnr.jada.bulk.BulkList;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.bulk.ValidationException;
+
+import java.math.BigDecimal;
 
 public class Fondo_economaleBulk extends Fondo_economaleBase {
 
@@ -497,13 +498,13 @@ public Ass_fondo_eco_mandatoBulk removeFromAssociazioni_mandati(int index) {
  */
 public void resetImporti() {
 	
-	setIm_ammontare_fondo(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_ammontare_iniziale(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_residuo_fondo(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_totale_reintegri(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_totale_spese(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_totale_netto_spese(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-	setIm_limite_min_reintegro(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+	setIm_ammontare_fondo(BigDecimal.ZERO);
+	setIm_ammontare_iniziale(BigDecimal.ZERO);
+	setIm_residuo_fondo(BigDecimal.ZERO);
+	setIm_totale_reintegri(BigDecimal.ZERO);
+	setIm_totale_spese(BigDecimal.ZERO);
+	setIm_totale_netto_spese(BigDecimal.ZERO);
+	setIm_limite_min_reintegro(BigDecimal.ZERO);
 
 }
 /**

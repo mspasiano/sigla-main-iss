@@ -115,10 +115,12 @@ public class V_doc_passivo_obbligazioneBulk extends V_doc_passivo_obbligazioneBa
     public boolean equals(Object obj) {
         return (obj != null &&
                 obj instanceof V_doc_passivo_obbligazioneBulk &&
+                this.getCd_cds_obbligazione() != null &&
                 this.getEsercizio_obbligazione() != null &&
                 this.getEsercizio_ori_obbligazione() != null &&
                 this.getPg_obbligazione() != null &&
                 this.getPg_obbligazione_scadenzario() != null &&
+                (this.getCd_cds_obbligazione().compareTo(((V_doc_passivo_obbligazioneBulk) obj).getCd_cds_obbligazione()) == 0) &&
                 (this.getEsercizio_ori_obbligazione().compareTo(((V_doc_passivo_obbligazioneBulk) obj).getEsercizio_ori_obbligazione()) == 0) &&
                 (this.getPg_obbligazione().compareTo(((V_doc_passivo_obbligazioneBulk) obj).getPg_obbligazione()) == 0) &&
                 (this.getEsercizio_obbligazione().compareTo(((V_doc_passivo_obbligazioneBulk) obj).getEsercizio_obbligazione()) == 0) &&

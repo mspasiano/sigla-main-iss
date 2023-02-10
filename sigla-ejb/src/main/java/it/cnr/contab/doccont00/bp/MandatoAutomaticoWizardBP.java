@@ -88,7 +88,7 @@ public class MandatoAutomaticoWizardBP extends it.cnr.jada.util.action.SimpleCRU
 				V_doc_passivo_obbligazione_wizardBulk docPassivoSelected = (V_doc_passivo_obbligazione_wizardBulk)this.getDocumentiPassivi().getModel();
 				if ( docPassivoSelected.getModalitaPagamentoOptions() != null && docPassivoSelected.getCd_modalita_pag() == null)
 					docPassivoSelected.setModalitaPagamentoRigaMandatoWizard( (Modalita_pagamentoBulk) docPassivoSelected.getModalitaPagamentoOptions().get(0));
-				List result = ((MandatoAutomaticoComponentSession) createComponentSession()).findBancaOptions(context.getUserContext(), docPassivoSelected.getCd_terzo(), docPassivoSelected.getModalitaPagamentoRigaMandatoWizard().getCd_modalita_pag());
+				List result = ((MandatoAutomaticoComponentSession) createComponentSession()).findBancaOptions(context.getUserContext(), docPassivoSelected.getCd_terzo(), docPassivoSelected.getModalitaPagamentoRigaMandato().getCd_modalita_pag());
 				docPassivoSelected.setBancaOptions(result);
 			}
 			setModel(context, mandato);

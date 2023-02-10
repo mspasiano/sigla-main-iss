@@ -22,28 +22,38 @@ import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.config00.sto.bulk.EnteBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.docamm00.docs.bulk.DocumentoGenericoWizardBulk;
+import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
+import it.cnr.contab.docamm00.docs.bulk.TipoDocumentoEnum;
 import it.cnr.contab.doccont00.comp.DateServices;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
+import it.cnr.contab.doccont00.core.ObbligazioneWizard;
 import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.ejb.MandatoAutomaticoComponentSession;
 import it.cnr.contab.fondecon00.core.bulk.*;
-import it.cnr.contab.fondecon00.views.bulk.Vsx_reintegro_fondoBulk;
-import it.cnr.contab.fondecon00.views.bulk.Vsx_reintegro_fondoHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.Utility;
+import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.IntrospectionException;
+import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.LoggableStatement;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.RemoteIterator;
 
 import javax.ejb.EJBException;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
-import java.util.Calendar;
-import java.util.Optional;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent implements IFondoEconomaleMgr, it.cnr.jada.comp.IPrintMgr {
     /**
@@ -80,9 +90,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             ps.execute();
             try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
 
             SQLBuilder sql = spesaHome.ass_all_speSQL(context, testata, obbScad);
             if (sql != null) {
@@ -90,20 +99,13 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                 ps.execute();
             }
 
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.OutdatedResourceException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.BusyResourceException e) {
-            throw handleException(e);
-        } catch (java.sql.SQLException e) {
+        } catch (PersistencyException | OutdatedResourceException | BusyResourceException | SQLException e) {
             throw handleException(e);
         } finally {
             if (ps != null) try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
         }
     }
 
@@ -114,12 +116,11 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
      * Pre:  Associare tutte le spese selezionate all'Obbligazione_scadenzarioBulk;
      * Post: Tutte le spese selezionate vengono associare all'Obbligazione_scadenzarioBulk.
      *
-     * @param fondo   testata delle spese in elenco.
+     * @param testata   testata delle spese in elenco.
      * @param obbscad Obbligazione scadenzario da associare.
      */
 
     public void associazione(UserContext context, Fondo_economaleBulk testata, Obbligazione_scadenzarioBulk obbscad) throws it.cnr.jada.comp.ComponentException {
-
         LoggableStatement ps = null;
         try {
             lockBulk(context, testata);
@@ -136,28 +137,39 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             ps.execute();
             try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
 
             //Aggiornamento dell'importo associato a documenti amministrativi
             //della scadenza associata alle spese del fondo
             updateScadenzaWith(context, testata, obbscad);
 
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.OutdatedResourceException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.BusyResourceException e) {
-            throw handleException(e);
-        } catch (java.sql.SQLException e) {
+            //Aggiorno la scadenza dell'obbligazione per riportarla ad un importo coincidente con quanto associato
+            obbscad = (Obbligazione_scadenzarioBulk)getHome(context, Obbligazione_scadenzarioBulk.class).findByPrimaryKey(obbscad);
+            if (obbscad.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO)>0) {
+                if (obbscad.getIm_associato_doc_amm().compareTo(obbscad.getIm_scadenza())>0)
+                    throw new ApplicationException("Operazione non possibile. La scadenza "+obbscad.getPg_obbligazione_scadenzario()+
+                            " dell'obbligazione "+obbscad.getCd_cds()+"/"+obbscad.getEsercizio()+"/"+obbscad.getEsercizio_originale()+
+                            "/"+obbscad.getPg_obbligazione()+" è di importo "+ new EuroFormat().format(obbscad.getIm_scadenza())+
+                            " non sufficiente a coprire le spese selezionate pari a "+new EuroFormat().format(obbscad.getIm_associato_doc_amm())+".");
+                else if (obbscad.getIm_associato_doc_amm().compareTo(obbscad.getIm_scadenza())<0) {
+                    DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+                    dati.setNuovoImportoScadenzaVecchia(obbscad.getIm_associato_doc_amm());
+                    Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(context,obbscad, dati);
+                    //provvedo a riaccorparla
+                    ((ObbligazioneHome)getHome(context, ObbligazioneBulk.class)).accorpaScadenzeInAutomatico(context, nuovaScadenza);
+                }
+            } else {
+                //provvedo a riaccorparla
+                ((ObbligazioneHome)getHome(context, ObbligazioneBulk.class)).accorpaScadenzeInAutomatico(context, obbscad);
+            }
+        } catch (PersistencyException | OutdatedResourceException | BusyResourceException | SQLException | RemoteException e) {
             throw handleException(e);
         } finally {
             if (ps != null) try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
         }
     }
 
@@ -194,16 +206,14 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                 } finally {
                     if (rs != null) try {
                         rs.close();
-                    } catch (java.sql.SQLException e) {
+                    } catch (java.sql.SQLException ignored) {
                     }
-                    ;
                 }
             } finally {
                 if (ps != null) try {
                     ps.close();
-                } catch (java.sql.SQLException e) {
+                } catch (java.sql.SQLException ignored) {
                 }
-                ;
             }
         } catch (java.sql.SQLException ex) {
             throw handleException(ex);
@@ -230,7 +240,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                             it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema() +
                             "CNRCTB130.chiudiFondo(?, ?, ?, ?, ?) }", false, this.getClass());
             cs.setString(1, fondo.getCd_cds());
-            cs.setInt(2, fondo.getEsercizio().intValue());
+            cs.setInt(2, fondo.getEsercizio());
             cs.setString(3, fondo.getCd_unita_organizzativa());
             cs.setString(4, fondo.getCd_codice_fondo());
             cs.setString(5, userContext.getUser());
@@ -262,7 +272,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                             it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema() +
                             "CNRCTB130.chiudiSpese(?, ?, ?, ?, ?) }", false, this.getClass());
             cs.setString(1, fondo.getCd_cds());
-            cs.setInt(2, fondo.getEsercizio().intValue());
+            cs.setInt(2, fondo.getEsercizio());
             cs.setString(3, fondo.getCd_unita_organizzativa());
             cs.setString(4, fondo.getCd_codice_fondo());
             cs.setString(5, userContext.getUser());
@@ -297,7 +307,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                 cs.registerOutParameter(1, java.sql.Types.NUMERIC);
                 //cs.setString(1, cd_cds);
                 cs.executeQuery();
-                pg = new Long(cs.getLong(1));
+                pg = cs.getLong(1);
             } catch (Throwable e) {
                 throw handleException(e);
             } finally {
@@ -326,7 +336,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                     "{ call " +
                             it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema() +
                             "CNRCTB130.vsx_reintegraSpeseFondo(?) }", false, this.getClass());
-            cs.setLong(1, progressivo.longValue());
+            cs.setLong(1, progressivo);
             cs.executeQuery();
         } catch (Throwable e) {
             throw handleException(e);
@@ -353,8 +363,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
 
         SQLBuilder sql = getHome(context, Fondo_economaleBulk.class).createSQLBuilder();
 
-        sql.addClause("AND", "esercizio", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
-        sql.addClause("AND", "cd_unita_organizzativa", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_unita_organizzativa(context));
+        sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
+        sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_unita_organizzativa(context));
 
         return iterator(
                 context,
@@ -462,59 +472,55 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         Optional.ofNullable(findClause)
                 .ifPresent(findClause1 -> sql.addClause(findClause1));
         sql.openParenthesis("AND");
-        sql.addSQLClause("OR", "IM_ASS_MOD_1210", sql.EQUALS, new java.math.BigDecimal(0));
-        sql.addSQLClause("OR", "IM_ASS_MOD_1210", sql.ISNULL, null);
+        sql.addSQLClause(FindClause.OR, "IM_ASS_MOD_1210", SQLBuilder.EQUALS, new java.math.BigDecimal(0));
+        sql.addSQLClause(FindClause.OR, "IM_ASS_MOD_1210", SQLBuilder.ISNULL, null);
         sql.closeParenthesis();
 
         //Errore segnalato. Il controllo sull'importo è rimanadato
         //alla reversale di chiusura 03/12/2003
-        sql.addSQLClause("AND", "(IM_SOSPESO - IM_ASSOCIATO)", sql.GREATER_EQUALS, fondo.getIm_residuo_fondo().subtract(fondo.getIm_totale_netto_spese()));
+        sql.addSQLClause(FindClause.AND, "(IM_SOSPESO - IM_ASSOCIATO)", sql.GREATER_EQUALS, fondo.getIm_residuo_fondo().subtract(fondo.getIm_totale_netto_spese()));
         // r.p. 12/02/2013 la condizione precedente era commentata
 
         try {
             EnteBulk ente = (EnteBulk) getHome(userContext, EnteBulk.class)
                     .findAll().get(0);
 
-            if (!Utility.createParametriCnrComponentSession().getParametriCnr(userContext, fondo.getEsercizio()).getFl_tesoreria_unica().booleanValue()) {
-                sql.addClause("AND", "stato_sospeso", sql.EQUALS, SospesoBulk.STATO_SOSP_ASS_A_CDS);
-                sql.addClause("AND", "fl_stornato", sql.EQUALS, Boolean.FALSE);
+            if (!Utility.createParametriCnrComponentSession().getParametriCnr(userContext, fondo.getEsercizio()).getFl_tesoreria_unica()) {
+                sql.addClause(FindClause.AND, "stato_sospeso", SQLBuilder.EQUALS, SospesoBulk.STATO_SOSP_ASS_A_CDS);
+                sql.addClause(FindClause.AND, "fl_stornato", SQLBuilder.EQUALS, Boolean.FALSE);
 
-                sql.addClause("AND", "cd_cds", sql.EQUALS, fondo.getCd_cds());
+                sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, fondo.getCd_cds());
 
-                sql.addClause("AND", "cd_cds_origine", sql.EQUALS, fondo.getCd_cds());
+                sql.addClause(FindClause.AND, "cd_cds_origine", SQLBuilder.EQUALS, fondo.getCd_cds());
             } else {
-                sql.addClause("AND", "cd_cds", sql.EQUALS, ente.getCd_unita_organizzativa());
+                sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, ente.getCd_unita_organizzativa());
                 sql.openParenthesis("AND");
                 sql.openParenthesis("AND");
-                sql.addClause("AND", "stato_sospeso", sql.EQUALS, SospesoBulk.STATO_SOSP_ASS_A_CDS);
-                sql.addClause("AND", "cd_cds_origine", sql.EQUALS, fondo.getCd_cds());
+                sql.addClause(FindClause.AND, "stato_sospeso", SQLBuilder.EQUALS, SospesoBulk.STATO_SOSP_ASS_A_CDS);
+                sql.addClause(FindClause.AND, "cd_cds_origine", SQLBuilder.EQUALS, fondo.getCd_cds());
                 sql.closeParenthesis();
-                sql.openParenthesis("OR");
-                sql.addClause("OR", "stato_sospeso", sql.EQUALS, SospesoBulk.STATO_SOSP_IN_SOSPESO);
-                sql.addClause("AND", "cd_cds_origine", sql.ISNULL, null);
+                sql.openParenthesis(FindClause.OR);
+                sql.addClause(FindClause.OR, "stato_sospeso", SQLBuilder.EQUALS, SospesoBulk.STATO_SOSP_IN_SOSPESO);
+                sql.addClause(FindClause.AND, "cd_cds_origine", SQLBuilder.ISNULL, null);
                 sql.closeParenthesis();
                 sql.closeParenthesis();
             }
 
-            sql.addClause("AND", "ti_entrata_spesa", sql.EQUALS, SospesoBulk.TIPO_ENTRATA);
-            sql.addClause("AND", "ti_sospeso_riscontro", sql.EQUALS, SospesoBulk.TI_SOSPESO);
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(fondo, e);
-        } catch (RemoteException e) {
-            throw handleException(fondo, e);
-        } catch (EJBException e) {
+            sql.addClause(FindClause.AND, "ti_entrata_spesa", SQLBuilder.EQUALS, SospesoBulk.TIPO_ENTRATA);
+            sql.addClause(FindClause.AND, "ti_sospeso_riscontro", SQLBuilder.EQUALS, SospesoBulk.TI_SOSPESO);
+        } catch (PersistencyException | RemoteException | EJBException e) {
             throw handleException(fondo, e);
         }
         try {
             int annoSolare = Fondo_spesaBulk.getDateCalendar(getHome(userContext, fondo).getServerDate()).get(Calendar.YEAR);
-            int esScrivania = CNRUserContext.getEsercizio(userContext).intValue();
+            int esScrivania = CNRUserContext.getEsercizio(userContext);
             if (annoSolare != esScrivania) {
                 sql.openParenthesis("AND");
-                sql.addClause("AND", "esercizio", sql.EQUALS, fondo.getEsercizio());
-                sql.addClause("OR", "esercizio", sql.EQUALS, new Integer(annoSolare));
+                sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, fondo.getEsercizio());
+                sql.addClause(FindClause.OR, "esercizio", SQLBuilder.EQUALS, annoSolare);
                 sql.closeParenthesis();
             } else
-                sql.addClause("AND", "esercizio", sql.EQUALS, fondo.getEsercizio());
+                sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, fondo.getEsercizio());
         } catch (it.cnr.jada.persistency.PersistencyException e) {
             throw handleException(fondo, e);
         }
@@ -781,8 +787,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
     public OggettoBulk creaConBulk(it.cnr.jada.UserContext userContext, OggettoBulk bulk) throws it.cnr.jada.comp.ComponentException {
 
         Fondo_economaleBulk fondo = (Fondo_economaleBulk) bulk;
-        fondo.setIm_totale_spese(new java.math.BigDecimal(0));
-        fondo.setIm_totale_netto_spese(new java.math.BigDecimal(0));
+        fondo.setIm_totale_spese(BigDecimal.ZERO);
+        fondo.setIm_totale_netto_spese(BigDecimal.ZERO);
         fondo.setIm_residuo_fondo(fondo.getIm_ammontare_fondo());
         if (fondo.getIm_ammontare_iniziale() == null)
             fondo.setIm_ammontare_iniziale(fondo.getIm_ammontare_fondo());
@@ -825,9 +831,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             ps.execute();
             try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
 
             SQLBuilder sql = spesaHome.rem_all_ass_speSQL(context, testata, obbScad);
             if (sql != null) {
@@ -836,20 +841,13 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             }
 //			try{ps.close();}catch( java.sql.SQLException e ){};
 
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.OutdatedResourceException e) {
-            throw handleException(e);
-        } catch (it.cnr.jada.bulk.BusyResourceException e) {
-            throw handleException(e);
-        } catch (java.sql.SQLException e) {
+        } catch (PersistencyException | OutdatedResourceException | BusyResourceException | SQLException e) {
             throw handleException(e);
         } finally {
             if (ps != null) try {
                 ps.close();
-            } catch (java.sql.SQLException e) {
+            } catch (java.sql.SQLException ignored) {
             }
-            ;
         }
     }
 //^^@@
@@ -880,9 +878,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         try {
             if (hasSpese(aUC, fondo))
                 throw new it.cnr.jada.comp.ApplicationException("Non è possibile eliminare un fondo economale per il quale sono state registrate delle spese!");
-        } catch (it.cnr.jada.persistency.IntrospectionException e) {
-            throw handleException(fondo, e);
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
+        } catch (IntrospectionException | PersistencyException e) {
             throw handleException(fondo, e);
         }
 
@@ -915,10 +911,10 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         it.cnr.jada.bulk.BulkHome home = getHome(aUC, Ass_fondo_eco_mandatoBulk.class);
 
         it.cnr.jada.persistency.sql.SQLBuilder sql = home.createSQLBuilder();
-        sql.addClause("AND", "cd_unita_organizzativa", sql.EQUALS, fondo.getCd_unita_organizzativa());
-        sql.addClause("AND", "cd_cds", sql.EQUALS, fondo.getCd_cds());
-        sql.addClause("AND", "esercizio", sql.EQUALS, fondo.getEsercizio());
-        sql.addClause("AND", "cd_codice_fondo", sql.EQUALS, fondo.getCd_codice_fondo());
+        sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, fondo.getCd_unita_organizzativa());
+        sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, fondo.getCd_cds());
+        sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, fondo.getEsercizio());
+        sql.addClause(FindClause.AND, "cd_codice_fondo", SQLBuilder.EQUALS, fondo.getCd_codice_fondo());
         return home.fetchAll(sql);
     }
 //^^@@
@@ -1071,9 +1067,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             int annoSolare = Fondo_spesaBulk.getDateCalendar(date).get(java.util.Calendar.YEAR);
             if (annoSolare != it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext).intValue())
                 throw new it.cnr.jada.comp.ApplicationException("Non è possibile inserire un fondo economale in esercizi non corrispondenti all'anno solare!");
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(fondo, e);
-        } catch (it.cnr.jada.persistency.IntrospectionException e) {
+        } catch (PersistencyException | IntrospectionException e) {
             throw handleException(fondo, e);
         }
 
@@ -1134,10 +1128,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                     ((CNRUserContext.getEsercizio(aUC).intValue() !=
                             fondo.getEsercizio().intValue()) ||
                             (Fondo_spesaBulk.getDateCalendar(null).get(Calendar.YEAR) !=
-                                    fondo.getEsercizio().intValue())));
-        } catch (it.cnr.jada.persistency.PersistencyException e) {
-            throw handleException(fondo, e);
-        } catch (it.cnr.jada.persistency.IntrospectionException e) {
+                                    fondo.getEsercizio())));
+        } catch (PersistencyException | IntrospectionException e) {
             throw handleException(fondo, e);
         }
 
@@ -1223,7 +1215,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         }
 
         stampa.setFondoForPrint(new Fondo_economaleBulk());
-        stampa.setDataInizio(getFirstDayOfYear(CNRUserContext.getEsercizio(aUC).intValue()));
+        stampa.setDataInizio(getFirstDayOfYear(CNRUserContext.getEsercizio(aUC)));
 
         java.util.Calendar cal = java.util.Calendar.getInstance();
         cal.setTime(getDataOdierna(aUC));
@@ -1281,8 +1273,8 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             for (int i = 0; i < spese.length; i++) {
                 Fondo_spesaBulk spesa = spese[i];
                 boolean associato = associati[i];
-                if (spesa.getFl_obbligazione() != null && spesa.getFl_obbligazione().booleanValue() != associato) {
-                    spesa.setFl_obbligazione(new Boolean(associato));
+                if (spesa.getFl_obbligazione() != null && spesa.getFl_obbligazione() != associato) {
+                    spesa.setFl_obbligazione(associato);
                     if (!associato)
                         spesa.setObb_scad(null);
                     updateBulk(userContext, spesa);
@@ -1320,53 +1312,189 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
      * L'operazione viene interrotta con relativo messaggio
      */
 //^^@@
-    public Fondo_economaleBulk reintegraSpese(
-            UserContext userContext,
-            Fondo_economaleBulk fondo,
-            java.util.List speseSelezionate)
-            throws it.cnr.jada.comp.ComponentException {
+    public Fondo_economaleBulk reintegraSpese(UserContext userContext, Fondo_economaleBulk fondo, List speseSelezionate) throws it.cnr.jada.comp.ComponentException {
+        try {
+            if (fondo != null && speseSelezionate != null && !speseSelezionate.isEmpty()) {
+                Fondo_spesaHome fondoSpesaHome = (Fondo_spesaHome)getHome(userContext, Fondo_spesaBulk.class);
 
-        if (fondo != null && speseSelezionate != null && !speseSelezionate.isEmpty()) {
-            java.util.Vector visteAggiunte = new java.util.Vector();
-            Vsx_reintegro_fondoHome home = (Vsx_reintegro_fondoHome) getHome(userContext, Vsx_reintegro_fondoBulk.class);
-            try {
-                try {
-                    int count = 0;
-                    Long pg = callGetPgPerReintegroSpese(userContext);
-                    for (java.util.Iterator i = speseSelezionate.iterator(); i.hasNext(); ) {
-                        Fondo_spesaBulk spesa = (Fondo_spesaBulk) i.next();
-                        spesa.setUser(userContext.getUser());
-                        Vsx_reintegro_fondoBulk vista = new Vsx_reintegro_fondoBulk();
-                        vista.setPg_call(pg);
-                        vista.completeFrom(spesa);
-                        vista.setPar_num(new Integer(count++));
-                        vista.setToBeCreated();
-                        home.insert(vista, userContext);
-                        visteAggiunte.add(vista);
-                    }
+                List<Fondo_spesaBulk> allSpese = fondoSpesaHome.fetchAll(fondoSpesaHome.cercaSpeseDelFondo(fondo, null));
 
-                    callReintegroSpese(userContext, pg);
+                List<Fondo_spesaBulk> innerSpeseSelezionate = speseSelezionate;
+                List<Fondo_spesaBulk> innerSpeseNonSelezionate = allSpese.stream()
+                        .filter(nosel->Optional.ofNullable(nosel.getPg_obbligazione()).isPresent())
+                        .filter(nosel->!nosel.isSpesa_reintegrata())
+                        .filter(nosel->!innerSpeseSelezionate.stream().filter(sel->sel.equalsByPrimaryKey(nosel)).findAny().isPresent())
+                        .collect(Collectors.toList());
 
-                } catch (it.cnr.jada.persistency.PersistencyException e) {
-                    throw e;
-                } finally {
-                    for (java.util.Iterator i = visteAggiunte.iterator(); i.hasNext(); ) {
-                        Vsx_reintegro_fondoBulk vistaInserita = (Vsx_reintegro_fondoBulk) i.next();
-                        vistaInserita.setToBeDeleted();
-                        home.delete(vistaInserita, userContext);
+                GregorianCalendar aDateCont = new GregorianCalendar();
+                aDateCont.set(Calendar.HOUR_OF_DAY, aDateCont.getActualMinimum(Calendar.HOUR_OF_DAY));
+                aDateCont.set(Calendar.MINUTE, aDateCont.getActualMinimum(Calendar.MINUTE));
+                aDateCont.set(Calendar.SECOND, aDateCont.getActualMinimum(Calendar.SECOND));
+                aDateCont.set(Calendar.MILLISECOND, aDateCont.getActualMinimum(Calendar.MILLISECOND));
+
+                MandatoAutomaticoWizardBulk mandatoWizard = new MandatoAutomaticoWizardBulk();
+                mandatoWizard.setTi_automatismo(MandatoAutomaticoWizardBulk.AUTOMATISMO_DA_DOCPASSIVI);
+                mandatoWizard.setEsercizio(fondo.getEsercizio());
+                mandatoWizard.setCds(fondo.getCds());
+                mandatoWizard.setUnita_organizzativa(fondo.getUnita_organizzativa());
+                mandatoWizard.setCd_cds_origine(fondo.getCd_cds());
+                mandatoWizard.setCd_uo_origine(fondo.getCd_unita_organizzativa());
+                mandatoWizard.setDt_emissione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
+                mandatoWizard.setUser(CNRUserContext.getUser(userContext));
+                mandatoWizard.setDs_mandato("Mandato per reintegro fondo economale: "+fondo.getEsercizio()+"-"+fondo.getCd_unita_organizzativa()+" n."+fondo.getCd_codice_fondo());
+                mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
+                mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
+
+                //Aggiungo i documenti delle spese documentate
+                V_doc_passivo_obbligazione_wizardHome home = (V_doc_passivo_obbligazione_wizardHome) getHome(userContext, V_doc_passivo_obbligazione_wizardBulk.class);
+                List<ObbligazioneWizard> listaObbligazioniWizard = new ArrayList<>();
+                for (Object o : speseSelezionate) {
+                    Fondo_spesaBulk fondoSpesa = (Fondo_spesaBulk) o;
+                    if (fondoSpesa.isSpesa_reintegrata())
+                        throw new ApplicationException("Errore in fase di creazione mandati. Risultano selezionate spese già reintegrate.");
+
+                    //Deve selezionare tutte le spese associate all'obbligazione
+                    if (innerSpeseNonSelezionate.stream().filter(nosel->nosel.getObb_scad().equalsByPrimaryKey(fondoSpesa.getObb_scad())).findAny().isPresent())
+                        throw new ApplicationException("Errore in fase di creazione mandati. Risultano selezionate solo alcune spese associate" +
+                                " alla scadenza "+fondoSpesa.getObb_scad().getPg_obbligazione_scadenzario()+" dell'obbligazione "+
+                                fondoSpesa.getObb_scad().getCd_cds()+"/"+fondoSpesa.getObb_scad().getEsercizio()+"/"+fondoSpesa.getObb_scad().getEsercizio_originale()+
+                                "/"+fondoSpesa.getObb_scad().getPg_obbligazione()+".");
+
+                    if (fondoSpesa.isSpesa_documentata()) {
+                        if (!TipoDocumentoEnum.fromValue(fondoSpesa.getCd_tipo_documento_amm()).isDocumentoGenericoPassivo())
+                            throw new ApplicationException("Errore in fase di creazione mandati. Risultano essere stati selezionati documenti non generici.");
+                        mandatoWizard.getDocPassiviSelezionatiColl().addAll(home.findDocPassivi(new Documento_genericoBulk(fondoSpesa.getCd_cds_doc_amm(), fondoSpesa.getCd_tipo_documento_amm(), fondoSpesa.getCd_uo_doc_amm(), fondoSpesa.getEsercizio_doc_amm(), fondoSpesa.getPg_documento_amm())));
+                    } else {
+                        if (!Optional.ofNullable(fondoSpesa.getObb_scad()).flatMap(el->Optional.ofNullable(el.getPg_obbligazione())).isPresent())
+                            throw new ApplicationException("Errore in fase di creazione mandati. Risultano essere state selezionate spese documentate senza indicazione della scadenza obbligazione necessaria per emettere il mandato.");
+
+                        ObbligazioneBulk obbligazione = ((ObbligazioneHome)getHome(userContext, ObbligazioneBulk.class)).findObbligazione(fondoSpesa.getObb_scad().getObbligazione());
+                        TerzoBulk terzo = (TerzoBulk)(getHome(userContext, TerzoBulk.class)).findByPrimaryKey(obbligazione.getCreditore());
+
+                        Collection<Modalita_pagamentoBulk> modalita_pagamentoBulks =
+                                ((TerzoHome) getHome(userContext, TerzoBulk.class)).findModalita_pagamento(obbligazione.getCreditore());
+
+                        Modalita_pagamentoBulk modalitaPagamentoBulk = modalita_pagamentoBulks
+                                .stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
+
+                        Collection<BancaBulk> bancaBulks =
+                                ((AnagraficoHome) getHome(userContext, AnagraficoBulk.class)).findBanca(terzo.getAnagrafico());
+
+                        //Cerco la banca associata al terzo e la prendo in ordine inverso di data creazione se ne esistono troppe valide
+                        BancaBulk bancaBulk = bancaBulks
+                                .stream()
+                                .filter(banca -> banca.getTerzo().equalsByPrimaryKey(obbligazione.getCreditore()))
+                                .filter(banca -> !banca.getFl_cancellato()).max(Comparator.comparing(BancaBulk::getDacr))
+                                .orElse(null);
+
+                        V_obbligazioneBulk vObbligazioneBulk = ((V_obbligazioneHome) getHome(userContext, V_obbligazioneBulk.class)).findImpegno(fondoSpesa.getObb_scad());
+                        vObbligazioneBulk.setIm_da_trasferire(vObbligazioneBulk.getIm_scadenza());
+
+                        ObbligazioneWizard obbligazioneWizardBulk = listaObbligazioniWizard.stream().filter(el->el.getObbligazioneBulk().equalsByPrimaryKey(vObbligazioneBulk)).findFirst().orElse(null);
+                        if (obbligazioneWizardBulk==null) {
+                            obbligazioneWizardBulk = new ObbligazioneWizard(vObbligazioneBulk);
+                            obbligazioneWizardBulk.setTerzoWizardBulk(obbligazione.getCreditore());
+                            obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoBulk);
+                            obbligazioneWizardBulk.setBancaWizardBulk(bancaBulk);
+                            obbligazioneWizardBulk.setAggiornaDocAmm(Boolean.FALSE);
+                            obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Reintegro fondo economale: " + fondo.getEsercizio() + "-" + fondo.getCd_unita_organizzativa() + " n." + fondo.getCd_codice_fondo());
+
+                            listaObbligazioniWizard.add(obbligazioneWizardBulk);
+                        }
                     }
                 }
 
+                //Creo il documento generico per le spese non documentate
+                if (!listaObbligazioniWizard.isEmpty()) {
+                    DocumentoGenericoWizardBulk docWizard = new DocumentoGenericoWizardBulk();
+                    docWizard.setEsercizio(fondo.getEsercizio());
+                    docWizard.setCd_cds(fondo.getCd_cds());
+                    docWizard.setCd_unita_organizzativa(fondo.getCd_unita_organizzativa());
+                    docWizard.setCd_cds_origine(fondo.getCd_cds());
+                    docWizard.setCd_uo_origine(fondo.getCd_unita_organizzativa());
+                    docWizard.setData_registrazione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
+                    docWizard.setDt_da_competenza_coge(docWizard.getData_registrazione());
+                    docWizard.setDt_a_competenza_coge(docWizard.getData_registrazione());
+                    docWizard.setUser(CNRUserContext.getUser(userContext));
+                    docWizard.setTi_associato_manrev(Documento_genericoBulk.NON_ASSOCIATO_A_MANDATO);
+                    docWizard.setTi_istituz_commerc(TipoIVA.ISTITUZIONALE.value());
+                    docWizard.setDs_documento_generico("Reintegro fondo economale: "+fondo.getEsercizio()+"-"+fondo.getCd_unita_organizzativa()+" n."+fondo.getCd_codice_fondo());
+
+                    Documento_genericoBulk documentoGenericoBulk = Utility.createDocumentoGenericoComponentSession().creaDocumentoGenericoDaImpegni(userContext, docWizard, listaObbligazioniWizard);
+                    // e lo aggiungo
+                    mandatoWizard.getDocPassiviSelezionatiColl().addAll(home.findDocPassivi(documentoGenericoBulk));
+                }
+
+                MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
+                mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);
+                mandatoWizard.getMandatiColl().stream().filter(MandatoBulk.class::isInstance).map(MandatoBulk.class::cast).findFirst()
+                        .orElseThrow(()->new DetailedRuntimeException("Errore in fase di creazione mandati. Non risulta esserne stato emesso alcuno."));
+
+                for (Object o : speseSelezionate) {
+                    Fondo_spesaBulk fondoSpesa = (Fondo_spesaBulk) o;
+                    MandatoBulk mandatoSelected = null;
+                    for (MandatoBulk mandatoBulk : mandatoWizard.getMandatiColl()) {
+                        for (Mandato_rigaBulk mriga : mandatoBulk.getMandato_rigaColl()) {
+                            if (fondoSpesa.isSpesa_documentata()) {
+                                if (mriga.getEsercizio_doc_amm().equals(fondoSpesa.getEsercizio_doc_amm()) &&
+                                        mriga.getCd_cds_doc_amm().equals(fondoSpesa.getCd_cds_doc_amm()) &&
+                                        mriga.getCd_uo_doc_amm().equals(fondoSpesa.getCd_uo_doc_amm()) &&
+                                        mriga.getCd_tipo_documento_amm().equals(fondoSpesa.getCd_tipo_documento_amm()) &&
+                                        mriga.getPg_doc_amm().equals(fondoSpesa.getPg_documento_amm())) {
+                                    if (mandatoSelected != null && !mandatoSelected.equalsByPrimaryKey(mandatoBulk))
+                                        throw new ApplicationException("Errore in fase di creazione mandati. Il documento amministrativo " +
+                                                fondoSpesa.getEsercizio_doc_amm() + "/" + fondoSpesa.getCd_cds_doc_amm() + "/" + fondoSpesa.getCd_uo_doc_amm() + "/" + fondoSpesa.getCd_tipo_documento_amm() + "/" +
+                                                fondoSpesa.getPg_documento_amm() + " risulterebbe essere pagato da più mandati. (E' forse multivoce?).");
+                                    mandatoSelected = mandatoBulk;
+                                }
+                            } else {
+                                if (mriga.getCd_cds().equals(fondoSpesa.getCd_cds_obbligazione()) &&
+                                        mriga.getEsercizio_obbligazione().equals(fondoSpesa.getEsercizio_obbligazione()) &&
+                                        mriga.getEsercizio_ori_obbligazione().equals(fondoSpesa.getEsercizio_ori_obbligazione()) &&
+                                        mriga.getPg_obbligazione().equals(fondoSpesa.getPg_obbligazione()) &&
+                                        mriga.getPg_obbligazione_scadenzario().equals(fondoSpesa.getPg_obbligazione_scadenzario())) {
+                                    if (mandatoSelected != null && !mandatoSelected.equalsByPrimaryKey(mandatoBulk))
+                                        throw new ApplicationException("Errore in fase di creazione mandati. La scadenza "+fondoSpesa.getPg_obbligazione_scadenzario()+
+                                                "dell'obbligazione "+fondoSpesa.getCd_cds_obbligazione()+"/"+fondoSpesa.getEsercizio_obbligazione()+"/"+
+                                                fondoSpesa.getEsercizio_ori_obbligazione()+"/"+fondoSpesa.getPg_obbligazione() + " risulterebbe essere pagata da più mandati.");
+                                    mandatoSelected = mandatoBulk;
+                                }
+                            }
+                        }
+                    }
+
+                    if (mandatoSelected == null) {
+                        if (fondoSpesa.isSpesa_documentata())
+                            throw new ApplicationException("Errore in fase di creazione mandati. Il documento amministrativo " +
+                                    fondoSpesa.getEsercizio_doc_amm() + "/" + fondoSpesa.getCd_cds_doc_amm() + "/" + fondoSpesa.getCd_uo_doc_amm() + "/" + fondoSpesa.getCd_tipo_documento_amm() + "/" +
+                                    fondoSpesa.getPg_documento_amm() + " non risulterebbe essere pagato da alcun mandato.");
+                        else
+                            throw new ApplicationException("Errore in fase di creazione mandati. La scadenza "+fondoSpesa.getPg_obbligazione_scadenzario()+
+                                    "dell'obbligazione "+fondoSpesa.getCd_cds_obbligazione()+"/"+fondoSpesa.getEsercizio_obbligazione()+"/"+
+                                    fondoSpesa.getEsercizio_ori_obbligazione()+"/"+fondoSpesa.getPg_obbligazione() + " risulterebbe essere pagata da più mandati.");
+                    }
+
+                    fondoSpesa.setEsercizio_mandato(mandatoSelected.getEsercizio());
+                    fondoSpesa.setCd_cds_mandato(mandatoSelected.getCd_cds());
+                    fondoSpesa.setPg_mandato(mandatoSelected.getPg_mandato());
+                    fondoSpesa.setFl_reintegrata(Boolean.TRUE);
+                    fondoSpesa.setToBeUpdated();
+                    makeBulkPersistent(userContext, fondoSpesa);
+                }
+
+                BigDecimal totaleReintegro = mandatoWizard.getMandatiColl().stream().map(MandatoBulk::getIm_mandato).reduce(BigDecimal.ZERO, BigDecimal::add);
+                fondo.setIm_residuo_fondo(fondo.getIm_residuo_fondo().add(totaleReintegro));
+                fondo.setIm_totale_reintegri(fondo.getIm_totale_reintegri().add(totaleReintegro));
+                fondo.setIm_totale_spese(fondo.getIm_totale_spese().subtract(totaleReintegro));
+                fondo.setToBeUpdated();
+                makeBulkPersistent(userContext, fondo);
                 fondo = (Fondo_economaleBulk) getHome(userContext, fondo).findByPrimaryKey(fondo);
-
-            } catch (it.cnr.jada.persistency.PersistencyException e) {
-                throw handleException(fondo, e);
-            } catch (Throwable e) {
-                throw handleException(fondo, e);
             }
-        }
 
-        return fondo;
+            return fondo;
+        } catch (Throwable e) {
+            throw handleException(fondo, e);
+        }
     }
 
     public it.cnr.jada.persistency.sql.SQLBuilder selectBancaByClause(
@@ -1390,23 +1518,23 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             throws ComponentException {
 
         SQLBuilder sql = getHome(aUC, economo).createSQLBuilder();
-        sql.addSQLClause("AND", "TERZO.CD_TERZO", sql.EQUALS, economo.getCd_terzo());
-        sql.addSQLClause("AND", "TERZO.CD_PRECEDENTE", sql.EQUALS, economo.getCd_precedente());
+        sql.addSQLClause(FindClause.AND, "TERZO.CD_TERZO", SQLBuilder.EQUALS, economo.getCd_terzo());
+        sql.addSQLClause(FindClause.AND, "TERZO.CD_PRECEDENTE", SQLBuilder.EQUALS, economo.getCd_precedente());
         sql.openParenthesis("AND");
-        sql.addSQLClause("OR", "TERZO.DT_FINE_RAPPORTO", sql.ISNULL, null);
-        sql.addSQLClause("OR", "TERZO.DT_FINE_RAPPORTO", sql.GREATER_EQUALS, new java.sql.Timestamp(Fondo_spesaBulk.getDateCalendar(null).getTime().getTime()));
+        sql.addSQLClause(FindClause.OR, "TERZO.DT_FINE_RAPPORTO", SQLBuilder.ISNULL, null);
+        sql.addSQLClause(FindClause.OR, "TERZO.DT_FINE_RAPPORTO", SQLBuilder.GREATER_EQUALS, new java.sql.Timestamp(Fondo_spesaBulk.getDateCalendar(null).getTime().getTime()));
         sql.closeParenthesis();
 
 //	Probabilmente non servono
-//	sql.addSQLClause("AND","TERZO.TI_TERZO",sql.NOT_EQUALS,TerzoBulk.DEBITORE);
-//	sql.addSQLClause("AND","ANAGRAFICO.TI_ENTITA",sql.NOT_EQUALS,"D");
-//	sql.addSQLClause("AND","ANAGRAFICO.TI_ITALIANO_ESTERO",sql.EQUALS,fatturaPassiva.getSupplierNationType());
+//	sql.addSQLClause(FindClause.AND,"TERZO.TI_TERZO",SQLBuilder.NOT_EQUALS,TerzoBulk.DEBITORE);
+//	sql.addSQLClause(FindClause.AND,"ANAGRAFICO.TI_ENTITA",SQLBuilder.NOT_EQUALS,"D");
+//	sql.addSQLClause(FindClause.AND,"ANAGRAFICO.TI_ITALIANO_ESTERO",SQLBuilder.EQUALS,fatturaPassiva.getSupplierNationType());
 
         if (economo != null && economo.getAnagrafico() != null) {
             sql.addTableToHeader("ANAGRAFICO");
             sql.addSQLJoin("TERZO.CD_ANAG", "ANAGRAFICO.CD_ANAG");
-            sql.addSQLClause("AND", "ANAGRAFICO.CODICE_FISCALE", sql.CONTAINS, economo.getAnagrafico().getCodice_fiscale());
-            sql.addSQLClause("AND", "ANAGRAFICO.PARTITA_IVA", sql.CONTAINS, economo.getAnagrafico().getPartita_iva());
+            sql.addSQLClause(FindClause.AND, "ANAGRAFICO.CODICE_FISCALE", SQLBuilder.CONTAINS, economo.getAnagrafico().getCodice_fiscale());
+            sql.addSQLClause(FindClause.AND, "ANAGRAFICO.PARTITA_IVA", SQLBuilder.CONTAINS, economo.getAnagrafico().getPartita_iva());
         }
 
         sql.addClause(clauses);
@@ -1421,12 +1549,6 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
      * PostCondition:
      * Viene restituito il SQLBuilder con l'elenco delle clausole selezionate dall'utente e, in aggiunta, le
      * clausole che il Fondo Economale appartenga al CdR/Esercizio di scrivania
-     *
-     * @param userContext     lo <code>UserContext</code> che ha generato la richiesta
-     * @param utilizzatori_la il <code>Inventario_utilizzatori_laBulk</code> CdR di riferimento
-     * @param l_att           la <code>Linea_attivitaBulk</code> Linea di Attività modello
-     * @param clauses         <code>CompoundFindClause</code> le clausole della selezione
-     * @return sql <code>SQLBuilder</code> Risultato della selezione.
      **/
     public SQLBuilder selectFondoForPrintByClause(UserContext userContext, Stampa_vpg_fondo_economaleBulk stampa, Fondo_economaleBulk fondo, CompoundFindClause clauses)
             throws ComponentException {
@@ -1434,9 +1556,9 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         SQLBuilder sql = getHome(userContext, Fondo_economaleBulk.class).createSQLBuilder();
         sql.addClause(clauses);
 
-        sql.addSQLClause("AND", "CD_CDS", sql.EQUALS, CNRUserContext.getCd_cds(userContext));
-        sql.addSQLClause("AND", "CD_UNITA_ORGANIZZATIVA", sql.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
-        sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, CNRUserContext.getEsercizio(userContext));
+        sql.addSQLClause(FindClause.AND, "CD_CDS", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
+        sql.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
+        sql.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
 
         return sql;
     }
@@ -1451,14 +1573,14 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         it.cnr.jada.persistency.sql.SQLBuilder sql = getHome(aUC, fornitore, "V_TERZO_CF_PI").createSQLBuilder();
         sql.addTableToHeader("ANAGRAFICO");
         sql.addSQLJoin("ANAGRAFICO.CD_ANAG", "V_TERZO_CF_PI.CD_ANAG");
-        sql.addSQLClause("AND", "V_TERZO_CF_PI.CD_TERZO", sql.EQUALS, fornitore.getCd_terzo());
-        sql.addSQLClause("AND", "V_TERZO_CF_PI.DENOMINAZIONE_SEDE", sql.LIKE, fornitore.getDenominazione_sede());
+        sql.addSQLClause(FindClause.AND, "V_TERZO_CF_PI.CD_TERZO", SQLBuilder.EQUALS, fornitore.getCd_terzo());
+        sql.addSQLClause(FindClause.AND, "V_TERZO_CF_PI.DENOMINAZIONE_SEDE", sql.LIKE, fornitore.getDenominazione_sede());
 
-        sql.addSQLClause("AND", "((V_TERZO_CF_PI.DT_FINE_RAPPORTO IS NULL) OR (V_TERZO_CF_PI.DT_FINE_RAPPORTO >= ?))");
+        sql.addSQLClause(FindClause.AND, "((V_TERZO_CF_PI.DT_FINE_RAPPORTO IS NULL) OR (V_TERZO_CF_PI.DT_FINE_RAPPORTO >= ?))");
         sql.addParameter(filtro.getCurrentDate(), java.sql.Types.TIMESTAMP, 0);
 
-        sql.addSQLClause("AND", "V_TERZO_CF_PI.TI_TERZO", sql.NOT_EQUALS, TerzoBulk.DEBITORE);
-        sql.addSQLClause("AND", "ANAGRAFICO.TI_ENTITA", sql.NOT_EQUALS, "D");
+        sql.addSQLClause(FindClause.AND, "V_TERZO_CF_PI.TI_TERZO", SQLBuilder.NOT_EQUALS, TerzoBulk.DEBITORE);
+        sql.addSQLClause(FindClause.AND, "ANAGRAFICO.TI_ENTITA", SQLBuilder.NOT_EQUALS, "D");
 
         sql.addClause(clauses);
         return sql;
@@ -1486,20 +1608,20 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         SQLBuilder sql = getHome(aUC, MandatoIBulk.class, "V_ASS_MANDATO_FONDO_ECO").createSQLBuilder();
 
         if (fondo.getEconomo() != null)
-            sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.CD_TERZO", sql.EQUALS, fondo.getEconomo().getCd_terzo());
+            sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.CD_TERZO", SQLBuilder.EQUALS, fondo.getEconomo().getCd_terzo());
 
         //il mandato deve appartenere al mio CDS e esercizio
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.CD_CDS", sql.EQUALS, fondo.getCd_cds());
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.ESERCIZIO", sql.EQUALS, fondo.getEsercizio());
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.CD_CDS", SQLBuilder.EQUALS, fondo.getCd_cds());
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.ESERCIZIO", SQLBuilder.EQUALS, fondo.getEsercizio());
         //non deve essere annullato
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.STATO", sql.NOT_EQUALS, MandatoIBulk.STATO_MANDATO_ANNULLATO);
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.STATO", SQLBuilder.NOT_EQUALS, MandatoIBulk.STATO_MANDATO_ANNULLATO);
         //non deve essere associato ad altri fondi economali
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.CD_CODICE_FONDO", sql.ISNULL, null);
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.CD_CODICE_FONDO", SQLBuilder.ISNULL, null);
         //deve avere un importo pagato diverso da 0
         sql.openParenthesis("AND");
-        sql.addSQLClause("OR", "V_ASS_MANDATO_FONDO_ECO.IM_PAGATO", sql.NOT_EQUALS, new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.IM_PAGATO", sql.ISNOTNULL, null);
-        sql.addSQLClause("AND", "V_ASS_MANDATO_FONDO_ECO.TI_APERTURA_INCREMENTO", sql.ISNULL, null);
+        sql.addSQLClause(FindClause.OR, "V_ASS_MANDATO_FONDO_ECO.IM_PAGATO", SQLBuilder.NOT_EQUALS, new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.IM_PAGATO", sql.ISNOTNULL, null);
+        sql.addSQLClause(FindClause.AND, "V_ASS_MANDATO_FONDO_ECO.TI_APERTURA_INCREMENTO", SQLBuilder.ISNULL, null);
         sql.closeParenthesis();
         //altre clausole
         sql.addClause(clauses);
@@ -1536,7 +1658,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
 
         //Le obbligazioni valide hanno una sola scadenza
         //sql.addSQLClause(
-        //"AND",
+        //FindClause.AND,
         //"( SELECT COUNT(*)"
         //+" FROM "+it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema()+"OBBLIGAZIONE_SCADENZARIO OBBSCA1"
         //+" WHERE OBBSCA1.ESERCIZIO = OBBLIGAZIONE_SCADENZARIO.ESERCIZIO"
@@ -1547,17 +1669,17 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
         //+" ) = 1"
         //);
 
-        sql.addSQLClause("AND", "OBBLIGAZIONE.CD_UNITA_ORGANIZZATIVA", sql.EQUALS, fondo.getCd_unita_organizzativa());
-        sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(aUC));
-        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, ObbligazioneBulk.STATO_OBB_DEFINITIVO);
-        sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT", sql.EQUALS, scadenza.getObbligazione().getCd_tipo_documento_cont());
-        sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL, null);
-        sql.addSQLClause("AND", "OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", sql.NOT_EQUALS, new java.math.BigDecimal(0));
-        sql.addSQLClause("AND", "OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM <> ? OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NOT NULL");
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, fondo.getCd_unita_organizzativa());
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.ESERCIZIO", SQLBuilder.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(aUC));
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.STATO_OBBLIGAZIONE", SQLBuilder.EQUALS, ObbligazioneBulk.STATO_OBB_DEFINITIVO);
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT", SQLBuilder.EQUALS, scadenza.getObbligazione().getCd_tipo_documento_cont());
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.DT_CANCELLAZIONE", SQLBuilder.ISNULL, null);
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", SQLBuilder.NOT_EQUALS, new java.math.BigDecimal(0));
+        sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM <> ? OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NOT NULL");
         sql.addParameter(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP), java.sql.Types.DECIMAL, 2);
 
         if (scadenza.getObbligazione().getCreditore() != null)
-            sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TERZO", sql.EQUALS, scadenza.getObbligazione().getCreditore().getCd_terzo());
+            sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_TERZO", SQLBuilder.EQUALS, scadenza.getObbligazione().getCreditore().getCd_terzo());
 
         sql.addClause(clauses);
         return sql;
@@ -1607,7 +1729,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
 
         try {
             java.sql.Timestamp dataOdierna = getDataOdierna(userContext);
-            java.sql.Timestamp lastDayOfYear = DateServices.getLastDayOfYear(stampa.getEsercizio().intValue());
+            java.sql.Timestamp lastDayOfYear = DateServices.getLastDayOfYear(stampa.getEsercizio());
 
             if (stampa.getFondoForPrint() == null || stampa.getFondoForPrint().getCd_codice_fondo() == null) {
                 throw new ValidationException("Attenzione: indicare un Fondo Economale.");
@@ -1618,7 +1740,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
             if (stampa.getDataFine() == null)
                 throw new ValidationException("Attenzione: il campo DATA FINE è obbligatorio");
 
-            java.sql.Timestamp firstDayOfYear = getFirstDayOfYear(stampa.getEsercizio().intValue());
+            java.sql.Timestamp firstDayOfYear = getFirstDayOfYear(stampa.getEsercizio());
             if (stampa.getDataInizio().compareTo(stampa.getDataFine()) > 0)
                 throw new ValidationException("Attenzione: la DATA INIZIO non può essere superiore alla DATA FINE");
             if (stampa.getDataInizio().compareTo(firstDayOfYear) < 0) {

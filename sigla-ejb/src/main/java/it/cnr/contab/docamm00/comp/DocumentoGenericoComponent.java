@@ -5054,17 +5054,22 @@ public class DocumentoGenericoComponent
                     throw new it.cnr.jada.comp.ApplicationException(
                             "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
             } else {
-                if (!riga.getTerzo().getCd_terzo().equals(riga.getObbligazione_scadenziario().getObbligazione().getCd_terzo())
-                        && (!riga
-                        .getObbligazione_scadenziario()
-                        .getObbligazione()
-                        .getCreditore()
-                        .getAnagrafico()
-                        .getTi_entita()
-                        .equals(AnagraficoBulk.DIVERSI)
-                        && !(riga.getTerzo().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI))))
-                    throw new it.cnr.jada.comp.ApplicationException(
-                            "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
+                if (!riga.getTerzo().getCd_terzo().equals(riga.getObbligazione_scadenziario().getObbligazione().getCd_terzo())) {
+                    if (riga.getObbligazione_scadenziario().getObbligazione().getCreditore().getAnagrafico()==null) {
+                        try {
+                            TerzoHome terzohome = (TerzoHome) getHome(aUC, TerzoBulk.class);
+                            TerzoBulk creditore = (TerzoBulk)getHome(aUC, TerzoBulk.class).findByPrimaryKey(riga.getObbligazione_scadenziario().getObbligazione().getCreditore());
+                            creditore.setAnagrafico((AnagraficoBulk) getHome(aUC, AnagraficoBulk.class).findByPrimaryKey(creditore.getAnagrafico()));
+                            riga.getObbligazione_scadenziario().getObbligazione().setCreditore(creditore);
+                        } catch (PersistencyException e) {
+                            throw handleException(e);
+                        }
+                    }
+                    if (!riga.getObbligazione_scadenziario().getObbligazione().getCreditore().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI) &&
+                            !(riga.getTerzo().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI)))
+                        throw new it.cnr.jada.comp.ApplicationException(
+                                "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
+                }
             }
         }
 
@@ -6286,8 +6291,11 @@ public class DocumentoGenericoComponent
                 //aggiorno im_assciato_doc_amm della scadenza
                 lockBulk( userContext, scadenza.getObbligazione());
 
-                scadenza.setIm_associato_doc_amm( scadenza.getIm_associato_doc_amm().add(riga.getIm_riga()));
-                updateBulk( userContext, scadenza );
+                //nel caso la richiesta di generazione
+                if (impegnoWizard.isAggiornaDocAmm()) {
+                    scadenza.setIm_associato_doc_amm(scadenza.getIm_associato_doc_amm().add(riga.getIm_riga()));
+                    updateBulk(userContext, scadenza);
+                }
             } else {
                 AccertamentoWizard accertamentoWizard = (AccertamentoWizard) impacc;
 

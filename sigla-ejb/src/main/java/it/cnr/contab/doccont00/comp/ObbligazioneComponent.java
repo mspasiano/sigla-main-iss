@@ -18,6 +18,7 @@
 package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaComponent;
 import it.cnr.contab.config00.bulk.*;
 import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
@@ -224,7 +225,7 @@ public void aggiornaCogeCoanInDifferita(it.cnr.jada.UserContext userContext, it.
 			Long pg_ver_rec = (Long) values.get("pg_ver_rec");
 			if ( pg_ver_rec == null )
 				throw new ApplicationException( "Aggiornamento in differita dello stato coge/coan dei documenti contabili impossibile (pg_ver_rec nullo)");
-			if ( obbligazione.getPg_obbligazione().longValue() >= 0 ) //accertamento non temporaneo
+			if (obbligazione.getPg_obbligazione() >= 0 ) //accertamento non temporaneo
 				callDoRiprocObb(userContext, obbligazione, pg_ver_rec );			
 		}
 	}
@@ -5529,8 +5530,6 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 			scadenzaNuova.setIm_scadenza(importoScadenzaNuova);
 			if (dati.getNuovoPgObbligazioneScadenzario()!=null)
 				scadenzaNuova.setPg_obbligazione_scadenzario(dati.getNuovoPgObbligazioneScadenzario());
-			else
-				scadenzaNuova.setPg_obbligazione_scadenzario(obbligazione.getObbligazione_scadenzarioColl().stream().mapToLong(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario).max().getAsLong()+1);
 
 			scadenzaNuova.setToBeCreated();
 			makeBulkPersistent(userContext, scadenzaNuova);
@@ -5574,6 +5573,7 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 			throw handleException( e );
 		}
 	}
+
 	private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbligazione_scadenzarioBulk scadenzaNuova,
 			Obbligazione_scad_voceBulk osvOld) {
 		for (Iterator n = scadenzaNuova.getObbligazione_scad_voceColl().iterator(); n.hasNext(); ) {

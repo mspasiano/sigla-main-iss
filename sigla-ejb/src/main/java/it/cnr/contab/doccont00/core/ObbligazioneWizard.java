@@ -25,6 +25,8 @@ import it.cnr.contab.doccont00.core.bulk.V_obbligazioneBulk;
 import java.io.Serializable;
 
 public class ObbligazioneWizard implements Serializable {
+	static final public String SOURCE_FONDO_ECONOMALE = "FONDO_ECONOMALE";
+
 	V_obbligazioneBulk obbligazioneBulk;
 
 	TerzoBulk terzoWizardBulk;
@@ -36,6 +38,10 @@ public class ObbligazioneWizard implements Serializable {
 	String descrizioneRigaDocumentoWizard;
 
 	String descrizioneRigaMandatoWizard;
+
+	//Questa variabile è ultilizzata per conoscere la fonte da cui è partito il codice
+	//per la generazione automatica del documento/mandato
+	boolean aggiornaDocAmm = Boolean.TRUE;
 
 	public ObbligazioneWizard() {
 		super();
@@ -109,5 +115,13 @@ public class ObbligazioneWizard implements Serializable {
 
 	public void setDescrizioneRigaMandatoWizard(String descrizioneRigaMandatoWizard) {
 		this.descrizioneRigaMandatoWizard = descrizioneRigaMandatoWizard;
+	}
+
+	public void setAggiornaDocAmm(boolean aggiornaDocAmm) {
+		this.aggiornaDocAmm = aggiornaDocAmm;
+	}
+
+	public boolean isAggiornaDocAmm() {
+		return aggiornaDocAmm;
 	}
 }

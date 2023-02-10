@@ -25,6 +25,7 @@ package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
+import it.cnr.jada.bulk.BulkList;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -39,11 +40,11 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 	protected BigDecimal imponibileRigaMandatoWizard;
 	protected BigDecimal impostaRigaMandatoWizard;
 	protected BigDecimal importoRigaMandatoWizard;
-	protected BancaBulk bancaRigaMandatoWizard = new BancaBulk();
-	protected Modalita_pagamentoBulk modalitaPagamentoRigaMandatoWizard = new Modalita_pagamentoBulk();
-	protected List modalitaPagamentoOptions;
+	protected BancaBulk bancaRigaMandatoWizard;
+	protected Modalita_pagamentoBulk modalitaPagamentoRigaMandatoWizard;
+	protected List<Modalita_pagamentoBulk> modalitaPagamentoOptions = new BulkList<>();
 
-	protected List bancaOptions;
+	protected List<BancaBulk> bancaOptions = new BulkList<>();
 
 	public V_doc_passivo_obbligazione_wizardBulk() {
 		super();
@@ -73,6 +74,7 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 		this.cdElementoVoce = cdElementoVoce;
 	}
 
+	//Ritorna il valore dell'imponibile indicato dall'utente per la creazione del mandato
 	public BigDecimal getImponibileRigaMandatoWizard() {
 		return imponibileRigaMandatoWizard;
 	}
@@ -81,6 +83,7 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 		this.imponibileRigaMandatoWizard = imponibileRigaMandatoWizard;
 	}
 
+	//Ritorna il valore dell'imposta indicata dall'utente per la creazione del mandato
 	public BigDecimal getImpostaRigaMandatoWizard() {
 		return impostaRigaMandatoWizard;
 	}
@@ -89,6 +92,7 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 		this.impostaRigaMandatoWizard = impostaRigaMandatoWizard;
 	}
 
+	//Ritorna l'oggetto BancaBulk indicata dall'utente per la creazione del mandato
 	public BancaBulk getBancaRigaMandatoWizard() {
 		return bancaRigaMandatoWizard;
 	}
@@ -97,20 +101,13 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 		this.bancaRigaMandatoWizard = bancaRigaMandatoWizard;
 	}
 
-	public Long getPgBancaWizard() {
-		return Optional.ofNullable(this.getBancaRigaMandatoWizard()).map(BancaBulk::getPg_banca).orElse(null);
-	}
-
+	//Ritorna la modalità di pagamento indicata dall'utente per la creazione del mandato
 	public Modalita_pagamentoBulk getModalitaPagamentoRigaMandatoWizard() {
 		return modalitaPagamentoRigaMandatoWizard;
 	}
 
 	public void setModalitaPagamentoRigaMandatoWizard(Modalita_pagamentoBulk modalitaPagamentoRigaMandatoWizard) {
 		this.modalitaPagamentoRigaMandatoWizard = modalitaPagamentoRigaMandatoWizard;
-	}
-
-	public String getCdModalitaPagamentoWizard() {
-		return Optional.ofNullable(this.getModalitaPagamentoRigaMandatoWizard()).map(Modalita_pagamentoBulk::getCd_modalita_pag).orElse(null);
 	}
 
 	public List<Modalita_pagamentoBulk> getModalitaPagamentoOptions() {
@@ -129,11 +126,68 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 		this.bancaOptions = bancaOptions;
 	}
 
+	//Ritorna il valore dell'importo indicato dall'utente per la creazione del mandato
 	public BigDecimal getImportoRigaMandatoWizard() {
 		return importoRigaMandatoWizard;
 	}
 
 	public void setImportoRigaMandatoWizard(BigDecimal importoRigaMandatoWizard) {
 		this.importoRigaMandatoWizard = importoRigaMandatoWizard;
+	}
+
+	//Ritorna la modalità di pagamento da utilizzare per la creazione del mandato
+	public Modalita_pagamentoBulk getModalitaPagamentoRigaMandato() {
+		if (Optional.ofNullable(this.getModalitaPagamentoRigaMandatoWizard()).isPresent())
+			return this.getModalitaPagamentoRigaMandatoWizard();
+		return this.getModalitaPagamentoOptions().stream()
+				.filter(el->el.getCd_modalita_pag().equals(this.getCd_modalita_pag()))
+				.findAny()
+				.orElse(new Modalita_pagamentoBulk(this.getCd_modalita_pag(), this.getCd_terzo()));
+	}
+
+	//Ritorna il codice della modalità di pagamento da utilizzare per la creazione del mandato
+	public String getCdModalitaPagamentoMandato() {
+		return Optional.ofNullable(this.getModalitaPagamentoRigaMandato()).map(Modalita_pagamentoBulk::getCd_modalita_pag).orElse(null);
+	}
+
+	//Ritorna l'oggetto BancaBulk indicata dall'utente per la creazione del mandato
+	public BancaBulk getBancaRigaMandato() {
+		if (Optional.ofNullable(this.getBancaRigaMandatoWizard()).isPresent())
+			return this.getBancaRigaMandatoWizard();
+		return this.getBancaOptions().stream()
+				.filter(el->el.getPg_banca().equals(this.getPg_banca()))
+				.findAny()
+				.orElse(new BancaBulk(this.getCd_terzo(), this.getPg_banca()));
+	}
+
+	//Ritorna il progressivo banca da utilizzare per la creazione del mandato
+	public Long getPgBancaMandato() {
+		return Optional.ofNullable(this.getBancaRigaMandato()).map(BancaBulk::getPg_banca).orElse(null);
+	}
+
+	//Ritorna il valore dell'imponibile da utilizzare per la creazione del mandato
+	public BigDecimal getImponibileRigaMandato() {
+		if (Optional.ofNullable(this.getImponibileRigaMandatoWizard()).isPresent())
+			return this.getImponibileRigaMandatoWizard();
+		if (this.isFatturaPassiva())
+			return Optional.ofNullable(this.getIm_imponibile_doc_amm()).orElse(BigDecimal.ZERO);
+		return BigDecimal.ZERO;
+	}
+
+	//Ritorna il valore dell'imponibile da utilizzare per la creazione del mandato
+	public BigDecimal getImpostaRigaMandato() {
+		if (Optional.ofNullable(this.getImpostaRigaMandatoWizard()).isPresent())
+			return this.getImpostaRigaMandatoWizard();
+		if (this.isFatturaPassiva())
+			return Optional.ofNullable(this.getIm_iva_doc_amm()).orElse(BigDecimal.ZERO);
+		return BigDecimal.ZERO;
+	}
+
+	public BigDecimal getImportoRigaMandato() {
+		if (Optional.ofNullable(this.getImportoRigaMandatoWizard()).isPresent())
+			return this.getImportoRigaMandatoWizard();
+		if (this.isFatturaPassiva())
+			return Optional.ofNullable(this.getImponibileRigaMandatoWizard()).orElse(BigDecimal.ZERO).add(Optional.ofNullable(this.getImpostaRigaMandatoWizard()).orElse(BigDecimal.ZERO));
+		return Optional.ofNullable(this.getIm_totale_doc_amm()).orElse(BigDecimal.ZERO);
 	}
 }

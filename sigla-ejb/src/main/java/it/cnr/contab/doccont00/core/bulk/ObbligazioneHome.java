@@ -55,6 +55,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 public class ObbligazioneHome extends BulkHome {
@@ -1647,5 +1648,108 @@ public class ObbligazioneHome extends BulkHome {
         sql.addClause(FindClause.AND, "esercizio_ori_obbligazione", SQLBuilder.EQUALS, bulk.getEsercizio_originale());
         sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.EQUALS, bulk.getPg_obbligazione());
         return dettHome.fetchAll(sql);
+    }
+
+    public void accorpaScadenzeInAutomatico(UserContext userContext, ObbligazioneBulk obbligazione) throws ComponentException {
+        try {
+            Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome)getHomeCache().getHome(Obbligazione_scadenzarioBulk.class);
+            List<Obbligazione_scadenzarioBulk> listObbScad = new BulkList(this.findObbligazione_scadenzarioList(obbligazione));
+
+            Map<Timestamp, Map<String, List<Obbligazione_scadenzarioBulk>>> mapObbScadEquals = listObbScad.stream()
+                    .filter(el->el.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO)==0)
+                    .filter(el->el.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO)==0)
+                    .collect(Collectors.groupingBy(Obbligazione_scadenzarioBulk::getDt_scadenza,
+                            Collectors.groupingBy(Obbligazione_scadenzarioBulk::getDs_scadenza)));
+
+            for (Timestamp aDtScadenza:mapObbScadEquals.keySet()) {
+                for (String aDsScadenza:mapObbScadEquals.get(aDtScadenza).keySet()) {
+                    List<Obbligazione_scadenzarioBulk> scadenzeSimili = mapObbScadEquals.get(aDtScadenza).get(aDsScadenza);
+                    accorpaScadenzeSimili(userContext, scadenzeSimili);
+                }
+            }
+        }catch (PersistencyException e) {
+            throw new ComponentException( e );
+        }
+    }
+
+    public IScadenzaDocumentoContabileBulk accorpaScadenzeInAutomatico(UserContext userContext, Obbligazione_scadenzarioBulk scadenza) throws ComponentException {
+        try {
+            Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome)getHomeCache().getHome(Obbligazione_scadenzarioBulk.class);
+            ObbligazioneBulk obbligazione = this.findObbligazione(scadenza.getObbligazione());
+            obbligazione.setObbligazione_scadenzarioColl(new BulkList(this.findObbligazione_scadenzarioList(obbligazione)));
+
+            //cerco nell'obbligazione riletto la scadenza indicata
+            Obbligazione_scadenzarioBulk scadenzaModel = obbligazione.getObbligazione_scadenzarioColl().stream().filter(el->el.equalsByPrimaryKey(scadenza)).findFirst()
+                    .orElseThrow(()->new ApplicationException("Scadenza da accorpare non trovata nell'impegno indicato!"));
+
+            if (scadenzaModel.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO)>0)
+                throw new ApplicationException("Scadenza da accorpare collegata a documenti amministrativi. Accorpamento non possibile!");
+
+            //cerco altre scadenze con stessa data e descrizione
+            List<Obbligazione_scadenzarioBulk> scadenzeSimili = obbligazione.getObbligazione_scadenzarioColl().stream()
+                    .filter(el->el.getDs_scadenza().equals(scadenzaModel.getDs_scadenza()))
+                    .filter(el->el.getDt_scadenza().equals(scadenzaModel.getDt_scadenza()))
+                    .filter(el->el.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO)==0)
+                    .filter(el->el.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO)==0)
+                    .collect(Collectors.toList());
+
+            return accorpaScadenzeSimili(userContext, scadenzeSimili);
+        } catch (PersistencyException e) {
+            throw new ComponentException( e );
+        }
+    }
+
+    private IScadenzaDocumentoContabileBulk accorpaScadenzeSimili(UserContext userContext, List<Obbligazione_scadenzarioBulk> scadenzeSimili) throws ComponentException {
+        try {
+            Obbligazione_scadenzarioBulk scadGood = null;
+            if (scadenzeSimili.size()>1) {
+                Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome)getHomeCache().getHome(Obbligazione_scadenzarioBulk.class);
+                Obbligazione_scad_voceHome osvHome = (Obbligazione_scad_voceHome)getHomeCache().getHome(Obbligazione_scad_voceBulk.class);
+                //recupero quella con il progressivo minimo
+                scadGood = scadenzeSimili.stream()
+                        .min(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario))
+                        .orElse(null);
+                //Tutte le altre le accorpo su questa scadenza
+                if (scadGood!=null) {
+                    scadGood.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadGood, Boolean.FALSE)));
+                    for (Obbligazione_scadenzarioBulk scadSimile:scadenzeSimili) {
+                        if (!scadSimile.equalsByPrimaryKey(scadGood)) {
+                            scadSimile.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadSimile, Boolean.FALSE)));
+
+                            for (Obbligazione_scad_voceBulk scadVoceSimile : scadSimile.getObbligazione_scad_voceColl()) {
+                                //Cerco la corrispondente nella scadGood
+                                Obbligazione_scad_voceBulk scadVoceGood = scadGood.getObbligazione_scad_voceColl()
+                                        .stream()
+                                        .filter(el -> el.getLinea_attivita().equalsByPrimaryKey(scadVoceSimile.getLinea_attivita()))
+                                        .findFirst().orElse(null);
+                                if (scadVoceGood != null) {
+                                    scadVoceGood.setIm_voce(scadVoceGood.getIm_voce().add(scadVoceSimile.getIm_voce()));
+                                    scadVoceGood.setToBeUpdated();
+                                    osvHome.update(scadVoceGood, userContext);
+
+                                    scadVoceSimile.setToBeDeleted();
+                                    osvHome.delete(scadVoceSimile, userContext);
+                                } else {
+                                    scadVoceSimile.setObbligazione_scadenzario(scadGood);
+                                    scadVoceSimile.setToBeUpdated();
+                                    osvHome.update(scadVoceSimile, userContext);
+
+                                    scadGood.getObbligazione_scad_voceColl().add(scadVoceSimile);
+                                }
+                            }
+                            scadGood.setIm_scadenza(scadGood.getIm_scadenza().add(scadSimile.getIm_scadenza()));
+                            scadGood.setToBeUpdated();
+                            osHome.update(scadGood, userContext);
+
+                            scadSimile.setToBeDeleted();
+                            osHome.delete(scadSimile, userContext);
+                        }
+                    }
+                }
+            }
+            return scadGood;
+        } catch (PersistencyException e) {
+            throw new ComponentException( e );
+        }
     }
 }

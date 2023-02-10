@@ -163,38 +163,38 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 
 			//Verifico che ci siano tutti i dati di cui necessito
 			for (V_doc_passivo_obbligazione_wizardBulk docTerzo:docPassiviColl) {
-				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoWizard()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoMandato()).isPresent())
 					throw new ApplicationException("Operazione non possibile! Non è stata indicata per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" la modalità di pagamento.");
-				if (!Optional.ofNullable(docTerzo.getPgBancaWizard()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getPgBancaMandato()).isPresent())
 					throw new ApplicationException("Operazione non possibile! Non sono state indicate per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" le coordinate.");
 
-				if (docTerzo.getImportoRigaMandatoWizard().compareTo(BigDecimal.ZERO) < 0)
+				if (docTerzo.getImportoRigaMandato().compareTo(BigDecimal.ZERO) < 0)
 					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
-							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandatoWizard()) +
+							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandato()) +
 							") negativo o nullo.");
-				else if (docTerzo.isFatturaPassiva() && docTerzo.getImportoRigaMandatoWizard().compareTo(docTerzo.getImponibileRigaMandatoWizard().add(docTerzo.getImpostaRigaMandatoWizard())) != 0)
+				else if (docTerzo.isFatturaPassiva() && docTerzo.getImportoRigaMandato().compareTo(docTerzo.getImponibileRigaMandato().add(docTerzo.getImpostaRigaMandato())) != 0)
 					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
-							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandatoWizard()) +
-							") non coincidente con la somma dell'imponibile ed imposta ("+ new EuroFormat().format(docTerzo.getImponibileRigaMandatoWizard().add(docTerzo.getImpostaRigaMandatoWizard()))+").");
-				else if (docTerzo.getImportoRigaMandatoWizard().compareTo(docTerzo.getIm_totale_doc_amm()) > 0)
+							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandato()) +
+							") non coincidente con la somma dell'imponibile ed imposta ("+ new EuroFormat().format(docTerzo.getImponibileRigaMandato().add(docTerzo.getImpostaRigaMandato()))+").");
+				else if (docTerzo.getImportoRigaMandato().compareTo(docTerzo.getIm_totale_doc_amm()) > 0)
 					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
-							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandatoWizard()) +
+							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandato()) +
 							") maggiore dell'importo iniziale (" + new EuroFormat().format(docTerzo.getIm_totale_doc_amm()) +
 							").");
-				else if (docTerzo.getImportoRigaMandatoWizard().compareTo(docTerzo.getIm_totale_doc_amm()) < 0) {
+				else if (docTerzo.getImportoRigaMandato().compareTo(docTerzo.getIm_totale_doc_amm()) < 0) {
 					//sdoppio riga
 					V_doc_passivo_obbligazioneBulk docTerzoAgg;
 					if (docTerzo.isDocumentoGenericoPassivo())
-						docTerzoAgg = Utility.createDocumentoGenericoComponentSession().sdoppiaDettagliInAutomatico(userContext, docTerzo, docTerzo.getImportoRigaMandatoWizard());
+						docTerzoAgg = Utility.createDocumentoGenericoComponentSession().sdoppiaDettagliInAutomatico(userContext, docTerzo, docTerzo.getImportoRigaMandato());
 					else if (docTerzo.isFatturaPassiva())
-						docTerzoAgg = Utility.createFatturaPassivaComponentSession().sdoppiaDettagliInAutomatico(userContext, docTerzo, docTerzo.getImponibileRigaMandatoWizard(), docTerzo.getImpostaRigaMandatoWizard());
+						docTerzoAgg = Utility.createFatturaPassivaComponentSession().sdoppiaDettagliInAutomatico(userContext, docTerzo, docTerzo.getImponibileRigaMandato(), docTerzo.getImpostaRigaMandato());
 					else
 						throw new ApplicationException("Operazione non possibile! Il documento " +
 								docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
@@ -206,24 +206,24 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					docTerzo.setIm_totale_doc_amm(docTerzoAgg.getIm_totale_doc_amm());
 				}
 
-				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoWizard()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaWizard())) {
+				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoMandato()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaMandato())) {
 					//Aggiorno modalità pagamento su riga da pagare
 					if (docTerzo.isDocumentoGenericoPassivo())
-						Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandatoWizard(), docTerzo.getBancaRigaMandatoWizard());
+						Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandato(), docTerzo.getBancaRigaMandato());
 					else if (docTerzo.isFatturaPassiva())
-						Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandatoWizard(), docTerzo.getBancaRigaMandatoWizard());
+						Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandato(), docTerzo.getBancaRigaMandato());
 
-					docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoWizard());
-					docTerzo.setPg_banca(docTerzo.getPgBancaWizard());
-					Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)this.findByPrimaryKey(userContext, docTerzo.getModalitaPagamentoRigaMandatoWizard().getRif_modalita_pagamento());
+					docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoMandato());
+					docTerzo.setPg_banca(docTerzo.getPgBancaMandato());
+					Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)this.findByPrimaryKey(userContext, docTerzo.getModalitaPagamentoRigaMandato().getRif_modalita_pagamento());
 					docTerzo.setTi_pagamento(rifModalitaPagamentoBulk.getTi_pagamento());
 				}
 			}
 
 			Map<Integer, Map<String, Map<Long, List<V_doc_passivo_obbligazione_wizardBulk>>>> mapTerzo =
 					docPassiviColl.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_terzo,
-							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoWizard,
-									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaWizard))));
+							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoMandato,
+									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaMandato))));
 
 			mapTerzo.keySet().forEach(aCdTerzo -> mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
 				List<V_doc_passivo_obbligazione_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
@@ -249,6 +249,8 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					mapVoce.put("XXX", result);
 				}
 
+				List<V_doc_passivo_obbligazione_wizardBulk> docPassiviMandatoEmesso = new ArrayList();
+
 				mapVoce.keySet().forEach(aCdVoce -> {
 					try {
 						List docPassiviCompetenzaColl = new ArrayList();
@@ -259,10 +261,24 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 								Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)
 											getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds_obbligazione(), docTerzo.getEsercizio_obbligazione(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
 
-								if (os.getIm_scadenza().compareTo(docTerzo.getImportoRigaMandatoWizard()) != 0 ||
+								if (os.getIm_scadenza().compareTo(docTerzo.getImportoRigaMandato()) != 0 ||
 										os.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
 									throw new ApplicationException("Operazione non possibile! E' stata utilizzata da un altro utente la scadenza nr." + docTerzo.getPg_obbligazione_scadenzario() + " dell'impegno " + docTerzo.getEsercizio_ori_obbligazione() + "/" + docTerzo.getPg_obbligazione());
 
+								//se il docTerzo ha un documento presente in docPassiviMandatoEmesso allora devo aggiornare il pg_ver_rec_docamm
+								//che, essendo stato modificato proprio dal mandato automatico, potrebbe bloccare la successiva emissione di nuovi mandati
+								//sullo stesso documento amministrativo
+								for (V_doc_passivo_obbligazione_wizardBulk docPassivoMandatoEmesso:docPassiviMandatoEmesso){
+									if (docPassivoMandatoEmesso.getEsercizio().equals(docTerzo.getEsercizio()) &&
+											docPassivoMandatoEmesso.getCd_cds().equals(docTerzo.getCd_cds()) &&
+											docPassivoMandatoEmesso.getCd_unita_organizzativa().equals(docTerzo.getCd_unita_organizzativa()) &&
+											docPassivoMandatoEmesso.getCd_tipo_documento_amm().equals(docTerzo.getCd_tipo_documento_amm()) &&
+											docPassivoMandatoEmesso.getPg_documento_amm().equals(docTerzo.getPg_documento_amm())) {
+										//recupero dal db il record e aggiorno il pg_ver_rec_docamm
+										V_doc_passivo_obbligazioneBulk docBulk = ((V_doc_passivo_obbligazioneHome)getHome(userContext, V_doc_passivo_obbligazioneBulk.class)).findDocPassivo(docTerzo);
+										docTerzo.setPg_ver_rec(docBulk.getPg_ver_rec());
+									}
+								}
 								if (docTerzo.isCompetenza() || wizard.isFlGeneraMandatoUnico())
 									docPassiviCompetenzaColl.add(docTerzo);
 								else
@@ -273,27 +289,29 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						});
 
 						MandatoBulk mandatoCompetenza, mandatoResiduo;
-						if (!docPassiviCompetenzaColl.isEmpty()) {
+				 		if (!docPassiviCompetenzaColl.isEmpty()) {
 							mandatoCompetenza = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_COMPETENZA);
-							mandatoCompetenza.setMandato_terzo(creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo()));
+							mandatoCompetenza.setMandato_terzo(creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), Optional.ofNullable(wizard.getMandato_terzo()).map(Mandato_terzoBulk::getTipoBollo).orElse(null)));
 							mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl);
 
 							mandatoCompetenza.refreshImporto();
 							super.creaConBulk(userContext, mandatoCompetenza);
+							docPassiviMandatoEmesso.addAll(docPassiviCompetenzaColl);
 							aggiornaStatoFattura(userContext, mandatoCompetenza, INSERIMENTO_MANDATO_ACTION);
 							wizard.getMandatiColl().add(mandatoCompetenza);
 						}
 						if (!docPassiviResiduiColl.isEmpty()) {
 							mandatoResiduo = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_RESIDUO);
-							mandatoResiduo.setMandato_terzo(creaMandatoTerzo(mandatoResiduo, cercaTerzo(userContext, aCdTerzo), wizard.getMandato_terzo().getTipoBollo()));
+							mandatoResiduo.setMandato_terzo(creaMandatoTerzo(mandatoResiduo, cercaTerzo(userContext, aCdTerzo), Optional.ofNullable(wizard.getMandato_terzo()).map(Mandato_terzoBulk::getTipoBollo).orElse(null)));
 							mandatoResiduo = aggiungiDocPassivi(userContext, mandatoResiduo, docPassiviResiduiColl);
 
 							mandatoResiduo.refreshImporto();
 							super.creaConBulk(userContext, mandatoResiduo);
+							docPassiviMandatoEmesso.addAll(docPassiviResiduiColl);
 							aggiornaStatoFattura(userContext, mandatoResiduo, INSERIMENTO_MANDATO_ACTION);
 							wizard.getMandatiColl().add(mandatoResiduo);
 						}
-					} catch (Exception e) {
+					} catch (ComponentException e) {
 						throw new ApplicationRuntimeException(e);
 					}
 				});
@@ -542,20 +560,14 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					if (docPassivo instanceof V_doc_passivo_obbligazione_wizardBulk) {
 						V_doc_passivo_obbligazione_wizardBulk docPassivoWizard = (V_doc_passivo_obbligazione_wizardBulk)docPassivo;
 						docPassivoWizard.setModalitaPagamentoOptions(findModalita_pagamentoOptions( aUC, docPassivoWizard.getCd_terzo()));
-						docPassivoWizard.setModalitaPagamentoRigaMandatoWizard(docPassivoWizard.getModalitaPagamentoOptions()
-								.stream().filter(el->el.getCd_modalita_pag().equals(docPassivoWizard.getCd_modalita_pag())).findAny().orElse(null));
+						docPassivoWizard.setModalitaPagamentoRigaMandatoWizard(docPassivoWizard.getModalitaPagamentoRigaMandato());
 
 						docPassivoWizard.setBancaOptions(findBancaOptions( aUC, docPassivoWizard.getCd_terzo(), docPassivoWizard.getCd_modalita_pag()));
-						docPassivoWizard.setBancaRigaMandatoWizard(docPassivoWizard.getBancaOptions()
-								.stream().filter(el->el.getPg_banca().equals(docPassivoWizard.getPg_banca())).findAny().orElse(null));
+						docPassivoWizard.setBancaRigaMandatoWizard(docPassivoWizard.getBancaRigaMandato());
 
-						if (((V_doc_passivo_obbligazione_wizardBulk) docPassivo).isFatturaPassiva()) {
-							docPassivoWizard.setImponibileRigaMandatoWizard(Optional.ofNullable(docPassivoWizard.getIm_imponibile_doc_amm()).orElse(BigDecimal.ZERO));
-							docPassivoWizard.setImpostaRigaMandatoWizard(Optional.ofNullable(docPassivoWizard.getIm_iva_doc_amm()).orElse(BigDecimal.ZERO));
-							docPassivoWizard.setImportoRigaMandatoWizard(docPassivoWizard.getImponibileRigaMandatoWizard().add(docPassivoWizard.getImpostaRigaMandatoWizard()));
-						} else {
-							docPassivoWizard.setImportoRigaMandatoWizard(docPassivoWizard.getIm_totale_doc_amm());
-						}
+						docPassivoWizard.setImponibileRigaMandatoWizard(docPassivoWizard.getImponibileRigaMandato());
+						docPassivoWizard.setImpostaRigaMandatoWizard(docPassivoWizard.getImpostaRigaMandato());
+						docPassivoWizard.setImportoRigaMandatoWizard(docPassivoWizard.getImportoRigaMandato());
 					}
 				}
 			}

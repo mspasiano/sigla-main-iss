@@ -22,34 +22,27 @@
 
 	bp.openFormWindow(pageContext); %>
 
-	<TABLE class="Panel">
-		<TR>
-			<% bp.getController().writeFormField(out,"default","pg_fondo_spesa"); %>
-		</TR>
-		<TR>
-			<% bp.getController().writeFormField(out,"default","fl_documentata"); %>
-		</TR>
-		<TR>
-			<% bp.getController().writeFormField(out,"default","im_ammontare_spesa"); %>
-			<% bp.getController().writeFormField(out,"default","dt_spesa"); %>
-		</TR>
-		<TR>
-			<TD colspan="4">
-				<DIV class="GroupLabel">Dati Fornitore</div><div class="Group">
-					<TABLE class="Panel">
-						<TR>
-							<TD><% bp.getController().writeFormLabel(out,"default","denominazione_fornitore"); %></TD>
-							<TD colspan="3"><% bp.getController().writeFormInput(out,"default","denominazione_fornitore"); %></TD>
-						</TR>
-						<TR>
-							<% bp.getController().writeFormField(out,"default","codice_fiscale"); %>
-							<% bp.getController().writeFormField(out,"default","partita_iva"); %>
-						</TR>
-					</TABLE>
-				</DIV>
-			</TD>
-		</TR>
-	</TABLE>
+	<div class="Group Panel card border-primary p-3 mb-2">
+    	<div class="card-body">
+            <div class="form-row">
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"pg_fondo_spesa"); %></div>
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"fl_documentata"); %></div>
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"im_ammontare_spesa"); %></div>
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"dt_spesa"); %></div>
+            </div>
+    	</div>
+    </div>
+
+	<div class="Group Panel card border-primary p-3 mb-2">
+    	<div class="card-body">
+            <h5 class="card-title">Dati Fornitore</h5>
+            <div class="form-row">
+                <div class="col-md-12"><% bp.getController().writeFormField(out,"default","denominazione_fornitore"); %></div>
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"default","codice_fiscale"); %></div>
+                <div class="col-md-6"><% bp.getController().writeFormField(out,"default","partita_iva"); %></div>
+            </div>
+    	</div>
+	</div>
 
 	<% bp.closeFormWindow(pageContext); %>
 </body>

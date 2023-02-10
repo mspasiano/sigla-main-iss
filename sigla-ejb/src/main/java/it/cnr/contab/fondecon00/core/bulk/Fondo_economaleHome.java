@@ -32,6 +32,7 @@ import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
 
 import java.util.List;
+import java.util.Optional;
 
 public class Fondo_economaleHome extends BulkHome {
 	public Fondo_economaleHome(Class aClass, java.sql.Connection conn) {
@@ -46,95 +47,65 @@ public class Fondo_economaleHome extends BulkHome {
 	public Fondo_economaleHome(java.sql.Connection conn,PersistentCache persistentCache) {
 		super(Fondo_economaleBulk.class,conn,persistentCache);
 	}
-	private void addClausesObbScad(
-		it.cnr.jada.UserContext context,
-		SQLBuilder sql,
-		it.cnr.contab.fondecon00.core.bulk.Filtro_ricerca_obbligazioniVBulk filtro)
-		throws it.cnr.jada.comp.ComponentException {
 
-		sql.addSQLClause("AND","OBBLIGAZIONE.ESERCIZIO", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
-		sql.addSQLClause("AND","OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL, null);
-		//sql.addSQLClause("AND","OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT",sql.EQUALS, it.cnr.contab.doccont00.core.bulk.Numerazione_doc_contBulk.TIPO_OBB);
-		if (ObbligazioneBulk.TIPO_COMPETENZA.equals(filtro
-				.getTipo_obbligazione()))
-			sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT",
-					sql.EQUALS, Numerazione_doc_contBulk.TIPO_OBB);
-		else if (ObbligazioneBulk.TIPO_RESIDUO_PROPRIO.equals(filtro
-				.getTipo_obbligazione()))
-			sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT",
-					sql.EQUALS, Numerazione_doc_contBulk.TIPO_OBB_RES);
-		else if (ObbligazioneBulk.TIPO_RESIDUO_IMPROPRIO.equals(filtro
-				.getTipo_obbligazione()))
-			sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT",
-					sql.EQUALS,
-					Numerazione_doc_contBulk.TIPO_OBB_RES_IMPROPRIA);
+	private void addClausesObbScad(it.cnr.jada.UserContext context, SQLBuilder sql, it.cnr.contab.fondecon00.core.bulk.Filtro_ricerca_obbligazioniVBulk filtro) throws it.cnr.jada.comp.ComponentException {
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.ESERCIZIO", SQLBuilder.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.DT_CANCELLAZIONE", SQLBuilder.ISNULL, null);
 
-		sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", sql.NOT_EQUALS, new java.math.BigDecimal(0));
-		sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_CONTABILE = ? OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_CONTABILE IS NULL");
-		sql.addParameter(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP),java.sql.Types.DECIMAL,2);
-		sql.addSQLClause("AND","OBBLIGAZIONE.RIPORTATO", sql.EQUALS, "N");
+		if (ObbligazioneBulk.TIPO_COMPETENZA.equals(filtro.getTipo_obbligazione()))
+			sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_OBB);
+		else if (ObbligazioneBulk.TIPO_RESIDUO_PROPRIO.equals(filtro.getTipo_obbligazione()))
+			sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_OBB_RES);
+		else if (ObbligazioneBulk.TIPO_RESIDUO_IMPROPRIO.equals(filtro.getTipo_obbligazione()))
+			sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.CD_TIPO_DOCUMENTO_CONT",	SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_OBB_RES_IMPROPRIA);
 
-		//Come da richiesta 209 gestione errori CNR elimino il filtro per esclusione
-		//di obbligazioni con + di 1 scadenza (17/09/2002 RP)
-		//sql.addSQLClause(
-			//"AND",
-			//"( SELECT COUNT(*)"
-			//+" FROM "+it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema()+"OBBLIGAZIONE_SCADENZARIO OBBSCA1"
-			//+" WHERE OBBSCA1.ESERCIZIO = OBBLIGAZIONE_SCADENZARIO.ESERCIZIO"
-			//+" AND OBBSCA1.CD_CDS = OBBLIGAZIONE_SCADENZARIO.CD_CDS"
-			//+" AND OBBSCA1.ESERCIZIO_ORIGINALE = OBBLIGAZIONE_SCADENZARIO.ESERCIZIO_ORIGINALE"
-			//+" AND OBBSCA1.PG_OBBLIGAZIONE = OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE"
-			//+" GROUP BY OBBSCA1.ESERCIZIO, OBBSCA1.CD_CDS, OBBSCA1.ESERCIZIO_ORIGINALE, OBBSCA1.PG_OBBLIGAZIONE"
-			//+" ) = 1"
-		//);
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", SQLBuilder.NOT_EQUALS, new java.math.BigDecimal(0));
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_CONTABILE IS NULL OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_CONTABILE = 0");
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.RIPORTATO", SQLBuilder.EQUALS, "N");
 
-		sql.addSQLClause("AND","OBBLIGAZIONE.CD_UNITA_ORGANIZZATIVA",sql.EQUALS, filtro.getCd_unita_organizzativa());
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS, filtro.getCd_unita_organizzativa());
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.STATO_OBBLIGAZIONE",SQLBuilder.EQUALS, it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 
-		sql.addSQLClause("AND","OBBLIGAZIONE.STATO_OBBLIGAZIONE",sql.EQUALS, it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk.STATO_OBB_DEFINITIVO);
-
-		sql.addSQLClause("AND","OBBLIGAZIONE.ESERCIZIO",sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
-
-		if(filtro.getFl_fornitore().booleanValue())
-			sql.addSQLClause("AND","OBBLIGAZIONE.CD_TERZO",sql.EQUALS, filtro.getFornitore().getCd_terzo());
+		if (filtro.getFl_fornitore().booleanValue())
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.CD_TERZO",SQLBuilder.EQUALS, filtro.getFornitore().getCd_terzo());
 		else {
 			sql.addTableToHeader("TERZO");
 			sql.addTableToHeader("ANAGRAFICO");
 			sql.addSQLJoin("OBBLIGAZIONE.CD_TERZO", "TERZO.CD_TERZO");
 			sql.addSQLJoin("TERZO.CD_ANAG", "ANAGRAFICO.CD_ANAG");
-			sql.addSQLClause("AND","ANAGRAFICO.TI_ENTITA",sql.EQUALS, it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk.DIVERSI);
+			sql.addSQLClause(FindClause.AND,"ANAGRAFICO.TI_ENTITA",SQLBuilder.EQUALS, it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk.DIVERSI);
 		}
 
-		if(filtro.getFl_data_scadenziario().booleanValue())
-			sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.DT_SCADENZA",sql.EQUALS, filtro.getData_scadenziario());
+		if (filtro.getFl_data_scadenziario().booleanValue())
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.DT_SCADENZA",SQLBuilder.EQUALS, filtro.getData_scadenziario());
 
-		if(filtro.getFl_importo().booleanValue())
-			sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA",sql.EQUALS, filtro.getIm_importo());
+		if (filtro.getFl_importo().booleanValue())
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA",SQLBuilder.EQUALS, filtro.getIm_importo());
 
-		if(filtro.getFl_nr_obbligazione().booleanValue() && filtro.getEsercizio_ori_obbligazione()!=null)
-			sql.addSQLClause("AND","OBBLIGAZIONE.ESERCIZIO_ORIGINALE",sql.EQUALS, filtro.getEsercizio_ori_obbligazione());
+		if (filtro.getFl_nr_obbligazione().booleanValue() && filtro.getEsercizio_ori_obbligazione()!=null)
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.ESERCIZIO_ORIGINALE",SQLBuilder.EQUALS, filtro.getEsercizio_ori_obbligazione());
 
-		if(filtro.getFl_nr_obbligazione().booleanValue()) {
-			sql.addSQLClause("AND","OBBLIGAZIONE.PG_OBBLIGAZIONE",sql.EQUALS, filtro.getNr_obbligazione());
-			sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE_SCADENZARIO",sql.EQUALS, filtro.getNr_scadenza());
-
+		if (filtro.getFl_nr_obbligazione().booleanValue()) {
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE.PG_OBBLIGAZIONE",SQLBuilder.EQUALS, filtro.getNr_obbligazione());
+			sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE_SCADENZARIO",SQLBuilder.EQUALS, filtro.getNr_scadenza());
 		}
 	}
 
 	public SQLQuery cercaObb_scad(it.cnr.jada.UserContext context, it.cnr.contab.fondecon00.core.bulk.Filtro_ricerca_obbligazioniVBulk filtro) throws it.cnr.jada.comp.ComponentException {
-
-		SQLBuilder sql1 = cercaObb_scad_Libere(context, filtro);
-		SQLUnion union = sql1.union(cercaObb_scad_Associate(context, filtro), true);
+		SQLBuilder sql1 = cercaObb_scad_Associate(context, filtro);
+		if (Optional.ofNullable(filtro.getFl_associate()).orElse(Boolean.FALSE)) {
+			sql1.setOrderBy("obbligazione.esercizio_originale", it.cnr.jada.util.Orderable.ORDER_ASC);
+			sql1.setOrderBy("obbligazione.pg_obbligazione", it.cnr.jada.util.Orderable.ORDER_ASC);
+			return sql1;
+		}
+		SQLUnion union = sql1.union(cercaObb_scad_Libere(context, filtro), true);
 		union.setOrderBy("obbligazione.esercizio_originale", it.cnr.jada.util.Orderable.ORDER_ASC);
 		union.setOrderBy("obbligazione.pg_obbligazione", it.cnr.jada.util.Orderable.ORDER_ASC);
 		return union;
 	}
 
 	private SQLBuilder cercaObb_scad_Associate(it.cnr.jada.UserContext context, it.cnr.contab.fondecon00.core.bulk.Filtro_ricerca_obbligazioniVBulk filtro) throws it.cnr.jada.comp.ComponentException {
-
-		SQLBuilder sql =
-			((it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioHome)getHomeCache().getHome(
-				it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk.class)
-			).createSQLBuilder();
+		SQLBuilder sql = getHomeCache().getHome(it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk.class).createSQLBuilder();
 
 		sql.setDistinctClause(true);
 		sql.addTableToHeader("OBBLIGAZIONE");
@@ -150,16 +121,18 @@ public class Fondo_economaleHome extends BulkHome {
 		sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE", "FONDO_SPESA.PG_OBBLIGAZIONE");
 		sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE_SCADENZARIO", "FONDO_SPESA.PG_OBBLIGAZIONE_SCADENZARIO");
 
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NOT NULL AND OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM > 0");
+
 		Fondo_economaleBulk fondo = filtro.getFondo();
 		if (fondo != null) {
-			sql.addSQLClause("AND","FONDO_SPESA.CD_CDS", sql.EQUALS, fondo.getCd_cds());
-			sql.addSQLClause("AND","FONDO_SPESA.ESERCIZIO", sql.EQUALS, fondo.getEsercizio());
-			sql.addSQLClause("AND","FONDO_SPESA.CD_UNITA_ORGANIZZATIVA", sql.EQUALS, fondo.getCd_unita_organizzativa());
-			sql.addSQLClause("AND","FONDO_SPESA.CD_CODICE_FONDO", sql.EQUALS, fondo.getCd_codice_fondo());
+			sql.addSQLClause(FindClause.AND,"FONDO_SPESA.CD_CDS", SQLBuilder.EQUALS, fondo.getCd_cds());
+			sql.addSQLClause(FindClause.AND,"FONDO_SPESA.ESERCIZIO", SQLBuilder.EQUALS, fondo.getEsercizio());
+			sql.addSQLClause(FindClause.AND,"FONDO_SPESA.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, fondo.getCd_unita_organizzativa());
+			sql.addSQLClause(FindClause.AND,"FONDO_SPESA.CD_CODICE_FONDO", SQLBuilder.EQUALS, fondo.getCd_codice_fondo());
 		}
 
-		sql.addSQLClause("AND","FONDO_SPESA.FL_DOCUMENTATA", sql.EQUALS, "N");
-		sql.addSQLClause("AND","FONDO_SPESA.FL_REINTEGRATA", sql.EQUALS, "N");
+		sql.addSQLClause(FindClause.AND,"FONDO_SPESA.FL_DOCUMENTATA", SQLBuilder.EQUALS, "N");
+		sql.addSQLClause(FindClause.AND,"FONDO_SPESA.FL_REINTEGRATA", SQLBuilder.EQUALS, "N");
 
 		addClausesObbScad(context, sql, filtro);
 
@@ -167,11 +140,7 @@ public class Fondo_economaleHome extends BulkHome {
 	}
 
 	private SQLBuilder cercaObb_scad_Libere(it.cnr.jada.UserContext context, it.cnr.contab.fondecon00.core.bulk.Filtro_ricerca_obbligazioniVBulk filtro) throws it.cnr.jada.comp.ComponentException {
-
-		SQLBuilder sql =
-			((it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioHome)getHomeCache().getHome(
-				it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk.class)
-			).createSQLBuilder();
+		SQLBuilder sql = getHomeCache().getHome(it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk.class).createSQLBuilder();
 
 		sql.addTableToHeader("OBBLIGAZIONE");
 		sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.CD_CDS", "OBBLIGAZIONE.CD_CDS");
@@ -179,8 +148,7 @@ public class Fondo_economaleHome extends BulkHome {
 		sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.ESERCIZIO_ORIGINALE", "OBBLIGAZIONE.ESERCIZIO_ORIGINALE");
 		sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE", "OBBLIGAZIONE.PG_OBBLIGAZIONE");
 
-		sql.addSQLClause("AND","OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM = ? OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NULL");
-		sql.addParameter(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP),java.sql.Types.DECIMAL,2);
+		sql.addSQLClause(FindClause.AND,"OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM = 0 OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NULL");
 
 		addClausesObbScad(context, sql, filtro);
 

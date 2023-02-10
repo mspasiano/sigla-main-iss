@@ -47,7 +47,7 @@ public class FondoEconomaleAction extends it.cnr.jada.util.action.CRUDAction {
      * Chiede conferma all'utente per la chisura del fondo economale
      *
      * @param context L'ActionContext della richiesta
-     * @param option
+     * @param sospesoDiChiusura IL SOSPESO DI CHIUSURA
      * @return Il Forward alla pagina di risposta
      */
     private it.cnr.jada.action.Forward basicDoConfermaChiudiFondo(
@@ -121,23 +121,20 @@ public class FondoEconomaleAction extends it.cnr.jada.util.action.CRUDAction {
      */
 
     public it.cnr.jada.action.Forward doApriRicercaObbScad(it.cnr.jada.action.ActionContext context) {
-
         try {
-
-            RicercaObbScadBP bp = (RicercaObbScadBP) context.createBusinessProcess(
-                    "RicercaObbScadBP",
-                    new Object[]{"MRSWTh"});
+            RicercaObbScadBP bp = (RicercaObbScadBP) context.createBusinessProcess("RicercaObbScadBP", new Object[]{"MRSWTh"});
             //Nel caso in cui sto rientrando dopo aver eseguito la ricerca delle
             //spese da associare visualizzo il msg del bp associazione
-            bp.setMessage(getBusinessProcess(context).getMessage());
-            getBusinessProcess(context).setMessage(null);
+            if (getBusinessProcess(context).getMessage()!=null) {
+                bp.setMessage(getBusinessProcess(context).getMessage());
+                getBusinessProcess(context).setMessage(null);
+            }
             Filtro_ricerca_obbligazioniVBulk filtro = new Filtro_ricerca_obbligazioniVBulk();
             filtro.initializeForSearch(bp, context);
             filtro.setFondo((Fondo_economaleBulk) getBusinessProcess(context).getModel());
             bp.setModel(context, filtro);
             context.addHookForward("bringback", this, "doAssociaSpeseObbligazione");
             return context.addBusinessProcess(bp);
-
         } catch (Throwable e) {
             try {
                 context.getBusinessProcess().rollbackUserTransaction();
@@ -152,7 +149,6 @@ public class FondoEconomaleAction extends it.cnr.jada.util.action.CRUDAction {
      * Apre in VIEW la spesa del fondo selezionata dopo la ricerca delle spese associate
      * alla scadenza
      */
-
     public it.cnr.jada.action.Forward doApriSpesaSelezionata(it.cnr.jada.action.ActionContext context) {
 
         try {
@@ -519,9 +515,9 @@ public class FondoEconomaleAction extends it.cnr.jada.util.action.CRUDAction {
                     fondo.setIm_ammontare_fondo(importo);
                     fondo.setIm_ammontare_iniziale(importo);
                     fondo.setIm_residuo_fondo(importo);
-                    fondo.setIm_totale_reintegri(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-                    fondo.setIm_totale_spese(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
-                    fondo.setIm_totale_netto_spese(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+                    fondo.setIm_totale_reintegri(BigDecimal.ZERO);
+                    fondo.setIm_totale_spese(BigDecimal.ZERO);
+                    fondo.setIm_totale_netto_spese(BigDecimal.ZERO);
                 } else
                     fondo.setMandato(mandatoTrovato);
             }
@@ -654,7 +650,6 @@ public class FondoEconomaleAction extends it.cnr.jada.util.action.CRUDAction {
      * Chiede conferma all'utente per la chisura del fondo economale
      *
      * @param context L'ActionContext della richiesta
-     * @param option
      * @return Il Forward alla pagina di risposta
      */
     public it.cnr.jada.action.Forward doConfermaChiudiFondo(ActionContext context) {
