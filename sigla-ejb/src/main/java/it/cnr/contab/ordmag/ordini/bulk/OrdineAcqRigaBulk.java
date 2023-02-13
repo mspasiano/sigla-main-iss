@@ -23,10 +23,8 @@ package it.cnr.contab.ordmag.ordini.bulk;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
-import java.util.Calendar;
-import java.util.Dictionary;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
@@ -56,6 +54,7 @@ public class OrdineAcqRigaBulk extends OrdineAcqRigaBase implements IDocumentoAm
 	protected BulkList<OrdineAcqConsegnaBulk> righeConsegnaColl= new BulkList<OrdineAcqConsegnaBulk>();
 	private java.lang.String dspTipoConsegna;
 	private java.lang.String dspStato;
+	private StatoContabilizzazione dspStatoContabilizzazione;
 	private Dettaglio_contrattoBulk dettaglioContratto;
 
 	private java.lang.String tipoConsegnaDefault;
@@ -630,5 +629,39 @@ Da questa gestione sono ricavati gli elementi per la gestione di magazziono e di
 	@Override
 	public void setArchivioAllegati(BulkList<AllegatoGenericoBulk> archivioAllegati) {
 		this.dettaglioAllegati = archivioAllegati;
+	}
+
+	public StatoContabilizzazione getDspStatoContabilizzazione() {
+		return dspStatoContabilizzazione;
+	}
+
+	public void setDspStatoContabilizzazione(StatoContabilizzazione dspStatoContabilizzazione) {
+		this.dspStatoContabilizzazione = dspStatoContabilizzazione;
+	}
+
+	public static final Map<StatoContabilizzazione, String> statoContabilizzazioneKeys = Arrays.stream(
+			StatoContabilizzazione.values()
+	).collect(Collectors.toMap(
+			s -> s, s -> s.getLabel(),
+			(u, v) -> {
+				throw new IllegalStateException(
+						String.format("Cannot have 2 values (%s, %s) for the same key", u, v)
+				);
+			}, Hashtable::new
+	));
+
+	public enum StatoContabilizzazione {
+		NON_CONTABILIZZATA("No"),
+		CONTABILIZZATA("Si"),
+		PARZIALMENTE_CONTABILIZZATA("Parzialmente");
+		private final String label;
+
+		StatoContabilizzazione(String label) {
+			this.label = label;
+		}
+
+		public String getLabel() {
+			return label;
+		}
 	}
 }

@@ -666,6 +666,7 @@ public class OrdineAcqComponent
     }
 
     protected void impostaCampiDspRiga(UserContext userContext, OrdineAcqRigaBulk riga) throws ComponentException {
+        riga.setDspStatoContabilizzazione(OrdineAcqRigaBulk.StatoContabilizzazione.NON_CONTABILIZZATA);
         if (riga.getRigheConsegnaColl().size() == 1) {
             OrdineAcqConsegnaBulk cons = riga.getRigheConsegnaColl().iterator().next();
             riga.setDspDtPrevConsegna(cons.getDtPrevConsegna());
@@ -676,6 +677,13 @@ public class OrdineAcqComponent
             riga.setDspUopDest(cons.getUnitaOperativaOrd());
             riga.setDspConto(cons.getContoBulk());
             riga.setDspStato(cons.getStato());
+            riga.getRigheConsegnaColl()
+                    .stream()
+                    .findAny()
+                    .filter(ordineAcqConsegnaBulk -> Optional.ofNullable(ordineAcqConsegnaBulk.getObbligazioneScadenzario()).isPresent())
+                    .ifPresent(ordineAcqConsegnaBulk -> {
+                        riga.setDspStatoContabilizzazione(OrdineAcqRigaBulk.StatoContabilizzazione.CONTABILIZZATA);
+                    });
         } else if (riga.getRigheConsegnaColl().size() > 1) {
             riga.setDspQuantita(riga.getQuantitaConsegneColl());
             String stato = null;
@@ -689,6 +697,20 @@ public class OrdineAcqComponent
                 }
             }
             riga.setDspStato(stato);
+            final boolean contabilizzate = riga.getRigheConsegnaColl()
+                    .stream()
+                    .filter(ordineAcqConsegnaBulk -> Optional.ofNullable(ordineAcqConsegnaBulk.getObbligazioneScadenzario()).isPresent())
+                    .findAny().isPresent();
+            final boolean notContabilizzate = riga.getRigheConsegnaColl()
+                    .stream()
+                    .filter(ordineAcqConsegnaBulk -> !Optional.ofNullable(ordineAcqConsegnaBulk.getObbligazioneScadenzario()).isPresent())
+                    .findAny().isPresent();
+            if (notContabilizzate && contabilizzate) {
+                riga.setDspStatoContabilizzazione(OrdineAcqRigaBulk.StatoContabilizzazione.PARZIALMENTE_CONTABILIZZATA);
+            }
+            if (!notContabilizzate && contabilizzate) {
+                riga.setDspStatoContabilizzazione(OrdineAcqRigaBulk.StatoContabilizzazione.CONTABILIZZATA);
+            }
         }
     }
 
@@ -1895,7 +1917,8 @@ public class OrdineAcqComponent
         OrdineAcqConsegnaHome ordineAcqConsegnaHome = (OrdineAcqConsegnaHome) getHome(userContex, OrdineAcqConsegnaBulk.class);
 
         SQLBuilder sql = ordineAcqConsegnaHome.createSQLBuilder();
-
+        sql.resetColumns();
+        sql.addColumn("SUM(IM_TOTALE_CONSEGNA) IM_TOTALE_CONSEGNA");
         sql.addClause("AND", "cdCds", SQLBuilder.EQUALS, ordine.getCdCds());
         sql.addClause("AND", "cdUnitaOperativa", SQLBuilder.EQUALS, ordine.getCdUnitaOperativa());
         sql.addClause("AND", "esercizio", SQLBuilder.EQUALS, ordine.getEsercizio());
@@ -1906,12 +1929,15 @@ public class OrdineAcqComponent
         sql.addClause("AND", "esercizioOrigObbl", SQLBuilder.EQUALS, obbligazione_scadenzario.getEsercizio_originale());
         sql.addClause("AND", "pgObbligazione", SQLBuilder.EQUALS, obbligazione_scadenzario.getPg_obbligazione());
         sql.addClause("AND", "cdCdsObbl", SQLBuilder.EQUALS, obbligazione_scadenzario.getCd_cds());
-        List<OrdineAcqConsegnaBulk> l = ordineAcqConsegnaHome.fetchAll(sql);
-        BigDecimal importoOrdineImpegno = BigDecimal.ZERO;
-        for (OrdineAcqConsegnaBulk c : l) {
-            importoOrdineImpegno = importoOrdineImpegno.add(c.getImTotaleConsegna());
+        final SQLBroker broker = ordineAcqConsegnaHome.createBroker(sql);
+        if (broker.next()) {
+            final BigDecimal importoOrdineImpegno = Optional.ofNullable(broker.fetchPropertyValue("imTotaleConsegna", OrdineAcqConsegnaBulk.class))
+                    .filter(BigDecimal.class::isInstance)
+                    .map(BigDecimal.class::cast)
+                    .orElse(BigDecimal.ZERO);
+            return importoOrdineImpegno.compareTo(obbligazione_scadenzario.getObbligazione().getIm_obbligazione()) == 0;
         }
-		return importoOrdineImpegno.compareTo(obbligazione_scadenzario.getObbligazione().getIm_obbligazione()) == 0;
+        return Boolean.TRUE;
 	}
 
     private boolean isModificaImpegniConRiduzioneImporto(UserContext userContext, OrdineAcqBulk ordine, Obbligazione_scadenzarioBulk obbligazione_scadenzario) throws ComponentException, PersistencyException {
@@ -2931,10 +2957,7 @@ public class OrdineAcqComponent
                         ordineRigaComp.setToBeUpdated();
                         ordineComp.setToBeUpdated();
 
-                        if (ordineEvasioneForzata.getObbligazioneScadenzario() != null)
-//TODO Da modificare
-//			gestioneImpegniChiusuraForzata( userContext,ordineEvasioneForzata);
-
+                        if (ordineConsegnaComp.getObbligazioneScadenzario() != null)
                             ordineConsegnaComp.setStato(OrdineAcqConsegnaBulk.STATO_EVASA_FORZATAMENTE);
                         ordineConsegnaComp.setToBeUpdated();
 

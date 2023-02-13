@@ -325,6 +325,17 @@
 			nullable="false"
 			label="Stato" />
 	<fieldProperty
+			name="statoContabilizzzione"
+			property="dspStatoContabilizzazione"
+			inputType="SELECT"
+			keysProperty="statoContabilizzazioneKeys"
+			inputSize="20"
+			maxLength="10"
+			enabledOnInsert="false"
+			enabledOnEdit="false"
+			nullable="false"
+			label="Contabilizzata" />
+	<fieldProperty
 		name="dtPrevConsegna"
 		property="dspDtPrevConsegna"
 		inputType="TEXT"
@@ -485,6 +496,8 @@
 			name="imTotaleRiga"/>
 		<columnFieldProperty
 				name="statoConsegne"/>
+		<columnFieldProperty
+				name="statoContabilizzzione"/>
 		<columnFieldProperty
 			name="dspUopDestinazione"/>
 	</columnSet>

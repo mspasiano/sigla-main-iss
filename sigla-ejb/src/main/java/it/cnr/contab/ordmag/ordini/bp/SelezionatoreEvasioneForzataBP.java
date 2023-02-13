@@ -32,6 +32,7 @@ import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.action.FormBP;
 import it.cnr.jada.util.action.SelezionatoreListaBP;
 
 import java.io.IOException;
@@ -84,6 +85,7 @@ public class SelezionatoreEvasioneForzataBP extends SelezionatoreListaBP {
 
             commitUserTransaction();
             setFocusedElement(context, null);
+			setMessage(FormBP.INFO_MESSAGE, "Operazione effettuata con successo.");
             refresh(context);
 			
 		} catch (ApplicationException e) {
