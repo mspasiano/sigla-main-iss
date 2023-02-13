@@ -1574,7 +1574,9 @@ private void aggiornaLimiteSpesa(UserContext userContext,Pdg_variazioneBulk pdg)
 			if (obbligazione.isToBeCreated()) {
 				gaeSource = listLinee.get(0);
 				gaeDestination = Optional.ofNullable(obbligazione.getGaeDestinazioneFinale()).filter(el->Optional.ofNullable(el.getCd_linea_attivita()).isPresent())
-						.orElseThrow(()->new ApplicationException("Non è possibile creare la variazione automatica in quanto non specificato sull'obbligazione la linea di attività di destinazione."));
+						.orElseThrow(()->new ApplicationException("Non è possibile creare la variazione automatica in quanto non specificata sull'obbligazione la linea di attività di destinazione."));
+				if (gaeDestination.equalsByPrimaryKey(gaeSource))
+					throw new ApplicationRuntimeException("Non è possibile creare la variazione automatica in quanto la linea di attività di destinazione è identica alla linea di attività specificata sull'obbligazione.");
 				imVariazione = obbligazione.getIm_obbligazione();
 				dsVariazione = "Variazione automatica generata in fase di creazione obbligazione.";
 			} else if (obbligazione.isToBeUpdated() || obbligazione.isToBeDeleted()) {
