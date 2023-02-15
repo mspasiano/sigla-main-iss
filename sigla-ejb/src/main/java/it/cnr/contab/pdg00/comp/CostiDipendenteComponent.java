@@ -2201,8 +2201,8 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 				aDateInizioComp = new GregorianCalendar(aEsercizio, Calendar.DECEMBER, 1);
 				aDateFineComp = new GregorianCalendar(aEsercizio, Calendar.DECEMBER, 31);
 			} else if (aMeseReale < 13) {
-				aDateInizioComp = new GregorianCalendar(aEsercizio, aMese-1, 1);
-				aDateFineComp = new GregorianCalendar(aEsercizio, aMese-1, 1);
+				aDateInizioComp = new GregorianCalendar(aEsercizio, aMeseReale-1, 1);
+				aDateFineComp = new GregorianCalendar(aEsercizio, aMeseReale-1, 1);
 				aDateFineComp.set(Calendar.DAY_OF_MONTH, aDateFineComp.getActualMaximum(Calendar.DAY_OF_MONTH));
 			}
 
