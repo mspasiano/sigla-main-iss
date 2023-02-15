@@ -356,6 +356,11 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 								.stream()
 								.map(OrdineAcqConsegnaBulk::getImImponibile)
 								.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImImponibile()).negate();
+						final BigDecimal diffIvaConsegna = ordineRigaComp
+								.getRigheConsegnaColl()
+								.stream()
+								.map(OrdineAcqConsegnaBulk::getImIva)
+								.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImIva()).negate();
 
 						if (!diffImponibileConsegna.equals(BigDecimal.ZERO.setScale(2))) {
 							ordineRigaComp
@@ -372,6 +377,27 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 										);
 										ordineAcqConsegnaBulk.setImTotaleConsegna(
 												ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffImponibileConsegna)
+										);
+									});
+						}
+						if (!diffIvaConsegna.equals(BigDecimal.ZERO.setScale(2))) {
+							ordineRigaComp
+									.getRigheConsegnaColl()
+									.stream()
+									.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
+									.findAny()
+									.ifPresent(ordineAcqConsegnaBulk -> {
+										ordineAcqConsegnaBulk.setImIva(
+												ordineAcqConsegnaBulk.getImIva().add(diffIvaConsegna)
+										);
+										ordineAcqConsegnaBulk.setImIvaNd(
+												ordineAcqConsegnaBulk.getImIvaNd().add(diffIvaConsegna)
+										);
+										ordineAcqConsegnaBulk.setImIvaDivisa(
+												ordineAcqConsegnaBulk.getImIvaDivisa().add(diffIvaConsegna)
+										);
+										ordineAcqConsegnaBulk.setImTotaleConsegna(
+												ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffIvaConsegna)
 										);
 									});
 						}
