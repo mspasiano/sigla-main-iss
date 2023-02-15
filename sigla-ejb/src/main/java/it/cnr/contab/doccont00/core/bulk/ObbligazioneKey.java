@@ -116,7 +116,8 @@ public void setPg_obbligazione(java.lang.Long pg_obbligazione) {
 
 	@Override
 	public String toString() {
-		if (this.isToBeCreated()||this.getCrudStatus()==OggettoBulk.UNDEFINED)
+		if (!Optional.ofNullable(this.getCd_cds()).isPresent() || !Optional.ofNullable(this.getEsercizio()).isPresent() ||
+			!Optional.ofNullable(this.getEsercizio_originale()).isPresent() || !Optional.ofNullable(this.getPg_obbligazione()).isPresent())
 			return super.toString();
 		return Arrays.asList(
 				Optional.ofNullable(this.getCd_cds()).map(String::valueOf).orElse(""),

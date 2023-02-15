@@ -55,6 +55,7 @@ import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
 import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
 import it.cnr.contab.progettiric00.core.bulk.Progetto_sipBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.EuroFormat;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.DetailedRuntimeException;
@@ -2240,7 +2241,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			mandatoWizard.setCd_uo_origine(cdrPersonaleBulk.getUnita_padre().getCd_unita_organizzativa());
 			mandatoWizard.setDt_emissione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
 			mandatoWizard.setUser(CNRUserContext.getUser(userContext));
-			mandatoWizard.setDs_mandato("Mandato di liquidazione stipendi_cofi mese:"+aMese);
+			mandatoWizard.setDs_mandato("Mandato di liquidazione stipendi (flusso: "+stipendiCofiBulk.getProg_flusso()+").");
 
 			DocumentoGenericoWizardBulk modelloDocumento = new DocumentoGenericoWizardBulk();
 
@@ -2253,7 +2254,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			modelloDocumento.setData_registrazione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
 			modelloDocumento.setDt_da_competenza_coge(new java.sql.Timestamp(aDateInizioComp.getTime().getTime()));
 			modelloDocumento.setDt_a_competenza_coge(new java.sql.Timestamp(aDateFineComp.getTime().getTime()));
-			modelloDocumento.setDs_documento_generico("Generico di versamento stipendi mese:" + aMese);
+			modelloDocumento.setDs_documento_generico("Generico di versamento stipendi (flusso: " + stipendiCofiBulk.getProg_flusso() + ").");
 			modelloDocumento.setTi_istituz_commerc(TipoIVA.ISTITUZIONALE.value());
 			modelloDocumento.setUser(CNRUserContext.getUser(userContext));
 
@@ -2311,7 +2312,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			reversaleWizard.setStato_coge(MandatoBulk.STATO_COGE_X);
 			reversaleWizard.getModelloDocumento().setTipo_documento(new Tipo_documento_ammBulk(TipoDocumentoEnum.GEN_CORI_ACCANTONAMENTO_ENTRATA.getValue()));
 			reversaleWizard.getModelloDocumento().setTerzoWizardBulk(mandatoStipendio.getMandato_terzo().getTerzo());
-			reversaleWizard.getModelloDocumento().setDs_documento_generico("CORI - mese:" + stipendiCofiBulk.getMese() + " es:" + stipendiCofiBulk.getEsercizio());
+			reversaleWizard.getModelloDocumento().setDs_documento_generico("CORI - es:" + stipendiCofiBulk.getEsercizio() + " - flusso: " + stipendiCofiBulk.getProg_flusso());
 
 			//Imposto le variabili da utilizzare per il caricamento degli oggetti
 			Documento_generico_rigaBulk docRiga = new Documento_generico_rigaBulk();
@@ -2404,70 +2405,39 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					ObbligazioneBulk obbligazione = obbligazioneHome.findObbligazione(el.getStipendi_cofi_obb().getObbligazioni());
 					obbligazione.setObbligazione_scadenzarioColl(new BulkList(obbligazioneHome.findObbligazione_scadenzarioList(obbligazione)));
 
+					if (!obbligazione.getUnita_organizzativa().equalsByPrimaryKey(mandatoWizard.getUnita_organizzativa()))
+						throw new ApplicationRuntimeException("Obbligazione " + obbligazione +
+								" appartenente alla UO "+obbligazione.getCd_unita_organizzativa()+ " diversa da quella del personale " +
+								mandatoWizard.getCd_unita_organizzativa()+".");
+
 					//Carico l'oggetto Terzo che viene letto in passi successivi...
 					TerzoHome terzohome = (TerzoHome) getHome(userContext, TerzoBulk.class);
 					obbligazione.setCreditore((TerzoBulk) terzohome.findByPrimaryKey(obbligazione.getCreditore()));
 					obbligazione.getCreditore().setAnagrafico((AnagraficoBulk) getHome(userContext, AnagraficoBulk.class).findByPrimaryKey(obbligazione.getCreditore().getAnagrafico()));
 
 					//Recupero la scadenza su cui dovrebbero esserci le disponibilità
-					Optional<Obbligazione_scadenzarioBulk> scadenzarioDisp = obbligazione.getObbligazione_scadenzarioColl().stream()
-							.filter(scad -> scad.getPg_obbligazione_scadenzario().compareTo(Long.valueOf(15)) < 0)
-							.max(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario))
+					Optional<Obbligazione_scadenzarioBulk> scadenzario = obbligazione.getObbligazione_scadenzarioColl().stream()
 							.filter(scad -> scad.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO) == 0)
-							.filter(scad -> scad.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO) == 0);
+							.filter(scad -> scad.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO) == 0)
+							.max(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario));
 
-					if (!scadenzarioDisp.isPresent())
-						throw new ApplicationRuntimeException("Scadenza di obbligazione n. " + obbligazione.getPg_obbligazione() +
+					if (!scadenzario.isPresent())
+						throw new ApplicationRuntimeException("Scadenza dell'obbligazione " + obbligazione +
 								" con disponibilità residue non individuata.");
-					else if (scadenzarioDisp.get().getIm_scadenza().compareTo(el.getIm_totale()) < 0)
-						throw new ApplicationRuntimeException("Disponibilità residua dell'obbligazione n. " +
-								obbligazione.getEsercizio() + "/" + obbligazione.getEsercizio_originale() + "/" +
-								obbligazione.getCd_cds() + "/" + obbligazione.getPg_obbligazione() +
-								" (" + new it.cnr.contab.util.EuroFormat().format(scadenzarioDisp.get().getIm_scadenza()) +
-								") non sufficiente per il pagamento del mese n. " + aMese + " es. " + aEsercizio + " (" +
-								new it.cnr.contab.util.EuroFormat().format(el.getIm_totale()) + ").");
+					else if (scadenzario.get().getIm_scadenza().compareTo(el.getIm_totale()) < 0)
+						throw new ApplicationRuntimeException("Disponibilità residua dell'obbligazione n. " + obbligazione + " (" +
+								new EuroFormat().format(scadenzario.get().getIm_scadenza()) + ") non sufficiente per il pagamento del " +
+								"flusso " + stipendiCofiBulk.getProg_flusso() + " - es. " + aEsercizio +
+								" (" + new EuroFormat().format(el.getIm_totale()) + ").");
 
-					Optional<Obbligazione_scadenzarioBulk> scadenzario;
-
-					if (aMese < 15) {
-						if (scadenzarioDisp.get().getPg_obbligazione_scadenzario().compareTo(Long.valueOf(aMese)) > 0)
-							throw new ApplicationRuntimeException("Scadenza dell'obbligazione n. " + obbligazione.getPg_obbligazione() +
-									" con disponibilità (prog." + scadenzarioDisp.get().getPg_obbligazione_scadenzario() +
-									" ) è superiore a quello atteso per il pagamento del mese n. " + aMese + " es. " + aEsercizio + ".");
-						else if (scadenzarioDisp.get().getPg_obbligazione_scadenzario().compareTo(Long.valueOf(aMese)) < 0) {
-							while (scadenzarioDisp.get().getPg_obbligazione_scadenzario().compareTo(Long.valueOf(aMese)) < 0) {
-								DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
-								dati.setNuovoImportoScadenzaVecchia(BigDecimal.ZERO);
-								dati.setNuovoPgObbligazioneScadenzario(scadenzarioDisp.get().getPg_obbligazione_scadenzario() + 1);
-								scadenzarioDisp = Optional.ofNullable((Obbligazione_scadenzarioBulk) Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext, scadenzarioDisp.get(), dati));
-							}
-						}
-						//Sdoppio la scadenza se necessario
-						if (el.getIm_totale().compareTo(scadenzarioDisp.get().getIm_scadenza()) != 0) {
-							DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
-							dati.setNuovoImportoScadenzaVecchia(el.getIm_totale());
-							dati.setNuovoPgObbligazioneScadenzario(scadenzarioDisp.get().getPg_obbligazione_scadenzario() + 1);
-							Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext, scadenzarioDisp.get(), dati);
-						}
-						scadenzario = scadenzarioDisp;
-					} else { // if (aMese>=15)
-						scadenzario = obbligazione.getObbligazione_scadenzarioColl().stream()
-								.filter(scad -> scad.getPg_obbligazione_scadenzario().compareTo(Long.valueOf(aMese)) == 0)
-								.findFirst();
-
-						if (scadenzario.filter(scad -> scad.getIm_associato_doc_amm().compareTo(BigDecimal.ZERO) != 0 || scad.getIm_associato_doc_contabile().compareTo(BigDecimal.ZERO) != 0).isPresent())
-							throw new ApplicationRuntimeException("Scadenza di obbligazione n. " + obbligazione.getPg_obbligazione() +
-									" associata a liquidazione stipendi mese n. " + aMese + " es. " + aEsercizio + " già associata a documenti contabili o amministrativi.");
-						else if (scadenzario.filter(scad -> scad.getIm_scadenza().compareTo(el.getIm_totale()) != 0).isPresent())
-							throw new ApplicationRuntimeException("Scadenza di obbligazione n. " + obbligazione.getPg_obbligazione() +
-									" di importo diverso da quello previsto per la liquidazione stipendi mese n. " + aMese + " es. " + aEsercizio + ".");
-
-						if (!scadenzario.isPresent()) {
-							DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
-							dati.setNuovoImportoScadenzaVecchia(scadenzarioDisp.get().getIm_scadenza().subtract(el.getIm_totale()));
-							dati.setNuovoPgObbligazioneScadenzario(Long.valueOf(aMese));
-							Optional.ofNullable((Obbligazione_scadenzarioBulk) Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext, scadenzarioDisp.get(), dati));
-						}
+					//Sdoppio la scadenza se necessario
+					if (el.getIm_totale().compareTo(scadenzario.get().getIm_scadenza()) != 0) {
+						DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+						dati.setNuovoImportoScadenzaVecchia(el.getIm_totale());
+						dati.setNuovoPgObbligazioneScadenzario(obbligazione.getObbligazione_scadenzarioColl().stream()
+										.max(Comparator.comparing(Obbligazione_scadenzarioBulk::getPg_obbligazione_scadenzario)).get()
+										.getPg_obbligazione_scadenzario()+1);
+						Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext, scadenzario.get(), dati);
 					}
 
 					V_obbligazioneBulk vObbligazioneBulk = Optional.ofNullable(((V_obbligazioneHome) getHome(userContext, V_obbligazioneBulk.class)).findImpegno(scadenzario.get()))
@@ -2480,7 +2450,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					obbligazioneWizardBulk.setTerzoWizardBulk(terzoStipendi);
 					obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoStipendiBulk);
 					obbligazioneWizardBulk.setBancaWizardBulk(bancaStipendiBulk);
-					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi mese:" + aMese);
+					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi (flusso: " + stipendiCofiBulk.getProg_flusso() + ").");
 					obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:" + obbligazione.getCd_elemento_voce());
 
 					listaObbligazioniWizard.add(obbligazioneWizardBulk);
@@ -2521,7 +2491,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 
 			compensoBulk.setDt_registrazione(mandatoWizard.getDt_emissione());
 
-			compensoBulk.setDs_compenso("Liquidazione stipendi mese n." + aMese + " es.:" + aEsercizio + ".");
+			compensoBulk.setDs_compenso("Liquidazione stipendi (flusso: " + stipendiCofiBulk.getProg_flusso() + ").");
 			compensoBulk.setTi_anagrafico(AnagraficoBulk.DIVERSI);
 
 			Integer cdTerzoStipendi = Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiStipendi(userContext);
@@ -2636,7 +2606,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 								aEffCori.getElemento_voce().getTi_gestione())));
 						accertamentoPGiroBulk.setIm_accertamento(el.getAmmontare());
 						accertamentoPGiroBulk.setDt_registrazione(compensoBulk.getDt_registrazione());
-						accertamentoPGiroBulk.setDs_accertamento("CORI-D mese:" + el.getMese() + " es:" + el.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
+						accertamentoPGiroBulk.setDs_accertamento("CORI-D flusso: " + stipendiCofiBulk.getProg_flusso() + " CORI:" + el.getCd_contributo_ritenuta());
 						accertamentoPGiroBulk.setDebitore(mandatoStipendio.getMandato_terzo().getTerzo());
 						accertamentoPGiroBulk.setToBeCreated();
 
@@ -2675,7 +2645,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						obbligazionePGiroBulk.setElemento_voce(new Elemento_voceBulk(assPartitaGiro.getCd_voce_clg(), assPartitaGiro.getEsercizio(), assPartitaGiro.getTi_appartenenza_clg(), assPartitaGiro.getTi_gestione_clg()));
 						obbligazionePGiroBulk.setIm_obbligazione(el.getAmmontare());
 						obbligazionePGiroBulk.setDt_registrazione(compensoBulk.getDt_registrazione());
-						obbligazionePGiroBulk.setDs_obbligazione("CORI-D mese:" + el.getMese() + " es:" + el.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
+						obbligazionePGiroBulk.setDs_obbligazione("CORI-D flusso: " + stipendiCofiBulk.getProg_flusso() + " CORI:" + el.getCd_contributo_ritenuta());
 						obbligazionePGiroBulk.setCreditore(mandatoStipendio.getMandato_terzo().getTerzo());
 						obbligazionePGiroBulk.setStato_obbligazione(ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 						obbligazionePGiroBulk.setToBeCreated();
@@ -2726,8 +2696,8 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					Accertamento_scadenzarioBulk as = (Accertamento_scadenzarioBulk)getHome(userContext, Accertamento_scadenzarioBulk.class)
 							.findByPrimaryKey(new Accertamento_scadenzarioBulk(el.getCd_cds_accertamento(), el.getEsercizio_accertamento(), el.getEsercizio_ori_accertamento(), el.getPg_accertamento(), el.getPg_accertamento_scadenzario()));
 					AccertamentoWizard accertamentoWizardBulk = new AccertamentoWizard(as);
-					accertamentoWizardBulk.setDescrizioneRigaDocumentoWizard("CORI - mese:" + stipendiCofiBulk.getMese() + " es:" + stipendiCofiBulk.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
-					accertamentoWizardBulk.setDescrizioneRigaReversaleWizard("CORI - mese:" + stipendiCofiBulk.getMese() + " es:" + stipendiCofiBulk.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
+					accertamentoWizardBulk.setDescrizioneRigaDocumentoWizard("CORI - flusso:" + stipendiCofiBulk.getProg_flusso() + " es:" + stipendiCofiBulk.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
+					accertamentoWizardBulk.setDescrizioneRigaReversaleWizard("CORI - flusso:" + stipendiCofiBulk.getProg_flusso() + " es:" + stipendiCofiBulk.getEsercizio() + " CORI:" + el.getCd_contributo_ritenuta());
 					return accertamentoWizardBulk;
 				} catch (Exception e) {
 					throw new DetailedRuntimeException(e);
