@@ -2681,7 +2681,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Optional<Documento_genericoBulk> documentoAttivo = Optional.empty();
 			if (listAccertamenti.size()>0) {
 				reversaleWizard.setAccertamentiSelezionatiColl(listAccertamenti);
-				reversaleWizard.setDs_reversale("CORI - mese:" + stipendiCofiBulk.getMese() + " es:" + stipendiCofiBulk.getEsercizio());
+				reversaleWizard.setDs_reversale("CORI - flusso:" + stipendiCofiBulk.getProg_flusso() + " es:" + stipendiCofiBulk.getEsercizio());
 				reversaleWizard.setTi_automatismo(ReversaleAutomaticaWizardBulk.AUTOMATISMO_DA_ACCERTAMENTI);
 				reversaleWizard.setFlGeneraReversaleUnica(Boolean.TRUE);
 				reversaleWizard.setFlGeneraReversaleMonoVoce(Boolean.TRUE);
