@@ -2242,7 +2242,11 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			mandatoWizard.setCd_uo_origine(cdrPersonaleBulk.getUnita_padre().getCd_unita_organizzativa());
 			mandatoWizard.setDt_emissione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
 			mandatoWizard.setUser(CNRUserContext.getUser(userContext));
-			mandatoWizard.setDs_mandato("Mandato di liquidazione stipendi (flusso: "+stipendiCofiBulk.getProg_flusso()+").");
+
+			if (stipendiCofiBulk.isFlussoDipendenti())
+				mandatoWizard.setDs_mandato("Mandato di liquidazione stipendi (Flusso: "+stipendiCofiBulk.getProg_flusso()+" - Mese: "+ Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale())+").");
+			else
+				mandatoWizard.setDs_mandato("Mandato di liquidazione compensi (Flusso: "+stipendiCofiBulk.getProg_flusso()+" - Mese: "+ Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale())+").");
 
 			DocumentoGenericoWizardBulk modelloDocumento = new DocumentoGenericoWizardBulk();
 
@@ -2255,7 +2259,12 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			modelloDocumento.setData_registrazione(new java.sql.Timestamp(aDateCont.getTime().getTime()));
 			modelloDocumento.setDt_da_competenza_coge(new java.sql.Timestamp(aDateInizioComp.getTime().getTime()));
 			modelloDocumento.setDt_a_competenza_coge(new java.sql.Timestamp(aDateFineComp.getTime().getTime()));
-			modelloDocumento.setDs_documento_generico("Generico di versamento stipendi (flusso: " + stipendiCofiBulk.getProg_flusso() + ").");
+
+			if (stipendiCofiBulk.isFlussoDipendenti())
+				modelloDocumento.setDs_documento_generico("Generico di versamento stipendi (Flusso: " + stipendiCofiBulk.getProg_flusso() + " - Mese: "+ Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale())+").");
+			else
+				modelloDocumento.setDs_documento_generico("Generico di versamento compensi (Flusso: " + stipendiCofiBulk.getProg_flusso() + " - Mese: "+ Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale())+").");
+
 			modelloDocumento.setTi_istituz_commerc(TipoIVA.ISTITUZIONALE.value());
 			modelloDocumento.setUser(CNRUserContext.getUser(userContext));
 
@@ -2292,7 +2301,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			reversaleWizard.setStato_coge(MandatoBulk.STATO_COGE_X);
 			reversaleWizard.getModelloDocumento().setTipo_documento(new Tipo_documento_ammBulk(TipoDocumentoEnum.GEN_CORI_ACCANTONAMENTO_ENTRATA.getValue()));
 			reversaleWizard.getModelloDocumento().setTerzoWizardBulk(mandatoStipendio.getMandato_terzo().getTerzo());
-			reversaleWizard.getModelloDocumento().setDs_documento_generico("CORI - es:" + stipendiCofiBulk.getEsercizio() + " - flusso: " + stipendiCofiBulk.getProg_flusso());
+			reversaleWizard.getModelloDocumento().setDs_documento_generico("CORI - Flusso: " + stipendiCofiBulk.getProg_flusso() + " - Mese: "+ Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale())+".");
 
 			//Imposto le variabili da utilizzare per il caricamento degli oggetti
 			Documento_generico_rigaBulk docRiga = new Documento_generico_rigaBulk();
@@ -2414,8 +2423,14 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					obbligazioneWizardBulk.setTerzoWizardBulk(terzoFlusso);
 					obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(modalitaPagamentoFlusso);
 					obbligazioneWizardBulk.setBancaWizardBulk(bancaFlusso);
-					obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi (flusso: " + stipendiCofiBulk.getProg_flusso() + ").");
-					obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:" + obbligazione.getCd_elemento_voce());
+
+					if (stipendiCofiBulk.isFlussoDipendenti()) {
+						obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Generico di versamento stipendi (Flusso: " + stipendiCofiBulk.getProg_flusso() + " - Mese: " + Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale()) + ").");
+						obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione stipendi voce del piano:" + obbligazione.getCd_elemento_voce());
+					} else {
+						obbligazioneWizardBulk.setDescrizioneRigaDocumentoWizard("Terzo " + obbligazione.getCreditore().getCd_terzo() + ": " + obbligazione.getCreditore().getAnagrafico().getCognome() + " " + obbligazione.getCreditore().getAnagrafico().getNome() + " - Generico di versamento compensi (Flusso: " + stipendiCofiBulk.getProg_flusso() + " - Mese: " + Stipendi_cofiBulk.meseKeys.get(stipendiCofiBulk.getMese_reale()) + ").");
+						obbligazioneWizardBulk.setDescrizioneRigaMandatoWizard("Riga liquidazione compensi voce del piano:" + obbligazione.getCd_elemento_voce());
+					}
 
 					listaObbligazioniWizard.add(obbligazioneWizardBulk);
 				} catch (Exception e) {

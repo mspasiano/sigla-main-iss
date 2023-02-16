@@ -1744,15 +1744,7 @@ private void validaCdrLineaVoce(UserContext userContext, ObbligazioneBulk obblig
 public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws ComponentException
 {
 	ObbligazioneBulk obbligazione = (ObbligazioneBulk) bulk;
-	try {
-	verificaStatoEsercizio(
-							uc,
-							((CNRUserContext)uc).getEsercizio(),
-							obbligazione.getCd_cds());
-	} catch (Exception e) {
-		throw handleException(e);
-	}
-	
+
 	validaCampi(uc, obbligazione);
 	validaObbligazionePluriennale(uc, obbligazione);
 
@@ -1771,6 +1763,7 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 					});
 
 			if (obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_organizzativa()!=obbligazione.getCd_unita_organizzativa()) {
+				obbligazione.setCd_cds(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_padre());
 				obbligazione.setUnita_organizzativa(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre());
 				obbligazione.setCd_cds_origine(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_padre());
 				obbligazione.setCd_uo_origine(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_organizzativa());
@@ -1785,6 +1778,12 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 			obbligazione = obbligHome.refreshNuoveLineeAttivitaColl(uc, obbligazione);
 		}
 	} catch ( Exception e ) {
+		throw handleException(e);
+	}
+
+	try {
+		verificaStatoEsercizio(uc, ((CNRUserContext)uc).getEsercizio(), obbligazione.getCd_cds());
+	} catch (Exception e) {
 		throw handleException(e);
 	}
 
