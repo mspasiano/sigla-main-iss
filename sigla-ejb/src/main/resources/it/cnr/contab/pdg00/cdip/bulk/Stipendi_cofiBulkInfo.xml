@@ -86,35 +86,22 @@
 		name="searchtool" >
 		<formFieldProperty
 			name="mese"
-			label="Progr."
 			inputSize="10"
-			inputCssClass="w-10"
 			enabledOnSearch="true" />
-		<formFieldProperty
-			name="prog_flusso"
-			inputSize="10"
-			inputCssClass="w-10"
-			enabledOnSearch="true" />
-		<formFieldProperty
-			name="esercizio"
-			inputSize="10"
-			inputCssClass="w-10" />
 		<formFieldProperty
 			name="mese_reale"
 			enabledOnSearch="true"
 			inputSize="10"
-			inputCssClass="w-10" />
+			inputCssClass="w-20" />
 		<formFieldProperty
 			name="stato" />
 	</form>
 
 	<columnFieldProperty
+		name="esercizio" />
+	<columnFieldProperty
 		name="mese"
 		label="Progr."/>
-	<columnFieldProperty
-		name="prog_flusso" />
-	<columnFieldProperty
-		name="esercizio" />
 	<columnFieldProperty
 		name="mese_reale" />
 	<columnFieldProperty
@@ -127,11 +114,5 @@
 		name="cd_uo_comp" />
 	<columnFieldProperty
 		name="pg_comp" />
-	<columnFieldProperty
-		name="cd_cds_mandato" />
-	<columnFieldProperty
-		name="pg_mandato" />
-
-
 
 </bulkInfo>

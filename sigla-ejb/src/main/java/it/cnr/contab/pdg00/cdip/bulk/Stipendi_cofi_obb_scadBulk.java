@@ -33,7 +33,7 @@ public class Stipendi_cofi_obb_scadBulk extends Stipendi_cofi_obb_scadBase {
 		super(esercizio, mese, cd_cds_obbligazione, esercizio_obbligazione, esercizio_ori_obbligazione, pg_obbligazione);
 	}
 
-	public static final java.util.Dictionary meseKeys = Stipendi_cofiBulk.meseKeys;
+	public static final java.util.Map meseKeys = Stipendi_cofiBulk.meseKeys;
 
 	private Stipendi_cofiBulk stipendi_cofi = new Stipendi_cofiBulk();
 
@@ -106,7 +106,7 @@ public class Stipendi_cofi_obb_scadBulk extends Stipendi_cofi_obb_scadBase {
 		this.stipendi_cofi_obb = stipendi_cofi_obb;
 	}
 
-	public static java.util.Dictionary getMeseKeys() {
+	public static java.util.Map getMeseKeys() {
 		return meseKeys;
 	}
 }
