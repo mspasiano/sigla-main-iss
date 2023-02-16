@@ -2462,7 +2462,6 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			mandatoWizard.setTi_automatismo(MandatoAutomaticoWizardBulk.AUTOMATISMO_DA_IMPEGNI);
 			mandatoWizard.setImpegniSelezionatiColl(listaObbligazioniWizard);
 			mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
-			mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
 
 			MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
 			mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);
@@ -2553,6 +2552,9 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			for (Stipendi_cofi_coriBulk el : stipendiCofiCoriColl) {
 				Tipo_contributo_ritenutaHome tipoContributoRitenutaHome = (Tipo_contributo_ritenutaHome) getHome(userContext, Tipo_contributo_ritenutaBulk.class);
 				Tipo_contributo_ritenutaBulk tipoContributoRitenutaBulk = tipoContributoRitenutaHome.findTipoCORIValido(el.getCd_contributo_ritenuta(), tipoContributoRitenutaHome.getServerDate());
+
+				Optional.ofNullable(tipoContributoRitenutaBulk).orElseThrow(()->new ApplicationException("Codice contributo "+el.getCd_contributo_ritenuta()+
+						" non valido alla data odierna."));
 				boolean isCoriSpeciale = tipoContributoRitenutaBulk.getCd_classificazione_cori().equals(aClassCoriSpec);
 
 				if (el.getAmmontare().compareTo(BigDecimal.ZERO) != 0) {
@@ -2759,7 +2761,6 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 				mandatoWizard.setImpegniSelezionatiColl(listObbligazioni);
 				mandatoWizard.setTi_automatismo(MandatoAutomaticoWizardBulk.AUTOMATISMO_DA_IMPEGNI);
 				mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
-				mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
 
 				MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
 				mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);

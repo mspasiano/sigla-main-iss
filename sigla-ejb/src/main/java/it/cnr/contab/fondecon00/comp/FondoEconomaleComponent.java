@@ -1343,7 +1343,6 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                 mandatoWizard.setUser(CNRUserContext.getUser(userContext));
                 mandatoWizard.setDs_mandato("Mandato per reintegro fondo economale: "+fondo.getEsercizio()+"-"+fondo.getCd_unita_organizzativa()+" n."+fondo.getCd_codice_fondo());
                 mandatoWizard.setFlGeneraMandatoUnico(Boolean.TRUE);
-                mandatoWizard.setFlGeneraMandatoMonoVoce(Boolean.TRUE);
 
                 //Aggiungo i documenti delle spese documentate
                 V_doc_passivo_obbligazione_wizardHome home = (V_doc_passivo_obbligazione_wizardHome) getHome(userContext, V_doc_passivo_obbligazione_wizardBulk.class);

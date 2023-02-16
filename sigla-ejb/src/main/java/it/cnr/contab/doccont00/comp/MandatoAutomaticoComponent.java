@@ -228,7 +228,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			mapTerzo.keySet().forEach(aCdTerzo -> mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
 				List<V_doc_passivo_obbligazione_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
 
-				final Map<String, List<V_doc_passivo_obbligazione_wizardBulk>> mapVoce;
+				final Map<Integer, Map<String, List<V_doc_passivo_obbligazione_wizardBulk>>> mapEsercizioVoce;
 
 				//Se rottura per voce la carico sugli oggetti per le successive operazioni
 				if (isMandatoMonoVoce) {
@@ -243,20 +243,24 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						}
 					});
 
-					mapVoce = result.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdElementoVoce));
+					mapEsercizioVoce = result.stream().collect(
+							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getEsercizio_ori_obbligazione,
+								Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdElementoVoce)));
 				} else {
-					mapVoce = new HashMap<>();
+					mapEsercizioVoce = new HashMap<>();
+					Map mapVoce = new HashMap<>();
 					mapVoce.put("XXX", result);
+					mapEsercizioVoce.put(0, mapVoce);
 				}
 
 				List<V_doc_passivo_obbligazione_wizardBulk> docPassiviMandatoEmesso = new ArrayList();
 
-				mapVoce.keySet().forEach(aCdVoce -> {
+				mapEsercizioVoce.keySet().forEach(aEsercizio -> mapEsercizioVoce.get(aEsercizio).keySet().forEach(aCdVoce -> {
 					try {
 						List docPassiviCompetenzaColl = new ArrayList();
 						List docPassiviResiduiColl = new ArrayList();
 
-						mapVoce.get(aCdVoce).forEach(docTerzo -> {
+						mapEsercizioVoce.get(aEsercizio).get(aCdVoce).forEach(docTerzo -> {
 							try {
 								Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)
 											getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds_obbligazione(), docTerzo.getEsercizio_obbligazione(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
@@ -289,7 +293,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						});
 
 						MandatoBulk mandatoCompetenza, mandatoResiduo;
-				 		if (!docPassiviCompetenzaColl.isEmpty()) {
+						if (!docPassiviCompetenzaColl.isEmpty()) {
 							mandatoCompetenza = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_COMPETENZA);
 							mandatoCompetenza.setMandato_terzo(creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), Optional.ofNullable(wizard.getMandato_terzo()).map(Mandato_terzoBulk::getTipoBollo).orElse(null)));
 							mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl);
@@ -314,7 +318,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					} catch (ComponentException e) {
 						throw new ApplicationRuntimeException(e);
 					}
-				});
+				}));
 			})));
 			return wizard;
 		} catch ( Exception e ) {
