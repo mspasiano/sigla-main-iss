@@ -17,6 +17,7 @@
 
 package it.cnr.contab.pdg00.action;
 
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.compensi00.bp.CRUDCompensoBP;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.docamm00.bp.CRUDDocumentoGenericoPassivoBP;
@@ -118,12 +119,17 @@ public class ContabilizzazioneFlussoStipendialeMensileAction extends it.cnr.jada
         return context.addBusinessProcess(newbp);
     }
 
-    public Forward doRiportaSelezioneMandato(ActionContext actioncontext, OggettoBulk oggettobulk)
+    public Forward doRiportaSelezioneMandato(ActionContext actioncontext)
             throws RemoteException {
         try {
-            if (oggettobulk != null) {
+            HookForward caller = (HookForward)actioncontext.getCaller();
+            Optional<MandatoIBulk> mandatoIBulk =
+                    Optional.ofNullable( caller.getParameter("focusedElement")).
+                            filter( MandatoIBulk.class::isInstance).
+                            map(MandatoIBulk.class::cast);
+            if (mandatoIBulk.isPresent()) {
                 CRUDMandatoBP crudMandatoBP = (CRUDMandatoBP) actioncontext.createBusinessProcess("CRUDMandatoBP", new Object[]{"VRSWTh"});
-                crudMandatoBP.edit(actioncontext, oggettobulk);
+                crudMandatoBP.edit(actioncontext, mandatoIBulk.get());
                 return actioncontext.addBusinessProcess(crudMandatoBP);
             }
             return actioncontext.findDefaultForward();
