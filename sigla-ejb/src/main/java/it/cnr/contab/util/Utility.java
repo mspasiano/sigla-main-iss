@@ -36,6 +36,7 @@ import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;
@@ -398,6 +399,18 @@ public final class Utility {
 		Map<Object, Boolean> map = new ConcurrentHashMap<>();
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
+
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map ) {
+		Map<K, V> result = new LinkedHashMap<>();
+		Stream<Map.Entry<K, V>> st = map.entrySet().stream();
+
+		st.sorted( Map.Entry.comparingByValue() )
+				.forEachOrdered( e -> result.put(e.getKey(), e.getValue()) );
+
+		return result;
+	}
+
+
 	public static CRUDComponentSession createCRUDComponentSession() throws EJBException, RemoteException {
 		return Optional.ofNullable(EJBCommonServices.createEJB("JADAEJB_CRUDComponentSession"))
 				.filter(CRUDComponentSession.class::isInstance)

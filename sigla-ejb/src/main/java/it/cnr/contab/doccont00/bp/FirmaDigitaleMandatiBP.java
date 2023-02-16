@@ -206,7 +206,7 @@ public class FirmaDigitaleMandatiBP extends AbstractFirmaDigitaleDocContBP {
 				if (v_mandato_reversaleBulk.isMandato()) {
 					if (Utility.createMandatoComponentSession().esisteAnnullodaRiemettereNonCollegato(
 							actioncontext.getUserContext(),v_mandato_reversaleBulk.getEsercizio(),v_mandato_reversaleBulk.getCd_cds_origine())) {
-						message += "\nEsistono mandati di annullo con riemissione da completamente.";
+						message += "\nEsistono mandati di annullo con riemissione da completare.";
 						isBloccoFirma=true;
 						break;
 					}

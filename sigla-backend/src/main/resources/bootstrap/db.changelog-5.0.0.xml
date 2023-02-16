@@ -5976,6 +5976,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/update_albero_gestione_iva_iss.xml"/>
     <!-- Autore : VALENTINA TOMADA - BP accessp Stampa Registri Iva definitivi ISS  -->
     <include file="bootstrap/update_bp_accesso_stampa_iva_def_iss.xml"/>
+    <!-- Autore : MARCO SPASIANO - Aggiunto al mandato la fk agli stipendi -->
+    <include file="bootstrap/add_column_stipendi_on_mandato.xml"/>
 
 
 
