@@ -17,11 +17,6 @@
 
 package it.cnr.contab.pdg00.cdip.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
-
 public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 	private static final java.util.Dictionary statoKeys = new it.cnr.jada.util.OrderedHashtable();
 	public static final String STATO_LIQUIDATO = "P";
