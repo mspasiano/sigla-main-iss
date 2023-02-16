@@ -17,6 +17,7 @@
 
 package it.cnr.contab.pdg00.cdip.bulk;
 
+import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoBulk;
 import it.cnr.contab.util00.bulk.MeseBulk;
 
 import java.util.Map;
@@ -30,7 +31,10 @@ public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 		statoKeys.put(STATO_LIQUIDATO,"Liquidato");
 		statoKeys.put(STATO_NON_LIQUIDATO,"Non liquidato");
 	}
+
 	public static final Map meseKeys = MeseBulk.meseKeys;
+	public static final Map tipoFlussoKeys = MeseTipoFlussoBulk.tipoFlussoKeys;
+
 	public Stipendi_cofiBulk() {
 		super();
 	}
@@ -61,5 +65,13 @@ public class Stipendi_cofiBulk extends Stipendi_cofiBase {
 
 	public String getRecordKey() {
 		return (String)getMeseKeys().get(this.getMese_reale())+" - Flusso: "+this.getProg_flusso();
+	}
+
+	public boolean isFlussoDipendenti() {
+		return Tipo_rapportoBulk.DIPENDENTE.equals(this.getTipo_flusso());
+	}
+
+	public boolean isFlussoCollaboratori() {
+		return Tipo_rapportoBulk.COLLABORATORE_COORD_E_CONT.equals(this.getTipo_flusso());
 	}
 }

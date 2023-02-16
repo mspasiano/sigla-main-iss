@@ -67,6 +67,8 @@ public class Stipendi_cofiBase extends Stipendi_cofiKey implements Keyed {
 
 	private java.lang.Integer prog_flusso;
 
+	private java.lang.String tipo_flusso;
+
 	public Stipendi_cofiBase() {
 	super();
 }
@@ -246,5 +248,13 @@ public void setStato(java.lang.String stato) {
 
 	public void setProg_flusso(Integer prog_flusso) {
 		this.prog_flusso = prog_flusso;
+	}
+
+	public String getTipo_flusso() {
+		return tipo_flusso;
+	}
+
+	public void setTipo_flusso(String tipo_flusso) {
+		this.tipo_flusso = tipo_flusso;
 	}
 }

@@ -2751,10 +2751,12 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 	private TerzoBulk getTerzoFlusso(UserContext userContext, Stipendi_cofiBulk stipendiCofiBulk) throws ComponentException {
 		try {
 			Integer cdTerzoFlusso;
-			//if (stipendiCofiBulk.getTipoFlusso().equals(COLLABORATORI))
-			//	cdTerzoFlusso = Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiCollaboratori(userContext);
-			//else
-				cdTerzoFlusso = Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiStipendi(userContext);
+			if (stipendiCofiBulk.isFlussoCollaboratori())
+				cdTerzoFlusso = Optional.ofNullable(Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiCollaboratori(userContext))
+						.orElseThrow(()->new ApplicationException("Nessun codice terzo da utilizzare per il flusso collaboratori individuato nella tabelle di configurazione."));
+			else
+				cdTerzoFlusso = Optional.ofNullable(Utility.createConfigurazioneCnrComponentSession().getCdTerzoDiversiStipendi(userContext))
+						.orElseThrow(()->new ApplicationException("Nessun codice terzo da utilizzare per il flusso stipendi individuato nella tabelle di configurazione."));
 
 			TerzoBulk terzoFlusso = (TerzoBulk)getHome(userContext, TerzoBulk.class).findByPrimaryKey(new TerzoBulk(cdTerzoFlusso));
 			terzoFlusso.setAnagrafico((AnagraficoBulk) getHome(userContext, AnagraficoBulk.class).findByPrimaryKey(terzoFlusso.getAnagrafico()));

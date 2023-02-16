@@ -50,7 +50,15 @@
 		property="prog_flusso"
 		inputType="TEXT"
 		label="Progr. Flusso" />
-		
+	<fieldProperty
+		name="tipo_flusso"
+		property="tipo_flusso"
+		inputType="SELECT"
+		inputCssClass="w-100 "
+		keysProperty="tipoFlussoKeys"
+		nullable="false"
+		label="Tipo Flusso" />
+
 	<fieldProperty
 		name="cd_uo_doc_gen"
 		property="cd_uo_doc_gen"
@@ -114,5 +122,6 @@
 		name="cd_uo_comp" />
 	<columnFieldProperty
 		name="pg_comp" />
-
+	<columnFieldProperty
+		name="tipo_flusso" />
 </bulkInfo>
