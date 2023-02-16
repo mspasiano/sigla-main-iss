@@ -26,6 +26,7 @@ import it.cnr.contab.docamm00.docs.bulk.Documento_generico_passivoBulk;
 import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleTestataBulk;
 import it.cnr.contab.docamm00.fatturapa.bulk.RifiutaFatturaBulk;
 import it.cnr.contab.doccont00.bp.CRUDMandatoBP;
+import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
 import it.cnr.contab.doccont00.core.bulk.MandatoIBulk;
 import it.cnr.contab.pdg00.bp.ContabilizzazioneFlussoStipendialeMensileBP;
 import it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiBulk;
@@ -35,8 +36,17 @@ import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.action.HookForward;
+import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
+import it.cnr.jada.persistency.sql.SimpleFindClause;
+import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.action.FormBP;
+import it.cnr.jada.util.action.SelezionatoreListaBP;
+import it.cnr.jada.util.action.SimpleCRUDBP;
+import it.cnr.jada.util.ejb.EJBCommonServices;
 
 import javax.validation.ValidationException;
 import java.rmi.RemoteException;
@@ -107,31 +117,63 @@ public class ContabilizzazioneFlussoStipendialeMensileAction extends it.cnr.jada
         return context.addBusinessProcess(newbp);
     }
 
+    public Forward doRiportaSelezioneMandato(ActionContext actioncontext, OggettoBulk oggettobulk)
+            throws RemoteException {
+        try {
+            if (oggettobulk != null) {
+                CRUDMandatoBP crudMandatoBP = (CRUDMandatoBP) actioncontext.createBusinessProcess("CRUDMandatoBP", new Object[]{"VRSWTh"});
+                crudMandatoBP.edit(actioncontext, oggettobulk);
+                return actioncontext.addBusinessProcess(crudMandatoBP);
+            }
+            return actioncontext.findDefaultForward();
+        } catch (Exception exception) {
+            return handleException(actioncontext, exception);
+        }
+    }
+
+
     public Forward doApriMandato(ActionContext context) throws BusinessProcessException {
-        ContabilizzazioneFlussoStipendialeMensileBP bp = (ContabilizzazioneFlussoStipendialeMensileBP) context.getBusinessProcess();
+        try {
+            ContabilizzazioneFlussoStipendialeMensileBP bp = (ContabilizzazioneFlussoStipendialeMensileBP) context.getBusinessProcess();
+            Stipendi_cofiBulk stipendi_cofi = (Stipendi_cofiBulk) bp.getFocusedElement();
+            if (stipendi_cofi == null) {
+                bp.setMessage("E' necessario selezionare un flusso stipendiale.");
+                return context.findDefaultForward();
+            }
+            CRUDMandatoBP crudMandatoBP = (CRUDMandatoBP) context.createBusinessProcess("CRUDMandatoBP", new Object[]{"VRSWTh"});
+            MandatoIBulk mandatoBulk = new MandatoIBulk();
+            mandatoBulk.setStipendiCofiBulk(stipendi_cofi);
+            SimpleFindClause findClause = new SimpleFindClause(
+                    FindClause.AND,
+                    "stipendiCofiBulk",
+                    SQLBuilder.EQUALS,
+                    stipendi_cofi
+            );
 
-        Stipendi_cofiBulk stipendi_cofi = (Stipendi_cofiBulk) bp.getFocusedElement();
-        if (stipendi_cofi == null) {
-            bp.setMessage("E' necessario selezionare un flusso stipendiale.");
-            return context.findDefaultForward();
+            RemoteIterator remoteiterator = crudMandatoBP.find(context, new CompoundFindClause(findClause), new MandatoIBulk());
+            if (remoteiterator != null && remoteiterator.countElements() != 0) {
+                if (remoteiterator.countElements() == 1) {
+                    OggettoBulk oggettobulk1 = (OggettoBulk)remoteiterator.nextElement();
+                    EJBCommonServices.closeRemoteIterator(context, remoteiterator);
+                    crudMandatoBP.edit(context, oggettobulk1);
+                    return context.addBusinessProcess(crudMandatoBP);
+                } else {
+                    crudMandatoBP.setModel(context, mandatoBulk);
+                    SelezionatoreListaBP selezionatorelistabp = (SelezionatoreListaBP)context.createBusinessProcess("Selezionatore");
+                    selezionatorelistabp.setIterator(context, remoteiterator);
+                    selezionatorelistabp.setBulkInfo(crudMandatoBP.getSearchBulkInfo());
+                    selezionatorelistabp.setColumns(crudMandatoBP.getSearchResultColumns());
+                    context.addHookForward("seleziona", this, "doRiportaSelezioneMandato");
+                    return context.addBusinessProcess(selezionatorelistabp);
+                }
+            } else {
+                EJBCommonServices.closeRemoteIterator(context, remoteiterator);
+                bp.setMessage("La ricerca non ha fornito alcun risultato.");
+                return context.findDefaultForward();
+            }
+        } catch (Throwable var6) {
+            return this.handleException(context, var6);
         }
-
-        if (stipendi_cofi.getCd_cds_mandato() == null ||
-                stipendi_cofi.getCd_uo_doc_gen() == null ||
-                stipendi_cofi.getEsercizio_mandato() == null ||
-                stipendi_cofi.getPg_mandato() == null) {
-            bp.setMessage("E' necessario selezionare un flusso stipendiale con mandato associato.");
-            return context.findDefaultForward();
-        }
-
-        CRUDMandatoBP newbp = (CRUDMandatoBP) context.createBusinessProcess("CRUDMandatoBP", new Object[]{"VRSWTh"});
-
-        newbp.edit(context, new MandatoIBulk(
-                stipendi_cofi.getCd_cds_mandato(),
-                stipendi_cofi.getEsercizio_mandato(),
-                stipendi_cofi.getPg_mandato()));
-
-        return context.addBusinessProcess(newbp);
     }
 
     public Forward doBringBack(ActionContext context) throws BusinessProcessException {

@@ -103,7 +103,9 @@ public class MandatoBase extends MandatoKey implements Keyed {
 	// STATO_VAR_SOS VARCHAR2(30)
 	private java.lang.String statoVarSos;
 
+	private java.lang.Integer esercizio_stipendi_cofi;
 
+	private java.lang.Integer mese_stipendi_cofi;
 
 	public MandatoBase() {
 		super();
@@ -395,5 +397,21 @@ public class MandatoBase extends MandatoKey implements Keyed {
 
 	public void setStatoVarSos(String statoVarSos) {
 		this.statoVarSos = statoVarSos;
+	}
+
+	public Integer getEsercizio_stipendi_cofi() {
+		return esercizio_stipendi_cofi;
+	}
+
+	public void setEsercizio_stipendi_cofi(Integer esercizio_stipendi_cofi) {
+		this.esercizio_stipendi_cofi = esercizio_stipendi_cofi;
+	}
+
+	public Integer getMese_stipendi_cofi() {
+		return mese_stipendi_cofi;
+	}
+
+	public void setMese_stipendi_cofi(Integer mese_stipendi_cofi) {
+		this.mese_stipendi_cofi = mese_stipendi_cofi;
 	}
 }

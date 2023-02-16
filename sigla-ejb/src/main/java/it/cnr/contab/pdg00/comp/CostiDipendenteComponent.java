@@ -2280,30 +2280,9 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 
 			//e storicizzo tutti gli altri
 			for (MandatoBulk mandato : mandatiStipendioColl) {
-			 	if (!mandato.equalsByPrimaryKey(mandatoStipendio)) {
-					Stipendi_cofiBulk newStipendiCofiBulk = new Stipendi_cofiBulk();
-					newStipendiCofiBulk.setEsercizio(stipendiCofiBulk.getEsercizio());
-					newStipendiCofiBulk.setStato(Stipendi_cofiBulk.STATO_LIQUIDATO);
-
-					newStipendiCofiBulk.setMese(((Integer) getHome(userContext, Stipendi_cofiBulk.class).findAndLockMax(newStipendiCofiBulk, "mese", new Integer(0))).intValue() + 1);
-
-					newStipendiCofiBulk.setProg_flusso(stipendiCofiBulk.getProg_flusso());
-					newStipendiCofiBulk.setMese_reale(stipendiCofiBulk.getMese_reale());
-					newStipendiCofiBulk.setEsercizio_mandato(mandato.getEsercizio());
-					newStipendiCofiBulk.setCd_cds_mandato(mandato.getCd_cds());
-					newStipendiCofiBulk.setPg_mandato(mandato.getPg_mandato());
-
-					Mandato_rigaBulk riga = mandato.getMandato_rigaColl().stream().findFirst().get();
-
-					newStipendiCofiBulk.setEsercizio_doc_gen(riga.getEsercizio_doc_amm());
-					newStipendiCofiBulk.setCd_tipo_doc_gen(riga.getCd_tipo_documento_amm());
-					newStipendiCofiBulk.setCd_cds_doc_gen(riga.getCd_cds_doc_amm());
-					newStipendiCofiBulk.setCd_uo_doc_gen(riga.getCd_uo_doc_amm());
-					newStipendiCofiBulk.setPg_doc_gen(riga.getPg_doc_amm());
-
-					newStipendiCofiBulk.setToBeCreated();
-					makeBulkPersistent(userContext, newStipendiCofiBulk);
-				}
+				mandato.setStipendiCofiBulk(stipendiCofiBulk);
+				mandato.setToBeUpdated();
+				makeBulkPersistent(userContext, mandato);
 			}
 
 			CompensoBulk compensoBulk = this.createCompensoStipendio(userContext, stipendiCofiBulk, compensoWizard, mandatoStipendio);
