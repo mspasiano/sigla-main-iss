@@ -28,6 +28,7 @@ import it.cnr.contab.docamm00.fatturapa.bulk.RifiutaFatturaBulk;
 import it.cnr.contab.doccont00.bp.CRUDMandatoBP;
 import it.cnr.contab.doccont00.core.bulk.MandatoIBulk;
 import it.cnr.contab.pdg00.bp.ContabilizzazioneFlussoStipendialeMensileBP;
+import it.cnr.contab.pdg00.cdip.bulk.MeseTipoFlussoBulk;
 import it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiBulk;
 import it.cnr.contab.util00.bp.ModalBP;
 import it.cnr.contab.util00.bulk.MeseBulk;
@@ -169,7 +170,7 @@ public class ContabilizzazioneFlussoStipendialeMensileAction extends it.cnr.jada
         modalBP.setCssCard("col-md-6");
         modalBP.setModel(
                 actioncontext,
-                new MeseBulk()
+                new MeseTipoFlussoBulk()
         );
         actioncontext.addHookForward("model", this, "doConfirmNuovaRiga");
         return actioncontext.addBusinessProcess(modalBP);
@@ -178,12 +179,16 @@ public class ContabilizzazioneFlussoStipendialeMensileAction extends it.cnr.jada
     public Forward doConfirmNuovaRiga(ActionContext context) throws BusinessProcessException {
         ContabilizzazioneFlussoStipendialeMensileBP bp = (ContabilizzazioneFlussoStipendialeMensileBP) context.getBusinessProcess();
         HookForward caller = (HookForward) context.getCaller();
-        MeseBulk meseBulk = (MeseBulk) caller.getParameter("model");
+        MeseTipoFlussoBulk meseTipoFlussoBulk = (MeseTipoFlussoBulk) caller.getParameter("model");
         bp.creaNuovaRiga(
                 context,
-                Optional.ofNullable(meseBulk)
+                Optional.ofNullable(meseTipoFlussoBulk)
                         .flatMap(meseBulk1 -> Optional.ofNullable(meseBulk1.getMese()))
-                        .orElseThrow(() -> new ValidationException("Indicare il mese!"))
+                        .orElseThrow(() -> new ValidationException("Indicare il mese!")),
+                Optional.ofNullable(meseTipoFlussoBulk)
+                        .flatMap(meseBulk1 -> Optional.ofNullable(meseBulk1.getTipoFlusso()))
+                        .orElseThrow(() -> new ValidationException("Indicare il tipo di flusso!"))
+
         );
         bp.refresh(context);
         setMessage(context, FormBP.INFO_MESSAGE, "Operazione effettuata.");

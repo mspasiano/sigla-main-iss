@@ -97,11 +97,12 @@ public class ContabilizzazioneFlussoStipendialeMensileBP extends it.cnr.jada.uti
         }
     }
 
-    public void creaNuovaRiga(ActionContext context, Integer mese)  throws BusinessProcessException {
+    public void creaNuovaRiga(ActionContext context, Integer mese, String tipoFlusso)  throws BusinessProcessException {
         Stipendi_cofiBulk stipendiCofiBulk = new Stipendi_cofiBulk();
         stipendiCofiBulk.setEsercizio(CNRUserContext.getEsercizio(context.getUserContext()));
         stipendiCofiBulk.setProg_flusso(mese);
         stipendiCofiBulk.setMese_reale(mese);
+        stipendiCofiBulk.setTipo_flusso(tipoFlusso);
         stipendiCofiBulk.setStato(Stipendi_cofiBulk.STATO_NON_LIQUIDATO);
         stipendiCofiBulk.setToBeCreated();
         try {
