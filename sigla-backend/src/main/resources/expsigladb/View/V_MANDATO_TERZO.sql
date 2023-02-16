@@ -41,7 +41,9 @@
     "ESITO_OPERAZIONE",
     "DT_ORA_ESITO_OPERAZIONE",
     "ERRORE_SIOPE_PLUS",
-    "STATO_VAR_SOS"
+    "STATO_VAR_SOS",
+    "ESERCIZIO_STIPENDI_COFI",
+    "MESE_STIPENDI_COFI"
     ) AS
   SELECT
 --
@@ -101,7 +103,9 @@ a.dt_pagamento_richiesta,
 a.esito_operazione,
 a.dt_ora_esito_operazione,
 a.errore_siope_plus,
-a.stato_var_sos
+a.stato_var_sos,
+a.ESERCIZIO_STIPENDI_COFI,
+a.MESE_STIPENDI_COFI
 FROM   MANDATO A,
 	   MANDATO_TERZO B,
 	   TERZO C
