@@ -18,6 +18,7 @@
 package it.cnr.contab.pdg00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoHome;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
@@ -2387,16 +2388,23 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					((TerzoHome) getHome(userContext, TerzoBulk.class)).findModalita_pagamento(terzoStipendi);
 
 			Modalita_pagamentoBulk modalitaPagamentoStipendiBulk = modalita_pagamentoStipendiBulks
-					.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
+					.stream()
+					.max(Comparator.comparing(Modalita_pagamentoBulk::getDacr))
+					.orElseThrow(()->new ApplicationException("Nessuna modalità di pagamento valida associata al terzo "+terzoStipendi.getCd_terzo()));
+
+			Rif_modalita_pagamentoBulk rifModalitaPagamentoStipendiBulk = (Rif_modalita_pagamentoBulk)super.findByPrimaryKey(userContext, modalitaPagamentoStipendiBulk.getRif_modalita_pagamento());
 
 			Collection<BancaBulk> bancaStipendiBulks =
 					((AnagraficoHome) getHome(userContext, AnagraficoBulk.class)).findBanca(terzoStipendi.getAnagrafico());
 
-			//Cerco la banca associata al terzo e la prendo in ordine inverso di data creazione se ne esistono troppe valide
+			//Cerco la banca associata al terzo, di tipologia coerente con la modalità di pagamento, e la prendo in ordine inverso di data creazione
+			// se ne esistono troppe valide
 			BancaBulk bancaStipendiBulk = bancaStipendiBulks
 					.stream()
 					.filter(banca -> banca.getTerzo().equalsByPrimaryKey(terzoStipendi))
-					.filter(banca -> !banca.getFl_cancellato()).max(Comparator.comparing(BancaBulk::getDacr))
+					.filter(banca -> banca.getTi_pagamento().equals(rifModalitaPagamentoStipendiBulk.getTi_pagamento()))
+					.filter(banca -> !banca.getFl_cancellato())
+					.max(Comparator.comparing(BancaBulk::getDacr))
 					.orElse(null);
 
 			for (Stipendi_cofi_obb_scadBulk el : stipendiCofiObbScadColl) {
@@ -2508,12 +2516,21 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			Collection<Modalita_pagamentoBulk> modalita_pagamentoBulks = ((TerzoHome)getHome(userContext, TerzoBulk.class)).findModalita_pagamento(terzoStipendi.getTerzo());
 
 			Modalita_pagamentoBulk modalitaPagamentoBulk = modalita_pagamentoBulks
-					.stream().max(Comparator.comparing(Modalita_pagamentoBulk::getDacr)).orElse(null);
+					.stream()
+					.max(Comparator.comparing(Modalita_pagamentoBulk::getDacr))
+					.orElseThrow(()->new ApplicationException("Nessuna modalità di pagamento valida associata al terzo "+terzoStipendi.getTerzo().getCd_terzo()));
+
+			Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)super.findByPrimaryKey(userContext, modalitaPagamentoBulk.getRif_modalita_pagamento());
 
 			Collection<BancaBulk> bancaBulks = ((AnagraficoHome)getHome(userContext, AnagraficoBulk.class)).findBanca(terzoStipendi.getAnagrafico());
 
 			BancaBulk bancaBulk = bancaBulks
-					.stream().max(Comparator.comparing(BancaBulk::getDacr)).orElse(null);
+					.stream()
+					.filter(banca -> banca.getTerzo().equalsByPrimaryKey(terzoStipendi.getTerzo()))
+					.filter(banca -> banca.getTi_pagamento().equals(rifModalitaPagamentoBulk.getTi_pagamento()))
+					.filter(banca -> !banca.getFl_cancellato())
+					.max(Comparator.comparing(BancaBulk::getDacr))
+					.orElse(null);
 
 			compensoBulk.setModalitaPagamento(modalitaPagamentoBulk.getRif_modalita_pagamento());
 			compensoBulk.setBanca(bancaBulk);
