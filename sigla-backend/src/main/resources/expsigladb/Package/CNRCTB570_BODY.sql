@@ -2802,9 +2802,33 @@ end;
 --            aObb     := aObbTmp;
 --            aObbScad := aObbScadTmp;
 -- FINE GG
+            --Se mandato mono voce
+            Declare
+                tagBilancio CONFIGURAZIONE_CNR.VAL02%type;
+            Begin
+                tagBilancio := CNRCTB015.GETVAL02PERCHIAVE('FLUSSO_ORDINATIVI','INVIA_TAG_BILANCIO');
+                if tagBilancio is not null Then
+                  Begin
+                     Select distinct a.cd_elemento_voce
+                     Into aCdEV
+                     From ass_tipo_cori_ev a, tipo_cr_base b
+                     Where b.esercizio = aEs   --aCori.esercizio
+                       And b.cd_gruppo_cr = aAggregato.cd_gruppo_cr
+                       And a.cd_contributo_ritenuta = b.cd_contributo_ritenuta
+                       And a.esercizio = aEs   --aCori.esercizio
+                       And a.ti_gestione = CNRCTB001.GESTIONE_SPESE
+                       And a.ti_appartenenza = CNRCTB001.APPARTENENZA_CDS;
+                  Exception
+                     when TOO_MANY_ROWS then
+                         IBMERR001.RAISE_ERR_GENERICO('Esiste più di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
+                     when NO_DATA_FOUND then
+                         IBMERR001.RAISE_ERR_GENERICO('Conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr||' non trovato');
+                  End;
+                end if;
+            End;
 
 ------------------------------------
-            -- se la UO Ã¨ quella del versamento su conto BI occorre rendere tronca la PGIRO in oggetto
+            -- se la UO è quella del versamento su conto BI occorre rendere tronca la PGIRO in oggetto
             -- e crearla sempre tronca sulla UO di versamento (999.000)
             If aCdUo = aUOVERSCONTOBI.cd_unita_organizzativa
 --GG CONDIZIONE AGGIUNTA PER EVITARE LA PARTITA DI GIRO DALLA 000.407 ALLA 999.000
@@ -2845,7 +2869,7 @@ end;
                        And a.ti_appartenenza = CNRCTB001.APPARTENENZA_CDS;
                   Exception
                           when TOO_MANY_ROWS then
-                               IBMERR001.RAISE_ERR_GENERICO('Esiste piÃ¹ di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
+                               IBMERR001.RAISE_ERR_GENERICO('Esiste più di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
                           when NO_DATA_FOUND then
                                IBMERR001.RAISE_ERR_GENERICO('Conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr||' non trovato');
                   End;

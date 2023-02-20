@@ -263,16 +263,17 @@ public void writeToolbar(javax.servlet.jsp.JspWriter writer) throws java.io.IOEx
  * @param writer <code>JspWriter</code>
 **/
 public void writeViewDettaglioGruppiToolbar(javax.servlet.jsp.JspWriter writer) throws java.io.IOException,javax.servlet.ServletException {
-
-	//if (!isSearching()) {
-		//openToolbar(writer);
-		//it.cnr.jada.util.jsp.JSPUtils.toolbar(writer,createViewAccessoriToolbar(),this);
-		//closeToolbar(writer);
-	//}
-
-	openToolbar(writer);
-	it.cnr.jada.util.jsp.JSPUtils.toolbar(writer,createViewDettaglioGruppiToolbar(),this, this.getParentRoot().isBootstrap());
-	closeToolbar(writer);
+	if (this.getParentRoot().isBootstrap()) {
+		writer.println("<!-- TOOLBAR FP -->");
+		writer.println("<div id=\"fpToolbar\" class=\"btn-toolbar\" role=\"toolbar\" aria-label=\"Toolbar with button groups\">");
+		JSPUtils.toolbarBootstrap(writer, Arrays.asList(createViewDettaglioGruppiToolbar()), this);
+		writer.println("</div>");
+		writer.println("<!-- FINE TOOLBAR FP -->");
+	} else {
+		openToolbar(writer);
+		it.cnr.jada.util.jsp.JSPUtils.toolbar(writer, createViewDettaglioGruppiToolbar(), this, this.getParentRoot().isBootstrap());
+		closeToolbar(writer);
+	}
 }
 private boolean F24 = true;
 private String file;

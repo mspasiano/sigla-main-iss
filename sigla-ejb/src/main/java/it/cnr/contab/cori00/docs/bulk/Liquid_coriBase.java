@@ -17,10 +17,12 @@
 
 package it.cnr.contab.cori00.docs.bulk;
 
+import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.util.action.CRUDBP;
 
 public class Liquid_coriBase extends Liquid_coriKey implements Keyed {
 	// DA_ESERCIZIO_PRECEDENTE CHAR(1) NOT NULL
@@ -35,62 +37,68 @@ public class Liquid_coriBase extends Liquid_coriKey implements Keyed {
 	// STATO CHAR(1)
 	private java.lang.String stato;
 
-public Liquid_coriBase() {
-	super();
-}
-public Liquid_coriBase(java.lang.String cd_cds,java.lang.String cd_unita_organizzativa,java.lang.Integer esercizio,java.lang.Integer pg_liquidazione) {
-	super(cd_cds,cd_unita_organizzativa,esercizio,pg_liquidazione);
-}
-/**
- * Insert the method's description here.
- * Creation date: (30/05/2003 12.09.13)
- * @return java.lang.Boolean
- */
-public java.lang.Boolean getDa_esercizio_precedente() {
-	return da_esercizio_precedente;
-}
-/* 
- * Getter dell'attributo dt_a
- */
-public java.sql.Timestamp getDt_a() {
-	return dt_a;
-}
-/* 
- * Getter dell'attributo dt_da
- */
-public java.sql.Timestamp getDt_da() {
-	return dt_da;
-}
-/* 
- * Getter dell'attributo stato
- */
-public java.lang.String getStato() {
-	return stato;
-}
-/**
- * Insert the method's description here.
- * Creation date: (30/05/2003 12.09.13)
- * @param newDa_esercizio_precedente java.lang.Boolean
- */
-public void setDa_esercizio_precedente(java.lang.Boolean newDa_esercizio_precedente) {
-	da_esercizio_precedente = newDa_esercizio_precedente;
-}
-/* 
- * Setter dell'attributo dt_a
- */
-public void setDt_a(java.sql.Timestamp dt_a) {
-	this.dt_a = dt_a;
-}
-/* 
- * Setter dell'attributo dt_da
- */
-public void setDt_da(java.sql.Timestamp dt_da) {
-	this.dt_da = dt_da;
-}
-/* 
- * Setter dell'attributo stato
- */
-public void setStato(java.lang.String stato) {
-	this.stato = stato;
-}
+	public Liquid_coriBase() {
+		super();
+	}
+	public Liquid_coriBase(java.lang.String cd_cds,java.lang.String cd_unita_organizzativa,java.lang.Integer esercizio,java.lang.Integer pg_liquidazione) {
+		super(cd_cds,cd_unita_organizzativa,esercizio,pg_liquidazione);
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (30/05/2003 12.09.13)
+	 * @return java.lang.Boolean
+	 */
+	public java.lang.Boolean getDa_esercizio_precedente() {
+		return da_esercizio_precedente;
+	}
+	/*
+	 * Getter dell'attributo dt_a
+	 */
+	public java.sql.Timestamp getDt_a() {
+		return dt_a;
+	}
+	/*
+	 * Getter dell'attributo dt_da
+	 */
+	public java.sql.Timestamp getDt_da() {
+		return dt_da;
+	}
+	/*
+	 * Getter dell'attributo stato
+	 */
+	public java.lang.String getStato() {
+		return stato;
+	}
+	/**
+	 * Insert the method's description here.
+	 * Creation date: (30/05/2003 12.09.13)
+	 * @param newDa_esercizio_precedente java.lang.Boolean
+	 */
+	public void setDa_esercizio_precedente(java.lang.Boolean newDa_esercizio_precedente) {
+		da_esercizio_precedente = newDa_esercizio_precedente;
+	}
+	/*
+	 * Setter dell'attributo dt_a
+	 */
+	public void setDt_a(java.sql.Timestamp dt_a) {
+		this.dt_a = dt_a;
+	}
+	/*
+	 * Setter dell'attributo dt_da
+	 */
+	public void setDt_da(java.sql.Timestamp dt_da) {
+		this.dt_da = dt_da;
+	}
+	/*
+	 * Setter dell'attributo stato
+	 */
+	public void setStato(java.lang.String stato) {
+		this.stato = stato;
+	}
+
+	@Override
+	public OggettoBulk initializeForInsert(CRUDBP crudbp, ActionContext actioncontext) {
+		this.setDa_esercizio_precedente(Boolean.FALSE);
+		return super.initializeForInsert(crudbp, actioncontext);
+	}
 }

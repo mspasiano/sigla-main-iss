@@ -21,10 +21,24 @@ import it.cnr.jada.bulk.*;
 import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
+
+import java.util.Dictionary;
+
 /**
   * OggettoBulk utilizzato per la getione di una Liquidazione CORI. 
 **/  
 public class Liquid_coriBulk extends Liquid_coriBase {
+	public static final java.util.Dictionary ti_statoKeys = new it.cnr.jada.util.OrderedHashtable();
+
+	final public static String STATO_LIQUIDATA = "L";
+	final public static String STATO_TRASFERITA = "T";
+	final public static String STATO_INIZIALE = "I";
+
+	static {
+		ti_statoKeys.put(STATO_INIZIALE,"Iniziale");
+		ti_statoKeys.put(STATO_TRASFERITA,"Trasferita a SAC");
+		ti_statoKeys.put(STATO_LIQUIDATA,"Liquidata");
+	}
 
 	// Stringa utilizzata per il richiamo della procedura <code>CNRCTB018.getNextNumDocCont</code>
 	public final static String TIPO_DOC = "LIQCORI";
@@ -33,85 +47,89 @@ public class Liquid_coriBulk extends Liquid_coriBase {
 	private it.cnr.contab.config00.sto.bulk.CdsBulk cds;
 
 	private it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa;
-public Liquid_coriBulk() {
-	super();
-}
-public Liquid_coriBulk(java.lang.String cd_cds,java.lang.String cd_unita_organizzativa,java.lang.Integer esercizio,java.lang.Integer pg_liquidazione) {
-	super(cd_cds,cd_unita_organizzativa,esercizio,pg_liquidazione);
-	setCds(new it.cnr.contab.config00.sto.bulk.CdsBulk(cd_cds));
-	setUnita_organizzativa(new it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk(cd_unita_organizzativa));
-}
-/**
-  * Aggiunge un gruppo CORI alla collezione dei gruppi.
-  *
-  * @param gruppo_cori il <code>Liquid_gruppo_coriBulk</code> gruppo da aggiungere alla collezione.
-  *
-  * @return getCoriColl().size()-1 la <code>int</code> dimensione della collezione
-**/  
-public int addToCoriColl (Liquid_gruppo_coriBulk gruppo_cori){
+	public Liquid_coriBulk() {
+		super();
+	}
+	public Liquid_coriBulk(java.lang.String cd_cds,java.lang.String cd_unita_organizzativa,java.lang.Integer esercizio,java.lang.Integer pg_liquidazione) {
+		super(cd_cds,cd_unita_organizzativa,esercizio,pg_liquidazione);
+		setCds(new it.cnr.contab.config00.sto.bulk.CdsBulk(cd_cds));
+		setUnita_organizzativa(new it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk(cd_unita_organizzativa));
+	}
+	/**
+	  * Aggiunge un gruppo CORI alla collezione dei gruppi.
+	  *
+	  * @param gruppo_cori il <code>Liquid_gruppo_coriBulk</code> gruppo da aggiungere alla collezione.
+	  *
+	  * @return getCoriColl().size()-1 la <code>int</code> dimensione della collezione
+	**/
+	public int addToCoriColl (Liquid_gruppo_coriBulk gruppo_cori){
 
-	getCoriColl().add(gruppo_cori);
-	gruppo_cori.setLiquidazione_cori(this);
+		getCoriColl().add(gruppo_cori);
+		gruppo_cori.setLiquidazione_cori(this);
 
-	return getCoriColl().size()-1;
-}
-public java.lang.String getCd_cds() {
-	it.cnr.contab.config00.sto.bulk.CdsBulk cds = this.getCds();
-	if (cds == null)
-		return null;
-	return cds.getCd_unita_organizzativa();
-}
-public java.lang.String getCd_unita_organizzativa() {
-	it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa = this.getUnita_organizzativa();
-	if (unita_organizzativa == null)
-		return null;
-	return unita_organizzativa.getCd_unita_organizzativa();
-}
+		return getCoriColl().size()-1;
+	}
+	public java.lang.String getCd_cds() {
+		it.cnr.contab.config00.sto.bulk.CdsBulk cds = this.getCds();
+		if (cds == null)
+			return null;
+		return cds.getCd_unita_organizzativa();
+	}
+	public java.lang.String getCd_unita_organizzativa() {
+		it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa = this.getUnita_organizzativa();
+		if (unita_organizzativa == null)
+			return null;
+		return unita_organizzativa.getCd_unita_organizzativa();
+	}
 
-public it.cnr.contab.config00.sto.bulk.CdsBulk getCds() {
-	return cds;
-}
-/**
- * Restituisce la Collezione dei gruppi CORI.
- * 
- * @return coriColl la <code>SimpleBulkList</code> lista dei gruppi CORI.
- */
-public it.cnr.jada.bulk.SimpleBulkList getCoriColl() {
-	return coriColl;
-}
+	public it.cnr.contab.config00.sto.bulk.CdsBulk getCds() {
+		return cds;
+	}
+	/**
+	 * Restituisce la Collezione dei gruppi CORI.
+	 *
+	 * @return coriColl la <code>SimpleBulkList</code> lista dei gruppi CORI.
+	 */
+	public it.cnr.jada.bulk.SimpleBulkList getCoriColl() {
+		return coriColl;
+	}
 
-public it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk getUnita_organizzativa() {
-	return unita_organizzativa;
-}
-/**
-  * Rimuove un gruppo CORI dalla collezione dei gruppi.
-  *
-  * @param indiceDiLinea <code>int</code> l'indice del gruppo da eliminare
-  *
-  * @return gruppo_cori il <code>Liquid_gruppo_coriBulk</code> gruppo eliminato
-**/  
-public Liquid_gruppo_coriBulk removeFromCoriColl( int indiceDiLinea ) {
+	public it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk getUnita_organizzativa() {
+		return unita_organizzativa;
+	}
+	/**
+	  * Rimuove un gruppo CORI dalla collezione dei gruppi.
+	  *
+	  * @param indiceDiLinea <code>int</code> l'indice del gruppo da eliminare
+	  *
+	  * @return gruppo_cori il <code>Liquid_gruppo_coriBulk</code> gruppo eliminato
+	**/
+	public Liquid_gruppo_coriBulk removeFromCoriColl( int indiceDiLinea ) {
 
-	Liquid_gruppo_coriBulk element = (Liquid_gruppo_coriBulk)getCoriColl().get(indiceDiLinea);
+		Liquid_gruppo_coriBulk element = (Liquid_gruppo_coriBulk)getCoriColl().get(indiceDiLinea);
 
-	return (Liquid_gruppo_coriBulk)getCoriColl().remove(indiceDiLinea);
-}
-public void setCd_cds(java.lang.String cd_cds) {
-	this.getCds().setCd_unita_organizzativa(cd_cds);
-}
-public void setCd_unita_organizzativa(java.lang.String cd_unita_organizzativa) {
-	this.getUnita_organizzativa().setCd_unita_organizzativa(cd_unita_organizzativa);
-}
+		return (Liquid_gruppo_coriBulk)getCoriColl().remove(indiceDiLinea);
+	}
+	public void setCd_cds(java.lang.String cd_cds) {
+		this.getCds().setCd_unita_organizzativa(cd_cds);
+	}
+	public void setCd_unita_organizzativa(java.lang.String cd_unita_organizzativa) {
+		this.getUnita_organizzativa().setCd_unita_organizzativa(cd_unita_organizzativa);
+	}
 
-public void setCds(it.cnr.contab.config00.sto.bulk.CdsBulk newCds) {
-	cds = newCds;
-}
+	public void setCds(it.cnr.contab.config00.sto.bulk.CdsBulk newCds) {
+		cds = newCds;
+	}
 
-public void setCoriColl(it.cnr.jada.bulk.SimpleBulkList newCoriColl) {
-	coriColl = newCoriColl;
-}
+	public void setCoriColl(it.cnr.jada.bulk.SimpleBulkList newCoriColl) {
+		coriColl = newCoriColl;
+	}
 
-public void setUnita_organizzativa(it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk newUnita_organizzativa) {
-	unita_organizzativa = newUnita_organizzativa;
-}
+	public void setUnita_organizzativa(it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk newUnita_organizzativa) {
+		unita_organizzativa = newUnita_organizzativa;
+	}
+
+	public boolean isROsearchTool() {
+		return Boolean.TRUE;
+	}
 }
