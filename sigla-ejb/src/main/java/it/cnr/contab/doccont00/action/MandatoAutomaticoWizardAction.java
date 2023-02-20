@@ -20,12 +20,15 @@ package it.cnr.contab.doccont00.action;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.doccont00.bp.MandatoAutomaticoWizardBP;
 import it.cnr.contab.doccont00.core.bulk.MandatoAutomaticoWizardBulk;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazione_wizardBulk;
+import it.cnr.contab.util.EuroFormat;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.util.action.CRUDBP;
 import it.cnr.jada.util.action.OptionBP;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 /**
@@ -216,12 +219,24 @@ public class MandatoAutomaticoWizardAction extends CRUDAbstractMandatoAction {
 	}
 
 	public Forward doOnChangeImponibileRigaMandato(ActionContext context) {
+		MandatoAutomaticoWizardBP bp = Optional.ofNullable(getBusinessProcess(context))
+				.filter(MandatoAutomaticoWizardBP.class::isInstance)
+				.map(MandatoAutomaticoWizardBP.class::cast)
+				.orElseThrow(() -> new DetailedRuntimeException("Business Process non valido"));
+		BigDecimal oldImponibile = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast).map(V_doc_passivo_obbligazione_wizardBulk::getImponibileRigaMandato).orElse(BigDecimal.ZERO);
 		try	{
 			fillModel( context );
-			Optional.ofNullable(getBusinessProcess(context))
-					.filter(MandatoAutomaticoWizardBP.class::isInstance)
-					.map(MandatoAutomaticoWizardBP.class::cast)
-					.ifPresent(el->el.onChangeImponibileRigaMandato(context));
+
+			Optional<V_doc_passivo_obbligazione_wizardBulk> newSelected = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+					.map(V_doc_passivo_obbligazione_wizardBulk.class::cast);
+
+			if (newSelected.filter(el->el.getImponibileRigaMandato().compareTo(el.getIm_imponibile_doc_amm())>0).isPresent()) {
+				newSelected.ifPresent(el->el.setImponibileRigaMandatoWizard(oldImponibile));
+				throw new it.cnr.jada.comp.ApplicationException("Non è possibile inserire un valore superiore a quello iniziale della riga ("+ new EuroFormat().format(newSelected.get().getIm_imponibile_doc_amm())+").");
+			}
+
+			bp.onChangeImponibileRigaMandato(context);
 			return context.findDefaultForward();
 		} catch(Throwable e) {
 			return handleException(context,e);
@@ -229,12 +244,24 @@ public class MandatoAutomaticoWizardAction extends CRUDAbstractMandatoAction {
 	}
 
 	public Forward doOnChangeImpostaRigaMandato(ActionContext context) {
-		try	{
+		MandatoAutomaticoWizardBP bp = Optional.ofNullable(getBusinessProcess(context))
+				.filter(MandatoAutomaticoWizardBP.class::isInstance)
+				.map(MandatoAutomaticoWizardBP.class::cast)
+				.orElseThrow(() -> new DetailedRuntimeException("Business Process non valido"));
+		BigDecimal oldImposta = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast).map(V_doc_passivo_obbligazione_wizardBulk::getImpostaRigaMandato).orElse(BigDecimal.ZERO);
+		try {
 			fillModel( context );
-			Optional.ofNullable(getBusinessProcess(context))
-					.filter(MandatoAutomaticoWizardBP.class::isInstance)
-					.map(MandatoAutomaticoWizardBP.class::cast)
-					.ifPresent(el->el.onChangeImpostaRigaMandato(context));
+
+			Optional<V_doc_passivo_obbligazione_wizardBulk> newSelected = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+					.map(V_doc_passivo_obbligazione_wizardBulk.class::cast);
+
+			if (newSelected.filter(el->el.getImpostaRigaMandato().compareTo(el.getIm_iva_doc_amm())>0).isPresent()) {
+				newSelected.ifPresent(el->el.setImpostaRigaMandatoWizard(oldImposta));
+				throw new it.cnr.jada.comp.ApplicationException("Non è possibile inserire un valore superiore a quello iniziale della riga ("+ new EuroFormat().format(newSelected.get().getIm_iva_doc_amm())+").");
+			}
+
+			bp.onChangeImpostaRigaMandato(context);
 			return context.findDefaultForward();
 		} catch(Throwable e) {
 			return handleException(context,e);
@@ -242,12 +269,24 @@ public class MandatoAutomaticoWizardAction extends CRUDAbstractMandatoAction {
 	}
 
 	public Forward doOnChangeImportoRigaMandato(ActionContext context) {
-		try	{
+		MandatoAutomaticoWizardBP bp = Optional.ofNullable(getBusinessProcess(context))
+				.filter(MandatoAutomaticoWizardBP.class::isInstance)
+				.map(MandatoAutomaticoWizardBP.class::cast)
+				.orElseThrow(() -> new DetailedRuntimeException("Business Process non valido"));
+		BigDecimal oldImporto = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast).map(V_doc_passivo_obbligazione_wizardBulk::getImportoRigaMandato).orElse(BigDecimal.ZERO);
+		try {
 			fillModel( context );
-			Optional.ofNullable(getBusinessProcess(context))
-					.filter(MandatoAutomaticoWizardBP.class::isInstance)
-					.map(MandatoAutomaticoWizardBP.class::cast)
-					.ifPresent(el->el.onChangeImportoRigaMandato(context));
+
+			Optional<V_doc_passivo_obbligazione_wizardBulk> newSelected = Optional.ofNullable(bp.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+					.map(V_doc_passivo_obbligazione_wizardBulk.class::cast);
+
+			if (newSelected.filter(el->el.getImportoRigaMandato().compareTo(el.getIm_totale_doc_amm())>0).isPresent()) {
+				newSelected.ifPresent(el->el.setImportoRigaMandatoWizard(oldImporto));
+				throw new it.cnr.jada.comp.ApplicationException("Non è possibile inserire un valore superiore a quello iniziale della riga ("+ new EuroFormat().format(newSelected.get().getIm_totale_doc_amm())+").");
+			}
+
+			bp.onChangeImportoRigaMandato(context);
 			return context.findDefaultForward();
 		} catch(Throwable e) {
 			return handleException(context,e);

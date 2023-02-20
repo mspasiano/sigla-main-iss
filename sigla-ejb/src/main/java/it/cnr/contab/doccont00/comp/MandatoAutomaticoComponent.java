@@ -182,6 +182,24 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" un importo di pagamento (" + new EuroFormat().format(docTerzo.getImportoRigaMandato()) +
 							") non coincidente con la somma dell'imponibile ed imposta ("+ new EuroFormat().format(docTerzo.getImponibileRigaMandato().add(docTerzo.getImpostaRigaMandato()))+").");
+				else if (docTerzo.getImponibileRigaMandato().compareTo(docTerzo.getIm_imponibile_doc_amm()) > 0)
+					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
+							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
+							" un imponibile (" + new EuroFormat().format(docTerzo.getImponibileRigaMandato()) +
+							") maggiore dell'importo originario (" + new EuroFormat().format(docTerzo.getIm_imponibile_doc_amm()) +
+							").");
+				else if (docTerzo.getImpostaRigaMandato().compareTo(docTerzo.getIm_iva_doc_amm()) > 0)
+					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
+							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
+							" una imposta (" + new EuroFormat().format(docTerzo.getImpostaRigaMandato()) +
+							") maggiore dell'importo originario (" + new EuroFormat().format(docTerzo.getIm_iva_doc_amm()) +
+							").");
+				else if (docTerzo.getImponibileRigaMandato().compareTo(docTerzo.getImpostaRigaMandato()) < 0)
+					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
+							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
+							" un imponibile (" + new EuroFormat().format(docTerzo.getImponibileRigaMandato()) +
+							") minore dell'imposta (" + new EuroFormat().format(docTerzo.getImpostaRigaMandato()) +
+							").");
 				else if (docTerzo.getImportoRigaMandato().compareTo(docTerzo.getIm_totale_doc_amm()) > 0)
 					throw new ApplicationException("Operazione non possibile! E' stato indicato per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
@@ -204,7 +222,10 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					docTerzo.setIm_iva_doc_amm(docTerzoAgg.getIm_iva_doc_amm());
 					docTerzo.setIm_scadenza(docTerzoAgg.getIm_scadenza());
 					docTerzo.setIm_totale_doc_amm(docTerzoAgg.getIm_totale_doc_amm());
-				}
+				} else if (docTerzo.getImponibileRigaMandato().compareTo(docTerzo.getIm_imponibile_doc_amm())!=0 || docTerzo.getImpostaRigaMandato().compareTo(docTerzo.getIm_iva_doc_amm())!=0)
+					throw new ApplicationException("Operazione non possibile! Per la riga del documento " +
+							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
+							" è stato richiesto il pagamento totale modificando la ripartizione dell'importo tra imponibile ed imposta.");
 
 				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoMandato()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaMandato())) {
 					//Aggiorno modalità pagamento su riga da pagare
