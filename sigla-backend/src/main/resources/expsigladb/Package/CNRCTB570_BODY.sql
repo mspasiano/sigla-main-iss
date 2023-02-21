@@ -2805,24 +2805,30 @@ end;
             --Se mandato mono voce
             Declare
                 tagBilancio CONFIGURAZIONE_CNR.VAL02%type;
+                pCdElementoVoce ass_tipo_cori_ev.cd_elemento_voce%type;
             Begin
                 tagBilancio := CNRCTB015.GETVAL01PERCHIAVE(aEs, 'FLUSSO_ORDINATIVI','INVIA_TAG_BILANCIO');
                 if tagBilancio is not null and tagBilancio='true' Then
+                  //Recupero la voce di bilancio di entrata su cui dovrebbero essere finiti lgi accertamenti
                   Begin
-                     Select distinct a.cd_elemento_voce
-                     Into aCdEV
-                     From ass_tipo_cori_ev a, tipo_cr_base b
+                     Select distinct c.CD_VOCE_CLG
+                     Into pCdElementoVoce
+                     From ass_tipo_cori_ev a, tipo_cr_base b, ASS_PARTITA_GIRO c
                      Where b.esercizio = aEs   --aCori.esercizio
                        And b.cd_gruppo_cr = aAggregato.cd_gruppo_cr
                        And a.cd_contributo_ritenuta = b.cd_contributo_ritenuta
                        And a.esercizio = aEs   --aCori.esercizio
-                       And a.ti_gestione = CNRCTB001.GESTIONE_SPESE
-                       And a.ti_appartenenza = CNRCTB001.APPARTENENZA_CDS;
+                       And a.ti_gestione = CNRCTB001.GESTIONE_ENTRATE
+                       And a.ti_appartenenza = CNRCTB001.APPARTENENZA_CNR
+                       AND a.ESERCIZIO = c.ESERCIZIO
+                       AND a.TI_APPARTENENZA = c.TI_APPARTENENZA
+                       AND a.TI_GESTIONE = c.TI_GESTIONE
+                       AND a.CD_ELEMENTO_VOCE = c.CD_VOCE;
                   Exception
                      when TOO_MANY_ROWS then
-                         IBMERR001.RAISE_ERR_GENERICO('Esiste più di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
+                         IBMERR001.RAISE_ERR_GENERICO('Esiste più di un conto finanziario di spesa associato a voci di entrata CORI del gruppo '||aAggregato.cd_gruppo_cr);
                      when NO_DATA_FOUND then
-                         IBMERR001.RAISE_ERR_GENERICO('Conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr||' non trovato');
+                         IBMERR001.RAISE_ERR_GENERICO('Conto finanziario di spesa associato a voci di entrata CORI del gruppo '||aAggregato.cd_gruppo_cr||' non trovato');
                   End;
                 end if;
             End;
