@@ -2806,8 +2806,8 @@ end;
             Declare
                 tagBilancio CONFIGURAZIONE_CNR.VAL02%type;
             Begin
-                tagBilancio := CNRCTB015.GETVAL02PERCHIAVE('FLUSSO_ORDINATIVI','INVIA_TAG_BILANCIO');
-                if tagBilancio is not null Then
+                tagBilancio := CNRCTB015.GETVAL01PERCHIAVE(aEs, 'FLUSSO_ORDINATIVI','INVIA_TAG_BILANCIO');
+                if tagBilancio is not null and tagBilancio='true' Then
                   Begin
                      Select distinct a.cd_elemento_voce
                      Into aCdEV
