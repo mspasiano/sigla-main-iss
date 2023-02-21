@@ -234,12 +234,13 @@ public class Tipo_contributo_ritenutaBulk extends Tipo_contributo_ritenutaBase {
      * Creation date: (18/01/2002 14.52.26)
      */
     public void resetFlags() {
-
-        this.setFl_assistenza_fiscale(new Boolean(false));
-        this.setFl_scrivi_montanti(new Boolean(false));
-        this.setFl_uso_in_lordizza(new Boolean(false));
-        this.setFl_gla(new Boolean(false));
-        this.setFl_sospensione_irpef(new Boolean(false));
+        this.setFl_assistenza_fiscale(Boolean.FALSE);
+        this.setFl_scrivi_montanti(Boolean.FALSE);
+        this.setFl_uso_in_lordizza(Boolean.FALSE);
+        this.setFl_gla(Boolean.FALSE);
+        this.setFl_sospensione_irpef(Boolean.FALSE);
+        this.setFl_credito_irpef(Boolean.FALSE);
+        this.setFl_versamento(Boolean.TRUE);
     }
 
     public void validate() throws ValidationException {
