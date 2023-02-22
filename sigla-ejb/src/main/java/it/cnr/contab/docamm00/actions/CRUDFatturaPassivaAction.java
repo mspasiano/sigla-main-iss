@@ -17,21 +17,6 @@
 
 package it.cnr.contab.docamm00.actions;
 
-import java.math.BigDecimal;
-import java.rmi.RemoteException;
-import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-
-import it.cnr.contab.ordmag.ordini.bulk.*;
-import it.cnr.contab.util.enumeration.TipoIVA;
-import it.cnr.jada.util.action.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
@@ -41,41 +26,15 @@ import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.compensi00.docs.bulk.V_terzo_per_compensoBulk;
 import it.cnr.contab.config00.bulk.CigBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
-import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaBP;
-import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaIBP;
-import it.cnr.contab.docamm00.bp.CRUDNotaDiCreditoBP;
-import it.cnr.contab.docamm00.bp.CRUDNotaDiDebitoBP;
-import it.cnr.contab.docamm00.bp.ContabilizzaOrdineBP;
-import it.cnr.contab.docamm00.bp.IDocumentoAmministrativoBP;
-import it.cnr.contab.docamm00.bp.IDocumentoAmministrativoSpesaBP;
-import it.cnr.contab.docamm00.bp.RisultatoEliminazioneBP;
-import it.cnr.contab.docamm00.bp.TitoloDiCreditoDebitoBP;
-import it.cnr.contab.docamm00.docs.bulk.AssociazioniInventarioTable;
-import it.cnr.contab.docamm00.docs.bulk.CarichiInventarioTable;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_IBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
-import it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_obbligazioniVBulk;
-import it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoBulk;
-import it.cnr.contab.docamm00.docs.bulk.Lettera_pagam_esteroBulk;
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_creditoBulk;
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_credito_rigaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_debitoBulk;
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_rigaBulk;
-import it.cnr.contab.docamm00.docs.bulk.ObbligazioniTable;
-import it.cnr.contab.docamm00.docs.bulk.Risultato_eliminazioneVBulk;
-import it.cnr.contab.docamm00.docs.bulk.TrovatoBulk;
+import it.cnr.contab.docamm00.bp.*;
+import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.CategoriaGruppoInventComponentSession;
 import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
 import it.cnr.contab.docamm00.ejb.VoceIvaComponentSession;
-import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_voceBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Tipo_sezionaleBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
+import it.cnr.contab.docamm00.tabrif.bulk.*;
 import it.cnr.contab.doccont00.bp.CRUDVirtualObbligazioneBP;
+import it.cnr.contab.doccont00.comp.DateServices;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
@@ -88,9 +47,13 @@ import it.cnr.contab.inventario01.bp.CRUDCaricoInventarioBP;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.inventario01.ejb.BuonoCaricoScaricoComponentSession;
 import it.cnr.contab.inventario01.ejb.NumerazioneTempBuonoComponentSession;
+import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
+import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.utenze00.bulk.CNRUserInfo;
 import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.contab.util.Utility;
+import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
@@ -105,8 +68,19 @@ import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 import it.cnr.jada.util.RemoteIterator;
+import it.cnr.jada.util.action.*;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
+
+import javax.ejb.EJBException;
+import java.math.BigDecimal;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CRUDFatturaPassivaAction extends EconomicaAction {
     private transient static final Logger logger = LoggerFactory.getLogger(CRUDFatturaPassivaAction.class);
@@ -2773,6 +2747,7 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             controllaQuadraturaConti(context, fatturaPassiva);
 
             Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) bp.getObbligazioniController().getModel();
+            ObbligazioneBulk obbligazione = scadenza.getObbligazione();
 
             if (scadenza == null)
                 throw new it.cnr.jada.comp.ApplicationException("Selezionare l'impegno da modificare in automatico!");
@@ -2786,26 +2761,17 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
 
             ObbligazioneAbstractComponentSession h = CRUDVirtualObbligazioneBP.getVirtualComponentSession(context, true);
 
-            try {
-                scadenza = (Obbligazione_scadenzarioBulk) h.modificaScadenzaInAutomatico(
-                        context.getUserContext(),
-                        scadenza,
-                        getImportoPerAggiornamentoScadenzaInAutomatico(
-                                context,
-                                scadenza,
-                                fatturaPassiva,
-                                new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP)),
-                        false);
-                bp.getDefferedUpdateSaldiParentBP().getDefferedUpdateSaldiBulk().addToDefferredSaldi(
-                        scadenza.getObbligazione(),
-                        scadenza.getObbligazione().getSaldiInfo());
-            } catch (it.cnr.jada.comp.ComponentException e) {
-                if (e.getDetail() instanceof it.cnr.contab.doccont00.comp.CheckDisponibilitaCassaFailed)
-                    throw new it.cnr.jada.comp.ApplicationException(e.getDetail().getMessage());
-                if (e.getDetail() instanceof it.cnr.contab.doccont00.comp.SfondamentoPdGException)
-                    throw new it.cnr.jada.comp.ApplicationException(e.getDetail().getMessage());
-                throw e;
-            }
+            Obbligazione_scadenzarioBulk scadenzaNuova = (Obbligazione_scadenzarioBulk) h.sdoppiaScadenzaInAutomatico(context.getUserContext(),
+                    scadenza, this.getImportoPerAggiornamentoScadenzaInAutomatico(context,scadenza,fatturaPassiva,BigDecimal.ZERO));
+
+            //Ricarico la scadenza vecchia dal DB che nel frattempo potrebbe essere cambiata a seguito di sdoppiamneto
+            scadenza = (Obbligazione_scadenzarioBulk)h.findByPrimaryKey(context.getUserContext(), scadenza);
+            //Riaggangio l'obbligazione
+            scadenza.setObbligazione(obbligazione);
+
+            bp.getDefferedUpdateSaldiParentBP().getDefferedUpdateSaldiBulk().addToDefferredSaldi(
+                    scadenza.getObbligazione(),
+                    scadenza.getObbligazione().getSaldiInfo());
 
             Forward fwd = basicDoBringBackOpenObbligazioniWindow(context, scadenza);
 
@@ -4490,7 +4456,7 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
     }
 
     /**
-     * Gestisce un cambiamento di pagina su un controllo tabbed {@link it.cnr.jada.util.jsp.JSPUtils.tabbed}
+     * Gestisce un cambiamento di pagina su un controllo tabbed
      */
     public Forward doTab(ActionContext context, String tabName, String pageName) {
 
@@ -4673,11 +4639,6 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
     /**
      * Restituisce tra i dettagli passati in argomento quelli che sono in uno degli
      * stati specificati in statiDettaglio
-     *
-     * @param context        L'ActionContext della richiesta
-     * @param dettagli
-     * @param statiDettaglio
-     * @return
      */
     protected it.cnr.jada.util.action.Selection getIndexSelectionOn(
             it.cnr.jada.util.action.Selection selection,
@@ -5808,4 +5769,26 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
         return iva;
     }
 
+    public Forward doOnChangeEsercizioFattura(ActionContext context) {
+        try {
+            CRUDFatturaPassivaBP bp = (CRUDFatturaPassivaBP) context.getBusinessProcess();
+            Fattura_passivaBulk fp = (Fattura_passivaBulk) bp.getModel();
+            Integer oldEsercizio = fp.getEsercizio();
+            fillModel(context);
+            if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context))>0) {
+                fp.setEsercizio(oldEsercizio);
+                throw new ApplicationException("Non è possibile inserire un esercizio superiore a quello di scrivania!");
+            } else if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context))<0) {
+                fp.setDt_registrazione(DateServices.getLastDayOfYear(fp.getEsercizio()));
+                fp.setDt_da_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
+                fp.setDt_a_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
+            } else {//esercizio=scrivania
+                fp.setPg_fattura_passiva(null);
+                fp.setDt_registrazione(DateServices.getDataOdierna());
+            }
+            return context.findDefaultForward();
+        } catch(Throwable e) {
+            return handleException(context,e);
+        }
+    }
 }

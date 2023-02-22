@@ -101,7 +101,8 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
         }
         if (bp instanceof IDocumentoAmministrativoBP) {
             enabled = enabled || ((IDocumentoAmministrativoBP) bp).isDeleting() || ((IDocumentoAmministrativoBP) bp).isManualModify();
-            modelEditable = (getParentModel() != null &&
+            modelEditable = (bp instanceof CRUDFatturaPassivaAmministraBP) ||
+                    (getParentModel() != null &&
                     ((IDocumentoAmministrativoBulk) getParentModel()).isEditable() &&
                     !((IDocumentoAmministrativoBulk) getParentModel()).isDeleting());
             if (modelEditable) {

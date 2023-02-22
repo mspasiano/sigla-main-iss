@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2022  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="raffaele.pagano" id="accessi_amministra_fattura">
+        <insert tableName="ass_bp_accesso">
+            <column name="cd_accesso" type="VARCHAR(20)" value="AMMFATTURDOCSFATPASA"/>
+            <column name="business_process" type="VARCHAR(200)" value="CRUDFatturaPassivaAmministraBP"/>
+            <column name="ti_funzione" type="CHAR(1)" value="M"/>
+            <column name="duva" type="${date.type}" valueDate="${now}"/>
+            <column name="utuv" type="VARCHAR(20)" value="SYSTEM"/>
+            <column name="dacr" type="${date.type}" valueDate="${now}"/>
+            <column name="utcr" type="VARCHAR(20)" value="SYSTEM"/>
+            <column name="pg_ver_rec" type="BIGINT" value="0"/>
+        </insert>
+        <insert tableName="albero_main">
+            <column name="cd_nodo" type="VARCHAR(100)" value="0.AMM.FATTUR.FATPAS.A"/>
+            <column name="ds_nodo" type="VARCHAR(200)" value="amministra"/>
+            <column name="cd_accesso" type="VARCHAR(20)" value="AMMFATTURDOCSFATPASA"/>
+            <column name="business_process" type="VARCHAR(200)" value="CRUDFatturaPassivaAmministraBP"/>
+            <column name="pg_ordinamento" type="BIGINT" value="30"/>
+            <column name="fl_terminale" type="CHAR(1)" value="Y"/>
+            <column name="livello" type="SMALLINT" value="3"/>
+            <column name="cd_proprio_nodo" type="VARCHAR(100)" value="A"/>
+            <column name="cd_nodo_padre" type="VARCHAR(100)" value="0.AMM.FATTUR.FATPAS"/>
+            <column name="duva" type="${date.type}" valueDate="${now}"/>
+            <column name="utuv" type="VARCHAR(20)" value="SYSTEM"/>
+            <column name="dacr" type="${date.type}" valueDate="${now}"/>
+            <column name="utcr" type="VARCHAR(20)" value="SYSTEM"/>
+            <column name="pg_ver_rec" type="BIGINT" value="0"/>
+        </insert>
+    </changeSet>
+
+    <changeSet author="raffaele.pagano" id="accessi_amministra_fattura_01">
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="10"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.V'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="20"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.M'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="30"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.A'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="40"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.E'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="50"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.NOTCRD'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="60"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.NOTDBT'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="70"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.STAMPE'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="80"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.ELE'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="90"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.ELEADM'</where>
+        </update>
+        <update tableName="albero_main">
+            <column name="pg_ordinamento" type="BIGINT" value="100"/>
+            <where>CD_NODO = '0.AMM.FATTUR.FATPAS.ELE.V'</where>
+        </update>
+    </changeSet>
+</databaseChangeLog>

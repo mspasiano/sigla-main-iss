@@ -196,6 +196,14 @@
         <init-param name="defaultAction" value="CRUDFatturaPassivaElettronicaAction"/>
     </businessProcess>
 
+    <businessProcess
+            name="CRUDFatturaPassivaAmministraBP" className="it.cnr.contab.docamm00.bp.CRUDFatturaPassivaAmministraBP">
+        <forward name="default" path="/docamm00/fattura_passiva.jsp"/>
+        <init-param name="bulkClassName" value="it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_IBulk"/>
+        <init-param name="componentSessionName" value="CNRDOCAMM00_EJB_FatturaPassivaComponentSession"/>
+        <init-param name="defaultAction" value="CRUDFatturaPassivaAction"/>
+    </businessProcess>
+
     <action
             path="/RifiutaFatturaAction" actionClass="it.cnr.contab.docamm00.actions.RifiutaFatturaAction">
     </action>

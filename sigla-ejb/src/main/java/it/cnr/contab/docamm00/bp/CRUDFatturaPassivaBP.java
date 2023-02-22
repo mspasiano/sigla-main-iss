@@ -37,6 +37,7 @@ import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.service.SpringUtil;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.ejb.EJBCommonServices;
 import it.cnr.si.spring.storage.StorageObject;
@@ -148,6 +149,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     protected it.cnr.contab.docamm00.docs.bulk.Risultato_eliminazioneVBulk deleteManager = null;
     private boolean isDeleting = false;
     private it.cnr.contab.doccont00.core.bulk.OptionRequestParameter userConfirm = null;
+    private Integer esercizioInScrivania;
     private boolean annoDiCompetenza = true;
     private boolean annoSolareInScrivania = true;
     private boolean riportaAvantiIndietro = false;
@@ -562,9 +564,9 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             int solaris = Fattura_passivaBulk.getDateCalendar(
                             it.cnr.jada.util.ejb.EJBCommonServices.getServerDate())
                     .get(java.util.Calendar.YEAR);
-            int esercizioScrivania = it.cnr.contab.utenze00.bp.CNRUserContext
-                    .getEsercizio(context.getUserContext()).intValue();
-            setAnnoSolareInScrivania(solaris == esercizioScrivania);
+
+            setEsercizioInScrivania(CNRUserContext.getEsercizio(context.getUserContext()).intValue());
+            setAnnoSolareInScrivania(solaris == this.getEsercizioInScrivania());
             setRibaltato(initRibaltato(context));
             if (!isAnnoSolareInScrivania()) {
                 String cds = it.cnr.contab.utenze00.bp.CNRUserContext
@@ -573,12 +575,10 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                     FatturaPassivaComponentSession session = (FatturaPassivaComponentSession) createComponentSession();
                     boolean esercizioScrivaniaAperto = session
                             .verificaStatoEsercizio(context.getUserContext(),
-                                    new EsercizioBulk(cds, new Integer(
-                                            esercizioScrivania)));
+                                    new EsercizioBulk(cds, this.getEsercizioInScrivania()));
                     boolean esercizioSuccessivoAperto = session
                             .verificaStatoEsercizio(context.getUserContext(),
-                                    new EsercizioBulk(cds, new Integer(
-                                            esercizioScrivania + 1)));
+                                    new EsercizioBulk(cds, this.getEsercizioInScrivania() + 1));
                     setRiportaAvantiIndietro(esercizioScrivaniaAperto
                             && esercizioSuccessivoAperto && isRibaltato());
                 } catch (Throwable t) {
@@ -648,6 +648,14 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
      */
     public void setAnnoDiCompetenza(boolean newAnnoDiCompetenza) {
         annoDiCompetenza = newAnnoDiCompetenza;
+    }
+
+    public Integer getEsercizioInScrivania() {
+        return esercizioInScrivania;
+    }
+
+    public void setEsercizioInScrivania(Integer esercizioInScrivania) {
+        this.esercizioInScrivania = esercizioInScrivania;
     }
 
     /**
