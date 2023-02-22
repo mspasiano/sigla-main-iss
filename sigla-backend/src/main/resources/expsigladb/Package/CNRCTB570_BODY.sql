@@ -2809,7 +2809,7 @@ end;
             Begin
                 tagBilancio := CNRCTB015.GETVAL01PERCHIAVE(aEs, 'FLUSSO_ORDINATIVI','INVIA_TAG_BILANCIO');
                 if tagBilancio is not null and tagBilancio='true' Then
-                  //Recupero la voce di bilancio di entrata su cui dovrebbero essere finiti lgi accertamenti
+                  --Recupero la voce di bilancio di entrata su cui dovrebbero essere finiti lgi accertamenti
                   Begin
                      Select distinct c.CD_VOCE_CLG
                      Into pCdElementoVoce
