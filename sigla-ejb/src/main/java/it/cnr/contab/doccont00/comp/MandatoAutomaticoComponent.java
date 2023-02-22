@@ -23,10 +23,7 @@
  */
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
-import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.V_anagrafico_terzoBulk;
+import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
@@ -450,26 +447,11 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	 * @return result la lista delle banche definite per il terzo beneficiario del mandato
 	 *			null non è stata definita nessuna banca per il terzo beneficiario del mandato
 	*/
-	public List<BancaBulk> findBancaOptions(UserContext userContext, Integer cdTerzo, String cdModalitaPagamento) throws it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException, ComponentException
-	{
+	public List<BancaBulk> findBancaOptions(UserContext userContext, Integer cdTerzo, String cdModalitaPagamento) throws it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException, ComponentException {
 		if ( cdTerzo != null) {
-			SQLBuilder sql = getHome( userContext, BancaBulk.class ).createSQLBuilder();
-			sql.addClause(FindClause.AND, "cd_terzo", SQLBuilder.EQUALS, cdTerzo  );
-			sql.addSQLClause(FindClause.AND, "BANCA.CD_TERZO_DELEGATO", SQLBuilder.ISNULL, null);
-			sql.addSQLClause(FindClause.AND, "BANCA.FL_CANCELLATO", SQLBuilder.EQUALS, "N");
-			sql.addOrderBy("FL_CC_CDS DESC");
-			if (cdModalitaPagamento != null ) {
-				SQLBuilder sql2 = getHome( userContext, Modalita_pagamentoBulk.class ).createSQLBuilder();
-				sql2.setHeader( "SELECT DISTINCT TI_PAGAMENTO " );
-				sql2.addTableToHeader( "rif_modalita_pagamento" );
-				sql2.addSQLClause( FindClause.AND , "modalita_pagamento.cd_terzo", SQLBuilder.EQUALS, cdTerzo );
-				sql2.addSQLClause( FindClause.AND , "modalita_pagamento.cd_modalita_pag", SQLBuilder.EQUALS, cdModalitaPagamento );
-				sql2.addSQLJoin( "modalita_pagamento.cd_modalita_pag", "rif_modalita_pagamento.cd_modalita_pag" );
-				sql2.addSQLClause(FindClause.AND, "MODALITA_PAGAMENTO.CD_TERZO_DELEGATO", SQLBuilder.ISNULL, null);
-
-				sql.addSQLClause( FindClause.AND, "TI_PAGAMENTO" , SQLBuilder.EQUALS, sql2 );
-			}
-			return getHome( userContext, BancaBulk.class ).fetchAll( sql );
+			Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)this.findByPrimaryKey(userContext, new Rif_modalita_pagamentoBulk(cdModalitaPagamento));
+			BancaHome bancaHome = (BancaHome) getHome(userContext, BancaBulk.class);
+			return getHome( userContext, BancaBulk.class ).fetchAll(bancaHome.selectBancaFor(rifModalitaPagamentoBulk, cdTerzo));
 		}
 		return null;
 	}
@@ -496,8 +478,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			sql.addTableToHeader( "RIF_MODALITA_PAGAMENTO");
 			sql.addSQLJoin("MODALITA_PAGAMENTO.CD_MODALITA_PAG","RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG" );
 			sql.addClause( FindClause.AND, "cd_terzo", SQLBuilder.EQUALS, cdTerzo );
-			sql.addClause( FindClause.AND, "cd_terzo_delegato", SQLBuilder.ISNULL, null );
-			List<Modalita_pagamentoBulk> result = getHome( userContext, Modalita_pagamentoBulk.class ).fetchAll( sql );
+ 			List<Modalita_pagamentoBulk> result = getHome( userContext, Modalita_pagamentoBulk.class ).fetchAll( sql );
 			if ( result.size() == 0 )
 				throw new ApplicationException("Non esistono modalità di pagamento per il terzo " + cdTerzo);
 			return result;	

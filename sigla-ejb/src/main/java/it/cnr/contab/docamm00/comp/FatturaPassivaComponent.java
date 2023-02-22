@@ -9005,6 +9005,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                                     docPassivoObb.getCd_cds_obbligazione()+"/"+docPassivoObb.getPg_obbligazione()+" che risultano già pagate. Non è possibile modificare la modalità di pagamento.");
                         riga.setModalita_pagamento(rifModalitaPagamentoBulk);
                         riga.setBanca(bancaBulk);
+                        riga.setCd_terzo_cessionario(Optional.ofNullable(bancaBulk).flatMap(el->Optional.ofNullable(el.getCd_terzo_delegato())).orElse(null));
                         riga.setToBeUpdated();
                         makeBulkPersistent(userContext, riga);
                     }
