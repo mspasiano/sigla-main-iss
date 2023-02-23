@@ -589,6 +589,48 @@
 		<findFieldProperty
 			name="partita_iva_anagrafico" />
 	</freeSearchSet>
+	<columnSet name="gesVisTerzo">
+		<columnFieldProperty
+				name="cd_terzo"
+				label="Codice" />
+		<columnFieldProperty
+				name="cd_anag"
+				label="Anagrafica" />
+		<columnFieldProperty
+				name="denominazione_sede"/>
+		<columnFieldProperty
+				name="codice_fiscale_anagrafico"/>
+		<columnFieldProperty
+				name="partita_iva_anagrafico"/>
+		<columnFieldProperty
+				name="dt_fine_rapporto"
+				label="Fine rapp." />
+		<columnFieldProperty
+				name="descrizioneAnagrafica" />
+        <columnFieldProperty
+            name="via_sede" />
+        <columnFieldProperty
+            name="comune_sede" />
+		<columnFieldProperty
+				name="codiceUnivocoUfficioIpa"
+				label="Codice IPA" />
+		<columnFieldProperty
+				name="codiceDestinatarioFatt"
+				textTruncate="true"
+				headerStyle="max-width: 13ch"
+				label="Codice Dest. Fatt. Elettr." />
+		<columnFieldProperty
+				name="codiceUnivocoPcc" />
+		<columnFieldProperty
+				name="denominazionePcc"
+				textTruncate="true"
+				headerStyle="max-width: 13ch" />
+		<columnFieldProperty
+				name="cd_precedente"
+				textTruncate="true"
+				headerStyle="max-width: 13ch"/>
+
+	</columnSet>
 
 	<columnFieldProperty
 		name="cd_terzo"
@@ -607,10 +649,12 @@
 		label="Fine rapp." />
 	<columnFieldProperty
 		name="descrizioneAnagrafica" />
+	<!--
 	<columnFieldProperty
 		name="via_sede" />
 	<columnFieldProperty
 		name="comune_sede" />
+	-->
 	<columnFieldProperty
 		name="codiceUnivocoUfficioIpa"
 		label="Codice IPA" />

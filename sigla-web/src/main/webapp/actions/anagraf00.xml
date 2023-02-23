@@ -51,7 +51,8 @@
     <forward name="default" path="/anagraf00/terzo.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.TerzoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_TerzoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDTerzoAction"/>		
+	<init-param name="defaultAction" value="CRUDTerzoAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisTerzo"/>
   </businessProcess>
 
   <businessProcess
