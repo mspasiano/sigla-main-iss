@@ -688,7 +688,76 @@
 		inputType="TEXT"
 		inputSize="8"
 		formatName="date_short" />
-		
+
+	<columnSet name="gesVisAnagrafica">
+		<columnFieldProperty
+				name="cd_anag"
+				label="Codice anagrafico"
+		/>
+		<columnFieldProperty
+				name="cognome"
+				label="Cognome"
+		/>
+		<columnFieldProperty
+				name="nome"
+				label="Nome"
+		/>
+		<columnFieldProperty
+				name="ragione_sociale"
+				label="Ragione Sociale"
+		/>
+		<columnFieldProperty
+				name="codice_fiscale"
+				label="Codice fiscale"
+		/>
+		<columnFieldProperty
+				name="partita_iva"
+				label="Partita I.V.A."
+		/>
+		<columnFieldProperty
+			name="ds_comune_fiscale"
+			label="Citt&#224;/comune"
+			/>
+		<columnFieldProperty
+			name="via_fiscale"
+			label="Indirizzo"
+			style="width: 20ex"
+			/>
+		<columnFieldProperty
+				name="ti_italiano_estero_anag"
+				label="Italiano/Estero"
+		/>
+		<columnFieldProperty
+				name="dt_fine_rapporto"
+				label="Data Fine Rapporto"
+		/>
+		<columnFieldProperty
+				name="fl_cervellone"
+				label="Cervellone"
+		/>
+		<columnFieldProperty
+				name="codiceAmministrazioneIpa"
+				label="Codice Amministrazione IPA"
+		/>
+		<columnFieldProperty
+				name="dataAvvioFattElettr"
+				label="Data avvio Fatturazione Elettronica"
+		/>
+		<columnFieldProperty
+				name="fl_abilita_diaria_miss_est"
+				label="Abilitato Diaria missioni estere"
+		/>
+		<!--   <columnFieldProperty
+			   name="pg_tipologia_istat"
+			   label="Tipologia Istat"/>
+		   <columnFieldProperty
+			   name="ds_tipologia_istat"
+			   label="Tipologia Istat"/>
+		   <columnFieldProperty
+			   name="find_tipologia_istat"
+			   label="Tipologia Istat"/>  -->
+	</columnSet>
+
 	<columnFieldProperty
 		name="cd_anag"
 		label="Codice anagrafico"
@@ -713,6 +782,7 @@
 		name="partita_iva"
 		label="Partita I.V.A."
 		/>
+	<!--
 	<columnFieldProperty
 		name="ds_comune_fiscale"
 		label="Citt&#224;/comune"
@@ -722,6 +792,7 @@
 		label="Indirizzo"
 		style="width: 20ex"
 		/>
+	-->
 	<columnFieldProperty
 		name="ti_italiano_estero_anag"
 		label="Italiano/Estero" 

@@ -43,7 +43,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
@@ -60,7 +61,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
@@ -68,7 +70,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
