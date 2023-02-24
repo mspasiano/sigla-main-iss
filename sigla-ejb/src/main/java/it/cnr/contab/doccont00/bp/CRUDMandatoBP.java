@@ -799,10 +799,7 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                 return getDocumentoAmministrativoSpesaComponentSession("CNRMISSIONI00_EJB_AnticipoComponentSession")
                         .cercaObbligazioni(context, filtro);
             }
-            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S: {
-                return getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession")
-                        .cercaObbligazioni(context, filtro);
-            }
+            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S:
             case "GEN_STIP_S": {
                 return getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession")
                         .cercaObbligazioni(context, filtro);
@@ -892,7 +889,8 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                         .map(Fattura_passiva_rigaBulk::getObbligazione_scadenziario)
                         .orElseThrow(() -> new BusinessProcessException("Impegno sulla riga non trovato!"));
             }
-            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S: {
+            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S:
+            case "GEN_STIP_S": {
                 final IDocumentoAmministrativoSpesaComponentSession documentoGenericoComponentSession =
                         getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession");
                 Documento_genericoBulk documentoGenericoPassivoBulk = Optional.ofNullable(
