@@ -43,7 +43,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
@@ -51,7 +52,8 @@
     <forward name="default" path="/anagraf00/terzo.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.TerzoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_TerzoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDTerzoAction"/>		
+	<init-param name="defaultAction" value="CRUDTerzoAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisTerzo"/>
   </businessProcess>
 
   <businessProcess
@@ -59,7 +61,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
@@ -67,7 +70,8 @@
     <forward name="default" path="/anagraf00/anagrafica.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk"/>
     <init-param name="componentSessionName" value="CNRANAGRAF00_EJB_AnagraficoComponentSession"/>
-	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>		
+	<init-param name="defaultAction" value="CRUDAnagraficaAction"/>
+    <init-param name="searchResultColumnSet" value="gesVisAnagrafica"/>
   </businessProcess>
 
   <businessProcess
