@@ -6105,4 +6105,14 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 		sql.addClause(clauses);
 		return sql;
 	}
+
+	public ObbligazioneBulk findObbligazione(UserContext uc,ObbligazioneBulk obbligazione) throws ComponentException {
+		try {
+			ObbligazioneBulk obbl = ((ObbligazioneHome) getHome(uc, ObbligazioneBulk.class)).findObbligazione(obbligazione);
+			getHomeCache(uc).fetchAll(uc);
+			return obbl;
+		} catch (it.cnr.jada.persistency.PersistencyException e) {
+			throw handleException(e);
+		}
+	}
 }

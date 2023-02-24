@@ -214,7 +214,16 @@
 		enabledOnEdit="true"	
 		enabledOnSearch="false"
 		enabledOnFreeSearch="true"
-		label="Credito Irpef" />				
+		label="Credito Irpef" />
+	<fieldProperty
+		name="fl_versamento"
+		property="fl_versamento"
+		inputType="CHECKBOX"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		enabledOnFreeSearch="true"
+		label="Soggetto a versamento" />
+
 	<form
 		name="searchtool" >
 		<formFieldProperty
@@ -242,8 +251,9 @@
 	<formFieldProperty name="fl_gla" />
 	<formFieldProperty name="cd_ente_prev_sti" />
 	<formFieldProperty name="fl_sospensione_irpef" />	
-	<formFieldProperty name="fl_credito_irpef" />	
-	
+	<formFieldProperty name="fl_credito_irpef" />
+	<formFieldProperty name="fl_versamento" />
+
 	<columnFieldProperty name="cd_contributo_ritenuta" />
 	<columnFieldProperty name="ds_contributo_ritenuta" />
 	<columnFieldProperty name="ti_cassa_competenza" />
@@ -257,7 +267,8 @@
 	<columnFieldProperty name="dt_inizio_validita" />
 	<columnFieldProperty name="dataFineValidita" />
 	<columnFieldProperty name="fl_credito_irpef" />
-	
+	<columnFieldProperty name="fl_versamento" />
+
 	<findFieldProperty name="cd_contributo_ritenuta" />
 	<findFieldProperty name="ds_contributo_ritenuta" />
 	<findFieldProperty name="dt_inizio_validita" />
@@ -278,5 +289,5 @@
 	<findFieldProperty name="fl_gla" />
 	<findFieldProperty name="fl_sospensione_irpef" />
 	<findFieldProperty name="fl_credito_irpef" />
-	
+	<findFieldProperty name="fl_versamento" />
 </bulkInfo>

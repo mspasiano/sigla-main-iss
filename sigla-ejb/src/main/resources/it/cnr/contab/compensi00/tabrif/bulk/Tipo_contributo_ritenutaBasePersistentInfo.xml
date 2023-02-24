@@ -137,7 +137,14 @@
 			sqlTypeName="CHAR"
 			columnSize="1"
 			nullable="false"
-			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />	
+			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />
+		<columnMapping
+			columnName="FL_VERSAMENTO"
+			propertyName="fl_versamento"
+			sqlTypeName="CHAR"
+			columnSize="1"
+			nullable="false"
+			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="cd_classificazione_cori" />
@@ -176,5 +183,7 @@
 	<persistentProperty
 		name="fl_sospensione_irpef" />			
 	<persistentProperty
-		name="fl_credito_irpef" />	
+		name="fl_credito_irpef" />
+	<persistentProperty
+		name="fl_versamento" />
 </SQLPersistentInfo>

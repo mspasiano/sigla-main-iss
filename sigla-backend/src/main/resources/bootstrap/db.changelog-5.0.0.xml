@@ -5980,4 +5980,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_column_stipendi_on_mandato.xml"/>
     <!-- Autore : RAFFAELE PAGANO - Aggiunto il campo Tipo Flusso su STIPENDI_COFI -->
     <include file="bootstrap/add_column_tipo_flusso_on_stipendi.xml"/>
+    <!-- Autore : RAFFAELE PAGANO - Aggiunto il campo FL_VERSAMENTO su TIPO_CONTRIBUTO_RITENUTA -->
+    <include file="bootstrap/add_column_fl_versamento_on_tipo_contributo_ritenuta.xml"/>
+    <!-- Autore : RAFFAELE PAGANO - Aggiunti gli accessi per la funziona Amministra Fatture Passive -->
+    <include file="bootstrap/add_accessi_amministra_fattura.xml"/>
 </databaseChangeLog>

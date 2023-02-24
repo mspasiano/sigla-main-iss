@@ -3161,13 +3161,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 		compenso.setFl_documento_ele(fp.isElettronica());
 		compenso.setFl_split_payment(fp.getFl_split_payment());
 		compenso.setTi_istituz_commerc(fp.getTi_istituz_commerc());
-		if(compenso.isElettronica())
-		try {
-			compenso.setUserAbilitatoSenzaCalcolo(((it.cnr.contab.utente00.nav.ejb.GestioneLoginComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRUTENZE00_NAV_EJB_GestioneLoginComponentSession")).controllaAccesso(userContext, "AMMFATTURDOCSFATPASA"));
-		} catch (RemoteException e) {
-			throw handleException(compenso, e);
-		}
-		
+
 		// Settaggio Terzo
 		completaTerzo(userContext, compenso);
 		

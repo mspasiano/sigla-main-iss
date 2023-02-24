@@ -311,7 +311,8 @@ public class MandatoAutomaticoWizardBP extends it.cnr.jada.util.action.SimpleCRU
 		Optional.ofNullable(this.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
 				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast)
 				.filter(V_doc_passivo_obbligazioneBulk::isFatturaPassiva)
-				.ifPresent(el-> el.setImpostaRigaMandatoWizard(el.getImportoRigaMandatoWizard().subtract(el.getImponibileRigaMandatoWizard())));
+				.ifPresent(el->el.setImpostaRigaMandatoWizard(el.getImportoRigaMandatoWizard().subtract(el.getImponibileRigaMandatoWizard())));
+		this.allineaImportiWizard();
 	}
 
 	public void onChangeImpostaRigaMandato(it.cnr.jada.action.ActionContext context) {
@@ -319,7 +320,8 @@ public class MandatoAutomaticoWizardBP extends it.cnr.jada.util.action.SimpleCRU
 		Optional.ofNullable(this.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
 				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast)
 				.filter(V_doc_passivo_obbligazioneBulk::isFatturaPassiva)
-				.ifPresent(el-> el.setImponibileRigaMandatoWizard(el.getImportoRigaMandatoWizard().subtract(el.getImpostaRigaMandatoWizard())));
+				.ifPresent(el->el.setImponibileRigaMandatoWizard(el.getImportoRigaMandatoWizard().subtract(el.getImpostaRigaMandatoWizard())));
+		this.allineaImportiWizard();
 	}
 
 	public void onChangeImportoRigaMandato(it.cnr.jada.action.ActionContext context) {
@@ -331,6 +333,33 @@ public class MandatoAutomaticoWizardBP extends it.cnr.jada.util.action.SimpleCRU
 					BigDecimal percentualeImportoTotale = el.getImportoRigaMandatoWizard().divide(el.getIm_totale_doc_amm(),10, BigDecimal.ROUND_HALF_UP).multiply(BigDecimal.TEN.multiply(BigDecimal.TEN));
 					el.setImponibileRigaMandatoWizard(el.getIm_imponibile_doc_amm().multiply(percentualeImportoTotale).divide(BigDecimal.TEN.multiply(BigDecimal.TEN),2, BigDecimal.ROUND_HALF_UP));
 					el.setImpostaRigaMandatoWizard(el.getImportoRigaMandatoWizard().subtract(el.getImponibileRigaMandatoWizard()));
+				});
+	}
+
+	private void allineaImportiWizard() {
+		Optional.ofNullable(this.getDocumentiPassivi().getModel()).filter(V_doc_passivo_obbligazione_wizardBulk.class::isInstance)
+				.map(V_doc_passivo_obbligazione_wizardBulk.class::cast)
+				.filter(V_doc_passivo_obbligazioneBulk::isFatturaPassiva)
+				.ifPresent(el->{
+					if (el.getImponibileRigaMandatoWizard().compareTo(el.getIm_imponibile_doc_amm())>0)
+						el.setImponibileRigaMandatoWizard(el.getIm_imponibile_doc_amm());
+					if (el.getImpostaRigaMandatoWizard().compareTo(el.getIm_iva_doc_amm())>0)
+						el.setImpostaRigaMandatoWizard(el.getIm_iva_doc_amm());
+					if (el.getImpostaRigaMandatoWizard().compareTo(BigDecimal.ZERO)<0)
+						el.setImpostaRigaMandatoWizard(BigDecimal.ZERO);
+					if (el.getImponibileRigaMandatoWizard().compareTo(BigDecimal.ZERO)<0)
+						el.setImponibileRigaMandatoWizard(BigDecimal.ZERO);
+					if (el.getImpostaRigaMandatoWizard().compareTo(el.getImponibileRigaMandatoWizard())>0)
+						el.setImpostaRigaMandatoWizard(el.getImponibileRigaMandatoWizard());
+
+					//Valore minimo imposta
+					BigDecimal valMinimoImposta = el.getIm_iva_doc_amm().subtract(el.getIm_imponibile_doc_amm().subtract(el.getImponibileRigaMandatoWizard()));
+					if (valMinimoImposta.compareTo(BigDecimal.ZERO)<0)
+						valMinimoImposta = BigDecimal.ZERO;
+
+					if (el.getImpostaRigaMandatoWizard().compareTo(valMinimoImposta)<0)
+						el.setImpostaRigaMandatoWizard(valMinimoImposta);
+					el.setImportoRigaMandatoWizard(el.getImponibileRigaMandatoWizard().add(el.getImpostaRigaMandatoWizard()));
 				});
 	}
 }

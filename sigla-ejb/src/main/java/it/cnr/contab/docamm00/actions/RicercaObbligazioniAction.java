@@ -342,6 +342,8 @@ public Forward doRiportaSelezione(ActionContext context) {
 			try	{
 				RicercaObbligazioniBP bp = (RicercaObbligazioniBP)context.getBusinessProcess();
 				bp.validaObbligazione(context, selezione);
+				if (selezione instanceof Obbligazione_scadenzarioBulk)
+					selezione = bp.resyncObbligazione(context, (Obbligazione_scadenzarioBulk)selezione);
 			}catch ( BusinessProcessException be ){
 				return handleException(context, be);
 			}

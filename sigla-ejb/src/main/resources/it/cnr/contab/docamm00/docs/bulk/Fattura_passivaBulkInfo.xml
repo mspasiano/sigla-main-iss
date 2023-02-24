@@ -611,6 +611,15 @@
             enabledOnFreeSearch="true"
             label="Esercizio"/>
     <fieldProperty
+            name="esercizio_amministra"
+            property="esercizio"
+            inputType="TEXT"
+            enabledOnEdit="false"
+            enabledOnSearch="true"
+            enabledOnFreeSearch="true"
+            command="doOnChangeEsercizioFattura"
+            label="Esercizio"/>
+    <fieldProperty
             name="esercizio_fattura_fornitore"
             property="esercizio_fattura_fornitore"
             inputType="TEXT"
@@ -696,6 +705,16 @@
             label="Progressivo"
             nullable="false"
             enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="true"/>
+    <fieldProperty
+            name="pg_fattura_passiva_amministra"
+            property="pg_fattura_passiva"
+            inputType="TEXT"
+            maxLength="10"
+            inputSize="10"
+            label="Progressivo"
+            nullable="false"
             enabledOnEdit="false"
             enabledOnSearch="true"/>
 
@@ -1297,6 +1316,9 @@
             name="esercizio"
             inputSize="6"/>
     <formFieldProperty
+            name="esercizio_amministra"
+            inputSize="6"/>
+    <formFieldProperty
             name="esercizio_fattura_fornitore"
             inputSize="6"/>
     <formFieldProperty
@@ -1403,6 +1425,8 @@
             name="ti_istituz_commercSearch"/>
     <formFieldProperty
             name="pg_fattura_passiva"/>
+    <formFieldProperty
+            name="pg_fattura_passiva_amministra"/>
     <formFieldProperty
             name="ragione_sociale"/>
 

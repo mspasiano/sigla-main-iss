@@ -19,7 +19,7 @@
 	       </tr>
 	       <tr>
 	         <td>
-			   	<% bp.getGruppi().writeHTMLTable(pageContext,"v_liquid_gruppo",false,false,false,"100%","200px"); %>
+			   	<% bp.getGruppi().writeHTMLTable(pageContext,"v_liquid_gruppo",false,false,false,"100%","auto;max-height:50vh;"); %>
 		     </td>
 	       </tr>
 	       <tr>
@@ -29,7 +29,7 @@
 	       </tr>
 	       <tr>
 	         <td>
-			   	<% bp.getCapitoli().writeHTMLTable(pageContext,"default",false,false,false,"100%","200px"); %>
+			   	<% bp.getCapitoli().writeHTMLTable(pageContext,"default",false,false,false,"100%","auto;max-height:50vh;"); %>
 			 </td>
 	       </tr>
 	     </table>

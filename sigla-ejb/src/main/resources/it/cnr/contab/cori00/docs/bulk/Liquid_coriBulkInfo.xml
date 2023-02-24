@@ -21,6 +21,13 @@
 		xmlns="https://contab.cnr.it/schema/SIGLA" 
 		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
 	<fieldProperty
+		name="findCds"
+		property="cds"
+		label="Centro di Spesa"
+		inputType="SEARCHTOOL"
+		readonlyProperty="ROsearchTool"
+		formName="searchtool_login" />
+	<fieldProperty
 		name="cd_cds"
 		property="cds.cd_unita_organizzativa"
 		maxLength="30"
@@ -34,6 +41,13 @@
 		inputSize="50"
 		inputType="ROTEXT"
 		label="Centro di Spesa" />
+	<fieldProperty
+		name="findUnitaOrganizzativa"
+		property="unita_organizzativa"
+		label="Unità Organizzativa"
+		inputType="SEARCHTOOL"
+		readonlyProperty="ROsearchTool"
+		formName="searchtool_login" />
 	<fieldProperty
 		name="cd_unita_organizzativa"
 		property="unita_organizzativa.cd_unita_organizzativa"
@@ -53,13 +67,15 @@
 		property="stato"
 		maxLength="1"
 		inputSize="1"
-		inputType="TEXT"
+		inputType="SELECT"
+		keysProperty="ti_statoKeys"
 		enabledOnInsert = "false"
-		enabledOnEdit = "false"  
-		enabledOnFreeSearch="true"			
+		enabledOnEdit = "false"
+		enabledOnFreeSearch="true"
 		enabledOnSearch="true"
 		label="Stato"
 		caseSensitiveSearch="false" />
+
 	<fieldProperty
 		name="esercizio"
 		property="esercizio"
@@ -133,9 +149,13 @@
 	</form>
 
 	<formFieldProperty
+		name="findCds" />
+	<formFieldProperty
 		name="cd_cds" />
 	<formFieldProperty
 		name="ds_cds" />
+	<formFieldProperty
+		name="findUnitaOrganizzativa" />
 	<formFieldProperty
 		name="cd_unita_organizzativa" />
 	<formFieldProperty
@@ -155,7 +175,6 @@
 	<formFieldProperty
 		name="da_esercizio_precedente" />
 
-	
 	<columnFieldProperty
 		name="pg_liquidazione" />
 	<columnFieldProperty

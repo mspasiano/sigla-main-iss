@@ -27,6 +27,8 @@ import javax.ejb.TransactionAttributeType;
 
 import it.cnr.contab.doccont00.comp.ObbligazioneComponent;
 import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.PrimaryKeyHashtable;
 @Stateless(name="CNRDOCCONT00_EJB_ObbligazioneComponentSession")
 public class ObbligazioneComponentSessionBean extends it.cnr.jada.ejb.CRUDComponentSessionBean implements ObbligazioneComponentSession {
@@ -675,4 +677,22 @@ public void callRiportaIndietroRequiresNew(it.cnr.jada.UserContext param0,it.cnr
 		throw uncaughtError(param0,componentObj,e);
 	}
 }
+	public ObbligazioneBulk findObbligazione(UserContext param0, ObbligazioneBulk param1) throws RemoteException,it.cnr.jada.comp.ComponentException {
+		pre_component_invocation(param0,componentObj);
+		try {
+			ObbligazioneBulk result = ((ObbligazioneComponent)componentObj).findObbligazione(param0,param1);
+			component_invocation_succes(param0,componentObj);
+			return result;
+		} catch(it.cnr.jada.comp.NoRollbackException e) {
+			component_invocation_succes(param0,componentObj);
+			throw e;
+		} catch(it.cnr.jada.comp.ComponentException e) {
+			component_invocation_failure(param0,componentObj);
+			throw e;
+		} catch(RuntimeException e) {
+			throw uncaughtRuntimeException(param0,componentObj,e);
+		} catch(Error e) {
+			throw uncaughtError(param0,componentObj,e);
+		}
+	}
 }

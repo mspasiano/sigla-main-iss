@@ -198,6 +198,8 @@ public abstract class Fattura_passivaBulk
     private char changeOperation = MOLTIPLICA;
     private java.sql.Timestamp inizio_validita_valuta;
     private java.sql.Timestamp fine_validita_valuta;
+    //Variabile utilizzata per sapere se la richiesta di creazione proviene da una mappa di tipo Amministra
+    private boolean fromAmministra = Boolean.FALSE;
     /*
      * Le variabili isDetailDoubled e isDocumentoModificabile servono per gestire il caso in cui l'utente
 	 * non potendo modificare il documento procede solo a sdoppiare la riga di dettaglio. In tal caso la
@@ -2458,11 +2460,9 @@ public abstract class Fattura_passivaBulk
      */
     public boolean isRODateCompetenzaCOGE() {
 
-        if ((isElettronica() && getPg_fattura_passiva() != null)
-                ||
-                (!isElettronica() && getFattura_passiva_dettColl() != null &&
-                        !getFattura_passiva_dettColl().isEmpty())
-                )
+        if (!this.isFromAmministra() &&
+            ((isElettronica() && getPg_fattura_passiva() != null) ||
+             (!isElettronica() && getFattura_passiva_dettColl() != null && !getFattura_passiva_dettColl().isEmpty())))
             return true;
 
         return false;
@@ -3665,4 +3665,11 @@ public abstract class Fattura_passivaBulk
         return Bene_servizioBulk.SERVIZIO.equals(this.getTi_bene_servizio());
     }
 
+    public void setFromAmministra(boolean fromAmministra) {
+        this.fromAmministra = fromAmministra;
+    }
+
+    public boolean isFromAmministra() {
+        return fromAmministra;
+    }
 }

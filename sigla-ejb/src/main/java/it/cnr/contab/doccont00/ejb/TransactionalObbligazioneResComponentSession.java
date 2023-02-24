@@ -20,6 +20,8 @@ import java.rmi.RemoteException;
 import java.sql.Timestamp;
 
 import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.PrimaryKeyHashtable;
 
 public class TransactionalObbligazioneResComponentSession extends it.cnr.jada.ejb.TransactionalCRUDComponentSession implements ObbligazioneResComponentSession {
@@ -931,4 +933,21 @@ public void callRiportaIndietroRequiresNew(it.cnr.jada.UserContext param0,it.cnr
 		}
 	}
 }
+	public ObbligazioneBulk findObbligazione(UserContext param0, ObbligazioneBulk param1) throws RemoteException,it.cnr.jada.comp.ComponentException {
+		try {
+			return (ObbligazioneBulk)invoke("findObbligazione",new Object[] {
+					param0,
+					param1 });
+		} catch(java.rmi.RemoteException e) {
+			throw e;
+		} catch(java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch(it.cnr.jada.comp.ComponentException ex) {
+				throw ex;
+			} catch(Throwable ex) {
+				throw new java.rmi.RemoteException("Uncaugth exception",ex);
+			}
+		}
+	}
 }

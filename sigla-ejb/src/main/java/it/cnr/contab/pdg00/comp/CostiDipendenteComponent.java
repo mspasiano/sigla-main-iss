@@ -2582,6 +2582,9 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						accertamentoPGiroBulk.setDt_registrazione(compensoBulk.getDt_registrazione());
 						accertamentoPGiroBulk.setDs_accertamento("CORI-D flusso: " + stipendiCofiBulk.getProg_flusso() + " CORI:" + el.getCd_contributo_ritenuta());
 						accertamentoPGiroBulk.setDebitore(mandatoStipendio.getMandato_terzo().getTerzo());
+						//se il tributo non prevede versamento allora genero partita di giro tronca (si immagina che abbiano generato o genereranno manualmente partite di giro tronche
+						// di senso opposto per il versamento)
+						accertamentoPGiroBulk.setFl_isTronco(!tipoContributoRitenutaBulk.getFl_versamento());
 						accertamentoPGiroBulk.setToBeCreated();
 
 						accertamentoPGiroBulk = (AccertamentoPGiroBulk) Utility.createAccertamentoPGiroComponentSession().creaConBulk(userContext, accertamentoPGiroBulk);
@@ -2622,6 +2625,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 						obbligazionePGiroBulk.setDs_obbligazione("CORI-D flusso: " + stipendiCofiBulk.getProg_flusso() + " CORI:" + el.getCd_contributo_ritenuta());
 						obbligazionePGiroBulk.setCreditore(mandatoStipendio.getMandato_terzo().getTerzo());
 						obbligazionePGiroBulk.setStato_obbligazione(ObbligazioneBulk.STATO_OBB_DEFINITIVO);
+						obbligazionePGiroBulk.setFl_isTronco(!tipoContributoRitenutaBulk.getFl_versamento());
 						obbligazionePGiroBulk.setToBeCreated();
 
 						obbligazionePGiroBulk = (ImpegnoPGiroBulk) Utility.createObbligazionePGiroComponentSession().creaConBulk(userContext, obbligazionePGiroBulk);
