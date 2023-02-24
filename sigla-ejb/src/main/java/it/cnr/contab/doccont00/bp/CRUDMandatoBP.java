@@ -803,6 +803,10 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                 return getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession")
                         .cercaObbligazioni(context, filtro);
             }
+            case "GEN_STIP_S": {
+                return getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession")
+                        .cercaObbligazioni(context, filtro);
+            }
             default:
                 return null;
         }
