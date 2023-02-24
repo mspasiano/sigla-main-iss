@@ -767,6 +767,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 															scaricoMagazzinoRiga.getCoefConv());
 									
 									movimentoMag.setLottoMag(lottoMagazzino);
+									movimentoMag.setPrezzoUnitario(lottoMagazzino.getCostoUnitario());
 									listaMovimenti.add((MovimentiMagBulk)super.creaConBulk(userContext, movimentoMag));
 								} catch (ComponentException|PersistencyException ex) {
 									throw new DetailedRuntimeException(ex);
