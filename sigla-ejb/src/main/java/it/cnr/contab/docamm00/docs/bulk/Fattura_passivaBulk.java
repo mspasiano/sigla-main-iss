@@ -2460,11 +2460,9 @@ public abstract class Fattura_passivaBulk
      */
     public boolean isRODateCompetenzaCOGE() {
 
-        if ((isElettronica() && getPg_fattura_passiva() != null)
-                ||
-                (!isElettronica() && getFattura_passiva_dettColl() != null &&
-                        !getFattura_passiva_dettColl().isEmpty())
-                )
+        if (!this.isFromAmministra() &&
+            ((isElettronica() && getPg_fattura_passiva() != null) ||
+             (!isElettronica() && getFattura_passiva_dettColl() != null && !getFattura_passiva_dettColl().isEmpty())))
             return true;
 
         return false;

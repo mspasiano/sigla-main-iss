@@ -35,10 +35,7 @@ import it.cnr.contab.docamm00.tabrif.bulk.*;
 import it.cnr.contab.doccont00.bp.CRUDVirtualObbligazioneBP;
 import it.cnr.contab.doccont00.comp.DateServices;
 import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
-import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
-import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
-import it.cnr.contab.doccont00.core.bulk.SospesoBulk;
+import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario00.bp.AssBeneFatturaBP;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
@@ -2072,7 +2069,7 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             CRUDFatturaPassivaBP bp = (CRUDFatturaPassivaBP) getBusinessProcess(context);
             Fattura_passivaBulk fattura = (Fattura_passivaBulk) bp.getModel();
             java.sql.Timestamp dataEmissione = fattura.getDt_fattura_fornitore();
-            boolean hasAccesso = ((it.cnr.contab.utente00.nav.ejb.GestioneLoginComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRUTENZE00_NAV_EJB_GestioneLoginComponentSession")).controllaAccesso(context.getUserContext(), "AMMFATTURDOCSFATPASA");
+            boolean isBPAmministra = bp instanceof CRUDFatturaPassivaAmministraBP;
             try {
                 fillModel(context);
                 if (!bp.isSearching())
@@ -2083,7 +2080,7 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                             !fattura.isSanMarinoSenzaIVA() &&
                             !fattura.isSanMarinoConIVA() &&
                             !fattura.isBollaDoganale() &&
-                            !hasAccesso) {
+                            !isBPAmministra) {
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                         throw new it.cnr.jada.comp.ApplicationException("Non è possibile registrare una fattura che non sia elettronica, che non sia estera e che abbia data di emissione uguale o successiva al " + sdf.format(fattura.getDataInizioFatturaElettronica()) + "!");
                     }
@@ -2427,7 +2424,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     java.util.Vector clone = (java.util.Vector) models.clone();
                     if (!clone.isEmpty()) {
                         scollegaDettagliDaObbligazione(context, clone);
-                        clone.addAll(selectedModels);basicDoContabilizza(context, obblig, clone);
+                        clone.addAll(selectedModels);
+                        basicDoContabilizza(context, obblig, clone);
                     } else {
                         obbHash.remove(obbligazione);
                         basicDoContabilizza(context, obblig, selectedModels);
@@ -5267,7 +5265,6 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             v_terzo.setCodice_fiscale(fp.getFornitore().getAnagrafico().getCodice_fiscale());
             v_terzo.setPartita_iva(fp.getFornitore().getAnagrafico().getPartita_iva());
 
-
             context.addHookForward("bringback", this, "doBringBackCompenso");
 //		context.addHookForward("close",this,"doBringBackCompenso");
 
@@ -5287,12 +5284,10 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     compenso.setIm_lordo_percipiente(fp.getDocumentoEleTestata().calcolaImLordoPercipiente(fp.getDocumentoEleTestata()));
                     compenso.setQuota_esente(imBollo);
                     compenso.setQuota_esente_no_iva(imBollo);
-                /*
-				compenso.setIm_lordo_percipiente(fp.getDocumentoEleTestata().calcolaImLordoPercipiente(fp.getDocumentoEleTestata()).add(quotaEsente).add(quotaEsenteNonImpo).add(imBollo));
-				compenso.setQuota_esente(quotaEsenteNonImpo.add(imBollo));
-				compenso.setQuota_esente_no_iva(quotaEsente.add(quotaEsenteNonImpo).add(imBollo));
-				*/
                 }
+
+                if  (compenso.isElettronica())
+                    compenso.setUserAbilitatoSenzaCalcolo(bp instanceof CRUDFatturaPassivaAmministraBP);
 
                 it.cnr.contab.compensi00.ejb.CompensoComponentSession component = (it.cnr.contab.compensi00.ejb.CompensoComponentSession) bp.createComponentSession("CNRCOMPENSI00_EJB_CompensoComponentSession", it.cnr.contab.compensi00.ejb.CompensoComponentSession.class);
                 compenso = component.inizializzaCompensoPerFattura(

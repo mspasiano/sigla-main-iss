@@ -511,6 +511,12 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 			CRUDFatturaPassivaAction action = new CRUDFatturaPassivaAction();
 			FatturaPassivaComponentSession comp = (FatturaPassivaComponentSession)nbp.createComponentSession();
 					DocumentoEleTestataBulk documentoEleTestata = (DocumentoEleTestataBulk) getModel();
+
+			boolean isBPAmministra = nbp instanceof CRUDFatturaPassivaAmministraBP;
+
+			Calendar dataRicezione = Calendar.getInstance();
+			dataRicezione.setTimeInMillis(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione().getTime());
+
 			fatturaPassivaBulk.setDocumentoEleTestata(documentoEleTestata);
 			fatturaPassivaBulk = comp.caricaAllegatiBulk(context.getUserContext(), fatturaPassivaBulk);
 			fatturaPassivaBulk.setTi_fattura(documentoEleTestata.getTipoDocumentoSIGLA());
@@ -518,7 +524,15 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	fatturaPassivaBulk.setDt_fattura_fornitore(documentoEleTestata.getDataDocumento());
 	    	fatturaPassivaBulk.setEsercizio_fattura_fornitore(CNRUserContext.getEsercizio(context.getUserContext()));//TODO
 	    	fatturaPassivaBulk.setData_protocollo(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione());
-	    	Calendar date = Calendar.getInstance();
+
+			if (isBPAmministra) {
+				fatturaPassivaBulk.setEsercizio(dataRicezione.get(Calendar.YEAR));
+				fatturaPassivaBulk.setEsercizio_fattura_fornitore(dataRicezione.get(Calendar.YEAR));
+				fatturaPassivaBulk.setPg_fattura_passiva(documentoEleTestata.getIdentificativoSdi());
+				fatturaPassivaBulk.setDt_registrazione(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione());
+			}
+
+			Calendar date = Calendar.getInstance();
 	    	date.setTimeInMillis(documentoEleTestata.getDataDocumento().getTime());
 	    	date.add(Calendar.MONTH, 1);
 	    	
@@ -546,8 +560,15 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	GregorianCalendar gcDataMinima = new GregorianCalendar(), gcDataMassima = new GregorianCalendar();
 	    	gcDataMinima.setTime(calcolaDataMinimaCompetenza(documentoEleTestata));
 	    	gcDataMassima.setTime(calcolaDataMassimaCompetenza(documentoEleTestata));
-	    	
-    		if (!fatturaPassivaBulk.getFl_fattura_compenso() && gcDataMinima.get(Calendar.YEAR)<gcDataMassima.get(Calendar.YEAR))
+
+			if (isBPAmministra) {
+				if (gcDataMinima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))
+					gcDataMinima.setTime(dataRicezione.getTime());
+				if (gcDataMassima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))
+					gcDataMassima.setTime(dataRicezione.getTime());
+			}
+
+			if (!fatturaPassivaBulk.getFl_fattura_compenso() && gcDataMinima.get(Calendar.YEAR)<gcDataMassima.get(Calendar.YEAR))
     			gcDataMinima.setTime(DateUtils.firstDateOfTheYear(gcDataMassima.get(Calendar.YEAR)));
 
         	fatturaPassivaBulk.setDt_da_competenza_coge(new Timestamp(gcDataMinima.getTime().getTime()));

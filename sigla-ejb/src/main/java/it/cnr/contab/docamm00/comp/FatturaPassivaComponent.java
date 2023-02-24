@@ -3157,7 +3157,8 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
 
         Fattura_passivaBulk fattura_passiva = (Fattura_passivaBulk) bulk;
 
-        assegnaProgressivo(userContext, fattura_passiva);
+        if (fattura_passiva.getPg_fattura_passiva()==null || !fattura_passiva.isFromAmministra())
+            assegnaProgressivo(userContext, fattura_passiva);
 
         if (fattura_passiva.isElettronica())
             validaFatturaElettronica(userContext, fattura_passiva);
@@ -8243,28 +8244,24 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                     ((((noSegno ? fatturaPassiva.getDocumentoEleTestata().getImportoDocumento().abs() : fatturaPassiva.getDocumentoEleTestata().getImportoDocumento()).subtract(totaleFat)).abs()).compareTo((fatturaPassiva.getDocumentoEleTestata().getArrotondamento()).abs())) != 0)
                 throw new it.cnr.jada.comp.ApplicationException("Totale Fattura: " + totaleFat + " non coerente con quello inserito nel documento elettronico: " + (noSegno ? fatturaPassiva.getDocumentoEleTestata().getImportoDocumento().abs() : fatturaPassiva.getDocumentoEleTestata().getImportoDocumento()) + " anche considerando l'arrotondamento: " + fatturaPassiva.getDocumentoEleTestata().getArrotondamento() + "!");
         }
-        try {
-            boolean hasAccesso = ((it.cnr.contab.utente00.nav.ejb.GestioneLoginComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRUTENZE00_NAV_EJB_GestioneLoginComponentSession")).controllaAccesso(aUC, "AMMFATTURDOCSFATPASA");
-            boolean checkRiepilogativo = true;
-            if ((fatturaPassiva.isCommerciale()) &&
-                    (fatturaPassiva.getFl_split_payment() == null ||
-                            (fatturaPassiva.getFl_split_payment() != null && !fatturaPassiva.getFl_split_payment().booleanValue())) &&
-                    fatturaPassiva.getData_protocollo() != null &&
-                    !fatturaPassiva.isEstera() &&
-                    !fatturaPassiva.isSanMarinoSenzaIVA() &&
-                    !fatturaPassiva.isSanMarinoConIVA()) {
 
-                Configurazione_cnrBulk conf = getLimitiRitardoDetraibile(aUC, fatturaPassiva);
-                if (fatturaPassiva.getDt_registrazione() != null && fatturaPassiva.getDt_registrazione().after(conf.getDt02()))
-                    checkRiepilogativo = false;
-            }
+        boolean checkRiepilogativo = true;
+        if ((fatturaPassiva.isCommerciale()) &&
+                (fatturaPassiva.getFl_split_payment() == null ||
+                        (fatturaPassiva.getFl_split_payment() != null && !fatturaPassiva.getFl_split_payment().booleanValue())) &&
+                fatturaPassiva.getData_protocollo() != null &&
+                !fatturaPassiva.isEstera() &&
+                !fatturaPassiva.isSanMarinoSenzaIVA() &&
+                !fatturaPassiva.isSanMarinoConIVA()) {
 
-            if (!hasAccesso && checkRiepilogativo) {
-                controllaQuadaraturaNatura(aUC, noSegno, fatturaPassiva, true);
-                controllaQuadaraturaNatura(aUC, noSegno, fatturaPassiva, false);
-            }
-        } catch (RemoteException e) {
-            throw handleException(e);
+            Configurazione_cnrBulk conf = getLimitiRitardoDetraibile(aUC, fatturaPassiva);
+            if (fatturaPassiva.getDt_registrazione() != null && fatturaPassiva.getDt_registrazione().after(conf.getDt02()))
+                checkRiepilogativo = false;
+        }
+
+        if (!fatturaPassiva.isFromAmministra() && checkRiepilogativo) {
+            controllaQuadaraturaNatura(aUC, noSegno, fatturaPassiva, true);
+            controllaQuadaraturaNatura(aUC, noSegno, fatturaPassiva, false);
         }
     }
 
@@ -9005,7 +9002,8 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                                     docPassivoObb.getCd_cds_obbligazione()+"/"+docPassivoObb.getPg_obbligazione()+" che risultano già pagate. Non è possibile modificare la modalità di pagamento.");
                         riga.setModalita_pagamento(rifModalitaPagamentoBulk);
                         riga.setBanca(bancaBulk);
-                        riga.setCd_terzo_cessionario(Optional.ofNullable(bancaBulk).flatMap(el->Optional.ofNullable(el.getCd_terzo_delegato())).orElse(null));
+                        if (Optional.ofNullable(bancaBulk).flatMap(el->Optional.ofNullable(el.getCd_terzo_delegato())).isPresent())
+                            riga.setCessionario((TerzoBulk)this.findByPrimaryKey(userContext, new TerzoBulk(bancaBulk.getCd_terzo_delegato())));
                         riga.setToBeUpdated();
                         makeBulkPersistent(userContext, riga);
                     }
