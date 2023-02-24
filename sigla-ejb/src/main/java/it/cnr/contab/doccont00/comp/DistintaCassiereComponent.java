@@ -686,7 +686,13 @@ public class DistintaCassiereComponent extends
                 .orElse(Boolean.TRUE)) {
             for (Iterator i = docContabili.iterator(); i.hasNext(); ) {
                 docContabile = (V_mandato_reversaleBulk) i.next();
-                if (Optional.ofNullable(docContabile.getEsitoOperazione()).map(s -> s.equals(EsitoOperazione.NON_ACQUISITO.value())).orElse(Boolean.TRUE)) {
+                if (Optional.ofNullable(docContabile.getEsitoOperazione())
+                        .map(s -> s.equals(EsitoOperazione.NON_ACQUISITO.value()))
+                        .orElse(Boolean.TRUE) ||
+                    Optional.ofNullable(docContabile.getStatoVarSos())
+                            .map(s -> s.equals(StatoVariazioneSostituzione.VARIAZIONE_DEFINITIVA.value()))
+                            .orElse(Boolean.FALSE)
+                ) {
                     last_pg_dettaglio = inserisciDettaglioDistinta(userContext,
                             distinta, docContabile, last_pg_dettaglio);
                     inserisciDettaglioDistinteCollegate(userContext, distinta,
@@ -1075,44 +1081,6 @@ public class DistintaCassiereComponent extends
             throw handleException(e);
         }
 
-    }
-
-    /**
-     * Richiama la procedura che processa il file selezionato dall'utente
-     * PreCondition: E' stata generata la richiesta di processare un file
-     * selezionato dall'utente. PostCondition: Viene richiamata la procedura di
-     * Processo dei File
-     *
-     * @param userContext lo <code>UserContext</code> che ha generato la richiesta.
-     * @param distinta    il <code>V_ext_cassiere00Bulk</code> file da processare.
-     **/
-    private void callCheckDocContForDistinta(UserContext userContext,
-                                             Distinta_cassiereBulk distinta)
-            throws ComponentException {
-
-        LoggableStatement cs = null;
-        try {
-            cs = new LoggableStatement(getConnection(userContext), "{ call "
-                    + EJBCommonServices.getDefaultSchema()
-                    + "CNRCTB750.checkDocContForDistCas(?,?,?,?) }", false,
-                    this.getClass());
-
-            cs.setString(1, distinta.getCd_cds());
-            cs.setInt(2, distinta.getEsercizio().intValue());
-            cs.setString(3, distinta.getCd_unita_organizzativa());
-            cs.setLong(4, distinta.getPg_distinta().longValue());
-
-            cs.executeQuery();
-        } catch (Throwable e) {
-            throw handleException(e);
-        } finally {
-            try {
-                if (cs != null)
-                    cs.close();
-            } catch (SQLException e) {
-                throw handleException(e);
-            }
-        }
     }
 
     /**
@@ -3325,7 +3293,6 @@ public class DistintaCassiereComponent extends
                 validaDocumentiContabiliAssociati(userContext, distinta);
                 if (distinta.getFl_annulli().booleanValue())
                     callCheckDocContForDistintaAnn(userContext, distinta);
-                callCheckDocContForDistinta(userContext, distinta);
             } catch (Exception e) {
                 throw handleException(e);
             }
