@@ -3088,6 +3088,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                     try {
                         final BigDecimal diff = scadenzarioBulk.getIm_scadenza().subtract(totaleRigheDifattura);
                         final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomatico(userContext, scadenzarioBulk, diff);
+                        nuovaScadenza.setObbligazione(scadenzarioBulk.getObbligazione());
                         /**
                          * Aggiorno l'importo associato ai documenti amministrativi sulla vecchia scadenza
                          */
