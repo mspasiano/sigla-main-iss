@@ -31,7 +31,6 @@ import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -87,16 +86,35 @@ public class MandatoAutomaticoWizardBP extends it.cnr.jada.util.action.SimpleCRU
 			} else {
 				V_doc_passivo_obbligazione_wizardBulk docPassivoSelected = (V_doc_passivo_obbligazione_wizardBulk)this.getDocumentiPassivi().getModel();
 				if ( docPassivoSelected.getModalitaPagamentoOptions() != null && docPassivoSelected.getCd_modalita_pag() == null)
-					docPassivoSelected.setModalitaPagamentoRigaMandatoWizard( (Modalita_pagamentoBulk) docPassivoSelected.getModalitaPagamentoOptions().get(0));
-				List result = ((MandatoAutomaticoComponentSession) createComponentSession()).findBancaOptions(context.getUserContext(), docPassivoSelected.getCd_terzo(), docPassivoSelected.getModalitaPagamentoRigaMandato().getCd_modalita_pag());
+					docPassivoSelected.setModalitaPagamentoRigaDocumentoWizard(docPassivoSelected.getModalitaPagamentoOptions().get(0));
+				List result = ((MandatoAutomaticoComponentSession) createComponentSession()).findBancaOptions(context.getUserContext(), docPassivoSelected.getCd_terzo(), docPassivoSelected.getModalitaPagamentoRigaDocumento().getCd_modalita_pag());
 				docPassivoSelected.setBancaOptions(result);
+
+				if ( docPassivoSelected.getBancaOptions() != null)
+					docPassivoSelected.setBancaRigaDocumentoWizard(docPassivoSelected.getBancaOptions().get(0));
+				if ( docPassivoSelected.getBancaRigaDocumentoWizard() != null)
+					docPassivoSelected.setCd_terzo_cessionario(docPassivoSelected.getBancaRigaDocumentoWizard().getCd_terzo_delegato());
 			}
 			setModel(context, mandato);
 		} catch(Exception e) {
 			throw handleException(e);
 		}
 	}
-	
+
+	public void cambiaBanca(it.cnr.jada.action.ActionContext context) throws it.cnr.jada.action.BusinessProcessException  {
+		try {
+			MandatoAutomaticoWizardBulk mandato = (MandatoAutomaticoWizardBulk) getModel();
+			if (!mandato.isAutomatismoDaImpegni()) {
+				V_doc_passivo_obbligazione_wizardBulk docPassivoSelected = (V_doc_passivo_obbligazione_wizardBulk)this.getDocumentiPassivi().getModel();
+				if ( docPassivoSelected.getBancaRigaDocumentoWizard() != null)
+					docPassivoSelected.setCd_terzo_cessionario(docPassivoSelected.getBancaRigaDocumentoWizard().getCd_terzo_delegato());
+			}
+			setModel(context, mandato);
+		} catch(Exception e) {
+			throw handleException(e);
+		}
+	}
+
 	public void create(it.cnr.jada.action.ActionContext context) throws it.cnr.jada.action.BusinessProcessException {
 		try {
 			setModel(context, ((MandatoAutomaticoComponentSession)createComponentSession()).creaMandatoAutomatico(context.getUserContext(), getModel()));

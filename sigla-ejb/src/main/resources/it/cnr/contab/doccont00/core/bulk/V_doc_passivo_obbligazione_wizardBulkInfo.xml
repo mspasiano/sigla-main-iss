@@ -26,8 +26,8 @@
 		inputType="TEXT"
 		label="Nr. mandato"/>
 	<fieldProperty
-		name="modalitaPagamentoRigaMandatoWizard"
-		property="modalitaPagamentoRigaMandatoWizard"
+		name="modalitaPagamentoRigaDocumentoWizard"
+		property="modalitaPagamentoRigaDocumentoWizard"
 		maxLength="10"
 		inputSize="10"
 		inputType="SELECT"
@@ -37,13 +37,22 @@
 		label="Modalita pag."
 		nullable="false" />
 	<fieldProperty
-		name="bancaRigaMandatoWizard"
-		property="bancaRigaMandatoWizard"
+		name="bancaRigaDocumentoWizard"
+		property="bancaRigaDocumentoWizard"
 		inputType="SELECT"
 		optionsProperty="bancaOptions"
 		printProperty="ds_estesa"
+		command="doCambiaBanca"
 		label="Coordinate"
 		nullable="false" />
+
+	<fieldProperty
+		name="cdTerzoDelegatoRigaDocumentoWizard"
+		property="bancaRigaDocumentoWizard.cd_terzo_delegato"
+		inputType="ROTEXT"
+		optionsProperty="bancaOptions"
+		label="Cessionario"/>
+
 	<fieldProperty
 		name="imponibileRigaMandatoWizard"
 		property="imponibileRigaMandatoWizard"
@@ -72,9 +81,11 @@
 	<formFieldProperty
 		name="pg_mandato" />
 	<formFieldProperty
-		name="modalitaPagamentoRigaMandatoWizard" />
+		name="modalitaPagamentoRigaDocumentoWizard" />
 	<formFieldProperty
-		name="bancaRigaMandatoWizard" />
+		name="bancaRigaDocumentoWizard" />
+	<formFieldProperty
+		name="cdTerzoDelegatoRigaDocumentoWizard" />
 	<formFieldProperty
 		name="imponibileRigaMandatoWizard" />
 	<formFieldProperty

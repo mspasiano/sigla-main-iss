@@ -74,6 +74,18 @@ public class MandatoAutomaticoWizardAction extends CRUDAbstractMandatoAction {
 		}
 	}
 
+	public Forward doCambiaBanca(ActionContext context) {
+		try	{
+			fillModel( context );
+			CRUDBP bp = getBusinessProcess( context );
+			if ( bp instanceof MandatoAutomaticoWizardBP )
+				((MandatoAutomaticoWizardBP)bp).cambiaBanca( context );
+			return context.findDefaultForward();
+		} catch(Throwable e) {
+			return handleException(context,e);
+		}
+	}
+
 	/**
 	 * Metodo utilizzato per gestire l'aggiunta di nuove righe al mandato
 	 */

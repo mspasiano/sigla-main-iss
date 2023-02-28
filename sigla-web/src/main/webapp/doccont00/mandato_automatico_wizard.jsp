@@ -226,12 +226,20 @@
                                     </div>
                                     <div class="form-row">
                                         <div class="form-group col-md-4 h-100">
-                                            <% bp.getDocumentiPassivi().writeFormField( out,"default", "modalitaPagamentoRigaMandatoWizard", Boolean.FALSE); %>
+                                            <% bp.getDocumentiPassivi().writeFormField( out,"default", "modalitaPagamentoRigaDocumentoWizard", Boolean.FALSE); %>
                                         </div>
                                         <div class="form-group col-md-8 h-100">
-                                            <% bp.getDocumentiPassivi().writeFormField( out, "bancaRigaMandatoWizard", Boolean.FALSE); %>
+                                            <% bp.getDocumentiPassivi().writeFormField( out, "bancaRigaDocumentoWizard", Boolean.FALSE); %>
                                         </div>
                                     </div>
+                                    <% if (bp.getDocumentiPassivi().getModel()!=null &&
+                                       ((V_doc_passivo_obbligazione_wizardBulk)bp.getDocumentiPassivi().getModel()).getCd_terzo_cessionario()!=null) { %>
+                                        <div class="form-row">
+                                            <div class="form-group col-md-4 h-100">
+                                                <% bp.getDocumentiPassivi().writeFormField( out, "cdTerzoDelegatoRigaDocumentoWizard", Boolean.FALSE); %>
+                                            </div>
+                                        </div>
+                                    <% } %>
                                 </div>
                             </div>
                             <% } %>

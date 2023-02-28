@@ -160,11 +160,11 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 
 			//Verifico che ci siano tutti i dati di cui necessito
 			for (V_doc_passivo_obbligazione_wizardBulk docTerzo:docPassiviColl) {
-				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoMandato()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoRigaDocumento()).isPresent())
 					throw new ApplicationException("Operazione non possibile! Non è stata indicata per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" la modalità di pagamento.");
-				if (!Optional.ofNullable(docTerzo.getPgBancaMandato()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getPgBancaRigaDocumento()).isPresent())
 					throw new ApplicationException("Operazione non possibile! Non sono state indicate per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" le coordinate.");
@@ -224,24 +224,33 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" è stato richiesto il pagamento totale modificando la ripartizione dell'importo tra imponibile ed imposta.");
 
-				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoMandato()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaMandato())) {
+				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoRigaDocumento()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaRigaDocumento())) {
 					//Aggiorno modalità pagamento su riga da pagare
 					if (docTerzo.isDocumentoGenericoPassivo())
-						Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandato(), docTerzo.getBancaRigaMandato());
+						Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
 					else if (docTerzo.isFatturaPassiva())
-						Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaMandato(), docTerzo.getBancaRigaMandato());
+						Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
 
-					docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoMandato());
-					docTerzo.setPg_banca(docTerzo.getPgBancaMandato());
-					Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)this.findByPrimaryKey(userContext, docTerzo.getModalitaPagamentoRigaMandato().getRif_modalita_pagamento());
-					docTerzo.setTi_pagamento(rifModalitaPagamentoBulk.getTi_pagamento());
+					if (docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getFl_per_cessione()) {
+						BancaBulk bancaCessionario = (BancaBulk) getHome(userContext, BancaBulk.class).findByPrimaryKey(new BancaBulk(docTerzo.getBancaRigaDocumento().getCd_terzo_delegato(), docTerzo.getBancaRigaDocumento().getPg_banca_delegato()));
+						Modalita_pagamentoBulk modalitaCessionario = this.findModalita_pagamentoOptions( userContext, bancaCessionario.getCd_terzo())
+								.stream().filter(el->el.getRif_modalita_pagamento().getTi_pagamento().equals(bancaCessionario.getTi_pagamento()))
+								.findFirst().orElse(null);
+						docTerzo.setCd_modalita_pag(modalitaCessionario.getCd_modalita_pag());
+						docTerzo.setPg_banca(bancaCessionario.getPg_banca());
+						docTerzo.setTi_pagamento(bancaCessionario.getTi_pagamento());
+					} else {
+						docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoRigaDocumento());
+						docTerzo.setPg_banca(docTerzo.getPgBancaRigaDocumento());
+						docTerzo.setTi_pagamento(docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getTi_pagamento());
+					}
 				}
 			}
 
 			Map<Integer, Map<String, Map<Long, List<V_doc_passivo_obbligazione_wizardBulk>>>> mapTerzo =
 					docPassiviColl.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_terzo,
-							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoMandato,
-									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaMandato))));
+							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoRigaDocumento,
+									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaRigaDocumento))));
 
 			mapTerzo.keySet().forEach(aCdTerzo -> mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
 				List<V_doc_passivo_obbligazione_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
@@ -481,7 +490,9 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
  			List<Modalita_pagamentoBulk> result = getHome( userContext, Modalita_pagamentoBulk.class ).fetchAll( sql );
 			if ( result.size() == 0 )
 				throw new ApplicationException("Non esistono modalità di pagamento per il terzo " + cdTerzo);
-			return result;	
+			for (Modalita_pagamentoBulk modpag:result)
+				modpag.setRif_modalita_pagamento((Rif_modalita_pagamentoBulk) getHome( userContext, Rif_modalita_pagamentoBulk.class ).findByPrimaryKey(modpag.getRif_modalita_pagamento()));
+			return result;
 		}
 		return null;
 	}
@@ -565,11 +576,14 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 				for (Object docPassivo:((MandatoIBulk)bulk).getDocPassiviColl()) {
 					if (docPassivo instanceof V_doc_passivo_obbligazione_wizardBulk) {
 						V_doc_passivo_obbligazione_wizardBulk docPassivoWizard = (V_doc_passivo_obbligazione_wizardBulk)docPassivo;
-						docPassivoWizard.setModalitaPagamentoOptions(findModalita_pagamentoOptions( aUC, docPassivoWizard.getCd_terzo()));
-						docPassivoWizard.setModalitaPagamentoRigaMandatoWizard(docPassivoWizard.getModalitaPagamentoRigaMandato());
 
-						docPassivoWizard.setBancaOptions(findBancaOptions( aUC, docPassivoWizard.getCd_terzo(), docPassivoWizard.getCd_modalita_pag()));
-						docPassivoWizard.setBancaRigaMandatoWizard(docPassivoWizard.getBancaRigaMandato());
+						docPassivoWizard.setModalitaPagamentoOptions(findModalita_pagamentoOptions( aUC, docPassivoWizard.getCd_terzo()));
+						docPassivoWizard.setModalitaPagamentoRigaDocumentoWizard(docPassivoWizard.getModalitaPagamentoRigaDocumento());
+
+						if (docPassivoWizard.getModalitaPagamentoRigaDocumentoWizard()!=null) {
+							docPassivoWizard.setBancaOptions(findBancaOptions(aUC, docPassivoWizard.getCd_terzo(), docPassivoWizard.getModalitaPagamentoRigaDocumentoWizard().getCd_modalita_pag()));
+							docPassivoWizard.setBancaRigaDocumentoWizard(docPassivoWizard.getBancaRigaDocumento());
+						}
 
 						docPassivoWizard.setImponibileRigaMandatoWizard(docPassivoWizard.getImponibileRigaMandato());
 						docPassivoWizard.setImpostaRigaMandatoWizard(docPassivoWizard.getImpostaRigaMandato());
