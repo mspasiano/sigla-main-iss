@@ -737,7 +737,7 @@
 		formatName="date_short"
 		inputSize="12"
 		enabledOnSearch="true"
-		enabledOnEdit="false"
+		enabledOnEdit="true"
 		label="Data Ricezione" />		
 	<fieldProperty
 		name="flIrregistrabile"

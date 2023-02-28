@@ -23,7 +23,11 @@
 	String nomeFileFirmato = model != null?model.getNomeFileFirmato():"";
 
 %>
+<% if (bp instanceof CRUDFatturaPassivaElettronicaAmministraBP) { %>
+<title>AMMINISTRA FATTURA ELETTRONICA</title>
+<% } else { %>
 <title>FATTURA ELETTRONICA</title>
+<% } %>
 <script language="JavaScript">
 function doScaricaFatturaHtml() {
 	doOpenWindow('<%=JSPUtils.getAppRoot(request)%>genericdownload/<%=nomeFileFirmato%>.html?methodName=scaricaFatturaHtml&it.cnr.jada.action.BusinessProcess=<%=bp.getPath()%>',

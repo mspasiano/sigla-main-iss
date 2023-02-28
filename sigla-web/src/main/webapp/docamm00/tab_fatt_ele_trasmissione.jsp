@@ -14,7 +14,8 @@
 %>
 <table class="Panel">
 	<tr>
-		<% bp.writeFormField(out,"dataRicezioneSDI");%>
+	    <td><% bp.writeFormLabel(out,"dataRicezioneSDI");%></td>
+	    <td><% bp.writeFormInput(out,null,"dataRicezioneSDI", !(bp instanceof CRUDFatturaPassivaElettronicaAmministraBP), null, "");%></td>
 		<% bp.writeFormFieldTrasmissione(out,"soggettoEmittente");%>
 	</tr>
 	<tr>
