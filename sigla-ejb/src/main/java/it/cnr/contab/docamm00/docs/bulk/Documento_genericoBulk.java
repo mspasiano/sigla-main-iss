@@ -43,7 +43,7 @@ import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.action.*;
 
-public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, Voidable, IDefferUpdateSaldi, AllegatoParentBulk {
+public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, IDocumentoAmministrativoEntrataBulk, Voidable, IDefferUpdateSaldi, AllegatoParentBulk {
 	private BulkList<AllegatoGenericoBulk> archivioAllegati = new BulkList<>();
 	protected BulkList documento_generico_dettColl= new BulkList();
 	private java.util.Vector dettagliCancellati= new Vector();

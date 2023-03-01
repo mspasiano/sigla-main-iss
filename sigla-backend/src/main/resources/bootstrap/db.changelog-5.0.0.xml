@@ -5984,4 +5984,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_column_fl_versamento_on_tipo_contributo_ritenuta.xml"/>
     <!-- Autore : RAFFAELE PAGANO - Aggiunti gli accessi per la funziona Amministra Fatture Passive -->
     <include file="bootstrap/add_accessi_amministra_fattura.xml"/>
+    <!-- Autore : MARCO SPASIANO - Aggiunto accesso per la variazione delle Reversali -->
+    <include file="bootstrap/add_accesso_variazione_reversali.xml"/>
 </databaseChangeLog>
