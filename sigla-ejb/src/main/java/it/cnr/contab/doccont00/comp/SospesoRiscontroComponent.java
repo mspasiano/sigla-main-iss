@@ -2644,7 +2644,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         }
                         super.updateBulk(userContext,rev);
                         try {
-                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, rev);
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, rev);
                         } catch (Exception e) {
                             LOGGER.error("La reversale "+rev.getIdReversaleAsString()+" presenta un errore in fase di scrittura partita doppia: " + e.getMessage());
                         }
@@ -2734,7 +2734,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         }
                         super.updateBulk(userContext, man);
                         try {
-                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, man);
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, man);
                         } catch (Exception e) {
                             LOGGER.error("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia:" + e.getMessage());
                         }
@@ -2778,7 +2778,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         man.setToBeUpdated();
                         super.updateBulk(userContext,man);
                         try {
-                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScrittura(userContext, man);
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, man);
                         } catch (Exception e) {
                             java.io.StringWriter sw = new java.io.StringWriter();
                             e.getCause().printStackTrace(new java.io.PrintWriter(sw));
