@@ -204,7 +204,7 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
                 allegato.setRelativePath(
                         Optional.ofNullable(storageObject.getPath())
                                 .map(s -> s.substring(s.indexOf(primaryPath) + primaryPath.length()))
-                                .map(s -> s.substring(0, s.indexOf(allegato.getNome())))
+                                .map(s -> s.substring(0, s.lastIndexOf(File.separator)))
                                 .orElse(File.separator)
                 );
                 completeAllegato(allegato, storageObject);
