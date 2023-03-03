@@ -237,8 +237,8 @@ public class OrdineAcqCMISService extends StoreService {
 			allegato.setRelativePath(
 					Optional.ofNullable(storageObject.getPath())
 							.map(s -> s.substring(s.indexOf(path) + path.length()))
-							.map(s -> s.substring(0, s.lastIndexOf(File.separator)))
-							.orElse(File.separator)
+							.map(s -> s.substring(0, s.lastIndexOf(StorageDriver.SUFFIX)))
+							.orElse(StorageDriver.SUFFIX)
 			);
 			allegato.setCrudStatus(OggettoBulk.NORMAL);
 			allegatoGenericoBulks.add(allegato);

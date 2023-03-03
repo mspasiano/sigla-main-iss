@@ -28,6 +28,7 @@ import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.util.Introspector;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+import it.cnr.si.spring.storage.StorageDriver;
 import it.cnr.si.spring.storage.StorageException;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
@@ -204,8 +205,8 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
                 allegato.setRelativePath(
                         Optional.ofNullable(storageObject.getPath())
                                 .map(s -> s.substring(s.indexOf(primaryPath) + primaryPath.length()))
-                                .map(s -> s.substring(0, s.lastIndexOf(File.separator)))
-                                .orElse(File.separator)
+                                .map(s -> s.substring(0, s.lastIndexOf(StorageDriver.SUFFIX)))
+                                .orElse(StorageDriver.SUFFIX)
                 );
                 completeAllegato(allegato, storageObject);
                 allegato.setCrudStatus(OggettoBulk.NORMAL);
