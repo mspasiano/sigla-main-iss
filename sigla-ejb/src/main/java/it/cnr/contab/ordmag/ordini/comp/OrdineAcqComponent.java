@@ -1794,15 +1794,14 @@ public class OrdineAcqComponent
         }
     }
 
-    private void gestioneImpegnoChiusuraForzataOrdineRiduzione(UserContext userContext, OrdineAcqConsegnaBulk ordineEvasioneForzata) throws ComponentException, PersistencyException, RemoteException {
-        Obbligazione_scadenzarioBulk obbligazione_scadenzario = ordineEvasioneForzata.getObbligazioneScadenzario();
-        ObbligazioneBulk obbligazione = obbligazione_scadenzario.getObbligazione();
-        BulkList<Obbligazione_scad_voceBulk> obblicagzioniVoce = obbligazione_scadenzario.getObbligazione_scad_voceColl();
-        BigDecimal nuovoImportoScadenza = obbligazione_scadenzario.getIm_scadenza().subtract(ordineEvasioneForzata.getImTotaleConsegna());
-        //obbligazione.setIm_obbligazione(obbligazione.getIm_obbligazione().subtract(ordineEvasioneForzata.getImTotaleConsegna() ));
-        //obbligazione_scadenzario.setIm_scadenza( nuovoImportoScadenza );
+    private void gestioneImpegnoChiusuraForzataOrdineRiduzione(UserContext userContext, Obbligazione_scadenzarioBulk obbligazione_scadenzario, BigDecimal differenza) throws ComponentException, PersistencyException, RemoteException {
         ObbligazioneComponentSession obbligComp = (ObbligazioneComponentSession) EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession");
-        obbligComp.modificaScadenzaInAutomatico(userContext, obbligazione_scadenzario, nuovoImportoScadenza, false);
+        obbligComp.sdoppiaScadenzaInAutomatico(userContext, obbligazione_scadenzario, obbligazione_scadenzario.getIm_scadenza().subtract(differenza));
+
+        Obbligazione_scadenzarioBulk oldScadenza = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, obbligazione_scadenzario);
+        oldScadenza.setIm_associato_doc_amm(obbligazione_scadenzario.getIm_scadenza().subtract(differenza));
+        oldScadenza.setToBeUpdated();
+        super.modificaConBulk(userContext, oldScadenza);
     }
 
     private Boolean existScandenzaLibera(UserContext userContext, Obbligazione_scadenzarioBulk scadenza) throws ComponentException, PersistencyException {
@@ -2057,8 +2056,7 @@ public class OrdineAcqComponent
                         if (differenzaDaAggiornare.compareTo(BigDecimal.ZERO) > 0) {
                             try {
                                 if (isModificaImpegniConRiduzioneImporto(userContext, ordine, scadenza)) {
-// TODO Da FARE
-//									gestioneImpegnoChiusuraForzataOrdineRiduzione( userContext,ordineEvasioneForzata);
+									gestioneImpegnoChiusuraForzataOrdineRiduzione( userContext, scadenza, differenzaDaAggiornare);
                                 } else {
                                     riduzioneAutomaticaScadenzaModificaOrdine(userContext, scadenza, differenzaDaAggiornare);
                                 }
@@ -2930,46 +2928,49 @@ public class OrdineAcqComponent
         final Map<OrdineAcqBulk, Map<OrdineAcqRigaBulk, List<OrdineAcqConsegnaBulk>>> mapOrdine =
                 consegneDaChiudere.get().collect(Collectors.groupingBy(o -> o.getOrdineAcqRiga().getOrdineAcq(),
                         Collectors.groupingBy(o -> o.getOrdineAcqRiga())));
-
-        mapOrdine.keySet().stream().forEach(ordine -> {
-            try {
-                OrdineAcqBulk ordineComp = (OrdineAcqBulk) inizializzaBulkPerModifica(userContext, ordine);
-                mapOrdine.get(ordine).keySet().stream().forEach(ordineRiga -> {
-                    //recupero la riga di ordine dall'oggetto proveniente dal Component
-                    OrdineAcqRigaBulk ordineRigaComp =
-                            Optional.ofNullable(ordineComp.getRigheOrdineColl())
-                                    .filter(list -> !list.isEmpty())
-                                    .map(list -> list.get(list.indexOfByPrimaryKey(ordineRiga)))
-                                    .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della riga " + ordineRiga.getRigaOrdineString() + "."));
-
-                    //ciclo sulle righe di consegna
-                    mapOrdine.get(ordine).get(ordineRiga).stream().forEach(ordineConsegna -> {
-                        //recupero la riga di consegna dall'oggetto proveniente dal Component
-                        OrdineAcqConsegnaBulk ordineConsegnaComp =
-                                Optional.ofNullable(ordineRigaComp.getRigheConsegnaColl())
+        try {
+            mapOrdine.keySet().stream().forEach(ordine -> {
+                try {
+                    OrdineAcqBulk ordineComp = (OrdineAcqBulk) inizializzaBulkPerModifica(userContext, ordine);
+                    mapOrdine.get(ordine).keySet().stream().forEach(ordineRiga -> {
+                        //recupero la riga di ordine dall'oggetto proveniente dal Component
+                        OrdineAcqRigaBulk ordineRigaComp =
+                                Optional.ofNullable(ordineComp.getRigheOrdineColl())
                                         .filter(list -> !list.isEmpty())
-                                        .map(list -> list.get(list.indexOfByPrimaryKey(ordineConsegna)))
-                                        .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della consegna " + ordineConsegna.getConsegnaOrdineString() + "."));
+                                        .map(list -> list.get(list.indexOfByPrimaryKey(ordineRiga)))
+                                        .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della riga " + ordineRiga.getRigaOrdineString() + "."));
 
-                        if (ordineConsegnaComp.getStato().equals(OrdineAcqConsegnaBulk.STATO_EVASA))
-                            throw new DetailedRuntimeException("La consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " è stata già evasa");
+                        //ciclo sulle righe di consegna
+                        mapOrdine.get(ordine).get(ordineRiga).stream().forEach(ordineConsegna -> {
+                            //recupero la riga di consegna dall'oggetto proveniente dal Component
+                            OrdineAcqConsegnaBulk ordineConsegnaComp =
+                                    Optional.ofNullable(ordineRigaComp.getRigheConsegnaColl())
+                                            .filter(list -> !list.isEmpty())
+                                            .map(list -> list.get(list.indexOfByPrimaryKey(ordineConsegna)))
+                                            .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della consegna " + ordineConsegna.getConsegnaOrdineString() + "."));
 
-                        ordineRigaComp.setToBeUpdated();
-                        ordineComp.setToBeUpdated();
+                            if (ordineConsegnaComp.getStato().equals(OrdineAcqConsegnaBulk.STATO_EVASA))
+                                throw new DetailedRuntimeException("La consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " è stata già evasa");
 
-                        if (ordineConsegnaComp.getObbligazioneScadenzario() != null)
-                            ordineConsegnaComp.setStato(OrdineAcqConsegnaBulk.STATO_EVASA_FORZATAMENTE);
-                        ordineConsegnaComp.setToBeUpdated();
+                            ordineRigaComp.setToBeUpdated();
+                            ordineComp.setToBeUpdated();
 
-                        ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegnaComp);
-                        ordineComp.setAggiornaImpegniInAutomatico(true);
+                            if (ordineConsegnaComp.getObbligazioneScadenzario() != null)
+                                ordineConsegnaComp.setStato(OrdineAcqConsegnaBulk.STATO_EVASA_FORZATAMENTE);
+                            ordineConsegnaComp.setToBeUpdated();
+
+                            ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegnaComp);
+                            ordineComp.setAggiornaImpegniInAutomatico(true);
+                        });
                     });
-                });
-                modificaConBulk(userContext, ordineComp);
-            } catch (ComponentException e) {
-                throw new DetailedRuntimeException(e);
-            }
-        });
+                    modificaConBulk(userContext, ordineComp);
+                } catch (ComponentException e) {
+                    throw new DetailedRuntimeException(e);
+                }
+            });
+        } catch (DetailedRuntimeException _ex) {
+            throw handleException(_ex);
+        }
     }
 
     public SQLBuilder selectNumerazioneOrdByClause(UserContext userContext, OggettoBulk bulk, NumerazioneOrdBulk numerazioneOrdBulk, CompoundFindClause clauses) throws ComponentException {
