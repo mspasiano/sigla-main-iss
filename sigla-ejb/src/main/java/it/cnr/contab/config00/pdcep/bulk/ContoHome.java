@@ -18,9 +18,9 @@
 package it.cnr.contab.config00.pdcep.bulk;
 
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
-import it.cnr.contab.utenze00.bp.CNRUserContext;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
 
 /**
  * Home che gestisce i conti.
@@ -92,7 +92,8 @@ public SQLBuilder selectRiapre_a_contoByClause( Voce_epBulk bulk,it.cnr.jada.bul
 		sql.addTableToHeader("ASS_CATGRP_INVENT_VOCE_EP");
 		sql.addSQLJoin("VOCE_EP.ESERCIZIO", "ASS_CATGRP_INVENT_VOCE_EP.ESERCIZIO");
 		sql.addSQLJoin("VOCE_EP.CD_VOCE_EP", "ASS_CATGRP_INVENT_VOCE_EP.CD_VOCE_EP");
-		sql.addSQLClause("AND", "ASS_CATGRP_INVENT_VOCE_EP.CD_CATEGORIA_GRUPPO", SQLBuilder.EQUALS, cat.getCd_categoria_gruppo());
+		if( cat!=null)
+			sql.addSQLClause("AND", "ASS_CATGRP_INVENT_VOCE_EP.CD_CATEGORIA_GRUPPO", SQLBuilder.EQUALS, cat.getCd_categoria_gruppo());
 		return sql;
 	}
 	public SQLBuilder selectContoDefaultAssociatoACategoria(CompoundFindClause clause, Integer esercizio, Categoria_gruppo_inventBulk cat) throws java.lang.reflect.InvocationTargetException,IllegalAccessException, it.cnr.jada.persistency.PersistencyException {
