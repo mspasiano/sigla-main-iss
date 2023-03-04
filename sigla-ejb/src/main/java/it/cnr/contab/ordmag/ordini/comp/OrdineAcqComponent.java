@@ -1799,11 +1799,6 @@ public class OrdineAcqComponent
         DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
         dati.setNuovoImportoScadenzaVecchia(obbligazione_scadenzario.getIm_scadenza().subtract(differenza));
         obbligComp.sdoppiaScadenzaInAutomaticoLight(userContext, obbligazione_scadenzario, dati);
-
-        Obbligazione_scadenzarioBulk oldScadenza = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, obbligazione_scadenzario);
-        oldScadenza.setIm_associato_doc_amm(obbligazione_scadenzario.getIm_scadenza().subtract(differenza));
-        oldScadenza.setToBeUpdated();
-        super.modificaConBulk(userContext, oldScadenza);
     }
 
     private Boolean existScandenzaLibera(UserContext userContext, Obbligazione_scadenzarioBulk scadenza) throws ComponentException, PersistencyException {

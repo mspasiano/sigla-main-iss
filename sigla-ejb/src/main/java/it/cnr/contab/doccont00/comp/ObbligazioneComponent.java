@@ -5488,7 +5488,13 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 					}
 				}
 			}
-		
+			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
+				associato a documenti amministrativi e contabili
+		 	*/
+			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
+				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
+				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+			}
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
 			scadenzaNuova.setIm_scadenza(importoScadenzaNuova);
@@ -5575,7 +5581,13 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 				osvNew.setToBeCreated();
 				makeBulkPersistent(userContext, osvNew);
 			};
-
+			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
+				associato a documenti amministrativi e contabili
+			 */
+			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
+				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
+				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+			}
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
 			makeBulkPersistent(userContext, scadenzaVecchia);
