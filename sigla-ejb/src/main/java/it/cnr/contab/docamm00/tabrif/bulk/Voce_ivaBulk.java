@@ -350,6 +350,6 @@ public class Voce_ivaBulk extends Voce_ivaBase {
 	public boolean isValid() {
         final Timestamp now = EJBCommonServices.getServerDate();
         final Timestamp dtCancellazione = Optional.ofNullable(getDt_cancellazione()).orElse(now);
-        return getDt_inizio_validita().before(now) && dtCancellazione.after(now);
+        return getDt_inizio_validita().before(now) && dtCancellazione.compareTo(now)>=0;
     }
 }

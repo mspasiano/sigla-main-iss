@@ -759,7 +759,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 															scaricoMagazzino.getMagazzinoAbilitato(),
 															scaricoMagazzino.getTipoMovimentoMag(),
 															scaricoMagazzinoRiga.getBeneServizio(),
-															qtScarico,
+															scaricoMagazzinoRiga.getQuantita(),
 															scaricoMagazzino.getDataCompetenza(),
 															divisaDefault,
 															BigDecimal.ONE,
