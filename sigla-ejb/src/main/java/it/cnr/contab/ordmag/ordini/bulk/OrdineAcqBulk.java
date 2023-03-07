@@ -1044,13 +1044,14 @@ public class OrdineAcqBulk extends OrdineAcqBase
         if (consegnaAggiornata.getObbligazioneScadenzario() != null && consegnaAggiornata.getObbligazioneScadenzario().getPg_obbligazione() != null){
             Vector consAssociate = (Vector)ordineObbligazioniHash.get(consegnaAggiornata.getObbligazioneScadenzario());
             OrdineAcqConsegnaBulk consegnaBulk = null;
-            for (Iterator i = consAssociate.iterator(); i.hasNext();){
-                OrdineAcqConsegnaBulk cons = (OrdineAcqConsegnaBulk)i.next();
-                if (cons.equalsByPrimaryKey(consegnaAggiornata)){
-                    consegnaBulk = cons;
+            if (consAssociate != null) {
+                for (Iterator i = consAssociate.iterator(); i.hasNext();){
+                    OrdineAcqConsegnaBulk cons = (OrdineAcqConsegnaBulk)i.next();
+                    if (cons.equalsByPrimaryKey(consegnaAggiornata)){
+                        consegnaBulk = cons;
+                    }
                 }
             }
-
             if (consegnaBulk != null) {
                 consAssociate.remove(consegnaBulk);
                 consAssociate.add(consegnaAggiornata);
