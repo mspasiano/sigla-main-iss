@@ -28,6 +28,9 @@ import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
 import it.cnr.contab.ordmag.anag00.UnitaMisuraBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
+
+import java.math.BigDecimal;
+
 public class MovimentiMagBulk extends MovimentiMagBase {
 	public final static String STATO_INSERITO = "INS";
 	public final static String STATO_ANNULLATO = "ANN";
@@ -306,4 +309,16 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 	public void setMovimentoAnn(MovimentiMagBulk movimentoAnn) {
 		this.movimentoAnn = movimentoAnn;
 	}
+
+	public  BigDecimal getQuantitaEffettiva(){
+		return this.getQuantita().multiply(this.getCoeffConv());
+	}
+
+	public BigDecimal getPrezzoUnitarioEffettivo( ){
+		if (this.getPrezzoUnitario()==null || this.getPrezzoUnitario().compareTo(BigDecimal.ZERO)==0)
+			return BigDecimal.ZERO;
+
+		return this.getPrezzoUnitario().divide(this.getCoeffConv());
+	}
+
 }
