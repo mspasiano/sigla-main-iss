@@ -154,6 +154,7 @@ public class Stampa_inventarioHome extends BulkHome {
 		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.DT_CARICO",SQLBuilder.LESS_EQUALS, new Timestamp(dt.getTime()));
 		// codice magazzino uguale a quello in input
 		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.CD_MAGAZZINO_MAG",SQLBuilder.EQUALS, codMag);
+		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.GIACENZA",SQLBuilder.GREATER, 0);
 		if(catGruppo != null && !catGruppo.equals(Stampa_inventarioBulk.TUTTI)){
 			sql.addTableToHeader("CATEGORIA_GRUPPO_INVENT","CATEGORIA_GRUPPO_INVENT");
 			sql.addSQLJoin("CATEGORIA_GRUPPO_INVENT.CD_CATEGORIA_GRUPPO","BENE_SERVIZIO.CD_CATEGORIA_GRUPPO");
