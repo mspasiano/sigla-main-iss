@@ -209,7 +209,8 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
         DISPOSIZIONEDOCUMENTOESTERNO("DISPOSIZIONE DOCUMENTO ESTERNO"),
         COMPENSAZIONE("COMPENSAZIONE"),
         BONIFICOESTEROEURO("BONIFICO ESTERO EURO"),
-        SOSTITUZIONE("SOSTITUZIONE");
+        SOSTITUZIONE("SOSTITUZIONE"),
+        AVVISO_PAGOPA( "AVVISO PAGOPA");
 
         private final String value;
 
