@@ -37,8 +37,6 @@ public class Stipendi_cofi_obb_scadBulk extends Stipendi_cofi_obb_scadBase {
 
 	private Stipendi_cofiBulk stipendi_cofi = new Stipendi_cofiBulk();
 
-    private Stipendi_cofi_obbBulk stipendi_cofi_obb = new Stipendi_cofi_obbBulk();    
-   
 	public java.lang.Integer getEsercizio() {
 		return Optional.ofNullable(this.getStipendi_cofi()).map(Stipendi_cofiBulk::getEsercizio).orElse(null);
 	}
@@ -70,40 +68,10 @@ public class Stipendi_cofi_obb_scadBulk extends Stipendi_cofi_obb_scadBase {
     	stipendi_cofi = bulk;
     }
 
-	public java.lang.String getCd_cds_obbligazione() {
-		return Optional.ofNullable(this.getStipendi_cofi_obb()).map(Stipendi_cofi_obbBulk::getCd_cds_obbligazione).orElse(null);
-	}
-	public void setCd_cds_obbligazione(java.lang.String cd_cds_obbligazione) {
-		Optional.ofNullable(this.getStipendi_cofi_obb()).ifPresent(el->el.setCd_cds_obbligazione(cd_cds_obbligazione));
-	}
-	public java.lang.Integer getEsercizio_obbligazione() {
-		return Optional.ofNullable(this.getStipendi_cofi_obb()).map(Stipendi_cofi_obbBulk::getEsercizio_obbligazione).orElse(null);
-	}
-	public void setEsercizio_obbligazione(java.lang.Integer esercizio_obbligazione) {
-		Optional.ofNullable(this.getStipendi_cofi_obb()).ifPresent(el->el.setEsercizio_obbligazione(esercizio_obbligazione));
-	}
-	public java.lang.Integer getEsercizio_ori_obbligazione() {
-		return Optional.ofNullable(this.getStipendi_cofi_obb()).map(Stipendi_cofi_obbBulk::getEsercizio_ori_obbligazione).orElse(null);
-	}
-	public void setEsercizio_ori_obbligazione(java.lang.Integer esercizio_ori_obbligazione) {
-		Optional.ofNullable(this.getStipendi_cofi_obb()).ifPresent(el->el.setEsercizio_ori_obbligazione(esercizio_ori_obbligazione));
-	}
-	public java.lang.Long getPg_obbligazione() {
-		return Optional.ofNullable(this.getStipendi_cofi_obb()).map(Stipendi_cofi_obbBulk::getPg_obbligazione).orElse(null);
-	}
-	public void setPg_obbligazione(java.lang.Long pg_obbligazione) {
-		Optional.ofNullable(this.getStipendi_cofi_obb()).ifPresent(el->el.setPg_obbligazione(pg_obbligazione));
-	}
 	public OggettoBulk initialize(it.cnr.jada.util.action.CRUDBP bp, it.cnr.jada.action.ActionContext context){
 		super.initialize(bp, context);
 		this.setEsercizio( ((it.cnr.contab.utenze00.bp.CNRUserContext)context.getUserContext()).getEsercizio() );
 		return this;
-	}
-	public Stipendi_cofi_obbBulk getStipendi_cofi_obb() {
-		return stipendi_cofi_obb;
-	}
-	public void setStipendi_cofi_obb(Stipendi_cofi_obbBulk stipendi_cofi_obb) {
-		this.stipendi_cofi_obb = stipendi_cofi_obb;
 	}
 
 	public static java.util.Map getMeseKeys() {

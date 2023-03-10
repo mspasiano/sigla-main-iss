@@ -2375,7 +2375,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			for (Stipendi_cofi_obb_scadBulk el : stipendiCofiObbScadColl) {
 				try {
 					ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome(userContext, ObbligazioneBulk.class);
-					ObbligazioneBulk obbligazione = obbligazioneHome.findObbligazione(el.getStipendi_cofi_obb().getObbligazioni());
+					ObbligazioneBulk obbligazione = obbligazioneHome.findObbligazione(new ObbligazioneBulk(el.getCd_cds_obbligazione(),el.getEsercizio_obbligazione(),el.getEsercizio_ori_obbligazione(),el.getPg_obbligazione()));
 					obbligazione.setObbligazione_scadenzarioColl(new BulkList(obbligazioneHome.findObbligazione_scadenzarioList(obbligazione)));
 
 					if (!obbligazione.getUnita_organizzativa().equalsByPrimaryKey(mandatoWizard.getUnita_organizzativa()))

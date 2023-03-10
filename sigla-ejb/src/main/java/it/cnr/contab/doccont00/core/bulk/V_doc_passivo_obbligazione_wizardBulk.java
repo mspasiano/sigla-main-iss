@@ -154,7 +154,7 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 
 	//Ritorna il codice della modalità di pagamento da utilizzare per la creazione del mandato
 	public String getCdModalitaPagamentoRigaDocumento() {
-		return Optional.ofNullable(this.getModalitaPagamentoRigaDocumento()).map(Modalita_pagamentoBulk::getCd_modalita_pag).orElse(null);
+		return Optional.ofNullable(this.getModalitaPagamentoRigaDocumento()).map(Modalita_pagamentoBulk::getCd_modalita_pag).orElse(this.getCd_modalita_pag());
 	}
 
 
@@ -177,7 +177,7 @@ public class V_doc_passivo_obbligazione_wizardBulk extends V_doc_passivo_obbliga
 
 	//Ritorna il progressivo banca da utilizzare per la creazione del mandato
 	public Long getPgBancaRigaDocumento() {
-		return Optional.ofNullable(this.getBancaRigaDocumento()).map(BancaBulk::getPg_banca).orElse(null);
+		return Optional.ofNullable(this.getBancaRigaDocumento()).map(BancaBulk::getPg_banca).orElse(this.getPg_banca());
 	}
 
 	//Ritorna il valore dell'imponibile da utilizzare per la creazione del mandato
