@@ -154,6 +154,7 @@ public class Stampa_inventarioHome extends BulkHome {
 		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.DT_CARICO",SQLBuilder.LESS_EQUALS, new Timestamp(dt.getTime()));
 		// codice magazzino uguale a quello in input
 		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.CD_MAGAZZINO_MAG",SQLBuilder.EQUALS, codMag);
+		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.GIACENZA",SQLBuilder.GREATER, 0);
 		if(catGruppo != null && !catGruppo.equals(Stampa_inventarioBulk.TUTTI)){
 			sql.addTableToHeader("CATEGORIA_GRUPPO_INVENT","CATEGORIA_GRUPPO_INVENT");
 			sql.addSQLJoin("CATEGORIA_GRUPPO_INVENT.CD_CATEGORIA_GRUPPO","BENE_SERVIZIO.CD_CATEGORIA_GRUPPO");
@@ -199,7 +200,7 @@ public class Stampa_inventarioHome extends BulkHome {
 			// stato movimento = STATO_INSERITO (INS)
 			sql.addSQLClause(FindClause.AND,"MOVIMENTI_MAG.STATO",SQLBuilder.EQUALS, MovimentiMagBulk.STATO_INSERITO);
 			// data movimento maggiore/uguale della data in input
-			sql.addSQLClause(FindClause.AND,"MOVIMENTI_MAG.DT_MOVIMENTO",SQLBuilder.GREATER_EQUALS, new Timestamp(dt.getTime()));
+			sql.addSQLClause(FindClause.AND,"MOVIMENTI_MAG.DT_MOVIMENTO",SQLBuilder.GREATER, new Timestamp(dt.getTime()));
 			// codice magazzino uguale a quello in input
 			sql.addSQLClause(FindClause.AND,"LOTTO_MAG.CD_MAGAZZINO_MAG",SQLBuilder.EQUALS, codMag);
 			// data carico lotto minore/uguale della data in input
@@ -228,10 +229,10 @@ public class Stampa_inventarioHome extends BulkHome {
 						invDto.getCod_articolo().equals(movimento.getLottoMag().getCdBeneServizio()) )
 					{
 						if(movimento.getTipoMovimentoMag().getModAggQtaMagazzino().equals(TipoMovimentoMagBulk.AZIONE_SOTTRAE)){
-							invDto.setGiacenza(invDto.getGiacenza().add(movimento.getQuantita()));
+							invDto.setGiacenza(invDto.getGiacenza().add(movimento.getQuantitaEffettiva()));
 						}
 						if(movimento.getTipoMovimentoMag().getModAggQtaMagazzino().equals(TipoMovimentoMagBulk.AZIONE_SOMMA)){
-							invDto.setGiacenza(invDto.getGiacenza().subtract(movimento.getQuantita()));
+							invDto.setGiacenza(invDto.getGiacenza().subtract(movimento.getQuantitaEffettiva()));
 						}
 
 					}
