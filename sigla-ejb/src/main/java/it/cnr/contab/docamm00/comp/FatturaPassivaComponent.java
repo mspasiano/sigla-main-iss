@@ -3119,7 +3119,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         /**
                          * Ora devo legare le righe di consegna alla nuova scadenza
                          */
+                        Obbligazione_scadenzarioBulk finalOldScadenza = oldScadenza;
                         righeDiConsegna.stream()
+                                .filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getObbligazioneScadenzario().equalsByPrimaryKey(finalOldScadenza))
                                 .forEach(ordineAcqConsegnaBulk -> {
                                     try {
                                         final OrdineAcqConsegnaBulk ordineAcqConsegna = (OrdineAcqConsegnaBulk)super.inizializzaBulkPerModifica(userContext, ordineAcqConsegnaBulk);
