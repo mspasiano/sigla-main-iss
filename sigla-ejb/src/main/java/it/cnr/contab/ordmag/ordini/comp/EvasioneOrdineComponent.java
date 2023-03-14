@@ -259,6 +259,8 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 
 							if (ordineConsegnaComp.getStato().equals(OrdineAcqConsegnaBulk.STATO_EVASA))
 								throw new DetailedRuntimeException("La consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " è stata già evasa");
+							else if (ordineConsegna.isQuantitaEvasaMaggioreOrdine())
+								throw new DetailedRuntimeException("La quantità evasa della consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " non può essere maggiore di quella ordinata.");
 
 							//Creo una nuova consegna se richiesto 
 							if (ordineConsegna.isQuantitaEvasaMinoreOrdine()) {
