@@ -2508,7 +2508,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				TipoFinanziamentoHome tipoFinanziamentoHome = (TipoFinanziamentoHome)getHome(userContext, TipoFinanziamentoBulk.class);
 				TipoFinanziamentoBulk tipoFinanziamentoBulk = (TipoFinanziamentoBulk)tipoFinanziamentoHome.findByPrimaryKey(new TipoFinanziamentoBulk(otherFieldBulk.getIdTipoFinanziamento()));
 
-				if (Optional.ofNullable(tipoFinanziamentoBulk).filter(TipoFinanziamentoBulk::getFlQuadraContratto).isPresent()) {
+				if (Optional.ofNullable(tipoFinanziamentoBulk).filter(e->e.getFlQuadraContratto()).isPresent()) {
 					ContrattoHome contrattoHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
 					SQLBuilder sql = contrattoHome.createSQLBuilder();
 					sql.addSQLClause(FindClause.AND, "CONTRATTO.PG_PROGETTO", SQLBuilder.EQUALS, progetto.getPg_progetto());
