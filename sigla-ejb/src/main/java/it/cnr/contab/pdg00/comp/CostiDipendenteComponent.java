@@ -2486,6 +2486,8 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			compensoBulk.setCognome(vTerzoCompenso.getCognome());
 			compensoBulk.setCodice_fiscale(vTerzoCompenso.getCodice_fiscale());
 			compensoBulk.setPartita_iva(vTerzoCompenso.getPartita_iva());
+			compensoBulk.setPg_comune_add(Long.decode("0"));
+
 
 			compensoBulk.setModalitaPagamento(modalitaPagamentoFlusso.getRif_modalita_pagamento());
 			compensoBulk.setBanca(bancaFlusso);
