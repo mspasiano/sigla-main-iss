@@ -276,7 +276,6 @@ public enum TipoDocumentoEnum {
 	public boolean isScritturaEconomicaRequired() {
 		return !this.isGenericoCoriAccantonamentoSpesa() &&
 				!this.isGenericoCoriAccantonamentoEntrata() &&
-				!this.isGenericoStipendiSpesa() &&
 				!this.isGenericoMandatoRegolarizzazione() &&
 				!this.isGenericoCoriVersamentoSpesa() &&
 				!this.isGenericoEntrataIncassoIva() &&

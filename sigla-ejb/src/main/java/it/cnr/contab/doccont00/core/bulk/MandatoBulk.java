@@ -1181,8 +1181,11 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
 
     @Override
     public Timestamp getDt_contabilizzazione() {
-        return this.getDt_pagamento();
+        if (Optional.ofNullable(this.getDt_pagamento()).isPresent())
+            return this.getDt_emissione();
+        return null;
     }
+
     public String getIdMandatoAsString(){
         return getCd_cds()+"-"+getEsercizio()+"-"+getPg_mandato();
     }

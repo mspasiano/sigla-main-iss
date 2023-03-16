@@ -20,14 +20,14 @@ package it.cnr.contab.config00.bulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
-import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -437,5 +437,18 @@ public class Configurazione_cnrHome extends BulkHome {
                         this.getConfigurazione(null,Configurazione_cnrBulk.PK_UO_SPECIALE, Configurazione_cnrBulk.SK_UO_VERSAMENTO_IVA))
                 .map(Configurazione_cnrBulk::getVal02)
                 .orElse(null);
+    }
+
+    public Integer findFirstEsercizioEconomica() throws PersistencyException {
+
+        SQLBuilder sql = createSQLBuilder();
+
+        sql.addClause(FindClause.AND, "esercizio", SQLBuilder.NOT_EQUALS, new Integer(0));
+        sql.addClause(FindClause.AND, "cd_chiave_primaria", SQLBuilder.EQUALS, Configurazione_cnrBulk.PK_ECONOMICO_PATRIMONIALE);
+        sql.addClause(FindClause.AND, "cd_chiave_secondaria", SQLBuilder.EQUALS, Configurazione_cnrBulk.SK_TIPO_ECONOMICO_PATRIMONIALE);
+        sql.addClause(FindClause.AND, "val01", SQLBuilder.NOT_EQUALS, "N");
+
+        List<Configurazione_cnrBulk> result = fetchAll(sql);
+        return result.stream().map(Configurazione_cnrBulk::getEsercizio).min(Comparator.comparing(Integer::valueOf)).orElse(null);
     }
 }
