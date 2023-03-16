@@ -303,7 +303,7 @@ public abstract class AbstractFirmaDigitaleDocContBP extends SelezionatoreListaB
                             ZipEntry zipEntryChild = new ZipEntry(statoTrasmissione.getCMISFolderName()
                                     .concat(
                                             Optional.ofNullable(storageObject.getPath())
-                                            .map(s -> s.substring(statoTrasmissione.getStorePath().length()))
+                                            .map(s -> s.substring(statoTrasmissione.getStorePath().length() - 1))
                                             .orElse(StorageDriver.SUFFIX)
                                     ));
                             zos.putNextEntry(zipEntryChild);

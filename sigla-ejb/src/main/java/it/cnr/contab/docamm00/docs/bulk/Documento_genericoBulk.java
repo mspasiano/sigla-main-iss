@@ -26,15 +26,20 @@ import it.cnr.contab.bollo00.tabrif.bulk.Tipo_atto_bolloBulk;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
+import it.cnr.contab.service.SpringUtil;
+import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
+import it.cnr.contab.util00.bulk.storage.AllegatoStorePath;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.persistency.*;
@@ -42,8 +47,9 @@ import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.action.*;
+import it.cnr.si.spring.storage.StorageDriver;
 
-public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, IDocumentoAmministrativoEntrataBulk, Voidable, IDefferUpdateSaldi, AllegatoParentBulk {
+public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, IDocumentoAmministrativoEntrataBulk, Voidable, IDefferUpdateSaldi, AllegatoParentBulk, AllegatoStorePath {
 	private BulkList<AllegatoGenericoBulk> archivioAllegati = new BulkList<>();
 	protected BulkList documento_generico_dettColl= new BulkList();
 	private java.util.Vector dettagliCancellati= new Vector();
@@ -2041,4 +2047,21 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 		this.archivioAllegati = archivioAllegati;
 	}
 
+	@Override
+	public List<String> getStorePath() {
+		return Collections.singletonList(Arrays.asList(
+				SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
+				Optional.ofNullable(this)
+						.map(s -> s.getCd_unita_organizzativa())
+						.orElse(""),
+				isGenericoAttivo() ? "Documenti Generici Attivi" : "Documenti Generici Passivi",
+				Optional.ofNullable(getEsercizio())
+						.map(esercizio -> String.valueOf(esercizio))
+						.orElse("0"),
+				getCd_tipo_documento_amm(),
+				String.valueOf(getPg_doc())
+		).stream().collect(
+				Collectors.joining(StorageDriver.SUFFIX)
+		));
+	}
 }

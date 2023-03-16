@@ -129,21 +129,8 @@ public class CRUDDocumentoGenericoAttivoBP
     }
 
     @Override
-    protected String getStorePath(Documento_genericoBulk allegatoParentBulk, boolean create) throws BusinessProcessException {
-        return Arrays.asList(
-                SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
-                Optional.ofNullable(allegatoParentBulk)
-                        .map(s -> s.getCd_unita_organizzativa())
-                        .orElse(""),
-                "Documenti Generici Attivi",
-                Optional.ofNullable(allegatoParentBulk.getEsercizio())
-                        .map(esercizio -> String.valueOf(esercizio))
-                        .orElse("0"),
-                allegatoParentBulk.getCd_tipo_documento_amm(),
-                String.valueOf(allegatoParentBulk.getPg_doc())
-        ).stream().collect(
-                Collectors.joining(StorageDriver.SUFFIX)
-        );
+    protected String getStorePath(Documento_genericoBulk documentoGenericoBulk, boolean create) throws BusinessProcessException {
+        return documentoGenericoBulk.getStorePath().get(0);
     }
 
     @Override
