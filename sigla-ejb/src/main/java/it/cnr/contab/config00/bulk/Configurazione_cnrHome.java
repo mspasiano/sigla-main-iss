@@ -438,17 +438,4 @@ public class Configurazione_cnrHome extends BulkHome {
                 .map(Configurazione_cnrBulk::getVal02)
                 .orElse(null);
     }
-
-    public Integer findFirstEsercizioEconomica() throws PersistencyException {
-
-        SQLBuilder sql = createSQLBuilder();
-
-        sql.addClause(FindClause.AND, "esercizio", SQLBuilder.NOT_EQUALS, new Integer(0));
-        sql.addClause(FindClause.AND, "cd_chiave_primaria", SQLBuilder.EQUALS, Configurazione_cnrBulk.PK_ECONOMICO_PATRIMONIALE);
-        sql.addClause(FindClause.AND, "cd_chiave_secondaria", SQLBuilder.EQUALS, Configurazione_cnrBulk.SK_TIPO_ECONOMICO_PATRIMONIALE);
-        sql.addClause(FindClause.AND, "val01", SQLBuilder.NOT_EQUALS, "N");
-
-        List<Configurazione_cnrBulk> result = fetchAll(sql);
-        return result.stream().map(Configurazione_cnrBulk::getEsercizio).min(Comparator.comparing(Integer::valueOf)).orElse(null);
-    }
 }
