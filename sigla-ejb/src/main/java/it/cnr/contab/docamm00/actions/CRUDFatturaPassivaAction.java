@@ -5557,14 +5557,16 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     .filter(CRUDFatturaPassivaBP.class::isInstance)
                     .map(CRUDFatturaPassivaBP.class::cast)
                     .orElseThrow(() -> new DetailedRuntimeException("Business Process non valido"));
-            fillModel(context);
             Fattura_passivaBulk fattura_passivaBulk = (Fattura_passivaBulk) bp.getModel();
             FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) bp.getFatturaOrdiniController().getModel();
+            BigDecimal imIvaRettificataOld = fatturaOrdineBulk.getImIvaRettificata();
+            fillModel(context);
             if (
                     Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
                             .map(im -> im.compareTo(fatturaOrdineBulk.getImIva()) > 0)
                             .orElse(Boolean.FALSE)
             ) {
+                fatturaOrdineBulk.setImIvaRettificata(imIvaRettificataOld);
                 throw new ValidationException("Non è possibile aumentare l'importo dell'IVA, rispetto a quello originario "
                         + new java.text.DecimalFormat("#,##0.00").format(fatturaOrdineBulk.getImIva()));
             }
@@ -5580,14 +5582,16 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     .filter(CRUDFatturaPassivaBP.class::isInstance)
                     .map(CRUDFatturaPassivaBP.class::cast)
                     .orElseThrow(() -> new DetailedRuntimeException("Business Process non valido"));
-            fillModel(context);
             Fattura_passivaBulk fattura_passivaBulk = (Fattura_passivaBulk) bp.getModel();
             FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) bp.getFatturaOrdiniController().getModel();
-            if (
+            BigDecimal imImponibileRettificatoOld = fatturaOrdineBulk.getImImponibileRettificato();
+            fillModel(context);
+           if (
                     Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
                             .map(im -> im.compareTo(fatturaOrdineBulk.getImImponibile()) > 0)
                             .orElse(Boolean.FALSE)
             ) {
+                fatturaOrdineBulk.setImImponibileRettificato(imImponibileRettificatoOld);
                 throw new ValidationException("Non è possibile aumentare l'importo dell'imponibile, rispetto a quello originario "
                         + new java.text.DecimalFormat("#,##0.00").format(fatturaOrdineBulk.getImImponibile()));
             }
