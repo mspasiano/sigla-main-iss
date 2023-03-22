@@ -326,7 +326,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"		
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		nullable="false"
 		label="In valuta" />	
@@ -336,7 +336,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		nullable="false"
 		label="Importo" />	
@@ -346,7 +346,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		enabledOnView="true"
 		nullable="false"
@@ -357,7 +357,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		label="Importo in EURO" 
 		enabledOnEdit="false"/>
 		
