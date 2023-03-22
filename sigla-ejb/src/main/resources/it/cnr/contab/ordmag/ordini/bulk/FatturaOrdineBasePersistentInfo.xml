@@ -177,6 +177,20 @@
 				sqlTypeName="DECIMAL"
 				columnSize="10"
 				nullable="true" />
+		<columnMapping
+				columnName="IM_IMPONIBILE_RETTIFICATO"
+				propertyName="imImponibileRettificato"
+				sqlTypeName="DECIMAL"
+				columnSize="15"
+				columnScale="2"
+				nullable="true" />
+		<columnMapping
+				columnName="IM_IVA_RETTIFICATA"
+				propertyName="imIvaRettificata"
+				sqlTypeName="DECIMAL"
+				columnSize="15"
+				columnScale="2"
+				nullable="true" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="cdVoceIvaRett" />
@@ -226,4 +240,9 @@
 			name="pgObbligazioneNc" />
 	<persistentProperty
 			name="pgObbligazioneScadNc" />
+	<persistentProperty
+			name="imImponibileRettificato" />
+	<persistentProperty
+			name="imIvaRettificata" />
+
 </SQLPersistentInfo>

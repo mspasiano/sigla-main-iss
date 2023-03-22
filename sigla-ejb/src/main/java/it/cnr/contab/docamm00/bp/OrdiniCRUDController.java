@@ -134,16 +134,16 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDet
         if (!fatturaOrdineBulks.isEmpty()) {
             final BigDecimal totaleImponibile = fatturaOrdineBulks
                     .stream()
-                    .map(FatturaOrdineBulk::getImImponibile)
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato()).orElse(fatturaOrdineBulk.getImImponibile()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             final BigDecimal totaleIva = fatturaOrdineBulks
                     .stream()
-                    .map(FatturaOrdineBulk::getImIva)
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata()).orElse(fatturaOrdineBulk.getImIva()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             final BigDecimal totaleImponibilePerNotaCredito = fatturaOrdineBulks
                     .stream()
-                    .map(f -> Optional.ofNullable(f.getImponibileErrato()).orElse(f.getImponibilePerRigaFattura()))
+                    .map(FatturaOrdineBulk::getImponibilePerRigaFattura)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             final BigDecimal totaleIvaPerNotaCredito = fatturaOrdineBulks
                     .stream()

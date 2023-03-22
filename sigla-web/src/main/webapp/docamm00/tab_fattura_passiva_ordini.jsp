@@ -54,6 +54,20 @@
                     </div>
                 </div>
                 <div class="form-row pt-2">
+                    <div class="form-group col-md-3">
+                        <% bp.getFatturaOrdiniController().writeFormField(out, "imImponibile", Boolean.FALSE); %>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <% bp.getFatturaOrdiniController().writeFormField(out, "imImponibileRettificato", Boolean.FALSE); %>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <% bp.getFatturaOrdiniController().writeFormField(out, "imIva", Boolean.FALSE); %>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <% bp.getFatturaOrdiniController().writeFormField(out, "imIvaRettificata", Boolean.FALSE); %>
+                    </div>
+                </div>
+                <div class="form-row pt-2">
                     <div class="form-group col-md-6">
                         <% bp.getFatturaOrdiniController().writeFormField(out, "imponibileErrato", Boolean.FALSE); %>
                     </div>

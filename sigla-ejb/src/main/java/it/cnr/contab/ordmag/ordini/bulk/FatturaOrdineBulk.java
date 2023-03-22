@@ -443,12 +443,18 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 
 
 	public BigDecimal getImponibilePerRigaFattura() {
+		if (getImponibileErrato() != null && getImponibileErrato().compareTo(BigDecimal.ZERO) > 0){
+			return getImponibileErrato();
+		}
 		if (getImponibilePerNotaCredito() != null && getImponibilePerNotaCredito().compareTo(BigDecimal.ZERO) > 0){
 			return getImponibilePerNotaCredito();
 		}
 		return getImImponibile();
 	}
 	public BigDecimal getIvaPerRigaFattura() {
+		if (getImIvaRettificata() != null && getImIvaRettificata().compareTo(BigDecimal.ZERO) > 0){
+			return getImIvaRettificata();
+		}
 		if (getImportoIvaPerNotaCredito() != null && getImportoIvaPerNotaCredito().compareTo(BigDecimal.ZERO) > 0){
 			return getImportoIvaPerNotaCredito();
 		}
@@ -535,11 +541,11 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 		this.getObbligazioneScadenzarioNc().setPg_obbligazione_scadenzario(pgObbligazioneScad);
 	}
 
-	public String getCssClassImImponibile(){
+	public String getCssClassImponibilePerRigaFattura(){
 		return Utility.CSS_CLASS_W_10;
 	}
 
-	public String getCssClassImIva(){
+	public String getCssClassIvaPerRigaFattura(){
 		return Utility.CSS_CLASS_W_10;
 	}
 	public String getCssClassImTotaleConsegna(){
