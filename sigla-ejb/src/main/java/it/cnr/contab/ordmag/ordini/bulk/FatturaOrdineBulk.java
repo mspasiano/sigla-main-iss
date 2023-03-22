@@ -443,6 +443,9 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 
 
 	public BigDecimal getImponibilePerRigaFattura() {
+		if (getImImponibileRettificato() != null && getImImponibileRettificato().compareTo(BigDecimal.ZERO) > 0){
+			return getImImponibileRettificato();
+		}
 		if (getImponibileErrato() != null && getImponibileErrato().compareTo(BigDecimal.ZERO) > 0){
 			return getImponibileErrato();
 		}
