@@ -5488,13 +5488,20 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 					}
 				}
 			}
-			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
-				associato a documenti amministrativi e contabili
-		 	*/
-			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
-				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
-				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+
+			/* Se la vecchia scadenza ha un importo minore di quello associato a documento amministrativo e/o contabile, allora riduco il valore del campo Im_associato_doc_amm e Im_associato_doc_contabile
+			   al valore della scadenza e scarico la differenza sulla scadenza nuova
+			 */
+			if (nuovoImportoScadenzaVecchia.compareTo(scadenzaVecchia.getIm_associato_doc_amm()) < 0) {
+				scadenzaNuova.setIm_associato_doc_amm(scadenzaVecchia.getIm_associato_doc_amm().subtract(nuovoImportoScadenzaVecchia));
+				scadenzaVecchia.setIm_associato_doc_amm(nuovoImportoScadenzaVecchia);
 			}
+
+			if (nuovoImportoScadenzaVecchia.compareTo(scadenzaVecchia.getIm_associato_doc_contabile()) < 0) {
+				scadenzaNuova.setIm_associato_doc_contabile(scadenzaVecchia.getIm_associato_doc_contabile().subtract(nuovoImportoScadenzaVecchia));
+				scadenzaVecchia.setIm_associato_doc_contabile(nuovoImportoScadenzaVecchia);
+			}
+
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
 			scadenzaNuova.setIm_scadenza(importoScadenzaNuova);
@@ -5581,16 +5588,31 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 				osvNew.setToBeCreated();
 				makeBulkPersistent(userContext, osvNew);
 			};
-			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
-				associato a documenti amministrativi e contabili
+
+			/* Se la vecchia scadenza ha un importo minore di quello associato a documento amministrativo e/o contabile, allora riduco il valore del campo Im_associato_doc_amm e Im_associato_doc_contabile
+			   al valore della scadenza e scarico la differenza sulla scadenza nuova
 			 */
-			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
-				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
-				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+			if (nuovoImportoScadenzaVecchia.compareTo(scadenzaVecchia.getIm_associato_doc_amm()) < 0) {
+				scadenzaNuova.setIm_associato_doc_amm(scadenzaVecchia.getIm_associato_doc_amm().subtract(nuovoImportoScadenzaVecchia));
+				scadenzaNuova.setToBeUpdated();
+
+				scadenzaVecchia.setIm_associato_doc_amm(nuovoImportoScadenzaVecchia);
+				scadenzaVecchia.setToBeUpdated();
 			}
+
+			if (nuovoImportoScadenzaVecchia.compareTo(scadenzaVecchia.getIm_associato_doc_contabile()) < 0) {
+				scadenzaNuova.setIm_associato_doc_contabile(scadenzaVecchia.getIm_associato_doc_contabile().subtract(nuovoImportoScadenzaVecchia));
+				scadenzaNuova.setToBeUpdated();
+
+				scadenzaVecchia.setIm_associato_doc_contabile(nuovoImportoScadenzaVecchia);
+				scadenzaVecchia.setToBeUpdated();
+			}
+
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
+
 			makeBulkPersistent(userContext, scadenzaVecchia);
+			makeBulkPersistent(userContext, scadenzaNuova);
 
 			return scadenzaNuova;
 		} catch (PersistencyException e) {
