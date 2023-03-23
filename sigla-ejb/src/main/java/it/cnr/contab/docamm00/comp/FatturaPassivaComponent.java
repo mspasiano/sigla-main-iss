@@ -2990,7 +2990,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
                     fatturaOrdineBulk
                 ));
-                riga.calcolaCampiDiRiga();
+                riga.setIm_totale_divisa(fatturaOrdineBulk.getImTotaleConsegna());
+                riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
+                riga.setIm_iva(fatturaOrdineBulk.getImIva());
                 Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
                         .ifPresent(imp -> riga.setIm_imponibile(imp));
                 Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
