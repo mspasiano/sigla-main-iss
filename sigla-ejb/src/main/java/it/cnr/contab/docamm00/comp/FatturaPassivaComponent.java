@@ -53,6 +53,7 @@ import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.AccertamentoAbstractComponentSession;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
+import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
 import it.cnr.contab.inventario00.docs.bulk.*;
 import it.cnr.contab.inventario00.ejb.Inventario_beniComponentSession;
 import it.cnr.contab.inventario01.bulk.*;
@@ -2989,7 +2990,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
                     fatturaOrdineBulk
                 ));
-                riga.calcolaCampiDiRiga();
+                riga.setIm_totale_divisa(fatturaOrdineBulk.getImTotaleConsegna());
+                riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
+                riga.setIm_iva(fatturaOrdineBulk.getImIva());
                 Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
                         .ifPresent(imp -> riga.setIm_imponibile(imp));
                 Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
@@ -3080,20 +3083,18 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
              * se il totale delle righe di fattura non corrisponde con l'importo della scadenza
              * allora devo sdoppiare la riga di scadenza
              */
-            ObbligazioneAbstractComponentSession sess = (ObbligazioneAbstractComponentSession)
-                    it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneAbstractComponentSession");
+            ObbligazioneComponentSession sess = (ObbligazioneComponentSession) EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession");
             ObbligazioniTable obbligazioniTable = new ObbligazioniTable();
             for (Object obj : fattura.getObbligazioniHash().entrySet()) {
                 Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>> entry = (Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>>)obj;
                 Obbligazione_scadenzarioBulk scadenzarioBulk = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, (Obbligazione_scadenzarioBulk) entry.getKey().getBulk());
-                final BigDecimal totaleRigheDifattura = entry.getValue()
-                        .stream()
-                        .map(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_diponibile_nc())
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                final BigDecimal totaleRigheDifattura = calcolaTotaleObbligazionePer(userContext, scadenzarioBulk, fattura);
                 if (scadenzarioBulk.getIm_scadenza().compareTo(totaleRigheDifattura) > 0) {
                     try {
                         final BigDecimal diff = scadenzarioBulk.getIm_scadenza().subtract(totaleRigheDifattura);
-                        final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomatico(userContext, scadenzarioBulk, diff);
+                        DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+                        dati.setNuovoImportoScadenzaVecchia(diff);
+                        final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomaticoLight(userContext, scadenzarioBulk, dati);
                         nuovaScadenza.setObbligazione(scadenzarioBulk.getObbligazione());
                         /**
                          * Aggiorno l'importo associato ai documenti amministrativi sulla vecchia scadenza
@@ -3107,7 +3108,16 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                             .filter(ordineAcqConsegnaBulk1 -> ordineAcqConsegnaBulk1.equalsByPrimaryKey(ordineAcqConsegnaBulk))
                                             .findAny().isPresent();
                                 })
-                                .map(OrdineAcqConsegnaBulk::getImTotaleConsegna)
+                                .map(el->{
+                                    try {
+                                        OrdineAcqBulk ordine = (OrdineAcqBulk)getHome(userContext, OrdineAcqBulk.class).findByPrimaryKey(el.getOrdineAcqRiga().getOrdineAcq());
+                                        if (ordine.isCommerciale())
+                                            return el.getImImponibile();
+                                        return el.getImTotaleConsegna();
+                                    } catch (ComponentException|PersistencyException e) {
+                                        throw new DetailedRuntimeException(e);
+                                    }
+                                })
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
                         final BigDecimal diffOrdiniAssociati = oldScadenza.getIm_scadenza().subtract(imAssociatoDocAmm);
 
@@ -3340,7 +3350,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                             .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della consegna " + ordineConsegna.getConsegnaOrdineString() + "."));
 
                             FatturaOrdineBulk fatturaOrdineBulk = ordineConsegna.getFatturaOrdineBulk();
-                            if ((Optional.ofNullable(fatturaOrdineBulk.getVoceIva()).isPresent() && !fatturaOrdineBulk.getVoceIva().equalsByPrimaryKey(ordineRigaComp.getVoce_iva())) ||
+                            if ((Optional.ofNullable(fatturaOrdineBulk.getVoceIva())
+                                         .flatMap(el->Optional.ofNullable(el.getCd_voce_iva())).isPresent() &&
+                                    !fatturaOrdineBulk.getVoceIva().getCd_voce_iva().equals(ordineRigaComp.getVoce_iva().getCd_voce_iva())) ||
                                     (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent() && fatturaOrdineBulk.getPrezzoUnitarioRett().compareTo(ordineRigaComp.getPrezzoUnitario()) != 0) ||
                                     (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent() && fatturaOrdineBulk.getSconto1Rett().compareTo(ordineRigaComp.getSconto1()) != 0) ||
                                     (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent()) ||
