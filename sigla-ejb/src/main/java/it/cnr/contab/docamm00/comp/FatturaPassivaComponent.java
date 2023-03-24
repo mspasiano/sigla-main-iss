@@ -8801,20 +8801,30 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             }
             sql.closeParenthesis();
         } else if (obbligazione != null && (obbligazione.getContratto() == null || obbligazione.getContratto().getPg_contratto() == null)) {
-            String uo = uoAbilitate.iterator().next();
-            String condizione = " cd_unita_organizzativa = '" + uo + "' or cd_unita_organizzativa in ("
-                    + " select contratto.cd_unita_organizzativa from contratto, ass_contratto_uo where contratto.esercizio = ass_contratto_uo.esercizio "
-                    + " AND contratto.stato = ass_contratto_uo.stato_contratto AND contratto.pg_contratto = ass_contratto_uo.pg_contratto and "
-                    + " ass_contratto_uo.cd_unita_organizzativa='" + uo + "' and contratto.cd_cig=cig.cd_cig)";
+            String uo = uoAbilitate.stream().findFirst().orElse(CNRUserContext.getCd_unita_organizzativa(userContext));
 
-            sql.addSQLClause("AND", condizione);
+            final SQLBuilder sqlAssContratto = getHome(userContext, Ass_contratto_uoBulk.class).createSQLBuilder();
+            sqlAssContratto.resetColumns();
+            sqlAssContratto.addColumn("CONTRATTO.CD_UNITA_ORGANIZZATIVA");
+            sqlAssContratto.generateJoin(Ass_contratto_uoBulk.class, ContrattoBulk.class, "contratto", "CONTRATTO");
+            sqlAssContratto.addSQLClause(FindClause.AND, "ASS_CONTRATTO_UO.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, uo);
+            sqlAssContratto.addSQLJoin("CONTRATTO.CD_CIG", "CIG.CD_CIG");
 
+            sql.openParenthesis(FindClause.AND);
+            sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, uo);
+            sql.addSQLINClause(FindClause.OR, "cd_unita_organizzativa", sqlAssContratto);
+            final SQLBuilder sqlContratto = getHome(userContext, ContrattoBulk.class).createSQLBuilder();
+            sqlContratto.resetColumns();
+            sqlContratto.addColumn("1");
+            sqlContratto.addSQLJoin("CONTRATTO.CD_CIG", "CIG.CD_CIG");
+            sql.addSQLNotExistsClause(FindClause.OR, sqlContratto);
+            sql.closeParenthesis();
         } else {
             sql.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, uoAbilitate.iterator().next());
         }
         if (clause != null)
             sql.addClause(clause);
-        sql.addOrderBy("cd_Unita_Organizzativa, cd_Cig");
+        sql.addOrderBy("CD_UNITA_ORGANIZZATIVA, CD_CIG");
         return sql;
     }
 
