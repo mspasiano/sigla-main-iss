@@ -1754,10 +1754,12 @@ public class OrdineAcqComponent
             for (java.util.Iterator i = selectedModels.iterator(); i.hasNext(); ) {
                 escludiIVA = escludiIVAOld;
                 OrdineAcqConsegnaBulk riga = (OrdineAcqConsegnaBulk) i.next();
-                importo = importo.add(
-                        (escludiIVA) ?
-                                riga.getImImponibile() :
-                                riga.getImTotaleConsegna());
+                if (!riga.isConsegna0()) {
+                    importo = importo.add(
+                            (escludiIVA) ?
+                                    riga.getImImponibile() :
+                                    riga.getImTotaleConsegna());
+                }
             }
         }
 
