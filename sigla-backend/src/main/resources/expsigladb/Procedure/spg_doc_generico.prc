@@ -1,28 +1,28 @@
-CREATE OR REPLACE PROCEDURE         SPG_DOC_GENERICO
---
--- Date: 18/07/2006
--- Version: 1.2
---
--- Protocollo VPG per stampa massiva di documenti generici
---
---
--- History:
---
--- Date: 19/03/2003
--- Version: 1.0
--- Creazione
---
--- Date: 21/01/2004
--- Version: 1.1
--- Estrazione CIN dalla BANCA (richiesta n. 697)
---
--- Date: 18/07/2006
--- Version: 1.2
--- Gestione Impegni/Accertamenti Residui:
--- aggiornata la funzione per tener conto anche del campo Esercizio Originale Impegno/Accertamento
---
--- Body:
---
+create or replace PROCEDURE         SPG_DOC_GENERICO
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (
  aCd_cds in varchar2,
  aCd_uo in varchar2,
@@ -67,10 +67,10 @@ begin
                                      and dgenr.CD_TIPO_DOCUMENTO_AMM  = dgen.CD_TIPO_DOCUMENTO_AMM
                                      and dgenr.PG_DOCUMENTO_GENERICO  = dgen.PG_DOCUMENTO_GENERICO
                                     and to_char(dgenr.CD_TERZO) like aCd_terzo) ) loop
-    -- inizio loop 1
+    
 
        i:= i+1;
-       
+       ESISTE_BOLLO:='N';
        IF aDocGen.ID_TIPO_DOCUMENTO_GENERICO IS NOT NULL THEN
              begin
                 select IM_BOLLO
@@ -99,7 +99,7 @@ begin
        from tipo_documento_amm
        where cd_tipo_documento_amm = aDocGen.CD_TIPO_DOCUMENTO_AMM;
 
-       -- inizio inserimento record di testata: (A,A)
+       
 
        insert into VPG_DOC_GENERICO (ID,
                                     CHIAVE,
@@ -174,13 +174,13 @@ begin
            ,v_anagrafico_terzo vat
        where uo1.CD_UNITA_ORGANIZZATIVA = aDocGen.CD_CDS
          and uo2.CD_UNITA_ORGANIZZATIVA = aDocGen.CD_UO_ORIGINE
-         and vat.CD_UNITA_ORGANIZZATIVA =uoEnte.cd_unita_organizzativa; -- ente
+         and vat.CD_UNITA_ORGANIZZATIVA =uoEnte.cd_unita_organizzativa; 
 
-       -- fine inserimento record di testata: (A,A)
+       
 
-       -- inizio inserimento record di righe: (B,A), (B,B)
+       
 
-       -- ciclo sulle righe di documento generico
+       
 
        for aDocGenRiga in (select * from documento_generico_riga dgenr
                                     where dgenr.CD_CDS                   = aDocGen.CD_CDS
@@ -189,7 +189,7 @@ begin
                              and dgenr.CD_TIPO_DOCUMENTO_AMM  = aDocGen.CD_TIPO_DOCUMENTO_AMM
                              and dgenr.PG_DOCUMENTO_GENERICO  = aDocGen.PG_DOCUMENTO_GENERICO
                              and to_char(dgenr.CD_TERZO) like aCd_terzo) loop
-       -- inizio loop 2
+       
 
               i:= i+1;
 
@@ -200,11 +200,11 @@ begin
            exception when NO_DATA_FOUND then
                         aVar1 := null;
            end;
-        
-             IF IMPORTO_BOLLO IS NOT NULL AND IMPORTO_BOLLO = aDocGenRiga.IM_RIGA THEN
+           
+             IF ESISTE_BOLLO='N' AND IMPORTO_BOLLO IS NOT NULL AND IMPORTO_BOLLO = aDocGenRiga.IM_RIGA THEN
                      ESISTE_BOLLO := 'S';
-             ELSE
-                     ESISTE_BOLLO := 'N';
+             --ELSE ELIMINATO PER GESTIONE BOLLO 
+             --        ESISTE_BOLLO := 'N';
              END IF;
                 
            insert into VPG_DOC_GENERICO (ID,
@@ -275,9 +275,9 @@ begin
            where vat.CD_TERZO = aDocGenRiga.CD_TERZO;
 
            if ti_e_s = 'S' then
-           -- documenti generici passivi
+           
 
-           -- modalit? di pagamento al terzo valorizzate solo per generici passivi
+           
                begin
                       update VPG_DOC_GENERICO vpg
                    set (TI_PAGAMENTO,
@@ -325,14 +325,14 @@ begin
                             null;
                end;
 
-               -- obbligazioni/capitoli
+               
                for aObbv in (select * from obbligazione_scad_voce obbv
                                     where obbv.CD_CDS               = aDocGenRiga.CD_CDS_OBBLIGAZIONE
                                and obbv.ESERCIZIO                   = aDocGenRiga.ESERCIZIO_OBBLIGAZIONE
                                and obbv.ESERCIZIO_ORIGINALE         = aDocGenRiga.ESERCIZIO_ORI_OBBLIGAZIONE
                                and obbv.PG_OBBLIGAZIONE             = aDocGenRiga.PG_OBBLIGAZIONE
                                and obbv.PG_OBBLIGAZIONE_SCADENZARIO = aDocGenRiga.PG_OBBLIGAZIONE_SCADENZARIO) loop
-               -- inizio loop 3
+               
 
                       i:= i+1;
 
@@ -407,11 +407,11 @@ begin
                      and voce.TI_GESTIONE      = aObbv.TI_GESTIONE
                      and voce.CD_VOCE          = aObbv.CD_VOCE;
 
-               end loop; -- fine loop 3
+               end loop; 
 
            else
-           -- documenti generici attivi
-     begin
+           
+     begin        
             update VPG_DOC_GENERICO vpg
           set (CAB_IC,
                  ABI_IC,
@@ -437,10 +437,8 @@ begin
                    ban.codice_iban
              from banca ban
                           ,abicab abi
-                         ,comune com
-                         ,terzo ter
-                     where  ter.CD_UNITA_ORGANIZZATIVA = aDocGen.CD_Uo_origine
-                       and ban.CD_TERZO                 = ter.CD_TERZO
+                         ,comune com                         
+                     where   ban.CD_TERZO = aDocGenRiga.CD_TERZO_UO_CDS
                           and ban.PG_BANCA     = aDocGenRiga.PG_BANCA_uo_cds
                        and abi.ABI         (+)= ban.ABI
                        and abi.CAB         (+)= ban.CAB
@@ -454,6 +452,8 @@ begin
                      and vpg.TI_RECORD_L2            = 'A';
                exception when NO_DATA_FOUND then
                             null;
+                    when TOO_MANY_ROWS then
+                        null;
                end;
 
                begin
@@ -533,7 +533,7 @@ begin
 
            end if;
 
-       end loop; -- fine loop 2
+       end loop;          
          IF ESISTE_BOLLO = 'S' THEN
                 BEGIN
                i:= i+1;
@@ -576,9 +576,8 @@ begin
              END;
          END IF;
 
-       -- fine inserimento record di righe: (B,A), (C,A)
+       
 
-    end loop; -- fine loop 1
+    end loop; 
 
 end;
-/
