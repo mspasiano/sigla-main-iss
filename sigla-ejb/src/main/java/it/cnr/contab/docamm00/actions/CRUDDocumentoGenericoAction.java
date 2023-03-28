@@ -64,6 +64,7 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.Optional;
 
 public class CRUDDocumentoGenericoAction extends EconomicaAction {
 
@@ -1944,6 +1945,13 @@ public class CRUDDocumentoGenericoAction extends EconomicaAction {
                 java.util.Collection coll = component.findListabanche(context.getUserContext(), riga);
                 riga.setBanca(getBancaDefaultForCdsFrom(context, riga, coll));
                 riga.setCessionario(component.findCessionario(context.getUserContext(), riga));
+                if (riga.getModalita_pagamento().isPAGOPA()) {
+                    riga.setCodice_identificativo_ente_pagopa(
+                            Optional.ofNullable(riga.getTerzo())
+                                    .map(TerzoBulk::getPartita_iva_anagrafico)
+                                    .orElse(null)
+                    );
+                }
             } else
                 riga.setBanca(null);
 
