@@ -20,11 +20,14 @@ package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.config00.sto.bulk.EnteBulk;
 import it.cnr.contab.docamm00.docs.bulk.*;
+import it.cnr.contab.doccont00.intcass.bulk.V_mandato_reversaleBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.*;
 
 import java.util.Collection;
+import java.util.List;
 
 public class MandatoIHome extends MandatoHome {
     public MandatoIHome(Class clazz, java.sql.Connection conn) {
@@ -328,6 +331,25 @@ public class MandatoIHome extends MandatoHome {
         sql.addSQLClause(FindClause.OR, "NVL(IM_SCADENZA,0)-NVL(IM_ASSOCIATO_DOC_CONTABILE,0)>0");
         sql.addSQLClause(FindClause.OR, "NVL(IM_SCADENZA,0)-NVL(IM_ASSOCIATO_DOC_AMM,0)>0");
         sql.closeParenthesis();
+
+        return home.fetchAll(sql);
+    }
+
+    public List<Documento_generico_rigaBulk> findDocumentoGenericoRiga(UserContext userContext, V_mandato_reversaleBulk vMandatoReversaleBulk) throws IntrospectionException, PersistencyException, java.sql.SQLException {
+        PersistentHome home = getHomeCache().getHome(Documento_generico_rigaBulk.class);
+        SQLBuilder sql = home.createSQLBuilder();
+        sql.addTableToHeader("MANDATO_RIGA");
+        sql.addSQLJoin("DOCUMENTO_GENERICO_RIGA.ESERCIZIO", "MANDATO_RIGA.ESERCIZIO_DOC_AMM");
+        sql.addSQLJoin("DOCUMENTO_GENERICO_RIGA.CD_CDS", "MANDATO_RIGA.CD_CDS_DOC_AMM");
+        sql.addSQLJoin("DOCUMENTO_GENERICO_RIGA.CD_UNITA_ORGANIZZATIVA", "MANDATO_RIGA.CD_UO_DOC_AMM");
+        sql.addSQLJoin("DOCUMENTO_GENERICO_RIGA.PG_DOCUMENTO_GENERICO", "MANDATO_RIGA.PG_DOC_AMM");
+        sql.addSQLJoin("DOCUMENTO_GENERICO_RIGA.CD_TIPO_DOCUMENTO_AMM", "MANDATO_RIGA.CD_TIPO_DOCUMENTO_AMM");
+
+        sql.addSQLClause(FindClause.AND, "MANDATO_RIGA.CD_CDS",SQLBuilder.EQUALS, vMandatoReversaleBulk.getCd_cds());
+        sql.addSQLClause(FindClause.AND, "MANDATO_RIGA.ESERCIZIO",SQLBuilder.EQUALS, vMandatoReversaleBulk.getEsercizio());
+        sql.addSQLClause(FindClause.AND, "MANDATO_RIGA.PG_MANDATO",SQLBuilder.EQUALS, vMandatoReversaleBulk.getPg_documento_cont());
+
+
 
         return home.fetchAll(sql);
     }

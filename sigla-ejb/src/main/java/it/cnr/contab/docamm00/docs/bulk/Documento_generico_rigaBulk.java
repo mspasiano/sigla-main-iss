@@ -18,6 +18,8 @@
 package it.cnr.contab.docamm00.docs.bulk;
 
 import java.util.Calendar;
+import java.util.Optional;
+import java.util.regex.Pattern;
 /**
  * Insert the type's description here.
  * Creation date: (9/5/2001 5:02:18 PM)
@@ -26,6 +28,7 @@ import java.util.Calendar;
 import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.anagraf00.tabrif.bulk.*;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.*;
@@ -828,5 +831,32 @@ public class Documento_generico_rigaBulk extends Documento_generico_rigaBase imp
 		nuovoDettaglio.setTi_associato_manrev(origine.getTi_associato_manrev());
 		nuovoDettaglio.setToBeCreated();
 		return nuovoDettaglio;
+	}
+
+	@Override
+	public void validate(OggettoBulk oggettobulk) throws ValidationException {
+		super.validate(oggettobulk);
+		try {
+			Optional.ofNullable(getCodice_identificativo_ente_pagopa())
+				.ifPresent(s -> {
+					final String regex = "[0-9]{11}";
+					if (!Pattern.compile(regex, Pattern.MULTILINE)
+							.matcher(s)
+							.find()) {
+						throw new DetailedRuntimeException("L'identificativo ente può contenere solo numeri e la sua lunghezza deve essere di 11 caratteri!");
+					}
+				});
+			Optional.ofNullable(getNumero_avviso_pagopa())
+					.ifPresent(s -> {
+						final String regex = "[0-9]{18}";
+						if (!Pattern.compile(regex, Pattern.MULTILINE)
+								.matcher(s)
+								.find()) {
+							throw new DetailedRuntimeException("Il numero dell'avviso può contenere solo numeri e la sua lunghezza deve essere di 18 caratteri!");
+						}
+					});
+		} catch (DetailedRuntimeException _ex) {
+			throw new ValidationException(_ex.getMessage());
+		}
 	}
 }
