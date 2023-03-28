@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2022  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
+                                       http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="ciro.salvio" id="modify_length_column_attributi_tmp_report_generico">
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_1" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_2" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_3" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_4" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_5" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_6" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_7" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_8" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_9" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_10" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_11" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_12" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_13" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_14" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_15" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_16" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_17" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_18" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_19" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_20" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_21" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_22" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_23" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_24" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_25" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_26" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_27" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_28" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_29" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_30" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_31" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_32" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_33" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_34" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_35" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_36" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_37" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_38" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_39" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_40" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_41" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_42" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_43" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_44" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_45" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_46" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_47" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_48" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_49" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_50" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_51" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_52" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_53" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_54" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_55" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_56" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_57" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_58" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_59" newDataType="VARCHAR(500)"/>
+        <modifyDataType tableName="TMP_REPORT_GENERICO" columnName="ATTRIBUTO_60" newDataType="VARCHAR(500)"/>
+
+
+    </changeSet>
+</databaseChangeLog>

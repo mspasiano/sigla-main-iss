@@ -5993,4 +5993,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : MARCO SPASIANO - Aggiunti campi per pagamento PAGOPA -->
     <include file="bootstrap/add_column_mod_pag_pagopa.xml"/>
 
+    <!-- Autore : CIRO SALVIO - Modificato lunghezza campi ATTRIBUTI da 200 a 500-->
+    <include file="bootstrap/tmp_report_generico_modify_column_size.xml"/>
+
 </databaseChangeLog>
