@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE         SPG_MANDATO
+CREATE OR REPLACE PROCEDURE SPG_MANDATO
 --
 -- Date: 17/01/2010
 -- Version: 1.18
@@ -91,6 +91,10 @@ CREATE OR REPLACE PROCEDURE         SPG_MANDATO
 -- Gestione Conto Speciale Ente Banca d'Italia:
 -- inserita la modifica il 5/1 ed ? stata modificata la gestione utilizzando le funzioni del package CNRCTB015
 --
+-- Date: 28/03/2023
+-- Version: 1.19
+-- Gestione Avviso PAGOPA:
+-- inserita nella descrizione della modalità di pagamento anche i riferimenti all'avviso PAGOPA
 -- Body:
 --
 (
@@ -118,6 +122,9 @@ CREATE OR REPLACE PROCEDURE         SPG_MANDATO
  aNCCEnteBI varchar2(50);
  tesoreria_unica  char(1):=null;
  flNuovoPdg parametri_cnr.fl_nuovo_pdg%type;
+ tipoPagamentoSIOPE varchar2(250);
+ codiceEntePAGOPA varchar2(11);
+ numeroAvvisoPAGOPA varchar2(18);
 begin
  select IBMSEQ00_CR_PACKAGE.nextval into aId from dual;
  i:=0;
@@ -139,15 +146,6 @@ begin
 
 -- inizio inserimento record (A,A): testata e informazioni del beneficiario
 
---    select distinct cd_terzo, cd_modalita_pag, pg_banca,  nvl(cd_terzo_cedente,0)
---    into aNum1, aVar1, aNum2, aNum3
---    from mandato_riga mriga
---    where mriga.CD_CDS     	 	  	 = aMan.CD_CDS
---      and mriga.ESERCIZIO  			 = aMan.ESERCIZIO
--- 	 and mriga.PG_MANDATO 			 = aMan.PG_MANDATO
--- 	 and mriga.CD_TIPO_DOCUMENTO_AMM <> 'FATTURA_P'
--- 	 and mriga.IM_MANDATO_RIGA		 <> 0; -- escludo note di credito
-
 	select distinct * into aNum1, aVar1, aNum2, aNum3
 	from (select distinct cd_terzo, cd_modalita_pag, pg_banca,  nvl(cd_terzo_cedente,0)
 	   	  from mandato_riga mriga
@@ -166,18 +164,38 @@ begin
 		 			and mriga.CD_TIPO_DOCUMENTO_AMM <> 'FAT_ORDINE');
 
 	select parametri_cnr.fl_tesoreria_unica, parametri_cnr.fl_nuovo_pdg into tesoreria_unica, flNuovoPdg
- from parametri_cnr
- where
- esercizio =aMan.esercizio;
+    from parametri_cnr
+    where esercizio =aMan.esercizio;
 
    begin
-   		select rmp.DS_MODALITA_PAG,FL_CONTO_BI into aVar2,FL_CONTO_BI
+   		select rmp.DS_MODALITA_PAG,FL_CONTO_BI,TIPO_PAGAMENTO_SIOPE  into aVar2, FL_CONTO_BI, tipoPagamentoSIOPE
 			from rif_modalita_pagamento rmp
 			where rmp.CD_MODALITA_PAG = aVar1;
    exception when NO_DATA_FOUND then
    			 aVar2 := null;
    end;
+   -- Controllo il tipo pagamento SIOPE
+   if (tipoPagamentoSIOPE = 'AVVISO PAGOPA') then
+       begin
+            select DOCUMENTO_GENERICO_RIGA.CODICE_IDENTIFICATIVO_ENTE_PAGOPA, DOCUMENTO_GENERICO_RIGA.NUMERO_AVVISO_PAGOPA  into codiceEntePAGOPA, numeroAvvisoPAGOPA
+            from DOCUMENTO_GENERICO_RIGA, MANDATO_RIGA
+            where DOCUMENTO_GENERICO_RIGA.ESERCIZIO = MANDATO_RIGA.ESERCIZIO_DOC_AMM
+              and DOCUMENTO_GENERICO_RIGA.CD_CDS = MANDATO_RIGA.CD_CDS_DOC_AMM
+              and DOCUMENTO_GENERICO_RIGA.CD_UNITA_ORGANIZZATIVA = MANDATO_RIGA.CD_UO_DOC_AMM
+              and DOCUMENTO_GENERICO_RIGA.PG_DOCUMENTO_GENERICO = MANDATO_RIGA.PG_DOC_AMM
+              and DOCUMENTO_GENERICO_RIGA.CD_TIPO_DOCUMENTO_AMM = MANDATO_RIGA.CD_TIPO_DOCUMENTO_AMM
+              and DOCUMENTO_GENERICO_RIGA.CODICE_IDENTIFICATIVO_ENTE_PAGOPA IS NOT NULL
+              and DOCUMENTO_GENERICO_RIGA.NUMERO_AVVISO_PAGOPA IS NOT NULL
+              and MANDATO_RIGA.CD_CDS = aMan.CD_CDS
+              and MANDATO_RIGA.ESERCIZIO = aMan.ESERCIZIO
+              and MANDATO_RIGA.PG_MANDATO = aMan.PG_MANDATO;
 
+            aVar2 := aVar2 || ', Codice Identificativo Ente: '||codiceEntePAGOPA||', Numero avviso: '||numeroAvvisoPAGOPA;
+
+       exception when NO_DATA_FOUND then
+        null;
+       end;
+   end if;
 
    insert into VPG_MANDATO (ID,
 							CHIAVE,
@@ -929,5 +947,3 @@ end if;
  end loop;
 End;
 /
-
-

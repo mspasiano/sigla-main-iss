@@ -507,7 +507,7 @@
 		maxLength="11"
 		inputType="TEXT"
 		nullable="false"
-		label="Codice Identificato Ente" />
+		label="Codice Identificativo Ente" />
 	<fieldProperty
 		name="numero_avviso_pagopa"
 		property="numero_avviso_pagopa"
