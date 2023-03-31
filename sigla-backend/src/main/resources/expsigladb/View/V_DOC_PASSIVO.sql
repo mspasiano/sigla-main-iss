@@ -232,7 +232,14 @@
       AND b.esercizio = a.esercizio
       AND b.pg_fattura_passiva = a.pg_fattura_passiva
       AND b.dt_cancellazione IS NULL
-      AND nvl(a.fl_da_ordini,'N')= 'N'
+      AND NOT EXISTS (
+      	SELECT 1 FROM fattura_ordine fo
+      	WHERE  fo.cd_cds = b.cd_cds
+        AND fo.cd_unita_organizzativa = b.cd_unita_organizzativa
+        AND fo.esercizio = b.esercizio
+        AND fo.pg_fattura_passiva = b.pg_fattura_passiva
+        AND fo.progressivo_riga = b.progressivo_riga
+      )
       AND c.cd_cds(+) = a.cd_cds
       AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
       AND c.esercizio(+) = a.esercizio_lettera
@@ -535,7 +542,6 @@
       AND b.pg_fattura_passiva = fa.pg_fattura_passiva
       AND b.progressivo_riga = fa.progressivo_riga
       AND b.dt_cancellazione IS NULL
-      AND nvl(a.fl_da_ordini,'Y')= 'Y'
       AND c.cd_cds(+) = a.cd_cds
       AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
       AND c.esercizio(+) = a.esercizio_lettera
