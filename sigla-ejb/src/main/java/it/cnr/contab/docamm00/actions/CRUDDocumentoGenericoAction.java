@@ -1948,7 +1948,7 @@ public class CRUDDocumentoGenericoAction extends EconomicaAction {
                 if (riga.getModalita_pagamento().isPAGOPA()) {
                     riga.setCodice_identificativo_ente_pagopa(
                             Optional.ofNullable(riga.getTerzo())
-                                    .map(TerzoBulk::getPartita_iva_anagrafico)
+                                    .map(t->t.getCodice_fiscale_anagrafico()!=null?t.getCodice_fiscale_anagrafico():t.getPartita_iva_anagrafico())
                                     .orElse(null)
                     );
                 }
