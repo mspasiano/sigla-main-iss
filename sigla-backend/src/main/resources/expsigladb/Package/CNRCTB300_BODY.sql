@@ -489,30 +489,7 @@ BEGIN
                   aTabPrimiDoc||'.pg_obbligazione = ' || aRecManrev.pg_obbligazione || ' AND ' ||
                   aTabPrimiDoc||'.pg_obbligazione_scadenzario = ' || aRecManrev.pg_obbligazione_scadenzario;
 
-      If aRecManrev.cd_tipo_docamm = 'FATTURA_P' Then
-   aStatement:=aStatement || ' AND '||
-               'Nvl('||aTestata||'.fl_da_ordini,''N'') = ''N''  OR  Nvl('||aTestata||'.fl_da_ordini,''N'') = ''Y''  AND '||
-         aTabPrimiDoc||'.PROGRESSIVO_RIGA in (Select FATTURA_ORDINE.PROGRESSIVO_RIGA '||
-                                             'From ORDINE_ACQ_CONSEGNA, FATTURA_ORDINE '||
-                                             'Where ORDINE_ACQ_CONSEGNA.cd_cds = FATTURA_ORDINE.cd_cds_ordine '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.cd_unita_operativa = FATTURA_ORDINE.cd_unita_operativa '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.esercizio = FATTURA_ORDINE.esercizio_ordine '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.cd_numeratore = FATTURA_ORDINE.cd_numeratore '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.numero = FATTURA_ORDINE.numero '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.riga = FATTURA_ORDINE.riga '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.consegna = FATTURA_ORDINE.consegna '||
-                                             ' And   ORDINE_ACQ_CONSEGNA.cd_cds_obbl = ' || '''' || aRecManrev.cd_cds_mandato || '''' ||
-                                             ' And   ORDINE_ACQ_CONSEGNA.esercizio_obbl = ' || aRecManrev.esercizio_mandato ||
-                                             ' And   ORDINE_ACQ_CONSEGNA.esercizio_orig_obbl = ' || aRecManrev.esercizio_ori_obbligazione ||
-                                             ' And   ORDINE_ACQ_CONSEGNA.pg_obbligazione = ' || aRecManrev.pg_obbligazione ||
-                                             ' And   ORDINE_ACQ_CONSEGNA.pg_obbligazione_scad = '|| aRecManrev.pg_obbligazione_scadenzario ||
-                                             ' And   FATTURA_ORDINE.CD_CDS = '||aTabPrimiDoc||'.CD_CDS '||
-                                             ' And   FATTURA_ORDINE.CD_UNITA_ORGANIZZATIVA = '||aTabPrimiDoc||'.CD_UNITA_ORGANIZZATIVA '||
-                                             ' And   FATTURA_ORDINE.ESERCIZIO = '||aTabPrimiDoc||'.ESERCIZIO '||
-                                             ' And   FATTURA_ORDINE.PG_FATTURA_PASSIVA = '||aTabPrimiDoc||'.PG_FATTURA_PASSIVA))) ';
-      Else
-        aStatement:=aStatement || '))';
-      End If;
+      aStatement:=aStatement || '))';
    ELSE
       aStatement:=aStatement || ' AND ' ||
                   aTabPrimiDoc||'.cd_cds_accertamento = ' || '''' || aRecManrev.cd_cds_mandato || '''' || ' AND ' ||

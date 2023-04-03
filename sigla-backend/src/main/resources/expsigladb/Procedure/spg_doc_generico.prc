@@ -1,26 +1,34 @@
 create or replace PROCEDURE         SPG_DOC_GENERICO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+--
+-- Date: 18/07/2006
+-- Version: 1.2
+--
+-- Protocollo VPG per stampa massiva di documenti generici
+--
+--
+-- History:
+--
+-- Date: 19/03/2003
+-- Version: 1.0
+-- Creazione
+--
+-- Date: 21/01/2004
+-- Version: 1.1
+-- Estrazione CIN dalla BANCA (richiesta n. 697)
+--
+-- Date: 18/07/2006
+-- Version: 1.2
+-- Gestione Impegni/Accertamenti Residui:
+-- aggiornata la funzione per tener conto anche del campo Esercizio Originale Impegno/Accertamento
+--
+-- Body:
+--
+-- Date: 30/03/2023
+-- Version: 1.3
+-- Corretta gestione Bollo
+-- Corretto aggiornamento banca e modalita pagamento per terzo unita_organizzativa
+--
+-- Body:
 
 
 (
@@ -68,7 +76,8 @@ begin
                                      and dgenr.PG_DOCUMENTO_GENERICO  = dgen.PG_DOCUMENTO_GENERICO
                                     and to_char(dgenr.CD_TERZO) like aCd_terzo) ) loop
     
-
+		-- inizio loop 1
+		
        i:= i+1;
        ESISTE_BOLLO:='N';
        IF aDocGen.ID_TIPO_DOCUMENTO_GENERICO IS NOT NULL THEN
@@ -99,7 +108,7 @@ begin
        from tipo_documento_amm
        where cd_tipo_documento_amm = aDocGen.CD_TIPO_DOCUMENTO_AMM;
 
-       
+        -- inizio inserimento record di testata: (A,A)
 
        insert into VPG_DOC_GENERICO (ID,
                                     CHIAVE,
@@ -177,9 +186,11 @@ begin
          and vat.CD_UNITA_ORGANIZZATIVA =uoEnte.cd_unita_organizzativa; 
 
        
+	   -- fine inserimento record di testata: (A,A)
 
-       
+       -- inizio inserimento record di righe: (B,A), (B,B)
 
+       -- ciclo sulle righe di documento generico
        
 
        for aDocGenRiga in (select * from documento_generico_riga dgenr
@@ -190,7 +201,7 @@ begin
                              and dgenr.PG_DOCUMENTO_GENERICO  = aDocGen.PG_DOCUMENTO_GENERICO
                              and to_char(dgenr.CD_TERZO) like aCd_terzo) loop
        
-
+		-- inizio loop 2
               i:= i+1;
 
            begin
@@ -203,8 +214,8 @@ begin
            
              IF ESISTE_BOLLO='N' AND IMPORTO_BOLLO IS NOT NULL AND IMPORTO_BOLLO = aDocGenRiga.IM_RIGA THEN
                      ESISTE_BOLLO := 'S';
-             --ELSE ELIMINATO PER GESTIONE BOLLO 
-             --        ESISTE_BOLLO := 'N';
+             
+             
              END IF;
                 
            insert into VPG_DOC_GENERICO (ID,
@@ -275,9 +286,9 @@ begin
            where vat.CD_TERZO = aDocGenRiga.CD_TERZO;
 
            if ti_e_s = 'S' then
-           
+			-- documenti generici passivi
 
-           
+           -- modalit? di pagamento al terzo valorizzate solo per generici passivi           
                begin
                       update VPG_DOC_GENERICO vpg
                    set (TI_PAGAMENTO,
@@ -325,7 +336,7 @@ begin
                             null;
                end;
 
-               
+               -- obbligazioni/capitoli
                for aObbv in (select * from obbligazione_scad_voce obbv
                                     where obbv.CD_CDS               = aDocGenRiga.CD_CDS_OBBLIGAZIONE
                                and obbv.ESERCIZIO                   = aDocGenRiga.ESERCIZIO_OBBLIGAZIONE
@@ -333,7 +344,7 @@ begin
                                and obbv.PG_OBBLIGAZIONE             = aDocGenRiga.PG_OBBLIGAZIONE
                                and obbv.PG_OBBLIGAZIONE_SCADENZARIO = aDocGenRiga.PG_OBBLIGAZIONE_SCADENZARIO) loop
                
-
+					 -- inizio loop 3
                       i:= i+1;
 
                    begin
@@ -409,8 +420,8 @@ begin
 
                end loop; 
 
-           else
-           
+           else -- fine loop 3
+            -- documenti generici attivi
      begin        
             update VPG_DOC_GENERICO vpg
           set (CAB_IC,
@@ -533,7 +544,7 @@ begin
 
            end if;
 
-       end loop;          
+       end loop;  -- fine loop 2        
          IF ESISTE_BOLLO = 'S' THEN
                 BEGIN
                i:= i+1;
@@ -575,9 +586,11 @@ begin
                  WHEN NO_DATA_FOUND THEN I := I - 1;
              END;
          END IF;
-
+		 
+	 -- fine inserimento record di righe: (B,A), (C,A)
        
 
-    end loop; 
+    end loop; -- fine loop 1
 
 end;
+/
