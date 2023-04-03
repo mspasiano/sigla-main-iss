@@ -1425,6 +1425,7 @@ public class FondoEconomaleComponent extends it.cnr.jada.comp.CRUDComponent impl
                 }
 
                 MandatoAutomaticoComponentSession mandatoAutomaticoComponent = (MandatoAutomaticoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_MandatoAutomaticoComponentSession", MandatoAutomaticoComponentSession.class);
+                mandatoWizard.setFondoEconomaleBulk(fondo);
                 mandatoWizard = (MandatoAutomaticoWizardBulk)mandatoAutomaticoComponent.creaMandatoAutomatico(userContext, mandatoWizard);
                 mandatoWizard.getMandatiColl().stream().filter(MandatoBulk.class::isInstance).map(MandatoBulk.class::cast).findFirst()
                         .orElseThrow(()->new DetailedRuntimeException("Errore in fase di creazione mandati. Non risulta esserne stato emesso alcuno."));
