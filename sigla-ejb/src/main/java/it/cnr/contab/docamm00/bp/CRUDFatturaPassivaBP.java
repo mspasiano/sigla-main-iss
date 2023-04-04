@@ -1763,25 +1763,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     public FatturaOrdineBulk calcolaRettificaOrdine(ActionContext context, FatturaOrdineBulk fatturaOrdineBulk) throws BusinessProcessException {
         try {
             FatturaOrdineBulk fatturaOrdine =  Utility.createOrdineAcqComponentSession().calcolaImportoOrdine(context.getUserContext(), fatturaOrdineBulk);
-            fatturaOrdineBulk.setImImponibile(
-                Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
-                    .orElse(fatturaOrdine.getImImponibile())
-            );
-            fatturaOrdineBulk.setImIva(
-                    Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
-                            .orElse(fatturaOrdine.getImIva())
-            );
-            fatturaOrdineBulk.setImImponibileDivisa(
-                    Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
-                            .orElse(fatturaOrdine.getImImponibileDivisa())
-            );
-            fatturaOrdineBulk.setImIvaDivisa(
-                    Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
-                            .orElse(fatturaOrdine.getImIvaDivisa())
-            );
-            fatturaOrdineBulk.setImTotaleConsegna(fatturaOrdine.getImImponibile().add(fatturaOrdineBulk.getImIva()));
-            fatturaOrdineBulk.setImponibilePerNotaCredito(fatturaOrdine.getImponibilePerNotaCredito());
-            fatturaOrdineBulk.setImportoIvaPerNotaCredito(fatturaOrdine.getImportoIvaPerNotaCredito());
+            fatturaOrdineBulk.setImImponibileRettificato(fatturaOrdine.getImImponibile());
+            fatturaOrdineBulk.setImIvaRettificata(fatturaOrdine.getImIva());
             return fatturaOrdineBulk;
         } catch (PersistencyException | RemoteException | ComponentException e) {
             throw handleException(e);

@@ -3290,7 +3290,9 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		obbligazione.setIm_iniziale_obbligazione( obbligazione.getIm_obbligazione());
 		obbligazione.setCd_iniziale_elemento_voce( obbligazione.getCd_elemento_voce());	
 
-		if (obbligazione.isObbligazioneResiduo()) {
+		if (Optional.ofNullable(obbligazione)
+				.filter(ObbligazioneBulk::isObbligazioneResiduo)
+				.filter(ObbligazioneResBulk.class::isInstance).isPresent()) {
 			if (((ObbligazioneResBulk)obbligazione).isSaldiDaAggiornare()) {
 				// aggiorniamo i saldi legati alle modifiche agli impegni residui
 				aggiornaSaldiImpegniResiduiPropri(aUC,obbligazione);
