@@ -53,55 +53,54 @@ import java.util.stream.Collectors;
 
 public class MandatoAutomaticoComponent extends MandatoComponent {
 	/**
-	  *  creazione mandato
-	  *    PreCondition:
-	  *      E' stata generata la richiesta di creazione un Mandato Automatico da impegni e il mandato supera la validazione
-	  *      (metodo verificaMandato)
-	  *    PostCondition:
-	  *      Vengono aggiornati gli importi dei sospesi eventualmente associati al mandato (metodo aggiornaImportoSospesi), 
-	  *      vengono aggiornati gli importi associati a documenti contabili di tutte le scadenze di obbligazioni specificate 
-	  *      nelle righe del mandato (metodo aggiornaImportoObbligazione), vengo aggiornati i saldi relativi ai capitoli di spesa
-	  *      (metodo aggiornaStatoFattura), vengono aggiornati gli stati delle fatture specificate nelle righe dei mandati
-	  *      (metodo aggiornaCapitoloSaldoRiga)
-	  *  creazione mandato automatico da impegno di competenza
-	  *    PreCondition:
-	  *      E' stata generata la richiesta di creazione un Mandato automatico e l'utente ha selezionato solo
-	  *      impegni di competenza
-	  *    PostCondition:
-	  *      Viene richiesto alla Component che gestisce i documenti amministrativi generici di creare un documento
-	  *      generico di spesa (di tipo GENERICO_S) con tante righe quanti sono gli impegni selezionati dall'utente,
-	  *      quanti sono gli impegni selezionati dall'utente. Con il metodo 'aggiornaImportoObbligazione'
-	  *		 vengono incrementati gli importi (im_associato_doc_contabili)
-	  *      degli impegni selezionati con l'importo trasferito nel mandato. Con il metodo 'aggiornaCapitoloSaldoRiga' vengono aggiornati i saldi relativi ai
-	  *      capitoli di competenza degli impegni selezionati.
-	  *  creazione mandato automatico da impegno residuo
-	  *    PreCondition:
-	  *      E' stata generata la richiesta di creazione un Mandato automatico e l'utente ha selezionato solo
-	  *      impegni residui
-	  *    PostCondition:
-	  *      Viene richiesto alla Component che gestisce i documenti amministrativi generici di creare un documento
-	  *      generico di spesa (di tipo GENERICO_S) con tante righe quanti sono gli impegni selezionati dall'utente,
-	  *      quanti sono gli impegni selezionati dall'utente. Con il metodo 'aggiornaImportoObbligazione'
-	  *		 vengono incrementati gli importi (im_associato_doc_contabili)
-	  *      degli impegni selezionati con l'importo trasferito nel mandato. Con il metodo 'aggiornaCapitoloSaldoRiga' vengono aggiornati i saldi relativi ai
-	  *      capitoli residui degli impegni selezionati. 
-	  *  creazione di 2 mandati di trasferimento residuo+competenza
-	  *    PreCondition:
-	  *      E' stata generata la richiesta di creazione un Mandato di trasferimento e l'utente ha selezionato sia 
-	  *      impegni residui che di competenza
-	  *    PostCondition:
-	  *      Vengono creati 2 mandati uno di competenza e uno residuo e sono da considerarsi valide entrambe le
-	  *      postconditions: 'creazione mandato di trasferimento residuo' e 'creazione mandato di trasferimento competenza'
-	  *
-	  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-	  * @param bulk <code>OggettoBulk</code> il mandato da creare
-	  *
-	  * @return wizard il Mandato Automatico creato
-	*/
-	public OggettoBulk creaMandatoAutomatico (UserContext userContext,OggettoBulk bulk) throws ComponentException
-	{
+	 *  creazione mandato
+	 *    PreCondition:
+	 *      E' stata generata la richiesta di creazione un Mandato Automatico da impegni e il mandato supera la validazione
+	 *      (metodo verificaMandato)
+	 *    PostCondition:
+	 *      Vengono aggiornati gli importi dei sospesi eventualmente associati al mandato (metodo aggiornaImportoSospesi),
+	 *      vengono aggiornati gli importi associati a documenti contabili di tutte le scadenze di obbligazioni specificate
+	 *      nelle righe del mandato (metodo aggiornaImportoObbligazione), vengo aggiornati i saldi relativi ai capitoli di spesa
+	 *      (metodo aggiornaStatoFattura), vengono aggiornati gli stati delle fatture specificate nelle righe dei mandati
+	 *      (metodo aggiornaCapitoloSaldoRiga)
+	 *  creazione mandato automatico da impegno di competenza
+	 *    PreCondition:
+	 *      E' stata generata la richiesta di creazione un Mandato automatico e l'utente ha selezionato solo
+	 *      impegni di competenza
+	 *    PostCondition:
+	 *      Viene richiesto alla Component che gestisce i documenti amministrativi generici di creare un documento
+	 *      generico di spesa (di tipo GENERICO_S) con tante righe quanti sono gli impegni selezionati dall'utente,
+	 *      quanti sono gli impegni selezionati dall'utente. Con il metodo 'aggiornaImportoObbligazione'
+	 *		 vengono incrementati gli importi (im_associato_doc_contabili)
+	 *      degli impegni selezionati con l'importo trasferito nel mandato. Con il metodo 'aggiornaCapitoloSaldoRiga' vengono aggiornati i saldi relativi ai
+	 *      capitoli di competenza degli impegni selezionati.
+	 *  creazione mandato automatico da impegno residuo
+	 *    PreCondition:
+	 *      E' stata generata la richiesta di creazione un Mandato automatico e l'utente ha selezionato solo
+	 *      impegni residui
+	 *    PostCondition:
+	 *      Viene richiesto alla Component che gestisce i documenti amministrativi generici di creare un documento
+	 *      generico di spesa (di tipo GENERICO_S) con tante righe quanti sono gli impegni selezionati dall'utente,
+	 *      quanti sono gli impegni selezionati dall'utente. Con il metodo 'aggiornaImportoObbligazione'
+	 *		 vengono incrementati gli importi (im_associato_doc_contabili)
+	 *      degli impegni selezionati con l'importo trasferito nel mandato. Con il metodo 'aggiornaCapitoloSaldoRiga' vengono aggiornati i saldi relativi ai
+	 *      capitoli residui degli impegni selezionati.
+	 *  creazione di 2 mandati di trasferimento residuo+competenza
+	 *    PreCondition:
+	 *      E' stata generata la richiesta di creazione un Mandato di trasferimento e l'utente ha selezionato sia
+	 *      impegni residui che di competenza
+	 *    PostCondition:
+	 *      Vengono creati 2 mandati uno di competenza e uno residuo e sono da considerarsi valide entrambe le
+	 *      postconditions: 'creazione mandato di trasferimento residuo' e 'creazione mandato di trasferimento competenza'
+	 *
+	 * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+	 * @param bulk <code>OggettoBulk</code> il mandato da creare
+	 *
+	 * @return wizard il Mandato Automatico creato
+	 */
+	public OggettoBulk creaMandatoAutomatico (UserContext userContext,OggettoBulk bulk) throws ComponentException {
 		MandatoAutomaticoWizardBulk wizard = (MandatoAutomaticoWizardBulk) bulk;
-		if (wizard.isAutomatismoDaImpegni()) 
+		if (wizard.isAutomatismoDaImpegni())
 			return creaMandatoAutomaticoDaImpegni(userContext, wizard, wizard.getImpegniSelezionatiColl());
 		else if (wizard.isAutomatismoDaDocumentiPassivi())
 			return creaMandatoAutomaticoDaDocPassivi(userContext, wizard, wizard.getDocPassiviSelezionatiColl());
@@ -143,7 +142,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	}
 
 	private OggettoBulk creaMandatoAutomaticoDaDocPassivi(UserContext userContext, MandatoAutomaticoWizardBulk wizard, java.util.Collection<V_doc_passivo_obbligazione_wizardBulk> docPassiviColl) throws ComponentException {
-		try	{
+		try {
 			final boolean isMandatoMonoVoce;
 			if (wizard.isFlGeneraMandatoMonoVoce())
 				isMandatoMonoVoce = Boolean.TRUE;
@@ -158,13 +157,15 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						Optional.of(configTagBilancio).map(s->Integer.valueOf(s.getVal02())).orElse(1)<=1;
 			}
 
+			final boolean isMandatoFondoEconomale = Optional.ofNullable(wizard.getFondoEconomaleBulk()).isPresent();
+
 			//Verifico che ci siano tutti i dati di cui necessito
 			for (V_doc_passivo_obbligazione_wizardBulk docTerzo:docPassiviColl) {
-				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoRigaDocumento()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getCdModalitaPagamentoRigaDocumento()).isPresent() && !isMandatoFondoEconomale)
 					throw new ApplicationException("Operazione non possibile! Non è stata indicata per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" la modalità di pagamento.");
-				if (!Optional.ofNullable(docTerzo.getPgBancaRigaDocumento()).isPresent())
+				if (!Optional.ofNullable(docTerzo.getPgBancaRigaDocumento()).isPresent() && !isMandatoFondoEconomale)
 					throw new ApplicationException("Operazione non possibile! Non sono state indicate per il documento " +
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" le coordinate.");
@@ -224,33 +225,59 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 							docTerzo.getEsercizio() + "/" + docTerzo.getCd_cds() + "/" + docTerzo.getCd_tipo_documento_amm() + "/" + docTerzo.getPg_documento_amm() +
 							" è stato richiesto il pagamento totale modificando la ripartizione dell'importo tra imponibile ed imposta.");
 
-				if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoRigaDocumento()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaRigaDocumento())) {
-					//Aggiorno modalità pagamento su riga da pagare
-					if (docTerzo.isDocumentoGenericoPassivo())
-						Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
-					else if (docTerzo.isFatturaPassiva())
-						Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
+				if (!isMandatoFondoEconomale) {
+					if (!docTerzo.getCd_modalita_pag().equals(docTerzo.getCdModalitaPagamentoRigaDocumento()) || !docTerzo.getPg_banca().equals(docTerzo.getPgBancaRigaDocumento())) {
+						//Aggiorno modalità pagamento su riga da pagare
+						if (docTerzo.isDocumentoGenericoPassivo())
+							Utility.createDocumentoGenericoComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
+						else if (docTerzo.isFatturaPassiva())
+							Utility.createFatturaPassivaComponentSession().aggiornaModalitaPagamento(userContext, docTerzo, docTerzo.getModalitaPagamentoRigaDocumento(), docTerzo.getBancaRigaDocumento());
 
-					if (docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getFl_per_cessione()) {
-						BancaBulk bancaCessionario = (BancaBulk) getHome(userContext, BancaBulk.class).findByPrimaryKey(new BancaBulk(docTerzo.getBancaRigaDocumento().getCd_terzo_delegato(), docTerzo.getBancaRigaDocumento().getPg_banca_delegato()));
-						Modalita_pagamentoBulk modalitaCessionario = this.findModalita_pagamentoOptions( userContext, bancaCessionario.getCd_terzo())
-								.stream().filter(el->el.getRif_modalita_pagamento().getTi_pagamento().equals(bancaCessionario.getTi_pagamento()))
-								.findFirst().orElse(null);
-						docTerzo.setCd_modalita_pag(modalitaCessionario.getCd_modalita_pag());
-						docTerzo.setPg_banca(bancaCessionario.getPg_banca());
-						docTerzo.setTi_pagamento(bancaCessionario.getTi_pagamento());
-					} else {
-						docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoRigaDocumento());
-						docTerzo.setPg_banca(docTerzo.getPgBancaRigaDocumento());
-						docTerzo.setTi_pagamento(docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getTi_pagamento());
+						if (docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getFl_per_cessione()) {
+							BancaBulk bancaCessionario = (BancaBulk) getHome(userContext, BancaBulk.class).findByPrimaryKey(new BancaBulk(docTerzo.getBancaRigaDocumento().getCd_terzo_delegato(), docTerzo.getBancaRigaDocumento().getPg_banca_delegato()));
+							Modalita_pagamentoBulk modalitaCessionario = this.findModalita_pagamentoOptions( userContext, bancaCessionario.getCd_terzo())
+									.stream().filter(el->el.getRif_modalita_pagamento().getTi_pagamento().equals(bancaCessionario.getTi_pagamento()))
+									.findFirst().orElse(null);
+							docTerzo.setCd_modalita_pag(modalitaCessionario.getCd_modalita_pag());
+							docTerzo.setPg_banca(bancaCessionario.getPg_banca());
+							docTerzo.setTi_pagamento(bancaCessionario.getTi_pagamento());
+						} else {
+							docTerzo.setCd_modalita_pag(docTerzo.getCdModalitaPagamentoRigaDocumento());
+							docTerzo.setPg_banca(docTerzo.getPgBancaRigaDocumento());
+							docTerzo.setTi_pagamento(docTerzo.getModalitaPagamentoRigaDocumento().getRif_modalita_pagamento().getTi_pagamento());
+						}
 					}
 				}
 			}
 
-			Map<Integer, Map<String, Map<Long, List<V_doc_passivo_obbligazione_wizardBulk>>>> mapTerzo =
-					docPassiviColl.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_terzo,
-							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoRigaDocumento,
-									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaRigaDocumento))));
+			Map<Integer, Map<String, Map<Long, List<V_doc_passivo_obbligazione_wizardBulk>>>> mapTerzo;
+			TerzoModalitaPagamento terzoModalitaPagamento;
+
+			if (!isMandatoFondoEconomale) {
+				terzoModalitaPagamento = null;
+				mapTerzo = docPassiviColl.stream().collect(Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCd_terzo,
+						Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdModalitaPagamentoRigaDocumento,
+								Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getPgBancaRigaDocumento))));
+			} else {
+				Hashtable mapSecond = new Hashtable<>();
+				mapSecond.put(wizard.getFondoEconomaleBulk().getPg_banca(), docPassiviColl);
+
+				Hashtable mapFirst = new Hashtable<>();
+				mapFirst.put(wizard.getFondoEconomaleBulk().getCd_modalita_pag(), mapSecond);
+
+				mapTerzo = new HashMap<>();
+				mapTerzo.put(wizard.getFondoEconomaleBulk().getCd_terzo(), mapFirst);
+
+				terzoModalitaPagamento = new TerzoModalitaPagamento();
+				terzoModalitaPagamento.setTerzoBulk(cercaTerzo(userContext, wizard.getFondoEconomaleBulk().getCd_terzo()));
+
+				Modalita_pagamentoBulk modPagamento = new Modalita_pagamentoBulk();
+				modPagamento.setTerzo(terzoModalitaPagamento.getTerzoBulk());
+				modPagamento.setRif_modalita_pagamento(wizard.getFondoEconomaleBulk().getModalita_pagamento());
+				modPagamento = (Modalita_pagamentoBulk) getHome(userContext, Modalita_pagamentoBulk.class).findByPrimaryKey(modPagamento);
+				terzoModalitaPagamento.setModalitaPagamentoBulk(modPagamento);
+				terzoModalitaPagamento.setBancaBulk((BancaBulk)getHome(userContext, BancaBulk.class).findByPrimaryKey(wizard.getFondoEconomaleBulk().getBanca()));
+			}
 
 			mapTerzo.keySet().forEach(aCdTerzo -> mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
 				List<V_doc_passivo_obbligazione_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
@@ -272,7 +299,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 
 					mapEsercizioVoce = result.stream().collect(
 							Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getEsercizio_ori_obbligazione,
-								Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdElementoVoce)));
+									Collectors.groupingBy(V_doc_passivo_obbligazione_wizardBulk::getCdElementoVoce)));
 				} else {
 					mapEsercizioVoce = new HashMap<>();
 					Map mapVoce = new HashMap<>();
@@ -290,7 +317,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						mapEsercizioVoce.get(aEsercizio).get(aCdVoce).forEach(docTerzo -> {
 							try {
 								Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)
-											getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds_obbligazione(), docTerzo.getEsercizio_obbligazione(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
+										getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(new Obbligazione_scadenzarioBulk(docTerzo.getCd_cds_obbligazione(), docTerzo.getEsercizio_obbligazione(), docTerzo.getEsercizio_ori_obbligazione(), docTerzo.getPg_obbligazione(), docTerzo.getPg_obbligazione_scadenzario()));
 
 								if (os.getIm_scadenza().compareTo(docTerzo.getImportoRigaMandato()) != 0 ||
 										os.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
@@ -323,7 +350,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						if (!docPassiviCompetenzaColl.isEmpty()) {
 							mandatoCompetenza = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_COMPETENZA);
 							mandatoCompetenza.setMandato_terzo(creaMandatoTerzo(mandatoCompetenza, cercaTerzo(userContext, aCdTerzo), Optional.ofNullable(wizard.getMandato_terzo()).map(Mandato_terzoBulk::getTipoBollo).orElse(null)));
-							mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl);
+							mandatoCompetenza = aggiungiDocPassivi(userContext, mandatoCompetenza, docPassiviCompetenzaColl, terzoModalitaPagamento);
 
 							mandatoCompetenza.refreshImporto();
 							super.creaConBulk(userContext, mandatoCompetenza);
@@ -334,7 +361,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 						if (!docPassiviResiduiColl.isEmpty()) {
 							mandatoResiduo = creaMandatoAutomatico(userContext, wizard, MandatoBulk.TIPO_RESIDUO);
 							mandatoResiduo.setMandato_terzo(creaMandatoTerzo(mandatoResiduo, cercaTerzo(userContext, aCdTerzo), Optional.ofNullable(wizard.getMandato_terzo()).map(Mandato_terzoBulk::getTipoBollo).orElse(null)));
-							mandatoResiduo = aggiungiDocPassivi(userContext, mandatoResiduo, docPassiviResiduiColl);
+							mandatoResiduo = aggiungiDocPassivi(userContext, mandatoResiduo, docPassiviResiduiColl, terzoModalitaPagamento);
 
 							mandatoResiduo.refreshImporto();
 							super.creaConBulk(userContext, mandatoResiduo);
@@ -352,7 +379,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			throw handleException(e);
 		}
 	}
-	
+
 	/**
 	 *  creazione mandato automatico da impegno
 	 *    PreCondition:
@@ -367,10 +394,8 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	 *
 	 * @return mandato <code>MandatoAccreditamentoBulk</code> il mandato di regolarizzazione creato
 	 */
-	private MandatoBulk creaMandatoAutomatico (UserContext userContext, MandatoAutomaticoWizardBulk wizard, String ti_competenza_residuo ) throws ComponentException
-	{
-		try
-		{
+	private MandatoBulk creaMandatoAutomatico (UserContext userContext, MandatoAutomaticoWizardBulk wizard, String ti_competenza_residuo ) throws ComponentException {
+		try {
 			MandatoIBulk mandato = new MandatoIBulk();
 			mandato.setToBeCreated();
 			mandato.setUser( wizard.getUser() );
@@ -394,13 +419,11 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			mandato.setIm_ritenute( new java.math.BigDecimal(0));
 
 			return mandato;
+		} catch ( Exception e ) {
+			throw handleException( e );
 		}
-		catch ( Exception e )
-		{
-			throw handleException( e )	;
-		}	
 	}
-	
+
 	/**
 	 *  creazione mandato terzo
 	 *    PreCondition:
@@ -419,10 +442,10 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 
 		if (!(mandato instanceof MandatoAutomaticoWizardBulk))
 			mTerzo.setToBeCreated();
-		
-		mTerzo.setUser( mandato.getUser() );	
+
+		mTerzo.setUser( mandato.getUser() );
 		mTerzo.setMandato( mandato );
-				
+
 		//imposto il terzo
 		mTerzo.setTerzo( terzo );
 
@@ -431,20 +454,16 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 		return mTerzo;
 	}
 
-	private Mandato_terzoBulk creaMandatoTerzo (UserContext userContext, MandatoBulk mandato, TerzoBulk terzo ) throws ComponentException
-	{
-		try
-		{
+	private Mandato_terzoBulk creaMandatoTerzo (UserContext userContext, MandatoBulk mandato, TerzoBulk terzo ) throws ComponentException {
+		try {
 			return creaMandatoTerzo(mandato, terzo, ((Tipo_bolloHome)getHome( userContext, Tipo_bolloBulk.class )).findTipoBolloDefault(Tipo_bolloBulk.TIPO_SPESA));
+		} catch ( Exception e ) {
+			throw handleException( e );
 		}
-		catch ( Exception e )
-		{
-			throw handleException( e )	;
-		}	
 	}
 
-	/** 
-	 *  lista le coordinate bancarie 
+	/**
+	 *  lista le coordinate bancarie
 	 *    PreCondition:
 	 *      E' stato creata una riga di mandato di trasferimento
 	 *    PostCondition:
@@ -455,7 +474,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	 *
 	 * @return result la lista delle banche definite per il terzo beneficiario del mandato
 	 *			null non è stata definita nessuna banca per il terzo beneficiario del mandato
-	*/
+	 */
 	public List<BancaBulk> findBancaOptions(UserContext userContext, Integer cdTerzo, String cdModalitaPagamento) throws it.cnr.jada.persistency.PersistencyException, it.cnr.jada.persistency.IntrospectionException, ComponentException {
 		if ( cdTerzo != null) {
 			Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)this.findByPrimaryKey(userContext, new Rif_modalita_pagamentoBulk(cdModalitaPagamento));
@@ -478,16 +497,15 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	 *
 	 * @return result la lista delle modalità di pagamento definite per il terzo beneficiario del mandato
 	 *			null non è stata definita nessuna modalità di pagamento per il terzo beneficiario del mandato
-	*/
+	 */
 
-	private List<Modalita_pagamentoBulk> findModalita_pagamentoOptions (UserContext userContext, Integer cdTerzo) throws it.cnr.jada.persistency.PersistencyException, ComponentException
-	{
-		if ( cdTerzo != null )	{
+	private List<Modalita_pagamentoBulk> findModalita_pagamentoOptions (UserContext userContext, Integer cdTerzo) throws it.cnr.jada.persistency.PersistencyException, ComponentException {
+		if ( cdTerzo != null ) {
 			SQLBuilder sql = getHome( userContext, Modalita_pagamentoBulk.class ).createSQLBuilder();
 			sql.addTableToHeader( "RIF_MODALITA_PAGAMENTO");
 			sql.addSQLJoin("MODALITA_PAGAMENTO.CD_MODALITA_PAG","RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG" );
 			sql.addClause( FindClause.AND, "cd_terzo", SQLBuilder.EQUALS, cdTerzo );
- 			List<Modalita_pagamentoBulk> result = getHome( userContext, Modalita_pagamentoBulk.class ).fetchAll( sql );
+			List<Modalita_pagamentoBulk> result = getHome( userContext, Modalita_pagamentoBulk.class ).fetchAll( sql );
 			if ( result.size() == 0 )
 				throw new ApplicationException("Non esistono modalità di pagamento per il terzo " + cdTerzo);
 			for (Modalita_pagamentoBulk modpag:result)
@@ -496,63 +514,57 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 		}
 		return null;
 	}
-	/** 
-	  *  inizializzazione di una istanza di MandatoBulk
-	  *    PreCondition:
-	  *     E' stata richiesta l'inizializzazione di una istanza di MandatoBulk
-	  *    PostCondition:
-	  *     Viene impostata la data di emissione del mandato con la data del Server
-	  *  inizializzazione di una istanza di MandatoAutomaticoWizardBulkmandato
-	  *    PreCondition:
-	  *     E' stata richiesta l'inizializzazione di una istanza di MandatoAutomaticoWizardBulk, l'oggetto bulk
-	  *     utilizzato come wizard per la generazione dei mandati automatici da impegno
-	  *    PostCondition:
-	  *     Viene impostata la data di emissione del wizard con la data del Server, il Cds e l'UO di appartenenza con 
-	  *     il Cds e l'UO collegato, il mandato terzo con il codice terzo che corrisponde al codice terzo 
-	  *     del mandato automatico (metodo creaMandatoTerzo), viene impostata la lista degli impegni
-	  *     (metodo listaImpegniCNR) del CNR
-	  *
-	  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
-	  * @param bulk <code>OggettoBulk</code> il mandato da inizializzare per l'inserimento
-	  *
-	  * @return bulk <code>OggettoBulk</code> il Mandato inizializzato per l'inserimento
-	  *     
-	*/
-	public OggettoBulk inizializzaBulkPerInserimento (UserContext aUC,OggettoBulk bulk) throws ComponentException
-	{
-		try
-		{
+
+	/**
+	 *  inizializzazione di una istanza di MandatoBulk
+	 *    PreCondition:
+	 *     E' stata richiesta l'inizializzazione di una istanza di MandatoBulk
+	 *    PostCondition:
+	 *     Viene impostata la data di emissione del mandato con la data del Server
+	 *  inizializzazione di una istanza di MandatoAutomaticoWizardBulkmandato
+	 *    PreCondition:
+	 *     E' stata richiesta l'inizializzazione di una istanza di MandatoAutomaticoWizardBulk, l'oggetto bulk
+	 *     utilizzato come wizard per la generazione dei mandati automatici da impegno
+	 *    PostCondition:
+	 *     Viene impostata la data di emissione del wizard con la data del Server, il Cds e l'UO di appartenenza con
+	 *     il Cds e l'UO collegato, il mandato terzo con il codice terzo che corrisponde al codice terzo
+	 *     del mandato automatico (metodo creaMandatoTerzo), viene impostata la lista degli impegni
+	 *     (metodo listaImpegniCNR) del CNR
+	 *
+	 * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+	 * @param bulk <code>OggettoBulk</code> il mandato da inizializzare per l'inserimento
+	 *
+	 * @return bulk <code>OggettoBulk</code> il Mandato inizializzato per l'inserimento
+	 *
+	 */
+	public OggettoBulk inizializzaBulkPerInserimento (UserContext aUC,OggettoBulk bulk) throws ComponentException {
+		try {
 			MandatoAutomaticoWizardBulk mandato = (MandatoAutomaticoWizardBulk) bulk;
 			mandato.setCds( (CdsBulk)getHome( aUC, CdsBulk.class).findByPrimaryKey( new CdsBulk(CNRUserContext.getCd_cds(aUC))));
 			mandato.setUnita_organizzativa( (Unita_organizzativaBulk)getHome( aUC, Unita_organizzativaBulk.class).findByPrimaryKey( new Unita_organizzativaBulk(CNRUserContext.getCd_unita_organizzativa(aUC))));
 
-			bulk = super.inizializzaBulkPerInserimento( aUC, bulk );			
+			bulk = super.inizializzaBulkPerInserimento( aUC, bulk );
 
 			return bulk;
-		}
-		catch ( Exception e )
-		{
+		} catch ( Exception e ) {
 			throw handleException( bulk, e );
-		}	
+		}
 	}
 
-	public OggettoBulk inizializzaMappaAutomatismo (UserContext aUC, OggettoBulk bulk) throws ComponentException
-	{
-		try
-		{
+	public OggettoBulk inizializzaMappaAutomatismo (UserContext aUC, OggettoBulk bulk) throws ComponentException {
+		try {
 			MandatoAutomaticoWizardBulk mandato = (MandatoAutomaticoWizardBulk)bulk;
 			mandato.getMandatiColl().clear();
-			if (mandato.isAutomatismoDaImpegni()) { 
+			if (mandato.isAutomatismoDaImpegni()) {
 				if (mandato.getFind_doc_passivi().getCd_terzo() == null &&
-				    mandato.getFind_doc_passivi().getCd_precedente() == null && 			
-					mandato.getFind_doc_passivi().getCognome() == null &&
-					mandato.getFind_doc_passivi().getRagione_sociale() == null &&
-					mandato.getFind_doc_passivi().getNome()  == null &&
-					mandato.getFind_doc_passivi().getPartita_iva()  == null &&
-					mandato.getFind_doc_passivi().getCodice_fiscale()  == null)
+						mandato.getFind_doc_passivi().getCd_precedente() == null &&
+						mandato.getFind_doc_passivi().getCognome() == null &&
+						mandato.getFind_doc_passivi().getRagione_sociale() == null &&
+						mandato.getFind_doc_passivi().getNome()  == null &&
+						mandato.getFind_doc_passivi().getPartita_iva()  == null &&
+						mandato.getFind_doc_passivi().getCodice_fiscale()  == null)
 					throw new ApplicationException( "Attenzione! Deve essere specificato almeno un campo dell'anagrafica." );
-				else 
-				{		
+				else {
 					mandato.getImpegniSelezionatiColl().clear();
 					mandato.getImpegniColl().clear();
 					mandato.setMandato_terzo( creaMandatoTerzo( aUC, mandato, cercaTerzo( aUC, mandato ) ) );
@@ -563,9 +575,7 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 					mandato.getModelloDocumento().setDt_a_competenza_coge(mandato.getDt_emissione());
 					initializeKeysAndOptionsInto(aUC, bulk);
 				}
-			}
-			else if (mandato.isAutomatismoDaDocumentiPassivi()) 
-			{
+			} else if (mandato.isAutomatismoDaDocumentiPassivi()) {
 				mandato.getDocPassiviColl().clear();
 
 				/*
@@ -593,14 +603,12 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 			}
 
 			return bulk;
-		}
-		catch ( Exception e )
-		{
+		} catch ( Exception e ) {
 			throw handleException( bulk, e );
-		}	
+		}
 	}
 
-	/** 
+	/**
 	 *  ricerca impegni Terzo
 	 *    PreCondition:
 	 *     E' stata richiesta la ricerca degli impegni del Terzo per emettere un mandato di pagamento
@@ -612,12 +620,10 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 	 * @param mandato <code>MandatoBulk</code> il mandato di pagamento
 	 *
 	 * @return mandato il Mandato automatico emesso dopo la ricerca degli impegni del CNR
-	 * 
-	*/
-	public MandatoAutomaticoWizardBulk listaImpegniTerzo (UserContext aUC, MandatoAutomaticoWizardBulk mandato) throws ComponentException
-	{
-		try
-		{
+	 *
+	 */
+	public MandatoAutomaticoWizardBulk listaImpegniTerzo (UserContext aUC, MandatoAutomaticoWizardBulk mandato) throws ComponentException {
+		try {
 			Collection result = ((MandatoAutomaticoWizardHome)getHome( aUC, mandato.getClass())).findImpegni( mandato );
 			mandato.setImpegniColl(result);
 			int size = mandato.getImpegniColl().size();
@@ -625,39 +631,30 @@ public class MandatoAutomaticoComponent extends MandatoComponent {
 				throw new ApplicationException( "La ricerca degli Impegni non ha fornito alcun risultato.");
 			for (Object o : mandato.getImpegniColl()) ((V_obbligazioneBulk) o).setNrImpegni(size);
 			return mandato;
-		}
-		catch (PersistencyException | IntrospectionException e )
-		{
+		} catch (PersistencyException | IntrospectionException e ) {
 			throw handleException( mandato, e );
 		}
 
 	}
 
-	private TerzoBulk cercaTerzo (UserContext aUC, MandatoAutomaticoWizardBulk wizard) throws ComponentException
-	{
-		try
-		{
+	private TerzoBulk cercaTerzo (UserContext aUC, MandatoAutomaticoWizardBulk wizard) throws ComponentException {
+		try {
 			Collection result = ((MandatoAutomaticoWizardHome)getHome( aUC, wizard.getClass())).findTerzi( wizard );
 			if ( result.size() == 0 )
 				throw new ApplicationException( "La ricerca dei Terzi non ha fornito alcun risultato.");
 			if ( result.size() > 1 )
 				throw new ApplicationException( "Esiste piu' di un terzo che soddisfa i criteri di ricerca.");
 
-			return (TerzoBulk)getHome( aUC, TerzoBulk.class).findByPrimaryKey( new TerzoBulk(((V_anagrafico_terzoBulk)result.iterator().next()).getCd_terzo()));				
-		}
-		catch (PersistencyException | IntrospectionException e )
-		{
+			return (TerzoBulk)getHome( aUC, TerzoBulk.class).findByPrimaryKey( new TerzoBulk(((V_anagrafico_terzoBulk)result.iterator().next()).getCd_terzo()));
+		} catch (PersistencyException | IntrospectionException e ) {
 			throw handleException( wizard, e );
 		}
 	}
-	private TerzoBulk cercaTerzo (UserContext aUC, Integer cd_terzo) throws ComponentException
-	{
-		try
-		{
-			return (TerzoBulk)getHome( aUC, TerzoBulk.class).findByPrimaryKey( new TerzoBulk(cd_terzo));				
-		}
-		catch ( it.cnr.jada.persistency.PersistencyException e )
-		{
+
+	private TerzoBulk cercaTerzo (UserContext aUC, Integer cd_terzo) throws ComponentException {
+		try {
+			return (TerzoBulk)getHome( aUC, TerzoBulk.class).findByPrimaryKey( new TerzoBulk(cd_terzo));
+		} catch ( it.cnr.jada.persistency.PersistencyException e ) {
 			throw handleException( e );
 		}
 	}

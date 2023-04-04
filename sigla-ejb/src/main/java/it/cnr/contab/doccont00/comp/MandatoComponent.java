@@ -95,6 +95,35 @@ import java.util.stream.Stream;
 
 public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoComponent implements
         IMandatoMgr, ICRUDMgr, IPrintMgr, Cloneable, Serializable {
+    protected class TerzoModalitaPagamento {
+        TerzoBulk terzoBulk;
+        Modalita_pagamentoBulk modalitaPagamentoBulk;
+        BancaBulk bancaBulk;
+
+        public TerzoBulk getTerzoBulk() {
+            return terzoBulk;
+        }
+
+        public void setTerzoBulk(TerzoBulk terzoBulk) {
+            this.terzoBulk = terzoBulk;
+        }
+
+        public Modalita_pagamentoBulk getModalitaPagamentoBulk() {
+            return modalitaPagamentoBulk;
+        }
+
+        public void setModalitaPagamentoBulk(Modalita_pagamentoBulk modalitaPagamentoBulk) {
+            this.modalitaPagamentoBulk = modalitaPagamentoBulk;
+        }
+
+        public BancaBulk getBancaBulk() {
+            return bancaBulk;
+        }
+
+        public void setBancaBulk(BancaBulk bancaBulk) {
+            this.bancaBulk = bancaBulk;
+        }
+    }
 
     public final static String INSERIMENTO_MANDATO_ACTION = "I";
     public final static String ANNULLAMENTO_MANDATO_ACTION = "A";
@@ -688,6 +717,10 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
         }
     }
 
+    public MandatoBulk aggiungiDocPassivi(UserContext aUC, MandatoBulk mandato, List docPassivi) throws ComponentException {
+        return aggiungiDocPassivi(aUC, mandato, docPassivi, null);
+    }
+
     /**
      * aggiungiDocPassivi PreCondition: E' stata generata la richiesta di
      * aggiungere ad un mandato nuovi documenti amministrativi passivi ( fatture
@@ -725,13 +758,14 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      * @param mandato    <code>MandatoBulk</code> il mandato da aggiornare
      * @param docPassivi <code>List</code> la lista dei documenti passivi selezionati
      *                   dall'utente
+     * @param terzoModalitaPagamento <code>TerzoModalitaPagamento</code> oggetto in cui è indicato il terzo e la modalità di pagamento sul quale devono essere
+     *                               create le righe mandato. Se assente verranno create sul terzo presente sul documento
      * @return mandato <code>MandatoBulk</code> il Mandato aggiornato
      */
-    public MandatoBulk aggiungiDocPassivi(UserContext aUC, MandatoBulk mandato, List docPassivi) throws ComponentException {
+    public MandatoBulk aggiungiDocPassivi(UserContext aUC, MandatoBulk mandato, List docPassivi, TerzoModalitaPagamento terzoModalitaPagamento) throws ComponentException {
 
         Integer cd_terzo;
         String ti_pagamento, ti_competenza_residuo;
-        Boolean pGiro;
         V_doc_passivo_obbligazioneBulk docPassivo;
         Mandato_rigaBulk riga;
         Collection docPassiviCollegati;
@@ -740,23 +774,29 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
             if (mandato.getMandato_rigaColl().size() == 0)
                 mandato.setMandato_terzo(null);
 
-            if (mandato.getMandato_terzo() == null) {
+            if (Optional.ofNullable(terzoModalitaPagamento).isPresent()) {
+                cd_terzo = terzoModalitaPagamento.getTerzoBulk().getCd_terzo();
+                Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)getHome(aUC, Rif_modalita_pagamentoBulk.class).findByPrimaryKey(terzoModalitaPagamento.getModalitaPagamentoBulk().getRif_modalita_pagamento());
+                ti_pagamento = rifModalitaPagamentoBulk.getTi_pagamento();
+                ti_competenza_residuo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getTi_competenza_residuo();
+            } else if (mandato.getMandato_terzo() == null) {
                 cd_terzo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getCodice_terzo_o_cessionario();
                 ti_pagamento = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getTi_pagamento();
-                pGiro = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getFl_pgiro();
                 ti_competenza_residuo = ((V_doc_passivo_obbligazioneBulk) docPassivi.get(0)).getTi_competenza_residuo();
             } else {
                 cd_terzo = mandato.getMandato_terzo().getCd_terzo();
                 ti_pagamento = mandato.getMandato_rigaColl().get(0).getBanca().getTi_pagamento();
-                pGiro = mandato.getMandato_rigaColl().get(0).getFl_pgiro();
                 ti_competenza_residuo = mandato.getTi_competenza_residuo();
             }
+
             for (Iterator i = docPassivi.iterator(); i.hasNext(); ) {
                 docPassivo = (V_doc_passivo_obbligazioneBulk) i.next();
-                if (!cd_terzo.equals(docPassivo.getCodice_terzo_o_cessionario()))
-                    throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad un unico beneficiario");
-                if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato.getTi_mandato()) && !ti_pagamento.equals(docPassivo.getTi_pagamento()))
-                    throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad una stessa classe di pagamento");
+                if (!Optional.ofNullable(terzoModalitaPagamento).isPresent()) {
+                    if (!cd_terzo.equals(docPassivo.getCodice_terzo_o_cessionario()))
+                        throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad un unico beneficiario");
+                    if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato.getTi_mandato()) && !ti_pagamento.equals(docPassivo.getTi_pagamento()))
+                        throw new ApplicationException("E' possibile selezionare solo doc passivi relativi ad una stessa classe di pagamento");
+                }
                 /*
                  * simona 9.10.02 if ( mandato.getTi_mandato().equals(
                  * mandato.TIPO_REGOLARIZZAZIONE ) &&
@@ -768,7 +808,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                 if (!ti_competenza_residuo.equals(docPassivo.getTi_competenza_residuo()))
                     throw new ApplicationException("E' possibile selezionare solo doc passivi dello stesso tipo COMPETENZA/RESIDUO.");
                 // creo mandato_riga
-                riga = creaMandatoRiga(aUC, mandato, docPassivo);
+                riga = creaMandatoRiga(aUC, mandato, docPassivo, terzoModalitaPagamento);
                 //controllo cap /swift
                 if (riga.getBanca() != null &&
                         ((Rif_modalita_pagamentoBulk.BANCARIO.equals(riga.getBanca().getTi_pagamento())
@@ -2022,6 +2062,11 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
         }
     }
 
+    protected Mandato_rigaBulk creaMandatoRiga(UserContext userContext,
+                                               MandatoBulk mandato, V_doc_passivo_obbligazioneBulk docPassivo) throws ComponentException {
+        return creaMandatoRiga(userContext, mandato, docPassivo, null);
+    }
+
     /*
      * creazione riga di mandato PreCondition: E' stata generata la richiesta di
      * creazione di una riga di Mandato PostCondition: Viene creata una riga di
@@ -2042,7 +2087,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      */
 
     protected Mandato_rigaBulk creaMandatoRiga(UserContext userContext,
-                                               MandatoBulk mandato, V_doc_passivo_obbligazioneBulk docPassivo)
+                                               MandatoBulk mandato, V_doc_passivo_obbligazioneBulk docPassivo, TerzoModalitaPagamento terzoModalitaPagamento)
             throws ComponentException {
         try {
             Mandato_rigaIBulk riga = new Mandato_rigaIBulk();
@@ -2081,44 +2126,49 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                     .initializeElemento_voce(userContext, riga);
 
             // imposto il terzo
-            if (docPassivo.getCodice_terzo_cedente() != null) {
-                TerzoBulk cedente = (TerzoBulk) getHome(userContext,
-                        TerzoBulk.class).findByPrimaryKey(
-                        new TerzoBulk(docPassivo.getCodice_terzo_cedente()));
-                riga.setTerzo_cedente(cedente);
-            }
-            BancaBulk banca = new BancaBulk();
-            TerzoBulk terzo = new TerzoBulk(docPassivo
-                    .getCodice_terzo_o_cessionario());
-            banca.setTerzo(terzo);
-            riga.setBanca(banca);
-
-            if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato
-                    .getTi_mandato())) {
-                banca.setPg_banca(docPassivo.getPg_banca());
-                banca = (BancaBulk) getHome(userContext, BancaBulk.class)
-                        .findByPrimaryKey(banca);
-                if (banca == null)
-                    throw new ApplicationException(
-                            "Attenzione! Le coordinate bancarie specificate nel doc. amministrativo per il terzo "
-                                    + docPassivo
-                                    .getCodice_terzo_o_cessionario()
-                                    + " non sono valide");
+            if (!Optional.ofNullable(terzoModalitaPagamento).isPresent()) {
+                if (docPassivo.getCodice_terzo_cedente() != null) {
+                    TerzoBulk cedente = (TerzoBulk) getHome(userContext,
+                            TerzoBulk.class).findByPrimaryKey(
+                            new TerzoBulk(docPassivo.getCodice_terzo_cedente()));
+                    riga.setTerzo_cedente(cedente);
+                }
+                BancaBulk banca = new BancaBulk();
+                TerzoBulk terzo = new TerzoBulk(docPassivo
+                        .getCodice_terzo_o_cessionario());
+                banca.setTerzo(terzo);
                 riga.setBanca(banca);
-                riga.setBancaOptions(findBancaOptions(userContext, riga));
 
-                Modalita_pagamentoBulk mod_pagamento = new Modalita_pagamentoBulk();
-                mod_pagamento.setTerzo(terzo);
-                Rif_modalita_pagamentoBulk rif_modalita_pagamento = new Rif_modalita_pagamentoBulk(
-                        docPassivo.getCd_modalita_pag());
-                mod_pagamento.setRif_modalita_pagamento(rif_modalita_pagamento);
-                mod_pagamento = (Modalita_pagamentoBulk) getHome(userContext,
-                        Modalita_pagamentoBulk.class).findByPrimaryKey(
-                        mod_pagamento);
-                riga.setModalita_pagamento(mod_pagamento);
-                riga
-                        .setModalita_pagamentoOptions(findModalita_pagamentoOptions(
-                                userContext, riga));
+                if (!MandatoBulk.TIPO_REGOLARIZZAZIONE.equals(mandato
+                        .getTi_mandato())) {
+                    banca.setPg_banca(docPassivo.getPg_banca());
+                    banca = (BancaBulk) getHome(userContext, BancaBulk.class)
+                            .findByPrimaryKey(banca);
+                    if (banca == null)
+                        throw new ApplicationException(
+                                "Attenzione! Le coordinate bancarie specificate nel doc. amministrativo per il terzo "
+                                        + docPassivo
+                                        .getCodice_terzo_o_cessionario()
+                                        + " non sono valide");
+                    riga.setBanca(banca);
+                    riga.setBancaOptions(findBancaOptions(userContext, riga));
+
+                    Modalita_pagamentoBulk mod_pagamento = new Modalita_pagamentoBulk();
+                    mod_pagamento.setTerzo(terzo);
+                    Rif_modalita_pagamentoBulk rif_modalita_pagamento = new Rif_modalita_pagamentoBulk(
+                            docPassivo.getCd_modalita_pag());
+                    mod_pagamento.setRif_modalita_pagamento(rif_modalita_pagamento);
+                    mod_pagamento = (Modalita_pagamentoBulk) getHome(userContext,
+                            Modalita_pagamentoBulk.class).findByPrimaryKey(
+                            mod_pagamento);
+                    riga.setModalita_pagamento(mod_pagamento);
+                    riga.setModalita_pagamentoOptions(findModalita_pagamentoOptions(userContext, riga));
+                }
+            } else { //Optional.ofNullable(terzoModalitaPagamento).isPresent()
+                riga.setBanca(terzoModalitaPagamento.getBancaBulk());
+                riga.setBancaOptions(findBancaOptions(userContext, riga));
+                riga.setModalita_pagamento(terzoModalitaPagamento.getModalitaPagamentoBulk());
+                riga.setModalita_pagamentoOptions(findModalita_pagamentoOptions(userContext, riga));
             }
 
             ((MandatoIBulk) mandato).addToMandato_rigaColl(riga, docPassivo);
