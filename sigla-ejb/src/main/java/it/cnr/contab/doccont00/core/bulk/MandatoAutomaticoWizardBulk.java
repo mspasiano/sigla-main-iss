@@ -31,6 +31,7 @@ import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.DocumentoGenericoWizardBulk;
 import it.cnr.contab.doccont00.bp.MandatoAutomaticoWizardBP;
 import it.cnr.contab.doccont00.core.ObbligazioneWizard;
+import it.cnr.contab.fondecon00.core.bulk.Fondo_economaleBulk;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.bulk.*;
 
@@ -50,6 +51,8 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 
 	protected BancaBulk banca = new BancaBulk();
 	protected Modalita_pagamentoBulk modalita_pagamento = new Modalita_pagamentoBulk();
+	protected Fondo_economaleBulk fondoEconomaleBulk = null;
+
 	protected List modalita_pagamentoOptions;
 	protected List bancaOptions;
 
@@ -556,4 +559,11 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		return mandatoCloneWizard;
 	}
 
+	public Fondo_economaleBulk getFondoEconomaleBulk() {
+		return fondoEconomaleBulk;
+	}
+
+	public void setFondoEconomaleBulk(Fondo_economaleBulk fondoEconomaleBulk) {
+		this.fondoEconomaleBulk = fondoEconomaleBulk;
+	}
 }

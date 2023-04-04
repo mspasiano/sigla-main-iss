@@ -463,7 +463,7 @@ BEGIN
                   END IF;
             ELSIF (aNumeroOre > 4 AND
                    aNumeroOre <= 8) THEN
-                  IF aRecMissioneAbbattimenti.durata_ore = '> 4' THEN
+                  IF (aRecMissioneAbbattimenti.durata_ore = '> 4' OR aRecMissioneAbbattimenti.durata_ore = '> 8') THEN
                      matriceTappe_tab(i).tOkAbbattimento:='Y';
                      matriceTappe_tab(i).tPercentualeAbbattimento:=aRecMissioneAbbattimenti.percentuale_abbattimento;
                      EXIT;

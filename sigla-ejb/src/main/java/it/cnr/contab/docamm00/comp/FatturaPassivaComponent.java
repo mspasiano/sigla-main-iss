@@ -53,6 +53,7 @@ import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.AccertamentoAbstractComponentSession;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
+import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
 import it.cnr.contab.inventario00.docs.bulk.*;
 import it.cnr.contab.inventario00.ejb.Inventario_beniComponentSession;
 import it.cnr.contab.inventario01.bulk.*;
@@ -93,6 +94,7 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -2988,7 +2990,14 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             .orElse(fatturaOrdineBulk.getOrdineAcqConsegna().getOrdineAcqRiga().getPrezzoUnitario()),
                     fatturaOrdineBulk
                 ));
-                riga.calcolaCampiDiRiga();
+                riga.setIm_totale_divisa(fatturaOrdineBulk.getImTotaleConsegna());
+                riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
+                riga.setIm_iva(fatturaOrdineBulk.getImIva());
+                Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
+                        .ifPresent(imp -> riga.setIm_imponibile(imp));
+                Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
+                        .ifPresent(imp -> riga.setIm_iva(imp));
+
                 riga.setIm_diponibile_nc(
                         riga.getIm_imponibile().add(riga.getIm_iva())
                                 .setScale(2,RoundingMode.HALF_UP)
@@ -3074,20 +3083,18 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
              * se il totale delle righe di fattura non corrisponde con l'importo della scadenza
              * allora devo sdoppiare la riga di scadenza
              */
-            ObbligazioneAbstractComponentSession sess = (ObbligazioneAbstractComponentSession)
-                    it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneAbstractComponentSession");
+            ObbligazioneComponentSession sess = (ObbligazioneComponentSession) EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession");
             ObbligazioniTable obbligazioniTable = new ObbligazioniTable();
             for (Object obj : fattura.getObbligazioniHash().entrySet()) {
                 Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>> entry = (Map.Entry<BulkPrimaryKey, List<Fattura_passiva_rigaBulk>>)obj;
                 Obbligazione_scadenzarioBulk scadenzarioBulk = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, (Obbligazione_scadenzarioBulk) entry.getKey().getBulk());
-                final BigDecimal totaleRigheDifattura = entry.getValue()
-                        .stream()
-                        .map(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_diponibile_nc())
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+                final BigDecimal totaleRigheDifattura = calcolaTotaleObbligazionePer(userContext, scadenzarioBulk, fattura);
                 if (scadenzarioBulk.getIm_scadenza().compareTo(totaleRigheDifattura) > 0) {
                     try {
                         final BigDecimal diff = scadenzarioBulk.getIm_scadenza().subtract(totaleRigheDifattura);
-                        final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomatico(userContext, scadenzarioBulk, diff);
+                        DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+                        dati.setNuovoImportoScadenzaVecchia(diff);
+                        final Obbligazione_scadenzarioBulk nuovaScadenza = (Obbligazione_scadenzarioBulk)sess.sdoppiaScadenzaInAutomaticoLight(userContext, scadenzarioBulk, dati);
                         nuovaScadenza.setObbligazione(scadenzarioBulk.getObbligazione());
                         /**
                          * Aggiorno l'importo associato ai documenti amministrativi sulla vecchia scadenza
@@ -3101,7 +3108,16 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                             .filter(ordineAcqConsegnaBulk1 -> ordineAcqConsegnaBulk1.equalsByPrimaryKey(ordineAcqConsegnaBulk))
                                             .findAny().isPresent();
                                 })
-                                .map(OrdineAcqConsegnaBulk::getImTotaleConsegna)
+                                .map(el->{
+                                    try {
+                                        OrdineAcqBulk ordine = (OrdineAcqBulk)getHome(userContext, OrdineAcqBulk.class).findByPrimaryKey(el.getOrdineAcqRiga().getOrdineAcq());
+                                        if (ordine.isCommerciale())
+                                            return el.getImImponibile();
+                                        return el.getImTotaleConsegna();
+                                    } catch (ComponentException|PersistencyException e) {
+                                        throw new DetailedRuntimeException(e);
+                                    }
+                                })
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
                         final BigDecimal diffOrdiniAssociati = oldScadenza.getIm_scadenza().subtract(imAssociatoDocAmm);
 
@@ -3312,7 +3328,6 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
             final Map<OrdineAcqBulk, Map<OrdineAcqRigaBulk, List<OrdineAcqConsegnaBulk>>> mapOrdine =
                     consegne.get().collect(Collectors.groupingBy(o -> o.getOrdineAcqRiga().getOrdineAcq(),
                             Collectors.groupingBy(o -> o.getOrdineAcqRiga())));
-
             mapOrdine.keySet().stream().forEach(ordine -> {
                 try {
                     OrdineAcqBulk ordineComp = (OrdineAcqBulk) ordineComponent.inizializzaBulkPerModifica(userContext, ordine);
@@ -3334,37 +3349,59 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                                             .map(list -> list.get(list.indexOfByPrimaryKey(ordineConsegna)))
                                             .orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della consegna " + ordineConsegna.getConsegnaOrdineString() + "."));
 
+                            FatturaOrdineBulk fatturaOrdineBulk = ordineConsegna.getFatturaOrdineBulk();
+                            if ((Optional.ofNullable(fatturaOrdineBulk.getVoceIva())
+                                         .flatMap(el->Optional.ofNullable(el.getCd_voce_iva())).isPresent() &&
+                                    !fatturaOrdineBulk.getVoceIva().getCd_voce_iva().equals(ordineRigaComp.getVoce_iva().getCd_voce_iva())) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent() && fatturaOrdineBulk.getPrezzoUnitarioRett().compareTo(ordineRigaComp.getPrezzoUnitario()) != 0) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent() && fatturaOrdineBulk.getSconto1Rett().compareTo(ordineRigaComp.getSconto1()) != 0) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent()) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto2()).isPresent() && fatturaOrdineBulk.getSconto2Rett().compareTo(ordineRigaComp.getSconto2()) != 0) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto2()).isPresent()) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto3()).isPresent() && fatturaOrdineBulk.getSconto3Rett().compareTo(ordineRigaComp.getSconto3()) != 0) ||
+                                    (Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto3()).isPresent())) {
+                                try {
+                                    ordineConsegnaComp.setImImponibile(fatturaOrdineBulk.getImImponibile());
+                                    ordineConsegnaComp.setImImponibileDivisa(fatturaOrdineBulk.getImImponibileDivisa());
+                                    ordineConsegnaComp.setImIva(fatturaOrdineBulk.getImIva());
+                                    ordineConsegnaComp.setImIvaDivisa(fatturaOrdineBulk.getImIvaDivisa());
+                                    ordineConsegnaComp.setImIvaD(fatturaOrdineBulk.getImIvaD());
+                                    ordineConsegnaComp.setImIvaNd(fatturaOrdineBulk.getImIvaNd());
+                                    movimentiMagComponent.creaMovimentoRettificaValoreOrdine(userContext, fatturaOrdineBulk);
+                                } catch (ComponentException | RemoteException e) {
+                                    handleException(e);
+                                }
+                            }
+
+
+                            Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
+                                    .ifPresent(imp -> {
+                                        ordineConsegnaComp.setImImponibile(imp);
+                                        ordineConsegnaComp.setImImponibileDivisa(imp);
+                                        ordineConsegnaComp.setImTotaleConsegna(ordineConsegnaComp.getImImponibile().add(ordineConsegnaComp.getImIva()));
+                                    });
+                            Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
+                                    .ifPresent(imp -> {
+                                        ordineConsegnaComp.setImIva(imp);
+                                        Optional.ofNullable(ordineConsegnaComp.getImIvaNd())
+                                            .filter(bigDecimal -> bigDecimal.compareTo(BigDecimal.ZERO) > 0)
+                                            .ifPresent(bigDecimal -> {
+                                                ordineConsegnaComp.setImIvaNd(imp);
+                                            });
+                                        Optional.ofNullable(ordineConsegnaComp.getImIvaD())
+                                                .filter(bigDecimal -> bigDecimal.compareTo(BigDecimal.ZERO) > 0)
+                                                .ifPresent(bigDecimal -> {
+                                                    ordineConsegnaComp.setImIvaD(imp);
+                                                });
+                                        ordineConsegnaComp.setImIvaDivisa(imp);
+                                        ordineConsegnaComp.setImTotaleConsegna(ordineConsegnaComp.getImImponibile().add(ordineConsegnaComp.getImIva()));
+                                    });
+
                             ordineConsegnaComp.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_ASSOCIATA_TOTALMENTE);
-                            ordineConsegnaComp.setFatturaOrdineBulk(ordineConsegna.getFatturaOrdineBulk());
+                            ordineConsegnaComp.setFatturaOrdineBulk(fatturaOrdineBulk);
                             ordineConsegnaComp.setToBeUpdated();
                             ordineComp.setAggiornaImpegniInAutomatico(true);
 
-                            FatturaOrdineBulk fatturaOrdineBulk = ordineConsegna.getFatturaOrdineBulk();
-                            if (Optional.ofNullable(fatturaOrdineBulk).isPresent()) {
-                                if ((Optional.ofNullable(fatturaOrdineBulk.getVoceIva()).isPresent() && !fatturaOrdineBulk.getVoceIva().equalsByPrimaryKey(ordineRigaComp.getVoce_iva())) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett()).isPresent() && fatturaOrdineBulk.getPrezzoUnitarioRett().compareTo(ordineRigaComp.getPrezzoUnitario()) != 0) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent() && fatturaOrdineBulk.getSconto1Rett().compareTo(ordineRigaComp.getSconto1()) != 0) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto1()).isPresent()) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto2()).isPresent() && fatturaOrdineBulk.getSconto2Rett().compareTo(ordineRigaComp.getSconto2()) != 0) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto2()).isPresent()) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent() && Optional.ofNullable(ordineRigaComp.getSconto3()).isPresent() && fatturaOrdineBulk.getSconto3Rett().compareTo(ordineRigaComp.getSconto3()) != 0) ||
-                                        (Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett()).isPresent() && !Optional.ofNullable(ordineRigaComp.getSconto3()).isPresent())) {
-                                    try {
-                                        movimentiMagComponent.creaMovimentoRettificaValoreOrdine(userContext, fatturaOrdineBulk);
-                                        Optional.ofNullable(fatturaOrdineBulk.getPrezzoUnitarioRett())
-                                                .ifPresent(bigDecimal -> ordineRigaComp.setPrezzoUnitario(bigDecimal));
-                                        Optional.ofNullable(fatturaOrdineBulk.getSconto1Rett())
-                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto1(bigDecimal));
-                                        Optional.ofNullable(fatturaOrdineBulk.getSconto2Rett())
-                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto2(bigDecimal));
-                                        Optional.ofNullable(fatturaOrdineBulk.getSconto3Rett())
-                                                .ifPresent(bigDecimal -> ordineRigaComp.setSconto2(bigDecimal));
-                                        ordineRigaComp.setToBeUpdated();
-                                    } catch (ComponentException | RemoteException e) {
-                                        handleException(e);
-                                    }
-                                }
-                            }
                         });
                     });
                     //rendo permanenti le modifiche agli ordini
@@ -8764,20 +8801,30 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             }
             sql.closeParenthesis();
         } else if (obbligazione != null && (obbligazione.getContratto() == null || obbligazione.getContratto().getPg_contratto() == null)) {
-            String uo = uoAbilitate.iterator().next();
-            String condizione = " cd_unita_organizzativa = '" + uo + "' or cd_unita_organizzativa in ("
-                    + " select contratto.cd_unita_organizzativa from contratto, ass_contratto_uo where contratto.esercizio = ass_contratto_uo.esercizio "
-                    + " AND contratto.stato = ass_contratto_uo.stato_contratto AND contratto.pg_contratto = ass_contratto_uo.pg_contratto and "
-                    + " ass_contratto_uo.cd_unita_organizzativa='" + uo + "' and contratto.cd_cig=cig.cd_cig)";
+            String uo = uoAbilitate.stream().findFirst().orElse(CNRUserContext.getCd_unita_organizzativa(userContext));
 
-            sql.addSQLClause("AND", condizione);
+            final SQLBuilder sqlAssContratto = getHome(userContext, Ass_contratto_uoBulk.class).createSQLBuilder();
+            sqlAssContratto.resetColumns();
+            sqlAssContratto.addColumn("CONTRATTO.CD_UNITA_ORGANIZZATIVA");
+            sqlAssContratto.generateJoin(Ass_contratto_uoBulk.class, ContrattoBulk.class, "contratto", "CONTRATTO");
+            sqlAssContratto.addSQLClause(FindClause.AND, "ASS_CONTRATTO_UO.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, uo);
+            sqlAssContratto.addSQLJoin("CONTRATTO.CD_CIG", "CIG.CD_CIG");
 
+            sql.openParenthesis(FindClause.AND);
+            sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, uo);
+            sql.addSQLINClause(FindClause.OR, "cd_unita_organizzativa", sqlAssContratto);
+            final SQLBuilder sqlContratto = getHome(userContext, ContrattoBulk.class).createSQLBuilder();
+            sqlContratto.resetColumns();
+            sqlContratto.addColumn("1");
+            sqlContratto.addSQLJoin("CONTRATTO.CD_CIG", "CIG.CD_CIG");
+            sql.addSQLNotExistsClause(FindClause.OR, sqlContratto);
+            sql.closeParenthesis();
         } else {
             sql.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, uoAbilitate.iterator().next());
         }
         if (clause != null)
             sql.addClause(clause);
-        sql.addOrderBy("cd_Unita_Organizzativa, cd_Cig");
+        sql.addOrderBy("CD_UNITA_ORGANIZZATIVA, CD_CIG");
         return sql;
     }
 

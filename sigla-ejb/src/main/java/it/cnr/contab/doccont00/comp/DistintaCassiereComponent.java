@@ -5362,7 +5362,8 @@ public class DistintaCassiereComponent extends
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ASSEGNOCIRCOLARE,
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.CASSA,
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.DISPOSIZIONEDOCUMENTOESTERNO,
-                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE
+                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE,
+                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA
                 ).contains(tipoPagamentoSiopePlus) &&
                         //TODO da sostituire
                         !rif_modalita_pagamentoBulk.getCd_modalita_pag().equals(STIPENDI);
@@ -5471,7 +5472,11 @@ public class DistintaCassiereComponent extends
                         );
                         infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     }
-
+                    if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA)) {
+                        Mandato.InformazioniBeneficiario.InformazioniAggiuntive informazioniAggiuntive = objectFactory.createMandatoInformazioniBeneficiarioInformazioniAggiuntive();
+                        informazioniAggiuntive.setAvvisoPagoPA(getAvvisoPagoPA(userContext, objectFactory, bulk));
+                        infoben.setInformazioniAggiuntive(informazioniAggiuntive);
+                    }
                     infoben.setDestinazione(LIBERA);
                     caricaInformazioniAggiuntive(infoben, bulk, aggiuntive, tipoPagamentoSiopePlus);
                     caricaTipoPostalizzazione(infoben, docContabile, tipoPagamentoSiopePlus);
@@ -5812,6 +5817,11 @@ public class DistintaCassiereComponent extends
                                         ))
                         );
                         infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
+                    }
+                    if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA)) {
+                        Mandato.InformazioniBeneficiario.InformazioniAggiuntive informazioniAggiuntive = objectFactory.createMandatoInformazioniBeneficiarioInformazioniAggiuntive();
+                        informazioniAggiuntive.setAvvisoPagoPA(getAvvisoPagoPA(userContext, objectFactory, bulk));
+                        infoben.setInformazioniAggiuntive(informazioniAggiuntive);
                     }
                     caricaInformazioniAggiuntive(infoben, bulk, aggiuntive, tipoPagamentoSiopePlus);
                     caricaTipoPostalizzazione(infoben, docContabile, tipoPagamentoSiopePlus);
@@ -6165,6 +6175,28 @@ public class DistintaCassiereComponent extends
             aggiuntive.setRiferimentoDocumentoEsterno(bulk.getCMISName());
             infoben.setInformazioniAggiuntive(aggiuntive);
         }
+    }
+
+    private CtAvvisoPagoPA getAvvisoPagoPA(UserContext userContext,
+                                           ObjectFactory objectFactory,
+                                           V_mandato_reversaleBulk bulk) throws PersistencyException, ComponentException, SQLException, IntrospectionException {
+        CtAvvisoPagoPA avvisoPagoPA = objectFactory.createCtAvvisoPagoPA();
+        MandatoIHome mandatoHome = Optional.ofNullable(getHome(userContext, MandatoIBulk.class))
+                .filter(MandatoIHome.class::isInstance)
+                .map(MandatoIHome.class::cast)
+                .orElseThrow(() -> new ComponentException("Home del mandato non trovata!"));
+        final Map<String, String> pagopaMap = mandatoHome.findDocumentoGenericoRiga(userContext, bulk).stream()
+                .collect(Collectors.toMap(
+                        Documento_generico_rigaBulk::getNumero_avviso_pagopa,
+                        Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa
+                ));
+        if (pagopaMap.size() > 1) {
+            new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!");
+        }
+        final Map.Entry<String, String> pagopaEntry = pagopaMap.entrySet().stream().findFirst().get();
+        avvisoPagoPA.setNumeroAvviso(pagopaEntry.getKey());
+        avvisoPagoPA.setCodiceIdentificativoEnte(pagopaEntry.getValue());
+        return avvisoPagoPA;
     }
 
     private void caricaClassificazione(UserContext userContext,

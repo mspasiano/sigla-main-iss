@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  */
 public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDetailCRUDController implements TableCustomizer {
     private boolean rettificheCollapse = true;
-
+    private static BigDecimal range = new BigDecimal(0.02);
     public boolean isRettificheCollapse() {
         return rettificheCollapse;
     }
@@ -134,16 +134,16 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDet
         if (!fatturaOrdineBulks.isEmpty()) {
             final BigDecimal totaleImponibile = fatturaOrdineBulks
                     .stream()
-                    .map(FatturaOrdineBulk::getImImponibile)
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato()).orElse(fatturaOrdineBulk.getImImponibile()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             final BigDecimal totaleIva = fatturaOrdineBulks
                     .stream()
-                    .map(FatturaOrdineBulk::getImIva)
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata()).orElse(fatturaOrdineBulk.getImIva()))
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
 
             final BigDecimal totaleImponibilePerNotaCredito = fatturaOrdineBulks
                     .stream()
-                    .map(f -> Optional.ofNullable(f.getImponibileErrato()).orElse(f.getImponibilePerRigaFattura()))
+                    .map(FatturaOrdineBulk::getImponibilePerRigaFattura)
                     .reduce(BigDecimal.ZERO, BigDecimal::add);
             final BigDecimal totaleIvaPerNotaCredito = fatturaOrdineBulks
                     .stream()
@@ -276,7 +276,8 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDet
         command = null;
         final Map<String, BigDecimal> differenze = differenze();
         if (getParentController() != null && !differenze.isEmpty()
-                && differenze.get("differenzaImponibile").compareTo(BigDecimal.ZERO) == 0)
+                && differenze.get("differenzaImponibile").compareTo(range.negate()) >= 0
+                && differenze.get("differenzaImponibile").compareTo(range) <= 0)
             command = "javascript:submitForm('doConfermaRiscontroAValore')";
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,

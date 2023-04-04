@@ -6623,31 +6623,29 @@ private void validaBuonoCarico (UserContext aUC,Buono_carico_scaricoBulk buonoCa
 			} catch (RemoteException e) {
 				throw new ComponentException(e);
 			}
-
-
-		}
-		if (buonoCarico.isPerAumentoValore() && (dett.getValore_unitario() == null || (dett.getValore_unitario().compareTo(new java.math.BigDecimal(0))==0))){
-			throw new it.cnr.jada.comp.ApplicationException("Attenzione: indicare il Valore Caricato per il bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":""));
-		}
-
-		if ( ((Buono_carico_scaricoBulk)dett.getBuono_cs()).isPerAumentoValore() ){
-			// Buono di Carico per aumento di valore
-			// CONTROLLA CHE IL VALORE DA AMMORTIZZARE SIA INFERIORE AL VALORE DEL BENE
-			java.math.BigDecimal valore_bene = dett.getBene().getValoreBene().add(dett.getValore_unitario());
-			if (dett.getBene().getImponibile_ammortamento() != null && dett.getBene().getImponibile_ammortamento().compareTo(valore_bene)>0){
-				throw new ValidationException("Attenzione: il valore da ammortizzare di un bene deve essere inferiore  o uguale al valore del bene.\n" +
-						"Il valore da ammortizzare del bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":"") + " non è valido");
+			if (buonoCarico.isPerAumentoValore() && (dett.getValore_unitario() == null || (dett.getValore_unitario().compareTo(new java.math.BigDecimal(0))==0))){
+				throw new it.cnr.jada.comp.ApplicationException("Attenzione: indicare il Valore Caricato per il bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":""));
 			}
-		} else {
-			// Buono di Carico normale
-			// CONTROLLA CHE IL VALORE DA AMMORTIZZARE SIA INFERIORE AL VALORE UNITARIO
-			if (dett.getBene().getImponibile_ammortamento() != null && dett.getBene().getImponibile_ammortamento().compareTo(dett.getValore_unitario())>0){
-				throw new ValidationException("Attenzione: il valore da ammortizzare di un bene deve essere inferiore  o uguale al valore del bene.\n" +
-						"Il valore da ammortizzare del bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":"") + " non è valido");
-			}
-			// V.T. Imposta valore imponibile ammortamento
-			if(dett.getBene().getImponibile_ammortamento() == null){
-				dett.getBene().setImponibile_ammortamento(dett.getBene().getValoreBene());
+
+			if ( ((Buono_carico_scaricoBulk)dett.getBuono_cs()).isPerAumentoValore() ){
+				// Buono di Carico per aumento di valore
+				// CONTROLLA CHE IL VALORE DA AMMORTIZZARE SIA INFERIORE AL VALORE DEL BENE
+				java.math.BigDecimal valore_bene = dett.getBene().getValoreBene().add(dett.getValore_unitario());
+				if (dett.getBene().getImponibile_ammortamento() != null && dett.getBene().getImponibile_ammortamento().compareTo(valore_bene)>0){
+					throw new ValidationException("Attenzione: il valore da ammortizzare di un bene deve essere inferiore  o uguale al valore del bene.\n" +
+							"Il valore da ammortizzare del bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":"") + " non è valido");
+				}
+			} else {
+				// Buono di Carico normale
+				// CONTROLLA CHE IL VALORE DA AMMORTIZZARE SIA INFERIORE AL VALORE UNITARIO
+				if (dett.getBene().getImponibile_ammortamento() != null && dett.getBene().getImponibile_ammortamento().compareTo(dett.getValore_unitario())>0){
+					throw new ValidationException("Attenzione: il valore da ammortizzare di un bene deve essere inferiore  o uguale al valore del bene.\n" +
+							"Il valore da ammortizzare del bene " + (bene.getDs_bene()!=null?"'"+bene.getDs_bene()+"'":"") + " non è valido");
+				}
+				// V.T. Imposta valore imponibile ammortamento
+				if(dett.getBene().getImponibile_ammortamento() == null){
+					dett.getBene().setImponibile_ammortamento(dett.getBene().getValoreBene());
+				}
 			}
 		}
 

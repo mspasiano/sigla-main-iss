@@ -742,6 +742,12 @@ public class BancaBulk extends BancaBase {
                 .orElse(Boolean.FALSE);
     }
 
+    public boolean isPAGOPA() {
+        return Optional.ofNullable(getTipo_pagamento_siope())
+                .map(s -> s.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA.value()))
+                .orElse(Boolean.FALSE);
+    }
+
     public static Dictionary getTipo_PostalizzazioneKeys() {
         return tipo_PostalizzazioneKeys;
     }

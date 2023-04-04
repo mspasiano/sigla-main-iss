@@ -145,6 +145,10 @@ public class OrdineAcqComponent
     }
 
     public OrdineAcqBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws it.cnr.jada.comp.ComponentException {
+        //Se definitivo non posso cambiare nulla...
+        if (ordine.isOrdineDefinitivo())
+            return ordine;
+
         if (ordine.getCambio() == null || ordine.getDivisa() == null || ordine.getDivisa().getCd_divisa() == null) {
             throw new it.cnr.jada.comp.ApplicationException("Campi di testata ordine necessari per il calcolo dell'importo non valorizzati.");
         }
@@ -1750,10 +1754,12 @@ public class OrdineAcqComponent
             for (java.util.Iterator i = selectedModels.iterator(); i.hasNext(); ) {
                 escludiIVA = escludiIVAOld;
                 OrdineAcqConsegnaBulk riga = (OrdineAcqConsegnaBulk) i.next();
-                importo = importo.add(
-                        (escludiIVA) ?
-                                riga.getImImponibile() :
-                                riga.getImTotaleConsegna());
+                if (!riga.isConsegna0()) {
+                    importo = importo.add(
+                            (escludiIVA) ?
+                                    riga.getImImponibile() :
+                                    riga.getImTotaleConsegna());
+                }
             }
         }
 

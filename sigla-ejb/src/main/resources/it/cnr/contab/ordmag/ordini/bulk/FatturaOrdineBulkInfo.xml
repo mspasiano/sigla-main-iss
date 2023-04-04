@@ -229,6 +229,7 @@
             inputType="TEXT"
             formatName="it.cnr.contab.util.EuroFormat"
             enabledOnEdit="false"
+            enabledOnInsert="false"
             nullable="false"
             label="Imponibile"/>
     <fieldProperty
@@ -237,7 +238,8 @@
             inputType="TEXT"
             formatName="it.cnr.contab.util.EuroFormat"
             enabledOnEdit="false"
-            nullable="false"
+            enabledOnInsert="false"
+            nullable="true"
             label="Iva"/>
     <fieldProperty
             name="imIvaD"
@@ -283,6 +285,21 @@
             enabledOnEdit="true"
             nullable="true"
             label="Usa Impegno per rettifica" />
+    <fieldProperty
+            name="imImponibileRettificato"
+            property="imImponibileRettificato"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnEdit="true"
+            label="Imponibile rettificato"/>
+    <formFieldProperty
+            name="imIvaRettificata"
+            property="imIvaRettificata"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnEdit="true"
+            label="Iva rettificata"/>
+
     <form
             name="searchtool">
         <formFieldProperty
@@ -330,6 +347,20 @@
             command="doRettificaConsegna"/>
     <formFieldProperty
             name="operazioneImpegnoNotaCredito"/>
+    <formFieldProperty
+            name="imImponibile"/>
+    <formFieldProperty
+            name="imIva"/>
+    <formFieldProperty
+            name="imImponibileRettificato"
+            label="Imponibile rettificato"
+            command="doRettificaImponibile"/>
+    <formFieldProperty
+            name="imIvaRettificata"
+            label="Iva rettificata"
+            command="doRettificaIva"/>
+
+
     <findFieldProperty
             name="cdCds"/>
     <findFieldProperty
@@ -475,9 +506,17 @@
             headerLabel="Rettifiche"
             label="Imp. NC"/>
     <columnFieldProperty
-            name="imImponibile"/>
+            name="imponibilePerRigaFattura"
+            property="imponibilePerRigaFattura"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            label="Imponibile"/>
     <columnFieldProperty
-            name="imIva"/>
+            name="ivaPerRigaFattura"
+            property="ivaPerRigaFattura"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            label="Iva"/>
     <columnFieldProperty
             name="imTotaleConsegna"/>
 

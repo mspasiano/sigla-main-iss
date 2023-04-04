@@ -21,6 +21,7 @@ import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoHome;
+import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaNotRequiredException;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.compensi00.docs.bulk.*;
 import it.cnr.contab.compensi00.ejb.AssTipoCORIEvComponentSession;
@@ -2344,7 +2345,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 			try {
 				Scrittura_partita_doppiaBulk scritturaPartitaDoppiaBulk = Utility.createScritturaPartitaDoppiaComponentSession().proposeScritturaPartitaDoppia(userContext, compensoBulk);
 				makeBulkPersistent(userContext, scritturaPartitaDoppiaBulk);
-			} catch (NoRollbackException ignored) {
+			} catch (NoRollbackException | ScritturaPartitaDoppiaNotRequiredException ignored ) {
 			} catch (ApplicationException e) {
 				try {
 					if (!Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(userContext))

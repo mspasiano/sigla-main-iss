@@ -326,7 +326,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"		
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		nullable="false"
 		label="In valuta" />	
@@ -336,7 +336,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		nullable="false"
 		label="Importo" />	
@@ -346,7 +346,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="true"
 		enabledOnView="true"
 		nullable="false"
@@ -357,7 +357,7 @@
 		inputType="TEXT"
 		maxLength="15"
 		inputSize="15"
-		formatName="it.cnr.contab.util.EuroPositivoFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		label="Importo in EURO" 
 		enabledOnEdit="false"/>
 		
@@ -500,6 +500,24 @@
 		property="stato_cofi"
 		label="Stato" />
 
+	<fieldProperty
+		name="codice_identificativo_ente_pagopa"
+		property="codice_identificativo_ente_pagopa"
+		inputSize="11"
+		maxLength="11"
+		inputType="TEXT"
+		nullable="false"
+		label="Codice Identificativo Ente" />
+	<fieldProperty
+		name="numero_avviso_pagopa"
+		property="numero_avviso_pagopa"
+		inputSize="18"
+		maxLength="18"
+		inputType="TEXT"
+		nullable="false"
+		label="Numero avviso" />
+
+
 <!--  FORM FIELD PROPERTY  -->
 	<formFieldProperty name="ti_associato_manrev"/>
 <!-- banche -->
@@ -520,8 +538,10 @@
 	<formFieldProperty name="pg_banca_uo_cds" />
 	<formFieldProperty name="cd_cessionario" />
 	<formFieldProperty name="denom_sede_cessionario" />
-	
-<!-- terzo -->
+	<formFieldProperty name="codice_identificativo_ente_pagopa"/>
+	<formFieldProperty name="numero_avviso_pagopa"/>
+
+	<!-- terzo -->
 	<formFieldProperty name="crea_terzo" />
 	<formFieldProperty name="terzo" />
 	<formFieldProperty name="cd_terzo" />

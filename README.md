@@ -1,3 +1,4 @@
+
 # [![Sistema Informativo Gestione Linee di Attività](https://github.com/consiglionazionaledellericerche/sigla-main/blob/master/docs/logo-git.png)](https://contab.cnr.it/SIGLANG)
 
 [![license](https://img.shields.io/badge/License-AGPL%20v3-blue.svg?logo=gnu&style=for-the-badge)](https://github.com/consiglionazionaledellericerche/sigla-main/blob/master/LICENSE)

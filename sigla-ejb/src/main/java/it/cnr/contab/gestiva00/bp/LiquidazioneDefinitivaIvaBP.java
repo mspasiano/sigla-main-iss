@@ -47,7 +47,10 @@ public class LiquidazioneDefinitivaIvaBP extends LiquidazioneIvaBP {
 				if (Optional.ofNullable(parentModel).isPresent() && Optional.ofNullable(model.getDt_inizio()).isPresent()) {
 					Calendar cal = Calendar.getInstance();
 					cal.setTimeInMillis(model.getDt_inizio().getTime());
-					parentModel.setMese((String)parentModel.getInt_mesi().get(cal.get(Calendar.MONTH)+1));
+					Integer mese = cal.get(Calendar.MONTH)+1;
+					if (mese.equals(12))
+						mese = -1;
+					parentModel.setMese((String)parentModel.getInt_mesi().get(mese));
 					try {
 						((LiquidazioneDefinitivaIvaBP) this.getParentController()).doOnMeseChange(actioncontext);
 					} catch (BusinessProcessException e) {

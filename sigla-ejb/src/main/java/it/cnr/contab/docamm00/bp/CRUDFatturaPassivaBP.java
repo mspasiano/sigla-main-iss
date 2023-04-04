@@ -616,7 +616,9 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                     setErrorMessage("Attenzione: sebbene il salvataggio sia stato effettuato correttamente, si ricorda che sono stati eliminati beni inventariati. Provvedere all'aggiornamento dell'inventario!");
                 }
             }
-            return super.initializeModelForEdit(context, bulk);
+            bulk = super.initializeModelForEdit(context, bulk);
+            ((Fattura_passivaBulk)bulk).setFromAmministra(this instanceof CRUDFatturaPassivaAmministraBP);
+            return bulk;
         } catch (Throwable e) {
             throw new it.cnr.jada.action.BusinessProcessException(e);
         }
@@ -1761,14 +1763,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     public FatturaOrdineBulk calcolaRettificaOrdine(ActionContext context, FatturaOrdineBulk fatturaOrdineBulk) throws BusinessProcessException {
         try {
             FatturaOrdineBulk fatturaOrdine =  Utility.createOrdineAcqComponentSession().calcolaImportoOrdine(context.getUserContext(), fatturaOrdineBulk);
-            fatturaOrdineBulk.setImImponibile(fatturaOrdine.getImImponibile());
-            fatturaOrdineBulk.setImIva(fatturaOrdine.getImIva());
-            fatturaOrdineBulk.setImImponibileDivisa(fatturaOrdine.getImImponibileDivisa());
-            fatturaOrdineBulk.setImIvaDivisa(fatturaOrdine.getImIvaDivisa());
-            fatturaOrdineBulk.setImTotaleConsegna(fatturaOrdine.getImTotaleConsegna());
-            fatturaOrdineBulk.setImponibilePerNotaCredito(fatturaOrdine.getImponibilePerNotaCredito());
-            fatturaOrdineBulk.setImportoIvaPerNotaCredito(fatturaOrdine.getImportoIvaPerNotaCredito());
-            fatturaOrdineBulk.setImTotaleConsegna(fatturaOrdine.getImTotaleConsegna());
+            fatturaOrdineBulk.setImImponibileRettificato(fatturaOrdine.getImImponibile());
+            fatturaOrdineBulk.setImIvaRettificata(fatturaOrdine.getImIva());
             return fatturaOrdineBulk;
         } catch (PersistencyException | RemoteException | ComponentException e) {
             throw handleException(e);

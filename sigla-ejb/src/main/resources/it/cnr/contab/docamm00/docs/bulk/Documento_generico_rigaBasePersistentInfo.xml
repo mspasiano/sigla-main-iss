@@ -226,6 +226,16 @@
 			propertyName="esercizio_obbligazione"
 			sqlTypeName="DECIMAL"
 			columnSize="4" />
+		<columnMapping
+			columnName="CODICE_IDENTIFICATIVO_ENTE_PAGOPA"
+			propertyName="codice_identificativo_ente_pagopa"
+			sqlTypeName="VARCHAR"
+			columnSize="11" />
+		<columnMapping
+			columnName="NUMERO_AVVISO_PAGOPA"
+			propertyName="numero_avviso_pagopa"
+			sqlTypeName="VARCHAR"
+			columnSize="18" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="dt_cancellazione" />
@@ -303,4 +313,8 @@
 		name="pg_banca_uo_cds" />
 	<persistentProperty
 		name="esercizio_obbligazione" />
+	<persistentProperty
+		name="codice_identificativo_ente_pagopa" />
+	<persistentProperty
+		name="numero_avviso_pagopa" />
 </SQLPersistentInfo>

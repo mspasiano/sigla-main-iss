@@ -263,4 +263,10 @@ public class Contributo_ritenutaBulk extends Contributo_ritenutaBase {
 				.map(Tipo_contributo_ritenutaBulk::getClassificazioneCori)
 				.filter(Classificazione_coriBulk::isTipoRivalsa).isPresent();
 	}
+
+	public boolean isTipoContributoDaVersare() {
+		return Optional.ofNullable(this.getTipoContributoRitenuta())
+				.map(Tipo_contributo_ritenutaBulk::getFl_versamento)
+				.orElse(Boolean.TRUE);
+	}
 }
