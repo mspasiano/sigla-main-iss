@@ -6359,7 +6359,7 @@ public class DocumentoGenericoComponent
                 .map(Documento_genericoBulk::getDocumento_generico_dettColl)
                 .orElse(new BulkList<Documento_generico_rigaBulk>())
                 .stream()
-                .filter(documentoGenericoRigaBulk -> documentoGenericoRigaBulk.getModalita_pagamento().isPAGOPA())
+                .filter(documentoGenericoRigaBulk -> documentoGenericoRigaBulk.getModalita_pagamento()!=null && documentoGenericoRigaBulk.getModalita_pagamento().isPAGOPA())
                 .findAny();
         if (documentoGenericoRigaPAGOPA.isPresent()) {
             if (!Optional.ofNullable(documentoGenericoRigaPAGOPA.get().getCodice_identificativo_ente_pagopa()).isPresent()) {
