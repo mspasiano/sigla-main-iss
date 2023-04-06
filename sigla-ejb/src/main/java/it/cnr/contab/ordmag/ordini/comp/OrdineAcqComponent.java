@@ -1854,6 +1854,7 @@ public class OrdineAcqComponent
                     importoDaAggiungere = importoDaAggiungere.subtract(scadenza.getImportoDisponibile());
                     obbligazione_scadenzario.setIm_scadenza(obbligazione_scadenzario.getIm_scadenza().add(scadenza.getIm_scadenza()));
                     allineaScadVoce(obbligazione_scadenzario, importoVecchioScadenza);
+                    scadenza.setToBeDeleted();
                     scadenzeDaEliminare.add(index);
                 }
                 if (importoDaAggiungere.compareTo(BigDecimal.ZERO) == 0) {
