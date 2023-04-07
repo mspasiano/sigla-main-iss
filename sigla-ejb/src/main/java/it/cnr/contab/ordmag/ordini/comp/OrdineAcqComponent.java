@@ -1688,7 +1688,7 @@ public class OrdineAcqComponent
                     }
                 }
                 ordine.addToOrdineAss_totaliMap(obbligazioneSelezionata, calcolaTotalePer(
-                        (Vector) ordine.getOrdineObbligazioniHash().get(obbligazioneSelezionata),
+                        context, (Vector) ordine.getOrdineObbligazioniHash().get(obbligazioneSelezionata),
                         false));
             } else {
                 ordine.addToOrdineObbligazioniHash(obbligazioneSelezionata, null);
@@ -1725,7 +1725,7 @@ public class OrdineAcqComponent
                         ordine.addToOrdineObbligazioniHash(obbligazioneSelezionata, cons);
                     }
                     ordine.addToOrdineAss_totaliMap(obbligazioneSelezionata, calcolaTotalePer(
-                            (Vector) ordine.getOrdineObbligazioniHash().get(obbligazioneSelezionata),
+                            context, (Vector) ordine.getOrdineObbligazioniHash().get(obbligazioneSelezionata),
                             false));
                 }
                 try {
@@ -1742,9 +1742,10 @@ public class OrdineAcqComponent
     }
 
     private java.math.BigDecimal calcolaTotalePer(
+            UserContext userContext,
             java.util.List selectedModels,
             boolean escludiIVA)
-            throws it.cnr.jada.comp.ApplicationException {
+            throws it.cnr.jada.comp.ComponentException {
 
         java.math.BigDecimal importo = new java.math.BigDecimal(0);
         //RP 20/03/2015
@@ -1753,12 +1754,12 @@ public class OrdineAcqComponent
         if (selectedModels != null) {
             for (java.util.Iterator i = selectedModels.iterator(); i.hasNext(); ) {
                 escludiIVA = escludiIVAOld;
-                OrdineAcqConsegnaBulk riga = (OrdineAcqConsegnaBulk) i.next();
-                if (!riga.isConsegna0()) {
+                OrdineAcqConsegnaBulk consegna = (OrdineAcqConsegnaBulk) i.next();
+                if (!consegna.isConsegna0()) {
                     importo = importo.add(
                             (escludiIVA) ?
-                                    riga.getImImponibile() :
-                                    riga.getImTotaleConsegna());
+                                    consegna.getImImponibile() :
+                                    consegna.getImTotaleConsegna());
                 }
             }
         }
@@ -1809,7 +1810,7 @@ public class OrdineAcqComponent
          * Aggiorno l'importo associato a documenti amministrativi sulla vecchia scadenza
          */
         Obbligazione_scadenzarioBulk oldScadenza = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, obbligazione_scadenzario);
-        oldScadenza.setIm_associato_doc_amm(obbligazione_scadenzario.getIm_scadenza());
+        oldScadenza.setIm_associato_doc_amm(oldScadenza.getIm_scadenza());
         oldScadenza.setToBeUpdated();
         super.modificaConBulk(userContext, oldScadenza);
 
@@ -2195,7 +2196,7 @@ public class OrdineAcqComponent
 
         ObbligazioniTable obbligazioniHash = ordine.getOrdineObbligazioniHash();
         Vector dettagli = (Vector) obbligazioniHash.get(scadenza);
-        java.math.BigDecimal impTotaleDettagli = calcolaTotalePer(dettagli, ordine.isCommerciale());
+        java.math.BigDecimal impTotaleDettagli = calcolaTotalePer(userContext, dettagli, ordine.isCommerciale());
         return impTotaleDettagli;
     }
 
