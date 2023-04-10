@@ -1,0 +1,108 @@
+<!--
+  ~ Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<bulkInfo xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="https://contab.cnr.it/schema/SIGLA"
+          xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd"
+          shortDescription="Cambia Modalità di Pagamento"
+          longDescription="Cambia Modalità di Pagamento">
+
+    <fieldProperty
+        name="modalita_pagamento"
+        property="modalita_pagamento"
+        optionsProperty="modalita"
+        printProperty="cd_ds_modalita_pagamento"
+        inputCssClass="w-100 "
+        maxLength="30"
+        inputSize="30"
+        inputType="SELECT"
+        nullable="false"
+        label="Mod. pagamento" />
+
+    <fieldProperty
+        name="listabanche"
+        property="banca"
+        inputType="BUTTON"
+        img="img/find16.gif"
+        iconClass="fa fa-fw fa-search"
+        buttonClass="btn-outline-primary btn-title"
+        label="Conto/i associato"
+        href="javascript:submitForm('doSearchListaBanche()')" />
+
+    <!-- banche -->
+    <fieldProperty
+            name="contoA"
+            property="banca"
+            inputType="FORM"
+            formName="A"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"/>
+    <fieldProperty
+            name="contoP"
+            property="banca"
+            inputType="FORM"
+            formName="P"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"/>
+    <fieldProperty
+            name="contoB"
+            property="banca"
+            inputType="FORM"
+            formName="BdocAmm"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"/>
+    <fieldProperty
+            name="contoQ"
+            property="banca"
+            inputType="FORM"
+            formName="Q"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"/>
+    <fieldProperty
+            name="contoN"
+            property="banca"
+            inputType="FORM"
+            formName="N"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"/>
+
+    <formFieldProperty
+            name="modalita_pagamento"/>
+    <formFieldProperty
+            name="listabanche"/>
+    <formFieldProperty
+            name="contoA"/>
+    <formFieldProperty
+            name="contoP"/>
+    <formFieldProperty
+            name="contoB"/>
+    <formFieldProperty
+            name="contoQ"/>
+    <formFieldProperty
+            name="contoN"/>
+
+</bulkInfo>

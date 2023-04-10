@@ -167,36 +167,6 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		}
 	}
 
-	private static class MandatoRigaComplete {
-		public MandatoRigaComplete(IDocumentoAmministrativoBulk docamm, Mandato_rigaBulk mandatoRiga, List<IDocumentoAmministrativoRigaBulk> docammRighe, Integer cdTerzo) {
-			super();
-			this.docamm = docamm;
-			this.mandatoRiga = mandatoRiga;
-			this.docammRighe = docammRighe;
-			this.cdTerzo = cdTerzo;
-		}
-
-		private final IDocumentoAmministrativoBulk docamm;
-		private final Mandato_rigaBulk mandatoRiga;
-		private final List<IDocumentoAmministrativoRigaBulk> docammRighe;
-		private final Integer cdTerzo;
-		public IDocumentoAmministrativoBulk getDocamm() {
-			return docamm;
-		}
-
-		public Mandato_rigaBulk getMandatoRiga() {
-			return mandatoRiga;
-		}
-
-		public List<IDocumentoAmministrativoRigaBulk> getDocammRighe() {
-			return docammRighe;
-		}
-
-		protected Integer getCdTerzo() {
-			return cdTerzo;
-		}
-	}
-
 	private class TestataPrimaNota {
 		public TestataPrimaNota() {
 		}
@@ -1813,7 +1783,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		if (Optional.of(docamm).filter(Fattura_passivaBulk.class::isInstance).map(Fattura_passivaBulk.class::cast).map(Fattura_passivaBulk::isGenerataDaCompenso).orElse(Boolean.FALSE))
 			throw new ScritturaPartitaDoppiaNotRequiredException("Scrittura Economica non necessaria in quanto fattura collegata a compenso. La scrittura di prima nota viene creata direttamente dal compenso stesso.");
 
-		List<IDocumentoAmministrativoRigaBulk> righeDocamm = this.getRigheDocamm(userContext, docamm);
+		List<IDocumentoAmministrativoRigaBulk> righeDocamm = ((MandatoHome)getHome(userContext, MandatoBulk.class)).getRigheDocamm(userContext, docamm);
 		List<DettaglioFinanziario> righeDettFin = righeDocamm.stream().map(rigaDocAmm-> {
 			//Attenzione: recupero il terzo dal docamm perchè sulle righe potrebbe non essere valorizzato
 			TerzoBulk terzo;
@@ -2331,7 +2301,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 						documento.getCd_uo()+"/"+documento.getPg_documento_generico() +
 						" non risulta essere di tipo 'Apertura Fondo Econmale'. Proposta di prima nota non possibile.");
 
-			List<IDocumentoAmministrativoRigaBulk> righeDocamm = this.getRigheDocamm(userContext, documento);
+			List<IDocumentoAmministrativoRigaBulk> righeDocamm = ((MandatoHome)getHome(userContext, MandatoBulk.class)).getRigheDocamm(userContext, documento);
 
 			if (righeDocamm.size() != 1)
 				throw new ApplicationException("Il documento " + documento.getEsercizio() + "/" + documento.getCd_tipo_doc() + "/" +
@@ -2520,18 +2490,18 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 					return null;
 
 				//raggruppo i mandatiRiga per Partita
-				List<MandatoRigaComplete> dettaglioFinanziarioList = this.completeRigheMandato(userContext, mandato);
+				List<MandatoHome.MandatoRigaComplete> dettaglioFinanziarioList = ((MandatoHome)getHome(userContext, MandatoBulk.class)).completeRigheMandato(userContext, mandato);
 
-				Map<IDocumentoAmministrativoBulk, Map<Integer, List<MandatoRigaComplete>>> mapDettagli =
+				Map<IDocumentoAmministrativoBulk, Map<Integer, List<MandatoHome.MandatoRigaComplete>>> mapDettagli =
 						dettaglioFinanziarioList.stream()
-								.collect(Collectors.groupingBy(MandatoRigaComplete::getDocamm,
-										Collectors.groupingBy(MandatoRigaComplete::getCdTerzo)));
+								.collect(Collectors.groupingBy(MandatoHome.MandatoRigaComplete::getDocamm,
+										Collectors.groupingBy(MandatoHome.MandatoRigaComplete::getCdTerzo)));
 
 				mapDettagli.keySet().forEach(aDocamm -> {
-					Map<Integer, List<MandatoRigaComplete>> mapDocAmm = mapDettagli.get(aDocamm);
+					Map<Integer, List<MandatoHome.MandatoRigaComplete>> mapDocAmm = mapDettagli.get(aDocamm);
 					mapDocAmm.keySet().forEach(aCdTerzo -> {
 						try {
-							List<MandatoRigaComplete> mandatoRigaCompleteList = mapDocAmm.get(aCdTerzo);
+							List<MandatoHome.MandatoRigaComplete> mandatoRigaCompleteList = mapDocAmm.get(aCdTerzo);
 							addDettagliPrimaNotaMandatoDocumentiVari(userContext, testataPrimaNota, mandato, aDocamm, aCdTerzo, mandatoRigaCompleteList);
 						} catch (ComponentException | PersistencyException | RemoteException e) {
 							throw new ApplicationRuntimeException(e);
@@ -2539,7 +2509,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 					});
 				});
 
-				BigDecimal totRitenuteSuRigheMandato = dettaglioFinanziarioList.stream().map(MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_ritenute_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
+				BigDecimal totRitenuteSuRigheMandato = dettaglioFinanziarioList.stream().map(MandatoHome.MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_ritenute_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
 				if (totRitenuteSuRigheMandato.compareTo(BigDecimal.ZERO)==0 && mandato.getIm_ritenute().compareTo(BigDecimal.ZERO)!=0) {
 					//Vuol dire che hanno legato reversali al mandato direttamente...... a questo punto produco prima nota reversale e la lego al mandato
 					List<Ass_mandato_reversaleBulk> result = ((Ass_mandato_reversaleHome) getHome(userContext, Ass_mandato_reversaleBulk.class)).findReversali(userContext, mandato, false);
@@ -2562,91 +2532,6 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		} catch (PersistencyException | RemoteException e) {
 			throw handleException(e);
 		}
-	}
-
-	private List<MandatoRigaComplete> completeRigheMandato(UserContext userContext, MandatoBulk mandato) {
-		//raggruppo i mandatiRiga per Partita
-		Map<Integer, Map<String, Map<String, Map<String, Map<Long, List<Mandato_rigaBulk>>>>>> mapRigheMandato =
-				mandato.getMandato_rigaColl().stream()
-						.collect(Collectors.groupingBy(Mandato_rigaBulk::getEsercizio_doc_amm,
-								Collectors.groupingBy(Mandato_rigaBulk::getCd_tipo_documento_amm,
-										Collectors.groupingBy(Mandato_rigaBulk::getCd_cds_doc_amm,
-												Collectors.groupingBy(Mandato_rigaBulk::getCd_uo_doc_amm,
-														Collectors.groupingBy(Mandato_rigaBulk::getPg_doc_amm))))));
-
-		List<MandatoRigaComplete> mandatoRigaCompleteList = new ArrayList<>();
-		mapRigheMandato.keySet().forEach(aEsercizioDocamm -> {
-			Map<String, Map<String, Map<String, Map<Long, List<Mandato_rigaBulk>>>>> mapEsercizioDocamm = mapRigheMandato.get(aEsercizioDocamm);
-			mapEsercizioDocamm.keySet().forEach(aTipoDocamm -> {
-				Map<String, Map<String, Map<Long, List<Mandato_rigaBulk>>>> mapTipoDocamm = mapEsercizioDocamm.get(aTipoDocamm);
-				mapTipoDocamm.keySet().forEach(aCdCdsDocamm -> {
-					Map<String, Map<Long, List<Mandato_rigaBulk>>> mapCdCdsDocamm = mapTipoDocamm.get(aCdCdsDocamm);
-					mapCdCdsDocamm.keySet().forEach(aCdUoDocamm -> {
-						Map<Long, List<Mandato_rigaBulk>> mapCdUoDocamm = mapCdCdsDocamm.get(aCdUoDocamm);
-						mapCdUoDocamm.keySet().forEach(aPgDocamm -> {
-							try {
-								List<Mandato_rigaBulk> listRigheMandato = mapCdUoDocamm.get(aPgDocamm);
-
-								IDocumentoAmministrativoBulk docamm;
-								if (TipoDocumentoEnum.fromValue(aTipoDocamm).isDocumentoAmministrativoPassivo()) {
-									docamm = (Documento_amministrativo_passivoBulk) getHome(userContext, Documento_amministrativo_passivoBulk.class)
-											.findByPrimaryKey(new Documento_amministrativo_passivoBulk(aCdCdsDocamm, aCdUoDocamm, aEsercizioDocamm, aPgDocamm));
-								} else if (TipoDocumentoEnum.fromValue(aTipoDocamm).isDocumentoGenericoPassivo()) {
-									Documento_genericoHome home = (Documento_genericoHome) getHome(userContext, Documento_genericoBulk.class);
-									docamm = (IDocumentoAmministrativoBulk)home.findByPrimaryKey(new Documento_genericoBulk(aCdCdsDocamm, aTipoDocamm, aCdUoDocamm, aEsercizioDocamm, aPgDocamm));
-								} else if (TipoDocumentoEnum.fromValue(aTipoDocamm).isMissione()) {
-									docamm = (MissioneBulk) getHome(userContext, MissioneBulk.class)
-											.findByPrimaryKey(new MissioneBulk(aCdCdsDocamm,aCdUoDocamm, aEsercizioDocamm, aPgDocamm));
-								} else if (TipoDocumentoEnum.fromValue(aTipoDocamm).isAnticipo()) {
-									docamm = (AnticipoBulk) getHome(userContext, AnticipoBulk.class)
-											.findByPrimaryKey(new AnticipoBulk(aCdCdsDocamm,aCdUoDocamm, aEsercizioDocamm, aPgDocamm));
-								} else
-									throw new ApplicationRuntimeException("Scrittura Economica non gestita per la tipologia di documento "+aTipoDocamm +
-											" collegato al mandato "+ mandato.getEsercizio() + "/" + mandato.getCd_cds() + "/" + mandato.getPg_manrev() +".");
-
-								mandatoRigaCompleteList.addAll(listRigheMandato.stream().map(rigaMandato->{
-									try {
-										Integer cdTerzo;
-										if (docamm instanceof MissioneBulk)
-											return new MandatoRigaComplete(docamm, rigaMandato, null, ((MissioneBulk) docamm).getCd_terzo());
-										else if (docamm instanceof AnticipoBulk)
-											return new MandatoRigaComplete(docamm, rigaMandato, null, ((AnticipoBulk) docamm).getCd_terzo());
-										else {
-											List<IDocumentoAmministrativoRigaBulk> docammRighe = this.getRigheDocamm(userContext, docamm).stream()
-													.filter(el->el.getScadenzaDocumentoContabile() instanceof Obbligazione_scadenzarioBulk)
-													.filter(el->
-															((Obbligazione_scadenzarioBulk)el.getScadenzaDocumentoContabile()).getEsercizio().equals(rigaMandato.getEsercizio_obbligazione()) &&
-																	((Obbligazione_scadenzarioBulk)el.getScadenzaDocumentoContabile()).getEsercizio_originale().equals(rigaMandato.getEsercizio_ori_obbligazione()) &&
-																	((Obbligazione_scadenzarioBulk)el.getScadenzaDocumentoContabile()).getCd_cds().equals(rigaMandato.getCd_cds()) &&
-																	((Obbligazione_scadenzarioBulk)el.getScadenzaDocumentoContabile()).getPg_obbligazione().equals(rigaMandato.getPg_obbligazione()) &&
-																	((Obbligazione_scadenzarioBulk)el.getScadenzaDocumentoContabile()).getPg_obbligazione_scadenzario().equals(rigaMandato.getPg_obbligazione_scadenzario())
-													).collect(Collectors.toList());
-
-											if (docammRighe.isEmpty())
-												throw new ApplicationException("Non è stato possibile individuare correttamente la riga del documento " +
-															docamm.getCd_tipo_doc()+"/"+docamm.getEsercizio()+"/"+docamm.getCd_uo()+"/"+docamm.getPg_doc_amm()+
-															" associata alla riga del mandato "+ mandato.getEsercizio() + "/" + mandato.getCd_cds() + "/" + mandato.getPg_manrev() +".");
-
-											if (docammRighe.stream().collect(Collectors.groupingBy(IDocumentoAmministrativoRigaBulk::getCd_terzo)).size()>1)
-												throw new ApplicationException("Risultano più righe del documento " +
-														docamm.getCd_tipo_doc()+"/"+docamm.getEsercizio()+"/"+docamm.getCd_uo()+"/"+docamm.getPg_doc_amm()+
-														" con terzi diversi associate alla stessa riga del mandato "+ mandato.getEsercizio() + "/" + mandato.getCd_cds() + "/" + mandato.getPg_manrev() +".");
-											return new MandatoRigaComplete(docamm, rigaMandato, docammRighe,
-													docammRighe.stream().findAny().map(IDocumentoAmministrativoRigaBulk::getCd_terzo).orElse(null));
-										}
-									} catch (ComponentException ex) {
-										throw new ApplicationRuntimeException(ex);
-									}
-								}).collect(Collectors.toList()));
-							} catch (ComponentException | PersistencyException e) {
-								throw new ApplicationRuntimeException(e);
-							}
-						});
-					});
-				});
-			});
-		});
-		return mandatoRigaCompleteList;
 	}
 
 	private TestataPrimaNota proposeTestataPrimaNotaManRevAnnullato(UserContext userContext, IManRevBulk manrev) throws ComponentException, PersistencyException {
@@ -3187,21 +3072,21 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 					" risulta pagare uno stipendio ma non risulta avere ritenute associate. Proposta di prima nota non possibile.");
 
 		//raggruppo i mandatiRiga per Partita
-		List<MandatoRigaComplete> dettaglioFinanziarioList = this.completeRigheMandato(userContext, mandato);
+		List<MandatoHome.MandatoRigaComplete> dettaglioFinanziarioList = ((MandatoHome)getHome(userContext, MandatoBulk.class)).completeRigheMandato(userContext, mandato);
 
-		Map<IDocumentoAmministrativoBulk, Map<Integer, List<MandatoRigaComplete>>> mapDettagli =
+		Map<IDocumentoAmministrativoBulk, Map<Integer, List<MandatoHome.MandatoRigaComplete>>> mapDettagli =
 				dettaglioFinanziarioList.stream()
-						.collect(Collectors.groupingBy(MandatoRigaComplete::getDocamm,
-								Collectors.groupingBy(MandatoRigaComplete::getCdTerzo)));
+						.collect(Collectors.groupingBy(MandatoHome.MandatoRigaComplete::getDocamm,
+								Collectors.groupingBy(MandatoHome.MandatoRigaComplete::getCdTerzo)));
 
 		TestataPrimaNota testataPrimaNota = new TestataPrimaNota();
 
 		//Recupero dal documento generico tutti i conti patrimoniali aperti
 		mapDettagli.keySet().forEach(aDocamm -> {
-			Map<Integer, List<MandatoRigaComplete>> mapDocAmm = mapDettagli.get(aDocamm);
+			Map<Integer, List<MandatoHome.MandatoRigaComplete>> mapDocAmm = mapDettagli.get(aDocamm);
 			mapDocAmm.keySet().forEach(aCdTerzo -> {
 				try {
-					List<MandatoRigaComplete> mandatoRigaCompleteList = mapDocAmm.get(aCdTerzo);
+					List<MandatoHome.MandatoRigaComplete> mandatoRigaCompleteList = mapDocAmm.get(aCdTerzo);
 					addDettagliPrimaNotaMandatoDocumentiVari(userContext, testataPrimaNota, mandato, aDocamm, aCdTerzo, mandatoRigaCompleteList);
 				} catch (ComponentException | PersistencyException | RemoteException e) {
 					throw new ApplicationRuntimeException(e);
@@ -3738,12 +3623,12 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		if (mandato.getIm_mandato().subtract(mandato.getIm_ritenute()).compareTo(BigDecimal.ZERO)!=0)
 			throw new ApplicationException(descEstesaMandato + " di importo non nullo. Proposta di prima nota non possibile.");
 
-		List<MandatoRigaComplete> dettaglioFinanziarioList = this.completeRigheMandato(userContext, mandato);
+		List<MandatoHome.MandatoRigaComplete> dettaglioFinanziarioList = ((MandatoHome)getHome(userContext, MandatoBulk.class)).completeRigheMandato(userContext, mandato);
 
 		if (dettaglioFinanziarioList.size()>1)
 			throw new ApplicationException(descEstesaMandato+" con più di una riga. Proposta di prima nota non possibile.");
 
-		MandatoRigaComplete rigaMandato = dettaglioFinanziarioList.stream().findAny()
+		MandatoHome.MandatoRigaComplete rigaMandato = dettaglioFinanziarioList.stream().findAny()
 				.orElseThrow(()->new ApplicationException(descEstesaMandato + " senza righe. Proposta di prima nota non possibile."));
 
 		Optional<Scrittura_partita_doppiaBulk> scritturaMandato = Optional.ofNullable(mandato.getScrittura_partita_doppia())
@@ -3967,7 +3852,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			Documento_genericoBulk docamm = (Documento_genericoBulk)home.findByPrimaryKey(new Documento_genericoBulk(rigaMandato.getCd_cds_doc_amm(), rigaMandato.getCd_tipo_documento_amm(),
 					rigaMandato.getCd_uo_doc_amm(), rigaMandato.getEsercizio_doc_amm(), rigaMandato.getPg_doc_amm()));
 
-			List<IDocumentoAmministrativoRigaBulk> righeDocamm = this.getRigheDocamm(userContext, docamm);
+			List<IDocumentoAmministrativoRigaBulk> righeDocamm = ((MandatoHome)getHome(userContext, MandatoBulk.class)).getRigheDocamm(userContext, docamm);
 			if (righeDocamm.size() !=1)
 				throw new ApplicationException("Il documento generico " + docamm.getEsercizio() + "/" + docamm.getCd_cds() + "/" + docamm.getPg_documento_generico() +
 						" risulta avere un numero di righe non coerente per un documento generico di apertura fondo economale. Proposta di prima nota non possibile.");
@@ -4146,9 +4031,9 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		return testataPrimaNota;
 	}
 
-	private void addDettagliPrimaNotaMandatoDocumentiVari(UserContext userContext, TestataPrimaNota testataPrimaNota, MandatoBulk mandato, IDocumentoAmministrativoBulk docamm, Integer cdTerzoDocAmm, List<MandatoRigaComplete> mandatoRigaCompleteList) throws ComponentException, PersistencyException, RemoteException {
-		final BigDecimal imLordoRigheMandato = mandatoRigaCompleteList.stream().map(MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_mandato_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
-		final BigDecimal imRitenuteRigheMandato = mandatoRigaCompleteList.stream().map(MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_ritenute_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
+	private void addDettagliPrimaNotaMandatoDocumentiVari(UserContext userContext, TestataPrimaNota testataPrimaNota, MandatoBulk mandato, IDocumentoAmministrativoBulk docamm, Integer cdTerzoDocAmm, List<MandatoHome.MandatoRigaComplete> mandatoRigaCompleteList) throws ComponentException, PersistencyException, RemoteException {
+		final BigDecimal imLordoRigheMandato = mandatoRigaCompleteList.stream().map(MandatoHome.MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_mandato_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
+		final BigDecimal imRitenuteRigheMandato = mandatoRigaCompleteList.stream().map(MandatoHome.MandatoRigaComplete::getMandatoRiga).map(Mandato_rigaBulk::getIm_ritenute_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
 		final BigDecimal imNettoRigheMandato = imLordoRigheMandato.subtract(imRitenuteRigheMandato);
 
 		if (imLordoRigheMandato.compareTo(BigDecimal.ZERO)==0 && imRitenuteRigheMandato.compareTo(BigDecimal.ZERO)==0)
@@ -4185,7 +4070,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			BigDecimal imponibile = imLordoRigheMandato.subtract(imRitenuteRigheMandato);
 			contiPatrimonialiDaChiudere.put(cdVocePatrimoniale, Pair.of(Movimento_cogeBulk.SEZIONE_DARE, Pair.of(imponibile, imRitenuteRigheMandato)));
 		} else {
-			List<IDocumentoAmministrativoRigaBulk> righeDocamm = this.getRigheDocamm(userContext, docamm);
+			List<IDocumentoAmministrativoRigaBulk> righeDocamm = ((MandatoHome)getHome(userContext, MandatoBulk.class)).getRigheDocamm(userContext, docamm);
 
 			List<DettaglioFinanziario> list = mandatoRigaCompleteList.stream()
 				.map(el -> {
@@ -5729,29 +5614,6 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			});
 		}
 		return coriList;
-	}
-
-	private List<IDocumentoAmministrativoRigaBulk> getRigheDocamm(UserContext userContext, IDocumentoAmministrativoBulk docamm) {
-		return Optional.ofNullable(docamm.getChildren()).filter(el -> !el.isEmpty()).orElseGet(() -> {
-			try {
-				List<IDocumentoAmministrativoRigaBulk> result;
-				if (docamm instanceof Documento_genericoBulk) {
-					Documento_genericoHome home = (Documento_genericoHome) getHome(userContext, Documento_genericoBulk.class);
-					result = home.findDocumentoGenericoRigheList((Documento_genericoBulk) docamm);
-					((Documento_genericoBulk)docamm).setDocumento_generico_dettColl(new BulkList(result));
-				} else if (docamm instanceof Fattura_passivaBulk) {
-					result = Utility.createFatturaPassivaComponentSession().findDettagli(userContext, (Fattura_passivaBulk) docamm);
-					((Fattura_passivaBulk)docamm).setFattura_passiva_dettColl(new BulkList(result));
-				} else if (docamm instanceof Fattura_attivaBulk) {
-					result = Utility.createFatturaAttivaSingolaComponentSession().findDettagli(userContext, (Fattura_attivaBulk) docamm);
-					((Fattura_attivaBulk) docamm).setFattura_attiva_dettColl(new BulkList(result));
-				} else
-					throw new ApplicationException("Scrittura Economica non possibile. Non risulta gestito il recupero delle righe di dettaglio di un documento di tipo "+ docamm.getCd_tipo_doc()+".");
-				return result;
-			} catch (ComponentException | PersistencyException | RemoteException | IntrospectionException e) {
-				throw new ApplicationRuntimeException(e);
-			}
-		});
 	}
 
 	private void completeMandato(UserContext userContext, MandatoBulk mandato) throws ComponentException, PersistencyException {

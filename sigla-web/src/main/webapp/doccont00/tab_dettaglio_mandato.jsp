@@ -45,6 +45,14 @@
                         "btn-outline-primary btn-title ml-3",
                         bp.isDispCassaCapitoloButtonEnabled(),
                         bp.getParentRoot().isBootstrap()); %>
+                    <% JSPUtils.button(out,
+                        bp.getParentRoot().isBootstrap() ? "fa fa-fw fa-refresh" : bp.encodePath("img/zoom24.gif"),
+                        bp.getParentRoot().isBootstrap() ? "fa fa-fw fa-refresh" : bp.encodePath("img/zoom24.gif"),
+                        bp.encodePath("Cambia Modalità di Pagamento"),
+                        "javascript:submitForm('doCambiaModalitaPagamento')",
+                        "btn-outline-info btn-title ml-3",
+                        bp.isEditing() || bp.isInserting(),
+                        bp.getParentRoot().isBootstrap()); %>
                 </td>
             </tr>
         </table>
