@@ -52,11 +52,9 @@ import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.PrimaryKeyHashMap;
-import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
@@ -80,6 +78,7 @@ public class ReversaleComponent extends ScritturaPartitaDoppiaFromDocumentoCompo
     public final static String INSERIMENTO_REVERSALE_ACTION = "I";
     public final static String ANNULLAMENTO_REVERSALE_ACTION = "A";
     public final static String MODIFICA_REVERSALE_ACTION = "M";
+    public static final ApplicationException APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG = new ApplicationException("Attenzione le righe della reversale devono avere la stessa modalità di pagamento");
     private static final DateFormat PDF_DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
     //@@<< CONSTRUCTORCST
@@ -348,9 +347,9 @@ Attenzione: l'importo della riga non viene mai modificato
                 importo = rigaDaDB.getIm_reversale_riga().negate();
             else if (riga.getIm_reversale_riga().compareTo(rigaDaDB.getIm_reversale_riga()) == 0) //caso 3 - no modifica importo
                 return;
-	/*	else //caso 1 - modifica importo
-		importo = riga.getIm_reversale_riga().subtract(rigaDaDB.getIm_reversale_riga());
-	*/
+    /*	else //caso 1 - modifica importo
+        importo = riga.getIm_reversale_riga().subtract(rigaDaDB.getIm_reversale_riga());
+    */
             scadenza.setIm_associato_doc_contabile(scadenza.getIm_associato_doc_contabile().add(importo));
         }
     }
@@ -433,9 +432,9 @@ Attenzione: l'importo della riga non viene mai modificato
                 sospeso.setUser(aUC.getUser());
             }
 /*  24/09/2002
-	Commentata la chiamata al metodo per l'impostazione dell'importo incassato della
-	Reversale, in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
-	quando viene associata ad un sospeso */
+    Commentata la chiamata al metodo per l'impostazione dell'importo incassato della
+    Reversale, in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
+    quando viene associata ad un sospeso */
 //		reversale.setIm_incassato( totSospesi );
 //		reversale.setToBeUpdated();
 
@@ -444,14 +443,14 @@ Attenzione: l'importo della riga non viene mai modificato
                 sde = (Sospeso_det_etrBulk) i.next();
                 sospeso = sde.getSospeso();
                 lockBulk(aUC, sospeso);
-			/*
-			if ( sde.isToBeCreated() )
-			{
-				if ( sde.getIm_associato().compareTo( sospeso.getIm_disponibile() ) > 0 )
-					throw new ApplicationException( "L'importo specificato per il sospeso deve essere inferiore all'importo disponibile del sospeso");
-				sospeso.setIm_associato( sospeso.getIm_associato().add( sde.getIm_associato()));
-			}
-			else */
+            /*
+            if ( sde.isToBeCreated() )
+            {
+                if ( sde.getIm_associato().compareTo( sospeso.getIm_disponibile() ) > 0 )
+                    throw new ApplicationException( "L'importo specificato per il sospeso deve essere inferiore all'importo disponibile del sospeso");
+                sospeso.setIm_associato( sospeso.getIm_associato().add( sde.getIm_associato()));
+            }
+            else */
                 if (sde.isToBeDeleted()) {
                     sdeFromDb = (Sospeso_det_etrBulk) getHome(aUC, Sospeso_det_etrBulk.class).findByPrimaryKey(sde);
                     sospeso.setIm_associato(sospeso.getIm_associato().subtract(sdeFromDb.getIm_associato()));
@@ -619,8 +618,8 @@ Attenzione: l'importo della riga non viene mai modificato
                 ti_competenza_residuo = ((V_doc_attivo_accertamentoBulk) docAttivi.get(0)).getTi_competenza_residuo();
             } else {
                 cd_terzo = reversale.getReversale_terzo().getCd_terzo();
-                ti_pagamento = ((Reversale_rigaIBulk) reversale.getReversale_rigaColl().get(0)).getBanca().getTi_pagamento();
-                pGiro = ((Reversale_rigaIBulk) reversale.getReversale_rigaColl().get(0)).getFl_pgiro();
+                ti_pagamento = reversale.getReversale_rigaColl().get(0).getBanca().getTi_pagamento();
+                pGiro = reversale.getReversale_rigaColl().get(0).getFl_pgiro();
                 ti_competenza_residuo = reversale.getTi_competenza_residuo();
             }
 
@@ -774,22 +773,22 @@ Attenzione: l'importo della riga non viene mai modificato
                 }
             }
             //itero anche fra i sospesi che sono stati cancellati
-		/*
-		for ( Iterator i = reversale.getSospeso_det_etrColl().deleteIterator(); i.hasNext(); )
-		{
-			sde = (Sospeso_det_etrBulk) i.next();
-			sospeso = sde.getSospeso();
-			lockBulk( aUC, sospeso );
-			sdeFromDb = (Sospeso_det_etrBulk) getHome( aUC, Sospeso_det_etrBulk.class ).findByPrimaryKey( sde );
-			if ( sdeFromDb != null )
-			{
-				sospeso.setIm_associato( sospeso.getIm_associato().subtract( sdeFromDb.getIm_associato()));
-				sospeso.setToBeUpdated();
-				sospeso.setUser( ((it.cnr.contab.utenze00.bp.CNRUserContext) aUC).getUser());
+        /*
+        for ( Iterator i = reversale.getSospeso_det_etrColl().deleteIterator(); i.hasNext(); )
+        {
+            sde = (Sospeso_det_etrBulk) i.next();
+            sospeso = sde.getSospeso();
+            lockBulk( aUC, sospeso );
+            sdeFromDb = (Sospeso_det_etrBulk) getHome( aUC, Sospeso_det_etrBulk.class ).findByPrimaryKey( sde );
+            if ( sdeFromDb != null )
+            {
+                sospeso.setIm_associato( sospeso.getIm_associato().subtract( sdeFromDb.getIm_associato()));
+                sospeso.setToBeUpdated();
+                sospeso.setUser( ((it.cnr.contab.utenze00.bp.CNRUserContext) aUC).getUser());
 
-			}
-		}
-		*/
+            }
+        }
+        */
             return reversale;
         } catch (Exception e) {
             throw handleException(e);
@@ -927,9 +926,9 @@ Attenzione: l'importo della riga non viene mai modificato
             if (annullaCollegati)
                 annullaDocContabiliCollegati(userContext, reversale);
 /*  24/09/2002
-	Commentata la chiamata alla stored procedure per l'aggiornamento dei saldi,
-	in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
-	quando viene associata ad un sospeso */
+    Commentata la chiamata alla stored procedure per l'aggiornamento dei saldi,
+    in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
+    quando viene associata ad un sospeso */
             // if ( reversale.getIm_reversale().compareTo( reversale.getIm_incassato()) == 0 )
             //	aggiornaSaldoPagato( userContext, reversale, ANNULLAMENTO_REVERSALE_ACTION );
 
@@ -945,7 +944,7 @@ Attenzione: l'importo della riga non viene mai modificato
             /* REVERSALE */
             annullaReversale(userContext, reversale, false);
             /* DOC GENERICO */
-            Reversale_rigaBulk rRiga = (Reversale_rigaBulk) reversale.getReversale_rigaColl().get(0);
+            Reversale_rigaBulk rRiga = reversale.getReversale_rigaColl().get(0);
             Documento_genericoBulk docGenerico = new Documento_genericoBulk(rRiga.getCd_cds(), rRiga.getCd_tipo_documento_amm(), rRiga.getCd_uo_doc_amm(), rRiga.getEsercizio_doc_amm(), rRiga.getPg_doc_amm());
             DocumentoGenericoComponentSession docSession = createDocumentoGenericoComponentSession();
             docGenerico = (Documento_genericoBulk) docSession.inizializzaBulkPerModifica(userContext, docGenerico);
@@ -986,15 +985,15 @@ Attenzione: l'importo della riga non viene mai modificato
             /* REVERSALE */
             annullaReversale(userContext, reversale);
             /* DOC GENERICO */
-		/*
-		Reversale_rigaBulk rRiga = (Reversale_rigaBulk) reversale.getReversale_rigaColl().get(0);
-		Documento_genericoBulk docGenerico = new Documento_genericoBulk( rRiga.getCd_cds(), rRiga.getCd_tipo_documento_amm(), rRiga.getCd_uo_doc_amm(), rRiga.getEsercizio_doc_amm(), rRiga.getPg_doc_amm());
-		DocumentoGenericoComponentSession docSession = createDocumentoGenericoComponentSession();
-		docGenerico = (Documento_genericoBulk) docSession.inizializzaBulkPerModifica( userContext, docGenerico );
-		//????? annulla documento contabile
+        /*
+        Reversale_rigaBulk rRiga = (Reversale_rigaBulk) reversale.getReversale_rigaColl().get(0);
+        Documento_genericoBulk docGenerico = new Documento_genericoBulk( rRiga.getCd_cds(), rRiga.getCd_tipo_documento_amm(), rRiga.getCd_uo_doc_amm(), rRiga.getEsercizio_doc_amm(), rRiga.getPg_doc_amm());
+        DocumentoGenericoComponentSession docSession = createDocumentoGenericoComponentSession();
+        docGenerico = (Documento_genericoBulk) docSession.inizializzaBulkPerModifica( userContext, docGenerico );
+        //????? annulla documento contabile
 //		docSession.eliminaConBulk( userContext, docGenerico );
-		docGenerico_annullaDocumentoGenerico( userContext, docGenerico );
-		*/
+        docGenerico_annullaDocumentoGenerico( userContext, docGenerico );
+        */
             aggiornaSaldoIncassato(userContext, reversale, ANNULLAMENTO_REVERSALE_ACTION);
         } catch (Exception e) {
             throw handleException(e);
@@ -1019,7 +1018,7 @@ Attenzione: l'importo della riga non viene mai modificato
             /* REVERSALE */
             annullaReversale(userContext, reversale);
             /* DOC GENERICO */
-            Reversale_rigaBulk rRiga = (Reversale_rigaBulk) reversale.getReversale_rigaColl().get(0);
+            Reversale_rigaBulk rRiga = reversale.getReversale_rigaColl().get(0);
             Documento_genericoBulk docGenerico = new Documento_genericoBulk(rRiga.getCd_cds(), rRiga.getCd_tipo_documento_amm(), rRiga.getCd_uo_doc_amm(), rRiga.getEsercizio_doc_amm(), rRiga.getPg_doc_amm());
             DocumentoGenericoComponentSession docSession = createDocumentoGenericoComponentSession();
             docGenerico = (Documento_genericoBulk) docSession.inizializzaBulkPerModifica(userContext, docGenerico);
@@ -1228,9 +1227,9 @@ REVERSALE
         aggiornaStatoFattura(userContext, reversale, INSERIMENTO_REVERSALE_ACTION);
 
 /*  24/09/2002
-	Commentata la chiamata alla stored procedure per l'aggiornamento dei saldi,
-	in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
-	quando viene associata ad un sospeso */
+    Commentata la chiamata alla stored procedure per l'aggiornamento dei saldi,
+    in quanto adesso non si imposta più a INCASSATO lo stato di una Reversale,
+    quando viene associata ad un sospeso */
         // if ( reversale.getIm_incassato().compareTo( reversale.getIm_reversale()) == 0 )
         //	aggiornaSaldoPagato( userContext, reversale, INSERIMENTO_REVERSALE_ACTION );
 
@@ -1474,36 +1473,36 @@ REVERSALE
 
 
 /* GESTIONE DISTINTA PER PARTITA DI GIRO E NON
-		fl_pgiro = ((Mandato_rigaBulk) mandato.getMandato_rigaColl().get(0)).getFl_pgiro();
+        fl_pgiro = ((Mandato_rigaBulk) mandato.getMandato_rigaColl().get(0)).getFl_pgiro();
 
-		//SU PGIRO: creo una riga di documento generico per ogni riga di mandato
-		if ( fl_pgiro.booleanValue() )
-		{
-			for ( Iterator i = mandato.getMandato_rigaColl().iterator(); i.hasNext(); )
-			{
-				mRiga = (Mandato_rigaBulk)i.next();
-				scadenza = ((ImpegnoPGiroHome)getHome( userContext, ImpegnoPGiroBulk.class )).findAccertamentoScadenzarioPGiro( mRiga.getEsercizio_obbligazione(), mRiga.getCd_cds(), mRiga.getEsercizio_ori_obbligazione(), mRiga.getPg_obbligazione());
-				//CREA UNA RIGA DEL DOCUMENTO CONTABILIZZATA SULLA SCADENZA DELL'ACCERTAMENTO
-				dRiga = docGenerico_creaDocumentoGenericoRiga( userContext, documento, scadenza, mRiga.getIm_mandato_riga()  );
-			}
-		}
-		else //NON SU PGIRO: creo una riga di documento generico per ogni scadenza della obbligazione
-		{
-			for ( Iterator i = ((MandatoIBulk)mandato).getAccertamentoPerRegolarizzazione().getAccertamento_scadenzarioColl().iterator(); i.hasNext(); )
-			{
-				scadenza = (Accertamento_scadenzarioBulk) i.next();
-				if ( scadenza.getIm_associato_doc_amm().compareTo( new java.math.BigDecimal(0)) == 0 )
-					dRiga = docGenerico_creaDocumentoGenericoRiga( userContext, documento, scadenza, scadenza.getIm_scadenza()  );
-			}
+        //SU PGIRO: creo una riga di documento generico per ogni riga di mandato
+        if ( fl_pgiro.booleanValue() )
+        {
+            for ( Iterator i = mandato.getMandato_rigaColl().iterator(); i.hasNext(); )
+            {
+                mRiga = (Mandato_rigaBulk)i.next();
+                scadenza = ((ImpegnoPGiroHome)getHome( userContext, ImpegnoPGiroBulk.class )).findAccertamentoScadenzarioPGiro( mRiga.getEsercizio_obbligazione(), mRiga.getCd_cds(), mRiga.getEsercizio_ori_obbligazione(), mRiga.getPg_obbligazione());
+                //CREA UNA RIGA DEL DOCUMENTO CONTABILIZZATA SULLA SCADENZA DELL'ACCERTAMENTO
+                dRiga = docGenerico_creaDocumentoGenericoRiga( userContext, documento, scadenza, mRiga.getIm_mandato_riga()  );
+            }
+        }
+        else //NON SU PGIRO: creo una riga di documento generico per ogni scadenza della obbligazione
+        {
+            for ( Iterator i = ((MandatoIBulk)mandato).getAccertamentoPerRegolarizzazione().getAccertamento_scadenzarioColl().iterator(); i.hasNext(); )
+            {
+                scadenza = (Accertamento_scadenzarioBulk) i.next();
+                if ( scadenza.getIm_associato_doc_amm().compareTo( new java.math.BigDecimal(0)) == 0 )
+                    dRiga = docGenerico_creaDocumentoGenericoRiga( userContext, documento, scadenza, scadenza.getIm_scadenza()  );
+            }
 
-		}
-		documento = (Documento_genericoBulk) createDocumentoGenericoComponentSession().creaConBulk( userContext, documento );
+        }
+        documento = (Documento_genericoBulk) createDocumentoGenericoComponentSession().creaConBulk( userContext, documento );
 
 
-		// creo una reversale riga per ogni riga di doc. generico
-		for ( Iterator i = documento.getDocumento_generico_dettColl().iterator(); i.hasNext(); )
-			creaReversaleRiga( userContext, reversale, (Documento_generico_rigaBulk) i.next(), fl_pgiro );
-		reversale = (ReversaleIBulk) creaConBulk( userContext, reversale);
+        // creo una reversale riga per ogni riga di doc. generico
+        for ( Iterator i = documento.getDocumento_generico_dettColl().iterator(); i.hasNext(); )
+            creaReversaleRiga( userContext, reversale, (Documento_generico_rigaBulk) i.next(), fl_pgiro );
+        reversale = (ReversaleIBulk) creaConBulk( userContext, reversale);
 */
             return reversale;
         } catch (Exception e) {
@@ -1581,7 +1580,7 @@ REVERSALE
             }
             documento = (Documento_genericoBulk) createDocumentoGenericoComponentSession().creaConBulk(userContext, documento);
             for (Iterator i = documento.getDocumento_generico_dettColl().iterator(); i.hasNext(); )
-                creaReversaleRiga(userContext, reversale, (Documento_generico_rigaBulk) i.next(), new Boolean(false));
+                creaReversaleRiga(userContext, reversale, (Documento_generico_rigaBulk) i.next(), Boolean.FALSE);
             reversale = (ReversaleIBulk) creaConBulk(userContext, reversale);
             return reversale;
         } catch (Exception e) {
@@ -1787,10 +1786,10 @@ REVERSALE
 
             //imposto le coordinate bancarie del terzo uo
 /*		SQLBuilder sql = getHome( userContext, TerzoBulk.class ).createSQLBuilder();
-		sql.addClause( "AND", "cd_unita_organizzativa", sql.LIKE, reversale.getCd_cds()+".%");
-		List result = getHome( userContext, TerzoBulk.class ).fetchAll( sql );
-		if ( result.size() == 0 )
-			throw handleException( new ApplicationException(" Impossibile emettere la reversale: il Cds non e' stato codificato in anagrafica"));
+        sql.addClause( "AND", "cd_unita_organizzativa", sql.LIKE, reversale.getCd_cds()+".%");
+        List result = getHome( userContext, TerzoBulk.class ).fetchAll( sql );
+        if ( result.size() == 0 )
+            throw handleException( new ApplicationException(" Impossibile emettere la reversale: il Cds non e' stato codificato in anagrafica"));
 */
 
             TerzoBulk terzo_uo = new TerzoBulk(docAttivo.getCd_terzo_uo_cds());
@@ -2073,56 +2072,56 @@ REVERSALE
 //		documento.setDt_annullamento( getHome(userContext, Documento_genericoBulk.class).getServerTimestamp());
 //		documento.setToBeUpdated();
 /*
-		Documento_generico_rigaBulk riga;
-		Obbligazione_scadenzarioBulk os;
-		Accertamento_scadenzarioBulk as;
-		for ( Iterator i = documento.getDocumento_generico_dettColl().iterator(); i.hasNext(); )
-		{
-			riga = (Documento_generico_rigaBulk) i.next();
-			if ( riga.getAccertamento_scadenziario() != null )
-			{
+        Documento_generico_rigaBulk riga;
+        Obbligazione_scadenzarioBulk os;
+        Accertamento_scadenzarioBulk as;
+        for ( Iterator i = documento.getDocumento_generico_dettColl().iterator(); i.hasNext(); )
+        {
+            riga = (Documento_generico_rigaBulk) i.next();
+            if ( riga.getAccertamento_scadenziario() != null )
+            {
 //				as = riga.getAccertamento_scadenziario();
-				as = (Accertamento_scadenzarioBulk)getHome(
-							userContext,
-							Accertamento_scadenzarioBulk.class ).findAndLock(
-								new Accertamento_scadenzarioBulk(
-									riga.getAccertamento_scadenziario().getCd_cds(),
-									riga.getAccertamento_scadenziario().getEsercizio(),
-									riga.getAccertamento_scadenziario().getEsercizio_originale(),
-									riga.getAccertamento_scadenziario().getPg_accertamento(),
-									riga.getAccertamento_scadenziario().getPg_accertamento_scadenzario()));
-				AccertamentoBulk accertamento = (AccertamentoBulk) getHome( userContext, AccertamentoBulk.class ).findAndLock( as.getAccertamento());
+                as = (Accertamento_scadenzarioBulk)getHome(
+                            userContext,
+                            Accertamento_scadenzarioBulk.class ).findAndLock(
+                                new Accertamento_scadenzarioBulk(
+                                    riga.getAccertamento_scadenziario().getCd_cds(),
+                                    riga.getAccertamento_scadenziario().getEsercizio(),
+                                    riga.getAccertamento_scadenziario().getEsercizio_originale(),
+                                    riga.getAccertamento_scadenziario().getPg_accertamento(),
+                                    riga.getAccertamento_scadenziario().getPg_accertamento_scadenzario()));
+                AccertamentoBulk accertamento = (AccertamentoBulk) getHome( userContext, AccertamentoBulk.class ).findAndLock( as.getAccertamento());
 //				accertamento.setUser( userContext.getUser());
 //				updateBulk( userContext, accertamento );
-				lockBulk( userContext, accertamento );
-				as.setIm_associato_doc_amm( as.getIm_associato_doc_amm().subtract(riga.getIm_riga()));
-				as.setUser( userContext.getUser());
-				updateBulk( userContext, as );
+                lockBulk( userContext, accertamento );
+                as.setIm_associato_doc_amm( as.getIm_associato_doc_amm().subtract(riga.getIm_riga()));
+                as.setUser( userContext.getUser());
+                updateBulk( userContext, as );
 
-			}
-			else if ( riga.getObbligazione_scadenziario() != null )
-			{
+            }
+            else if ( riga.getObbligazione_scadenziario() != null )
+            {
 //				os = riga.getObbligazione_scadenziario();
-				os = (Obbligazione_scadenzarioBulk)getHome(
-							userContext,
-							Obbligazione_scadenzarioBulk.class ).findAndLock(
-								new Obbligazione_scadenzarioBulk(
-									riga.getObbligazione_scadenziario().getCd_cds(),
-									riga.getObbligazione_scadenziario().getEsercizio(),
-									riga.getObbligazione_scadenziario().getEsercizio_originale(),
-									riga.getObbligazione_scadenziario().getPg_obbligazione(),
-									riga.getObbligazione_scadenziario().getPg_obbligazione_scadenzario()));
+                os = (Obbligazione_scadenzarioBulk)getHome(
+                            userContext,
+                            Obbligazione_scadenzarioBulk.class ).findAndLock(
+                                new Obbligazione_scadenzarioBulk(
+                                    riga.getObbligazione_scadenziario().getCd_cds(),
+                                    riga.getObbligazione_scadenziario().getEsercizio(),
+                                    riga.getObbligazione_scadenziario().getEsercizio_originale(),
+                                    riga.getObbligazione_scadenziario().getPg_obbligazione(),
+                                    riga.getObbligazione_scadenziario().getPg_obbligazione_scadenzario()));
 
-				ObbligazioneBulk obbligazione = (ObbligazioneBulk) getHome( userContext, ObbligazioneBulk.class ).findAndLock( os.getObbligazione());
+                ObbligazioneBulk obbligazione = (ObbligazioneBulk) getHome( userContext, ObbligazioneBulk.class ).findAndLock( os.getObbligazione());
 //				obbligazione.setUser( userContext.getUser());
 //				updateBulk( userContext, obbligazione);
-				lockBulk( userContext, obbligazione);
-				os.setIm_associato_doc_amm( os.getIm_associato_doc_amm().subtract(riga.getIm_riga()));
-				os.setUser( userContext.getUser());
-				updateBulk( userContext, os );
-			}
+                lockBulk( userContext, obbligazione);
+                os.setIm_associato_doc_amm( os.getIm_associato_doc_amm().subtract(riga.getIm_riga()));
+                os.setUser( userContext.getUser());
+                updateBulk( userContext, os );
+            }
 
-		}
+        }
 //		makeBulkPersistent( userContext, documento );
 */
             return documento;
@@ -2167,7 +2166,7 @@ REVERSALE
             documento.setDs_documento_generico("DOCUMENTO CREATO IN AUTOMATICO ASSOCIATO A REVERSALE DI " +
                     ((String) reversale.getTipoReversaleKeys().get(reversale.getTi_reversale())).toUpperCase());
             documento.setIm_totale(reversale.getIm_reversale());
-            DivisaBulk divisa = new DivisaBulk(docGenerico_createConfigurazioneCnrComponentSession().getVal01(userContext, new Integer(0), "*", Configurazione_cnrBulk.PK_CD_DIVISA, Configurazione_cnrBulk.SK_EURO));
+            DivisaBulk divisa = new DivisaBulk(docGenerico_createConfigurazioneCnrComponentSession().getVal01(userContext, Integer.valueOf(0), "*", Configurazione_cnrBulk.PK_CD_DIVISA, Configurazione_cnrBulk.SK_EURO));
             documento.setValuta(divisa);
             documento.setCambio(new BigDecimal(1));
 //		documento.setFl_modifica_coge(new Boolean( false));
@@ -2373,7 +2372,7 @@ REVERSALE
                             "CONTO_CORRENTE_SPECIALE",
                             "ENTE",
                             "*",
-                            new Integer(0));
+                            Integer.valueOf(0));
                     it.cnr.contab.config00.bulk.Configurazione_cnrHome home = (it.cnr.contab.config00.bulk.Configurazione_cnrHome) getHome(userContext, config);
                     List configurazioni = home.find(config);
                     if ((configurazioni != null) && (configurazioni.size() == 1)) {
@@ -2472,10 +2471,10 @@ REVERSALE
 //			updateBulk( userContext, riga);
                 aggiornaCapitoloSaldoRiga(userContext, riga, session);
             }
-		/* simona 9.12.2002 commentato perchè altrimenti il doc. generico TRASF_E veniva annullato
-		   e successivamente non si riusciva più ad annullare il mandato di accreditamento collegato alla reversale
-		aggiornaStatoFattura( userContext, reversale, ANNULLAMENTO_REVERSALE_ACTION );
-		*/
+        /* simona 9.12.2002 commentato perchè altrimenti il doc. generico TRASF_E veniva annullato
+           e successivamente non si riusciva più ad annullare il mandato di accreditamento collegato alla reversale
+        aggiornaStatoFattura( userContext, reversale, ANNULLAMENTO_REVERSALE_ACTION );
+        */
             aggiornaImportoAccertamenti(userContext, reversale);
             super.eliminaConBulk(userContext, reversale);
         } catch (Exception e) {
@@ -2680,8 +2679,8 @@ REVERSALE
      * delle associazioni mandato-reversale( Ass_mandato_reversaleBulk). Vengono caricati i dati del terzo della reversale (Reversale_terzoBulk)
      * e viene verificato il tipo bollo (metodo verificaTipoBollo)
      *
-     * @param userContext  lo <code>UserContext</code> che ha generato la richiesta
-     * @param bulk <code>OggettoBulk</code> la reversale da inizializzare per la modifica
+     * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+     * @param bulk        <code>OggettoBulk</code> la reversale da inizializzare per la modifica
      * @return reversale la Reversale inizializzata per la modifica
      */
 /*
@@ -2756,13 +2755,13 @@ REVERSALE
 
             // carico i mandati associati alla reversale
 /*		sql = getHome( userContext, Ass_mandato_reversaleBulk.class ).createSQLBuilder();
-		sql.addClause("AND","esercizio",sql.EQUALS, reversale.getEsercizio() );
-		sql.addClause("AND","cd_cds",sql.EQUALS, reversale.getCds().getCd_unita_organizzativa() );
-		sql.addClause("AND","pg_reversale",sql.EQUALS, reversale.getPg_reversale() );
-		result = getHome( userContext, Ass_mandato_reversaleBulk.class ).fetchAll( sql );
-		if ( result.size() == 0 )
-			throw new ApplicationException("Non esiste associazione fra mandati e reversali");
-		reversale.setMandatiColl( new BulkList(result) );
+        sql.addClause("AND","esercizio",sql.EQUALS, reversale.getEsercizio() );
+        sql.addClause("AND","cd_cds",sql.EQUALS, reversale.getCds().getCd_unita_organizzativa() );
+        sql.addClause("AND","pg_reversale",sql.EQUALS, reversale.getPg_reversale() );
+        result = getHome( userContext, Ass_mandato_reversaleBulk.class ).fetchAll( sql );
+        if ( result.size() == 0 )
+            throw new ApplicationException("Non esiste associazione fra mandati e reversali");
+        reversale.setMandatiColl( new BulkList(result) );
 */
             reversale.setMandatiColl(new BulkList(((Ass_mandato_reversaleHome) getHome(userContext, Ass_mandato_reversaleBulk.class)).findMandati(userContext, reversale)));
 
@@ -2836,8 +2835,8 @@ REVERSALE
 
         stampa.setDataInizio(DateServices.getFirstDayOfYear(CNRUserContext.getEsercizio(userContext).intValue()));
         stampa.setDataFine(getDataOdierna(userContext));
-        stampa.setPgInizio(new Long(0));
-        stampa.setPgFine(new Long("9999999999"));
+        stampa.setPgInizio(Long.valueOf(0));
+        stampa.setPgFine(Long.valueOf("9999999999"));
 
         stampa.setUnita_organizzativa(new Unita_organizzativaBulk());
 
@@ -2874,8 +2873,8 @@ REVERSALE
 
         stampa.setDataInizio(DateServices.getFirstDayOfYear(CNRUserContext.getEsercizio(userContext).intValue()));
         stampa.setDataFine(getDataOdierna(userContext));
-        stampa.setPgInizio(new Long(0));
-        stampa.setPgFine(new Long("9999999999"));
+        stampa.setPgInizio(Long.valueOf(0));
+        stampa.setPgFine(Long.valueOf("9999999999"));
 
         stampa.setTerzoForPrint(new TerzoBulk());
     }
@@ -2914,7 +2913,7 @@ REVERSALE
 
     }
 /* per le date salvate nel database come timestamp bisogna ridefinire la query nel modo seguente:
-		TRUNC( dt_nel_db) operator 'GG/MM/YYYY'
+        TRUNC( dt_nel_db) operator 'GG/MM/YYYY'
 */
 
     /**
@@ -3275,25 +3274,15 @@ REVERSALE
      * PostCondition:
      * La reversale ha superato la validazione e può pertanto essere salvata
      *
-     * @param aUC       lo <code>UserContext</code> che ha generato la richiesta
-     * @param reversale <code>ReversaleBulk</code> la reversale di cui si verifica la correttezza
+     * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+     * @param reversale   <code>ReversaleBulk</code> la reversale di cui si verifica la correttezza
      */
 
-    private void verificaModalitaPagamento(UserContext aUC, ReversaleBulk reversale) throws ComponentException {
+    private void verificaModalitaPagamento(UserContext userContext, ReversaleBulk reversale) throws ComponentException {
         try {
             if (reversale.getReversale_rigaColl().size() == 0)
                 return;
-            Reversale_rigaBulk riga = (Reversale_rigaBulk) reversale.getReversale_rigaColl().get(0);
-
-/*		if ( riga.getBanca() == null ||
-			  riga.getBanca().getNumero_conto() == null) //reversale di regolarizzazione
-			return;
-
-		if ( Rif_modalita_pagamentoBulk.ALTRO.equals( riga.getBanca().getTi_pagamento()) ||
-		     Rif_modalita_pagamentoBulk.IBAN.equals( riga.getBanca().getTi_pagamento()) ||
-			Rif_modalita_pagamentoBulk.QUIETANZA.equals( riga.getBanca().getTi_pagamento()))
-			return;
-*/
+            Reversale_rigaBulk riga = reversale.getReversale_rigaColl().get(0);
             if (riga.getBanca() == null ||
                     ReversaleBulk.TIPO_REGOLARIZZAZIONE.equals(reversale.getTi_reversale())) //reversale di regolarizzazione
                 return;
@@ -3311,15 +3300,9 @@ REVERSALE
 
             for (Iterator i = reversale.getReversale_rigaColl().iterator(); i.hasNext(); ) {
                 riga = (Reversale_rigaBulk) i.next();
-
-//			if ( Numerazione_doc_ammBulk.TIPO_FATTURA_ATTIVA.equals( riga.getCd_tipo_documento_amm() ) &&
-//				  riga.getTi_fattura().equals( Fattura_passiva_IBulk.TIPO_NOTA_DI_CREDITO ) )
-//			// si tratta di una nota di credito - non deve essere effettuato la verifica delle modalità di pagamento
-//				continue;
-//
                 //modalità di pagamento
                 if (!riga.getModalita_pagamento().getCd_modalita_pag().equals(cd_modalita_pag))
-                    throw new ApplicationException("Attenzione le righe della reversale devono avere la stessa modalità di pagamento");
+                    throw APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG;
 
                 //conto bancario
                 if (Rif_modalita_pagamentoBulk.BANCARIO.equals(riga.getBanca().getTi_pagamento()) &&
@@ -3342,12 +3325,68 @@ REVERSALE
                             if ((Rif_modalita_pagamentoBulk.ALTRO.equals(riga.getBanca().getTi_pagamento()) ||
                                     Rif_modalita_pagamentoBulk.IBAN.equals(riga.getBanca().getTi_pagamento())) &&
                                     !intestazione.equals(riga.getBanca().getIntestazione()))
-                                throw new ApplicationException("Attenzione le righe della reversale devono avere la stessa modalità di pagamento");
+                                throw APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG;
 
             }
         } catch (Exception e) {
             throw handleException(e);
         }
+        /**
+         * Controllo se la modalità di pagamento è stata cambiata in tal caso aggiorno anche quella sulle righe del documento amministrativo collegato
+         */
+        final BancaBulk bancaBulk = reversale.getReversale_rigaColl()
+                .stream()
+                .map(Reversale_rigaBulk::getBanca)
+                .findAny()
+                .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
+        final Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = reversale.getReversale_rigaColl()
+                .stream()
+                .map(Reversale_rigaBulk::getModalita_pagamento)
+                .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
+                .findAny()
+                .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
+
+        final Reversale_rigaHome home = (Reversale_rigaHome) getHome(userContext, Reversale_rigaBulk.class);
+        reversale.getReversale_rigaColl()
+                .stream()
+                .forEach(reversaleRigaBulk -> {
+                    try {
+                        final IDocumentoAmministrativoEntrataBulk documentoAmministrativoEntrataBulk = home.getDocumentoAmministrativoBulk(userContext, reversaleRigaBulk);
+                        if (documentoAmministrativoEntrataBulk instanceof Fattura_attivaBulk) {
+                            Fattura_attivaBulk fatturaAttivaBulk = (Fattura_attivaBulk)documentoAmministrativoEntrataBulk;
+                            if (!bancaBulk.equalsByPrimaryKey(fatturaAttivaBulk.getBanca_uo()) ||
+                                    !rifModalitaPagamentoBulk.equalsByPrimaryKey(fatturaAttivaBulk.getModalita_pagamento_uo())) {
+                                fatturaAttivaBulk.setBanca_uo(bancaBulk);
+                                fatturaAttivaBulk.setModalita_pagamento_uo(rifModalitaPagamentoBulk);
+                                fatturaAttivaBulk.setToBeUpdated();
+                                super.updateBulk(userContext, fatturaAttivaBulk);
+                            }
+                        } else if (documentoAmministrativoEntrataBulk instanceof Documento_genericoBulk) {
+                            Documento_genericoBulk documentoGenericoAttivoBulk = (Documento_genericoBulk)documentoAmministrativoEntrataBulk;
+                            Documento_genericoHome documentoGenericoHome = (Documento_genericoHome)getHome(userContext, Documento_genericoBulk.class);
+                            final List<Documento_generico_rigaBulk> documentoGenericoRigheList = documentoGenericoHome.findDocumentoGenericoRigheList(documentoGenericoAttivoBulk);
+                            for (Documento_generico_rigaBulk documentoGenericoRigaBulk : documentoGenericoRigheList) {
+                                if (documentoGenericoRigaBulk.getAccertamento_scadenziario().equalsByPrimaryKey(
+                                        new Accertamento_scadenzarioBulk(
+                                                reversaleRigaBulk.getCd_cds(),
+                                                reversaleRigaBulk.getEsercizio_accertamento(),
+                                                reversaleRigaBulk.getEsercizio_ori_accertamento(),
+                                                reversaleRigaBulk.getPg_accertamento(),
+                                                reversaleRigaBulk.getPg_accertamento_scadenzario()
+                                        )
+                                ) && !bancaBulk.equalsByPrimaryKey(documentoGenericoRigaBulk.getBanca_uo_cds()) ||
+                                        !rifModalitaPagamentoBulk.equalsByPrimaryKey(documentoGenericoRigaBulk.getModalita_pagamento_uo_cds())) {
+                                    documentoGenericoRigaBulk.setBanca_uo_cds(bancaBulk);
+                                    documentoGenericoRigaBulk.setModalita_pagamento_uo_cds(rifModalitaPagamentoBulk);
+                                    documentoGenericoRigaBulk.setToBeUpdated();
+                                    super.updateBulk(userContext, documentoGenericoRigaBulk);
+                                }
+                            }
+                        }
+                    } catch (ComponentException | PersistencyException _ex) {
+                        throw new DetailedRuntimeException(_ex);
+                    }
+                });
     }
 
     /**
@@ -3640,7 +3679,7 @@ REVERSALE
             for (java.util.Iterator collegati = reversale_rigaHome.findCodiciCollegatiSIOPE(userContext, riga).iterator(); collegati.hasNext(); )
                 totaleSiope = totaleSiope.add(((Reversale_siopeBulk) collegati.next()).getImporto());
 
-            return new Boolean(totaleSiope.compareTo(riga.getIm_reversale_riga()) == 0);
+            return Boolean.valueOf(totaleSiope.compareTo(riga.getIm_reversale_riga()) == 0);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -3887,7 +3926,7 @@ REVERSALE
         }
     }
 
-    public Boolean isReversaleCORINonAssociataMandato (UserContext userContext, ReversaleBulk reversale) throws ComponentException {
+    public Boolean isReversaleCORINonAssociataMandato(UserContext userContext, ReversaleBulk reversale) throws ComponentException {
         try {
             SQLBuilder sql = getHome(userContext, ReversaleIBulk.class).createSQLBuilder();
             sql.addClause("AND", "esercizio", SQLBuilder.EQUALS, reversale.getEsercizio());
@@ -3895,12 +3934,12 @@ REVERSALE
             sql.addClause("AND", "pg_reversale", SQLBuilder.EQUALS, reversale.getPg_reversale());
             sql.addClause("AND", "stato", SQLBuilder.NOT_EQUALS, ReversaleBulk.STATO_REVERSALE_ANNULLATO);
             sql.addTableToHeader("REVERSALE_RIGA");
-            sql.addSQLJoin( "REVERSALE_RIGA.ESERCIZIO", "REVERSALE.ESERCIZIO");
-            sql.addSQLJoin( "REVERSALE_RIGA.CD_CDS", "REVERSALE.CD_CDS");
-            sql.addSQLJoin( "REVERSALE_RIGA.PG_REVERSALE", "REVERSALE.PG_REVERSALE");
+            sql.addSQLJoin("REVERSALE_RIGA.ESERCIZIO", "REVERSALE.ESERCIZIO");
+            sql.addSQLJoin("REVERSALE_RIGA.CD_CDS", "REVERSALE.CD_CDS");
+            sql.addSQLJoin("REVERSALE_RIGA.PG_REVERSALE", "REVERSALE.PG_REVERSALE");
             sql.openParenthesis(FindClause.AND);
-                sql.addSQLClause(FindClause.AND, "REVERSALE_RIGA.CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, IDocumentoAmministrativoRigaBulk.tipo.GEN_CORA_E.name());
-                sql.addSQLClause(FindClause.OR, "REVERSALE_RIGA.CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, IDocumentoAmministrativoRigaBulk.tipo.GEN_CORV_E.name());
+            sql.addSQLClause(FindClause.AND, "REVERSALE_RIGA.CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, IDocumentoAmministrativoRigaBulk.tipo.GEN_CORA_E.name());
+            sql.addSQLClause(FindClause.OR, "REVERSALE_RIGA.CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, IDocumentoAmministrativoRigaBulk.tipo.GEN_CORV_E.name());
             sql.closeParenthesis();
             SQLBuilder sqlNotExists = getHome(userContext, Ass_mandato_reversaleBulk.class).createSQLBuilder();
             sqlNotExists.addSQLClause("AND", "esercizio_reversale", SQLBuilder.EQUALS, reversale.getEsercizio());
@@ -3925,20 +3964,20 @@ REVERSALE
     @Override
     protected void validaCreaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
         super.validaCreaModificaConBulk(usercontext, oggettobulk);
-        Configurazione_cnrBulk inviaTagBilanio= null;
+        Configurazione_cnrBulk inviaTagBilanio = null;
         try {
-            inviaTagBilanio= getConfigurazioneInviaBilancio( usercontext);
+            inviaTagBilanio = getConfigurazioneInviaBilancio(usercontext);
         } catch (PersistencyException e) {
             throw new ComponentException(e);
         }
-        if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
-            Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
+        if (Optional.ofNullable(inviaTagBilanio).map(s -> Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
+            Integer numMaxVociBilancio = Optional.ofNullable(inviaTagBilanio.getVal02()).map(s -> Integer.valueOf(s)).orElse(1);
 
             ReversaleBulk reversale = (ReversaleBulk) oggettobulk;
-            ReversaleHome reversaleHome = (ReversaleHome) getHome(usercontext,reversale.getClass());
-            List<SiopeBilancioDTO> siope= reversaleHome.getSiopeBilancio(usercontext,reversale);
-            if ( siope!=null && siope.size()>numMaxVociBilancio)
-                throw new ApplicationException("Le voci di Bilancio sono maggiori di quelle previste. Max:"+numMaxVociBilancio);
+            ReversaleHome reversaleHome = (ReversaleHome) getHome(usercontext, reversale.getClass());
+            List<SiopeBilancioDTO> siope = reversaleHome.getSiopeBilancio(usercontext, reversale);
+            if (siope != null && siope.size() > numMaxVociBilancio)
+                throw new ApplicationException("Le voci di Bilancio sono maggiori di quelle previste. Max:" + numMaxVociBilancio);
         }
     }
 

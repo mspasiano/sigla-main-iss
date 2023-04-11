@@ -571,7 +571,7 @@ public class CRUDMandatoAction extends CRUDAbstractMandatoAction {
                                         .stream()
                                         .filter(rifModalitaPagamentoBulk1 -> rifModalitaPagamentoBulk1.equalsByPrimaryKey(rifModalitaPagamentoBulk))
                                         .findAny()
-                                        .orElseThrow(() -> new BusinessProcessException(new ApplicationException("Manca il Terzo su Mandato!"))),
+                                        .orElseGet(() -> rifModalitaPagamentoBulks.stream().findAny().get()),
                                 rifModalitaPagamentoBulks
                         )
                 );

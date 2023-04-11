@@ -28,7 +28,17 @@
 		</tr>
 		<tr>
 			<td><% bp.writeFormLabel( out, "im_reversale"); %></td>
-			<td colspan=3><% bp.writeFormInput( out, "im_reversale"); %></td>
+			<td colspan=3>
+			    <% bp.writeFormInput( out, "im_reversale"); %>
+                <% JSPUtils.button(out,
+                    bp.getParentRoot().isBootstrap() ? "fa fa-fw fa-refresh" : bp.encodePath("img/zoom24.gif"),
+                    bp.getParentRoot().isBootstrap() ? "fa fa-fw fa-refresh" : bp.encodePath("img/zoom24.gif"),
+                    bp.encodePath("Cambia Modalità di Pagamento"),
+                    "javascript:submitForm('doCambiaModalitaPagamento')",
+                    "btn-outline-info btn-title ml-3",
+                    bp.isEditing() || bp.isInserting(),
+                    bp.getParentRoot().isBootstrap()); %>
+                </td>
 		</tr>
 		
 		
