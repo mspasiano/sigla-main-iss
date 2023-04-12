@@ -2515,22 +2515,39 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
             UserContext userContext,
             Fattura_passivaBulk fattura_passiva)
             throws ComponentException {
-
-        for (java.util.Iterator i = fattura_passiva.getFattura_passiva_dettColl().iterator(); i.hasNext(); ) {
-            Fattura_passiva_rigaBulk riga = (Fattura_passiva_rigaBulk) i.next();
-            if (Fattura_passiva_rigaBulk.STATO_INIZIALE.equals(riga.getStato_cofi()))
-                throw new it.cnr.jada.comp.ApplicationException("Il dettaglio \"" + riga.getDs_riga_fattura() + "\" NON è stato contabilizzato!");
-        }
-
-        if (fattura_passiva instanceof Fattura_passiva_IBulk && ((Fattura_passiva_IBulk) fattura_passiva).isDoc1210Associato()) {
-            ObbligazioniTable obbs = fattura_passiva.getObbligazioniHash();
-            if (obbs != null)
-                for (java.util.Enumeration e = obbs.keys(); e.hasMoreElements(); ) {
-                    Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) e.nextElement();
-                    Vector dettagli = (Vector) obbs.get(scadenza);
-                    if (dettagli == null || dettagli.isEmpty())
-                        throw new it.cnr.jada.comp.ApplicationException("Attenzione: la scadenza \"" + scadenza.getDs_scadenza() + "\" non ha associato alcun dettaglio! Operazione annullata.");
+        if (fattura_passiva.isLiquidabile()) {
+            for (java.util.Iterator i = fattura_passiva.getFattura_passiva_dettColl().iterator(); i.hasNext(); ) {
+                Fattura_passiva_rigaBulk riga = (Fattura_passiva_rigaBulk) i.next();
+                if (Fattura_passiva_rigaBulk.STATO_INIZIALE.equals(riga.getStato_cofi())) {
+                    /**
+                     * Controllo che la riga di fattura non sia stornata completamente da una Nota
+                     */
+                    try {
+                        if (fattura_passiva instanceof Fattura_passiva_IBulk) {
+                            final Nota_di_credito_rigaHome notaDiCreditoRigaHome = (Nota_di_credito_rigaHome) getHome(userContext, Nota_di_credito_rigaBulk.class);
+                            final Optional<Nota_di_credito_rigaBulk> rigaOrigine = notaDiCreditoRigaHome.findRigaNota((Fattura_passiva_rigaIBulk) riga);
+                            if (!rigaOrigine.isPresent() || !rigaOrigine.filter(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_totale_divisa().equals(riga.getIm_totale_divisa())).isPresent()) {
+                                throw new ApplicationMessageFormatException("Il dettaglio \"{0}\" NON è stato contabilizzato!", riga.getDs_riga_fattura());
+                            }
+                        } else {
+                            throw new ApplicationMessageFormatException("Il dettaglio \"{0}\" NON è stato contabilizzato!", riga.getDs_riga_fattura());
+                        }
+                    } catch (PersistencyException _ex) {
+                        throw handleException(_ex);
+                    }
                 }
+            }
+
+            if (fattura_passiva instanceof Fattura_passiva_IBulk && ((Fattura_passiva_IBulk) fattura_passiva).isDoc1210Associato()) {
+                ObbligazioniTable obbs = fattura_passiva.getObbligazioniHash();
+                if (obbs != null)
+                    for (java.util.Enumeration e = obbs.keys(); e.hasMoreElements(); ) {
+                        Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) e.nextElement();
+                        Vector dettagli = (Vector) obbs.get(scadenza);
+                        if (dettagli == null || dettagli.isEmpty())
+                            throw new it.cnr.jada.comp.ApplicationException("Attenzione: la scadenza \"" + scadenza.getDs_scadenza() + "\" non ha associato alcun dettaglio! Operazione annullata.");
+                    }
+            }
         }
     }
 //^^@@
@@ -7457,7 +7474,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                     if (!primoDettaglio.getFornitore().equalsByPrimaryKey(unTerzo))
                         throw new ApplicationException("Attenzione: i terzi della scadenza " + scadenza.getDs_scadenza() + " non sono compatibili! Operazione interrotta.");
                     // if (dettaglio.getFattura_passiva() instanceof Nota_di_creditoBulk) {
-		            	/*
+                        /*
 						if (!dettaglio.getModalita_pagamento_uo_cds().equalsByPrimaryKey(primoDettaglio.getModalita_pagamento_uo_cds()))
 			               	throw new ApplicationException("Attenzione: le modalità di pagamento del dettaglio \"" + dettaglio.getDs_riga() + "\" non sono compatibili con le altre modalità di pagamento insistenti sulla scadenza \"" + scadenza.getDs_scadenza() + "\"!");
 			            //Errore 704: controllo aggiunto per correggere comportamento anomalo di

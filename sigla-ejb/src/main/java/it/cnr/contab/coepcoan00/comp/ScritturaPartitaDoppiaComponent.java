@@ -1821,11 +1821,21 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			if (docamm instanceof Fattura_passivaBulk) {
 				terzo = ((Fattura_passivaBulk) docamm).getFornitore();
 				if (rigaDocAmm instanceof Nota_di_credito_rigaBulk)
-					partita = ((Nota_di_credito_rigaBulk)rigaDocAmm).getRiga_fattura_associata().getFather();
+					partita = Optional.ofNullable(rigaDocAmm)
+							.filter(Nota_di_credito_rigaBulk.class::isInstance)
+							.map(Nota_di_credito_rigaBulk.class::cast)
+							.flatMap(notaDiCreditoRigaBulk -> Optional.ofNullable(notaDiCreditoRigaBulk.getRiga_fattura_associata()))
+							.flatMap(fatturaPassivaRigaIBulk -> Optional.ofNullable(fatturaPassivaRigaIBulk.getFather()))
+							.orElse(null);
 			} else if (docamm instanceof Fattura_attivaBulk) {
 				terzo = ((Fattura_attivaBulk) docamm).getCliente();
 				if (rigaDocAmm instanceof Nota_di_credito_attiva_rigaBulk)
-					partita = ((Nota_di_credito_attiva_rigaBulk) rigaDocAmm).getRiga_fattura_associata().getFather();
+					partita = Optional.ofNullable(rigaDocAmm)
+							.filter(Nota_di_credito_attiva_rigaBulk.class::isInstance)
+							.map(Nota_di_credito_attiva_rigaBulk.class::cast)
+							.flatMap(notaDiCreditoRigaBulk -> Optional.ofNullable(notaDiCreditoRigaBulk.getRiga_fattura_associata()))
+							.flatMap(fatturaPassivaRigaIBulk -> Optional.ofNullable(fatturaPassivaRigaIBulk.getFather()))
+							.orElse(null);
 			} else if (docamm instanceof OrdineAcqBulk)
 				terzo = ((OrdineAcqBulk) docamm).getFornitore();
 			else {
