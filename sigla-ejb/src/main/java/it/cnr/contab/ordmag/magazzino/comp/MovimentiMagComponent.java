@@ -452,6 +452,8 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 			ordine.setAggiornaImpegniInAutomatico(true);
 		}
 		ordine.setToBeUpdated();
+		ordineRiga.setToBeUpdated();
+		consegna.setToBeUpdated();
 		int i = 0;
 		//rimuovo la vecchia consegna
 		ordineRiga.getRigheConsegnaColl().removeByPrimaryKey(ordineConsegnaComp);
@@ -470,7 +472,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 					BollaScaricoRigaMagBulk riga = (BollaScaricoRigaMagBulk)obj;
 					riga.setStato(MovimentiMagBulk.STATO_ANNULLATO);
 					riga.setToBeUpdated();
-					super.modificaConBulk(userContext, movimentoDaAnnullare);
+					super.modificaConBulk(userContext, riga);
 				}
 			}
 		} catch (IntrospectionException e) {
