@@ -791,6 +791,9 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			   return contratto;			   
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI))
 			   return calcolaTotDocContForPadre(userContext,contratto);
+			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO))
+				// TODO: Gestire metodo per il salvataggio
+			   return calcolaTotDocContForPadre(userContext,contratto);
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO))
 			   return calcolaTotDocContForAttivoPassivo(userContext,contratto);			   
 			ContrattoHome testataHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
