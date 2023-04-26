@@ -2655,8 +2655,8 @@ public class OrdineAcqComponent
                     }
                 }
             }
-
-            ordine.setAnnullato(DateServices.getDt_valida(aUC));
+            ordine.setStato(OrdineAcqBulk.STATO_ANNULLATO);
+            ordine.setDt_cancellazione(DateServices.getDt_valida(aUC));
             ordine.setToBeUpdated();
             makeBulkPersistent(aUC, ordine);
             return ordine;
