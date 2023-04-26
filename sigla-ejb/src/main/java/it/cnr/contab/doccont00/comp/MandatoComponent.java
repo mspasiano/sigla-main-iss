@@ -5907,6 +5907,15 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         return mandatoRigaComplete
                                 .getDocammRighe()
                                 .stream()
+                                .filter( iDocumentoAmministrativoRigaBulk -> {
+                                    try {
+                                        Rif_modalita_pagamentoBulk r = ((Rif_modalita_pagamentoBulk)getHome(userContext, Rif_modalita_pagamentoBulk.class).findByPrimaryKey(new Rif_modalita_pagamentoBulk(iDocumentoAmministrativoRigaBulk.getModalita_pagamento().getCd_modalita_pag())));
+                                        return (!r.getFl_per_cessione());
+                                    } catch (PersistencyException | ComponentException e) {
+                                        // va in errore l'interfaccia nel caso di modalità pagamento DEL che deve essere gestita
+                                        return true;
+                                    }
+                                })
                                 .filter(iDocumentoAmministrativoRigaBulk -> {
                                     return !iDocumentoAmministrativoRigaBulk.getBanca().equalsByPrimaryKey(bancaBulk) ||
                                             !iDocumentoAmministrativoRigaBulk.getModalita_pagamento().equalsByPrimaryKey(rifModalitaPagamentoBulk);
