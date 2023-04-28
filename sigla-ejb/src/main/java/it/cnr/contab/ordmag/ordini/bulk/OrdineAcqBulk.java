@@ -1261,12 +1261,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
     @Override
     public Timestamp getDt_cancellazione() {
         // TODO Auto-generated method stub
-        return null;
+        return super.getDtCancellazione();
     }
 
     @Override
     public void setDt_cancellazione(Timestamp date) {
-        // TODO Auto-generated method stub
+        super.setDtCancellazione(date);
 
     }
 
