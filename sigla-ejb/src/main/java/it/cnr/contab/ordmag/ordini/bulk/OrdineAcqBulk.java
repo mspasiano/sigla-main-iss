@@ -44,6 +44,7 @@ import it.cnr.contab.ordmag.anag00.NotaPrecodificataBulk;
 import it.cnr.contab.ordmag.anag00.NumerazioneOrdBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.richieste.bulk.VRichiestaPerOrdiniBulk;
+import it.cnr.contab.util.ICancellatoLogicamente;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
@@ -52,6 +53,7 @@ import it.cnr.jada.bulk.*;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.StrServ;
 import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.jada.util.ejb.EJBCommonServices;
 import it.cnr.si.spring.storage.annotation.StoragePolicy;
 import it.cnr.si.spring.storage.annotation.StorageProperty;
 import it.siopeplus.StMotivoEsclusioneCigSiope;
@@ -65,6 +67,7 @@ import java.util.stream.Stream;
 
 public class OrdineAcqBulk extends OrdineAcqBase
         implements IDocumentoAmministrativoBulk,
+        ICancellatoLogicamente,
         Voidable,
         IDefferUpdateSaldi,
         AllegatoParentBulk {
@@ -940,9 +943,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return getStato() != null && getStato().equals(STATO_INSERITO);
     }
 
-    public Boolean isStatoAnnullato() {
-        return getStato() != null && getStato().equals(STATO_ANNULLATO);
-    }
+    public Boolean isStatoAnnullato() { return isCancellatoLogicamente();   }
 
     public Boolean isStatoDefinitivo() {
         return getStato() != null && getStato().equals(STATO_DEFINITIVO);
@@ -1518,6 +1519,9 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return getStato() != null && getStato().equals(STATO_IN_APPROVAZIONE);
     }
 
+    public Boolean isOrdineAnnullato() {
+        return isStatoAnnullato();
+    }
     public Boolean isOrdineAllaFirma() {
         return getStato() != null && getStato().equals(STATO_ALLA_FIRMA);
     }
@@ -1660,5 +1664,17 @@ public class OrdineAcqBulk extends OrdineAcqBase
     @Override
     public Long getReportIdLiquid() {
         return null;
+    }
+
+    @Override
+    public boolean isCancellatoLogicamente() {
+        return Optional.ofNullable(getStato()).map(x -> x.equals(OrdineAcqBulk.STATO_ANNULLATO)).orElse(false);
+    }
+
+    @Override
+    public void cancellaLogicamente() {
+        setDt_cancellazione(EJBCommonServices.getServerTimestamp());
+        setStato(OrdineAcqBulk.STATO_ANNULLATO);
+
     }
 }

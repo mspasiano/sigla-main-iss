@@ -26,7 +26,6 @@ import it.cnr.contab.ordmag.ordini.comp.OrdineAcqComponent;
 import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.RemoteIterator;
@@ -162,25 +161,6 @@ public class OrdineAcqComponentSessionBean extends it.cnr.jada.ejb.CRUDComponent
         pre_component_invocation(userContext, componentObj);
         try {
             OrdineAcqBulk result = ((OrdineAcqComponent) componentObj).calcolaImportoOrdine(userContext, ordine);
-            component_invocation_succes(userContext, componentObj);
-            return result;
-        } catch (it.cnr.jada.comp.NoRollbackException e) {
-            component_invocation_succes(userContext, componentObj);
-            throw e;
-        } catch (it.cnr.jada.comp.ComponentException e) {
-            component_invocation_failure(userContext, componentObj);
-            throw e;
-        } catch (RuntimeException e) {
-            throw uncaughtRuntimeException(userContext, componentObj, e);
-        } catch (Error e) {
-            throw uncaughtError(userContext, componentObj, e);
-        }
-    }
-
-    public OrdineAcqBulk cancellaOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws RemoteException, ComponentException, PersistencyException {
-        pre_component_invocation(userContext, componentObj);
-        try {
-            OrdineAcqBulk result = ((OrdineAcqComponent) componentObj).cancellaOrdine(userContext, ordine);
             component_invocation_succes(userContext, componentObj);
             return result;
         } catch (it.cnr.jada.comp.NoRollbackException e) {

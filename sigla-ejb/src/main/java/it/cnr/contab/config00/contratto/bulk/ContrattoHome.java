@@ -462,6 +462,7 @@ public class ContrattoHome extends BulkHome {
         sql.addSQLClause("AND", "ESERCIZIO_CONTRATTO", sql.EQUALS, contratto.getEsercizio());
         sql.addSQLClause("AND", "STATO_CONTRATTO", SQLBuilder.EQUALS, contratto.getStato());
         sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, contratto.getPg_contratto());
+        sql.addSQLClause("AND", "STATO", SQLBuilder.NOT_EQUALS, OrdineAcqBulk.STATO_ANNULLATO);
         return sql;
     }
 
