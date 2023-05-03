@@ -29,7 +29,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  * Creation date: (9/5/2001 5:02:18 PM)
  * @author: Ardire Alfonso
  */
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.TariffarioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
@@ -494,5 +496,25 @@ public abstract class Fattura_attiva_rigaBulk extends Fattura_attiva_rigaBase im
 	@Override
 	public TerzoBulk getTerzo() {
 		return this.getFattura_attiva().getCliente();
+	}
+
+	@Override
+	public BancaBulk getBanca() {
+		return getFattura_attiva().getBanca_uo();
+	}
+
+	@Override
+	public void setBanca(BancaBulk bancaBulk) {
+		getFattura_attiva().setBanca_uo(bancaBulk);
+	}
+
+	@Override
+	public Rif_modalita_pagamentoBulk getModalita_pagamento() {
+		return getFattura_attiva().getModalita_pagamento_uo();
+	}
+
+	@Override
+	public void setModalita_pagamento(Rif_modalita_pagamentoBulk modalita_pagamento) {
+		getFattura_attiva().setModalita_pagamento_uo(modalita_pagamento);
 	}
 }

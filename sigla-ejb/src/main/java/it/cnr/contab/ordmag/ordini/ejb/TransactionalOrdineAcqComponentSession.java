@@ -175,23 +175,7 @@ public class TransactionalOrdineAcqComponentSession extends it.cnr.jada.ejb.Tran
 		}
 	}
 
-	public OrdineAcqBulk cancellaOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws RemoteException,ComponentException, PersistencyException{
-		try {
-			return (OrdineAcqBulk)invoke("cancellaOrdine",new Object[] {
-					userContext,
-					ordine });
-		} catch(java.rmi.RemoteException e) {
-			throw e;
-		} catch(java.lang.reflect.InvocationTargetException e) {
-			try {
-				throw e.getTargetException();
-			} catch(it.cnr.jada.comp.ComponentException ex) {
-				throw ex;
-			} catch(Throwable ex) {
-				throw new java.rmi.RemoteException("Uncaugth exception",ex);
-			}
-		}
-	}
+
 
 	public Unita_organizzativaBulk recuperoUoPerImpegno(it.cnr.jada.UserContext userContext, OrdineAcqConsegnaBulk consegna) throws RemoteException,ComponentException, PersistencyException{
 		try {

@@ -353,57 +353,80 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 						 * Verifico che la somma dell'imponibile delle righe di consegna sia uguale all'imponibile presente sulla riga
 						 * in caso di un disallineamento scarico la differenza sull'ultima riga di consegna.
 						 */
-						final BigDecimal diffImponibileConsegna = ordineRigaComp
-								.getRigheConsegnaColl()
-								.stream()
-								.map(OrdineAcqConsegnaBulk::getImImponibile)
-								.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImImponibile()).negate();
-						final BigDecimal diffIvaConsegna = ordineRigaComp
-								.getRigheConsegnaColl()
-								.stream()
-								.map(OrdineAcqConsegnaBulk::getImIva)
-								.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImIva()).negate();
-
-						if (!diffImponibileConsegna.equals(BigDecimal.ZERO.setScale(2))) {
-							ordineRigaComp
-									.getRigheConsegnaColl()
-									.stream()
-									.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
-									.findAny()
-									.ifPresent(ordineAcqConsegnaBulk -> {
-										ordineAcqConsegnaBulk.setImImponibile(
-												ordineAcqConsegnaBulk.getImImponibile().add(diffImponibileConsegna)
-										);
-										ordineAcqConsegnaBulk.setImImponibileDivisa(
-												ordineAcqConsegnaBulk.getImImponibileDivisa().add(diffImponibileConsegna)
-										);
-										ordineAcqConsegnaBulk.setImTotaleConsegna(
-												ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffImponibileConsegna)
-										);
-									});
-						}
-						if (!diffIvaConsegna.equals(BigDecimal.ZERO.setScale(2))) {
-							ordineRigaComp
-									.getRigheConsegnaColl()
-									.stream()
-									.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
-									.findAny()
-									.ifPresent(ordineAcqConsegnaBulk -> {
-										ordineAcqConsegnaBulk.setImIva(
-												ordineAcqConsegnaBulk.getImIva().add(diffIvaConsegna)
-										);
-										ordineAcqConsegnaBulk.setImIvaNd(
-												ordineAcqConsegnaBulk.getImIvaNd().add(diffIvaConsegna)
-										);
-										ordineAcqConsegnaBulk.setImIvaDivisa(
-												ordineAcqConsegnaBulk.getImIvaDivisa().add(diffIvaConsegna)
-										);
-										ordineAcqConsegnaBulk.setImTotaleConsegna(
-												ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffIvaConsegna)
-										);
-									});
-						}
 						try {
+							final FatturaOrdineHome fatturaOrdineHome = (FatturaOrdineHome) getHome(userContext, FatturaOrdineBulk.class);
+							final BigDecimal diffImponibileConsegna = ordineRigaComp
+									.getRigheConsegnaColl()
+									.stream()
+									.map(ordineAcqConsegnaBulk -> {
+										try {
+											return fatturaOrdineHome
+													.findByRigaConsegna(ordineAcqConsegnaBulk)
+													.stream()
+													.findAny()
+													.map(FatturaOrdineBulk::getImImponibile)
+													.orElse(ordineAcqConsegnaBulk.getImImponibile());
+										} catch (PersistencyException e) {
+											throw new RuntimeException(e);
+										}
+									})
+									.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImImponibile()).negate();
+							final BigDecimal diffIvaConsegna = ordineRigaComp
+									.getRigheConsegnaColl()
+									.stream()
+									.map(ordineAcqConsegnaBulk -> {
+										try {
+											return fatturaOrdineHome
+													.findByRigaConsegna(ordineAcqConsegnaBulk)
+													.stream()
+													.findAny()
+													.map(FatturaOrdineBulk::getImIva)
+													.orElse(ordineAcqConsegnaBulk.getImIva());
+										} catch (PersistencyException e) {
+											throw new RuntimeException(e);
+										}
+									})
+									.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImIva()).negate();
+
+							if (!diffImponibileConsegna.equals(BigDecimal.ZERO.setScale(2))) {
+								ordineRigaComp
+										.getRigheConsegnaColl()
+										.stream()
+										.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
+										.findAny()
+										.ifPresent(ordineAcqConsegnaBulk -> {
+											ordineAcqConsegnaBulk.setImImponibile(
+													ordineAcqConsegnaBulk.getImImponibile().add(diffImponibileConsegna)
+											);
+											ordineAcqConsegnaBulk.setImImponibileDivisa(
+													ordineAcqConsegnaBulk.getImImponibileDivisa().add(diffImponibileConsegna)
+											);
+											ordineAcqConsegnaBulk.setImTotaleConsegna(
+													ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffImponibileConsegna)
+											);
+										});
+							}
+							if (!diffIvaConsegna.equals(BigDecimal.ZERO.setScale(2))) {
+								ordineRigaComp
+										.getRigheConsegnaColl()
+										.stream()
+										.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
+										.findAny()
+										.ifPresent(ordineAcqConsegnaBulk -> {
+											ordineAcqConsegnaBulk.setImIva(
+													ordineAcqConsegnaBulk.getImIva().add(diffIvaConsegna)
+											);
+											ordineAcqConsegnaBulk.setImIvaNd(
+													ordineAcqConsegnaBulk.getImIvaNd().add(diffIvaConsegna)
+											);
+											ordineAcqConsegnaBulk.setImIvaDivisa(
+													ordineAcqConsegnaBulk.getImIvaDivisa().add(diffIvaConsegna)
+											);
+											ordineAcqConsegnaBulk.setImTotaleConsegna(
+													ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffIvaConsegna)
+											);
+										});
+							}
 							makeBulkListPersistent(userContext, ordineRigaComp.getRigheConsegnaColl());
 						} catch (ComponentException|PersistencyException e) {
 							throw new RuntimeException(e);

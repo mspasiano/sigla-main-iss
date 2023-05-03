@@ -26,7 +26,9 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.pdcep.bulk.ContoBulk;
@@ -587,6 +589,26 @@ Da questa gestione sono ricavati gli elementi per la gestione di magazziono e di
 	public Timestamp getDt_a_competenza_coge() {
 		// TODO: 14/06/21 Da implementare
 		return null;
+	}
+
+	@Override
+	public BancaBulk getBanca() {
+		return getOrdineAcq().getBanca();
+	}
+
+	@Override
+	public void setBanca(BancaBulk bancaBulk) {
+		getOrdineAcq().setBanca(bancaBulk);
+	}
+
+	@Override
+	public Rif_modalita_pagamentoBulk getModalita_pagamento() {
+		return getOrdineAcq().getModalitaPagamento();
+	}
+
+	@Override
+	public void setModalita_pagamento(Rif_modalita_pagamentoBulk modalita_pagamento) {
+		getOrdineAcq().setModalitaPagamento(modalita_pagamento);
 	}
 
 	public Dettaglio_contrattoBulk getDettaglioContratto() {

@@ -76,7 +76,6 @@ import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.Config;
 import it.cnr.jada.util.SendMail;
 import it.cnr.jada.util.ejb.EJBCommonServices;
-import org.apache.cxf.databinding.source.mime.CustomExtensionRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,6 +94,9 @@ import java.util.stream.Stream;
 
 public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoComponent implements
         IMandatoMgr, ICRUDMgr, IPrintMgr, Cloneable, Serializable {
+
+    public static final ApplicationException APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG = new ApplicationException("Attenzione le righe del mandato devono avere la stessa modalità di pagamento");
+
     protected class TerzoModalitaPagamento {
         TerzoBulk terzoBulk;
         Modalita_pagamentoBulk modalitaPagamentoBulk;
@@ -5739,12 +5741,12 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
      * righe del mandato hanno la stesse coordinate di pagamento PostCondition:
      * Il mandato ha superato la validazione e può pertanto essere salvato
      *
-     * @param aUC     lo <code>UserContext</code> che ha generato la richiesta
+     * @param userContext     lo <code>UserContext</code> che ha generato la richiesta
      * @param mandato <code>MandatoBulk</code> il mandato di cui si verifica la
      *                correttezza
      */
 
-    private void verificaModalitaPagamento(UserContext aUC, MandatoBulk mandato)
+    private void verificaModalitaPagamento(UserContext userContext, MandatoBulk mandato)
             throws ComponentException {
         try {
             if (mandato.getMandato_rigaColl().size() == 0)
@@ -5761,7 +5763,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                     .getTi_mandato())) // mandato di regolarizzazione
                 return;
             if (riga.getModalita_pagamento() != null) {
-                Rif_modalita_pagamentoBulk rifModPag = (Rif_modalita_pagamentoBulk) getHome(aUC,
+                Rif_modalita_pagamentoBulk rifModPag = (Rif_modalita_pagamentoBulk) getHome(userContext,
                         Rif_modalita_pagamentoBulk.class).findByPrimaryKey(
                         new Rif_modalita_pagamentoBulk(riga.getModalita_pagamento().getCd_modalita_pag()));
                 if (rifModPag.isMandatoRegSospeso() && !mandato.isRegolamentoSospeso())
@@ -5782,7 +5784,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         .map(Rif_modalita_pagamentoBase::getTi_pagamento)
                         .filter(s -> s.equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA))
                         .isPresent() &&
-                        TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(aUC)) &&
+                        TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext)) &&
                         !Arrays.asList(
                                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABA.value(),
                                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOTESORERIAPROVINCIALESTATOPERTABB.value())
@@ -5816,11 +5818,11 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                         .flatMap(bancaBulk -> Optional.ofNullable(bancaBulk.getCodice_iban()))
                         .map(s -> s.substring(0, 2));
                 if (codiceNazione.isPresent()) {
-                    NazioneHome nazioneHome = (NazioneHome) getHome(aUC, NazioneBulk.class);
+                    NazioneHome nazioneHome = (NazioneHome) getHome(userContext, NazioneBulk.class);
                     SQLBuilder sqlExists = nazioneHome.createSQLBuilder();
                     sqlExists.addSQLClause("AND", "NAZIONE.CD_ISO", SQLBuilder.EQUALS, codiceNazione.get());
                     sqlExists.addSQLClause("AND", "NAZIONE.FL_SEPA", SQLBuilder.EQUALS, "Y");
-                    if (sqlExists.executeCountQuery(getConnection(aUC)) != 0)
+                    if (sqlExists.executeCountQuery(getConnection(userContext)) != 0)
                         throw new ApplicationMessageFormatException("Attenzione la modalità di pagamento {0} presente sul documento non è " +
                                 "coerente con la nazione {1} del beneficiario!", cd_modalita_pag, codiceNazione.get());
                 }
@@ -5833,8 +5835,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
              */
             /* vengono escluse dal test le note di debito e le note di credito */
 
-            for (Iterator i = mandato.getMandato_rigaColl().iterator(); i
-                    .hasNext(); ) {
+            for (Iterator i = mandato.getMandato_rigaColl().iterator(); i.hasNext(); ) {
                 riga = (Mandato_rigaBulk) i.next();
 
                 if (Numerazione_doc_ammBulk.TIPO_FATTURA_PASSIVA.equals(riga
@@ -5849,23 +5850,22 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
 
                 if (!riga.getModalita_pagamento().getCd_modalita_pag().equals(
                         cd_modalita_pag))
-                    throw new ApplicationException(
-                            "Attenzione le righe del mandato devono avere la stessa modalità di pagamento");
+                    throw APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG;
 
                 // conto bancario
                 if (Rif_modalita_pagamentoBulk.BANCARIO.equals(riga.getBanca()
                         .getTi_pagamento())
-                        && !banca.equalsByPrimaryKey(riga.getBanca()))
+                        && !banca.equalsByPrimaryKey(riga.getBanca())) {
                     throw new ApplicationException(
                             "Attenzione le righe del mandato devono avere la stessa modalità di pagamento bancario");
-                else
+                } else {
                     // postale
                     if (Rif_modalita_pagamentoBulk.POSTALE.equals(riga.getBanca()
                             .getTi_pagamento())
                             && !banca.equalsByPrimaryKey(riga.getBanca()))
                         throw new ApplicationException(
                                 "Attenzione le righe del mandato devono avere la stessa modalità di pagamento postale");
-                    else
+                    else {
                         // quietanza
                         if (Rif_modalita_pagamentoBulk.QUIETANZA.equals(riga.getBanca()
                                 .getTi_pagamento())
@@ -5879,8 +5879,9 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                                     .equals(riga.getBanca().getTi_pagamento()))
                                     && !intestazione.equals(riga.getBanca()
                                     .getIntestazione()))
-                                throw new ApplicationException(
-                                        "Attenzione le righe del mandato devono avere la stessa modalità di pagamento");
+                                throw APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG;
+                    }
+                }
             }
         } catch (Exception e) {
             throw handleException(e);
@@ -6664,20 +6665,22 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
     @Override
     protected void validaCreaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
         super.validaCreaModificaConBulk(usercontext, oggettobulk);
-        Configurazione_cnrBulk inviaTagBilanio= null;
-        try {
-             inviaTagBilanio= getConfigurazioneInviaBilancio( usercontext);
-        } catch (PersistencyException e) {
-            throw new ComponentException(e);
-        }
-        if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
-            Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
+        if (oggettobulk instanceof MandatoBulk) {
+            Configurazione_cnrBulk inviaTagBilanio= null;
+            try {
+                inviaTagBilanio= getConfigurazioneInviaBilancio( usercontext);
+            } catch (PersistencyException e) {
+                throw new ComponentException(e);
+            }
+            if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
+                Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
 
-            MandatoBulk mandato = (MandatoBulk) oggettobulk;
-            MandatoHome mandatoHome = (MandatoHome) getHome(usercontext, mandato.getClass());
-            List<SiopeBilancioDTO> siope = mandatoHome.getSiopeBilancio(usercontext, mandato);
-            if ( siope!=null && siope.size()>numMaxVociBilancio)
-                throw new ApplicationException("Le voci di Bilancio sono maggiori di quelle previste. Max:"+numMaxVociBilancio);
+                MandatoBulk mandato = (MandatoBulk) oggettobulk;
+                MandatoHome mandatoHome = (MandatoHome) getHome(usercontext, mandato.getClass());
+                List<SiopeBilancioDTO> siope = mandatoHome.getSiopeBilancio(usercontext, mandato);
+                if ( siope!=null && siope.size()>numMaxVociBilancio)
+                    throw new ApplicationException("Le voci di Bilancio sono maggiori di quelle previste. Max:"+numMaxVociBilancio);
+            }
         }
     }
 }

@@ -17,10 +17,13 @@
 
 package it.cnr.contab.anagraf00.core.bulk;
 
+import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
+
+import java.util.List;
 
 public class Modalita_pagamentoHome extends BulkHome {
 	public Modalita_pagamentoHome(java.sql.Connection conn) {
@@ -28,5 +31,13 @@ public class Modalita_pagamentoHome extends BulkHome {
 	}
 	public Modalita_pagamentoHome(java.sql.Connection conn,PersistentCache persistentCache) {
 		super(Modalita_pagamentoBulk.class,conn,persistentCache);
+	}
+
+	public List<Modalita_pagamentoBulk> findModalitaByTerzo(UserContext userContext, TerzoBulk terzoBulk) throws PersistencyException{
+		SQLBuilder sqlBuilder = createSQLBuilder();
+		sqlBuilder.addClause(FindClause.AND, "terzo", SQLBuilder.EQUALS, terzoBulk);
+		final List<Modalita_pagamentoBulk> result = fetchAll(sqlBuilder);
+		getHomeCache().fetchAll(userContext);
+		return result;
 	}
 }

@@ -3672,4 +3672,10 @@ public abstract class Fattura_passivaBulk
     public boolean isFromAmministra() {
         return fromAmministra;
     }
+
+    public boolean isLiquidabile() {
+        return Optional.ofNullable(getStato_liquidazione())
+                .map(s -> s.equalsIgnoreCase(LIQ))
+                .orElse(Boolean.FALSE);
+    }
 }

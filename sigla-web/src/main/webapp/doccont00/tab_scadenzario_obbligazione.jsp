@@ -16,9 +16,9 @@
 <div class="Group card">
 	<table border="0" cellspacing="0" cellpadding="2" class="w-100">
 	<tr>
-		<td><% bp.getController().writeFormLabel( out, "cd_elemento_voceRO"); %></td>
+		<td class="w-20"><% bp.getController().writeFormLabel( out, "cd_elemento_voceRO"); %></td>
 		<td><% bp.getController().writeFormInput( out, "cd_elemento_voceRO"); %></td>
-		<td class="w-100"><% bp.getController().writeFormInput( out, "ds_elemento_voce"); %></td>				 
+		<td class="w-100"><% bp.getController().writeFormInput( out, "ds_elemento_voce"); %></td>
 	</tr>
 	<tr>
 		<td><% bp.getController().writeFormLabel( out, "im_tot_obbligazione"); %></td>
@@ -34,7 +34,7 @@
 	<tr>
 		<td colspan="3">
 		      <% bp.getScadenzario().setEnabled( !bp.isEditingScadenza());
-			     bp.getScadenzario().writeHTMLTable(pageContext,bp.isAttivoOrdini()? "obbligazione_ordine": "obbligazione",true,false,true,"100%","300px"); %>
+			     bp.getScadenzario().writeHTMLTable(pageContext,bp.isAttivoOrdini()? "obbligazione_ordine": "obbligazione",true,false,true,"100%","auto; max-height: 40vh;"); %>
 		</td>
 	</tr>
   	<tr>

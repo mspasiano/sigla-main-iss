@@ -21,20 +21,16 @@ import it.cnr.contab.firma.bulk.FirmaOTPBulk;
 import it.cnr.contab.ordmag.ordini.bulk.AllegatoOrdineDettaglioBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqRigaBulk;
-import it.cnr.contab.ordmag.richieste.bulk.AllegatoRichiestaDettaglioBulk;
-import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopBulk;
-import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopRigaBulk;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.SignP7M;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
-import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.util.Introspector;
+import it.cnr.jada.util.DateUtils;
 import it.cnr.si.firmadigitale.firma.arss.ArubaSignServiceClient;
 import it.cnr.si.firmadigitale.firma.arss.ArubaSignServiceException;
 import it.cnr.si.spring.storage.MimeTypes;
@@ -48,11 +44,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -128,7 +121,29 @@ public class OrdineAcqCMISService extends StoreService {
 		metadataProperties.put(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value(), aspectsToAdd);
 		return createFolderIfNotPresent(path, folderName, metadataProperties);
 	}
-	public String getStorePath(OrdineAcqBulk allegatoParentBulk) throws BusinessProcessException{
+	private String getStorePathNewPath(OrdineAcqBulk allegatoParentBulk) throws BusinessProcessException{
+		try {
+			String path =Arrays.asList(
+					SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
+					allegatoParentBulk.getUnitaOperativaOrd().getCdUnitaOrganizzativa(),
+					"Ordini",
+					allegatoParentBulk.getUnitaOperativaOrd().getCdUnitaOperativa(),
+					allegatoParentBulk.getCdNumeratore(),
+					Optional.ofNullable(allegatoParentBulk.getEsercizio())
+							.map(esercizio -> String.valueOf(esercizio))
+							.orElse("0")
+			).stream().collect(
+					Collectors.joining(StorageDriver.SUFFIX)
+			);
+
+			return createFolderOrdineIfNotPresent(path, allegatoParentBulk);
+		} catch (ComponentException e) {
+			throw new BusinessProcessException(e);
+		}
+	}
+
+	//refactoring path ordini issue
+	private String getStorePathOldPath(OrdineAcqBulk allegatoParentBulk) throws BusinessProcessException{
 		try {
 			String path =Arrays.asList(
 					SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
@@ -141,10 +156,40 @@ public class OrdineAcqCMISService extends StoreService {
 			).stream().collect(
 					Collectors.joining(StorageDriver.SUFFIX)
 			);
-            return createFolderOrdineIfNotPresent(path, allegatoParentBulk);
+			String pathFolderOrdine = path.concat(path.equals("/") ? "" : "/").concat(sanitizeFolderName(allegatoParentBulk.constructCMISNomeFile()));
+			StorageObject folder =this.getStorageObjectByPath( pathFolderOrdine,true,false);
+			List<StorageObject> children= Optional.ofNullable(folder).map(m->this.getChildren(m.getPath())).orElse(null);
+			//List<StorageObject> children=this.getChildren(folder.getPath());
+			if ( !children.isEmpty()) {
+				//check se esiste il file di stampa e verifica il nome
+				StorageObject fileStampaOridne = children.stream()
+						.filter(storageObject -> hasAspect(storageObject, ASPECT_STAMPA_ORDINI))
+						.findFirst().map(
+								storageObject->storageObject
+						).orElse(null);
+				boolean bContainNomeFiles;
+				//se esiste il file del report verifico che sia quello dell'ordine in esame
+				if ( fileStampaOridne!=null) {
+					bContainNomeFiles = fileStampaOridne.getKey().contains(allegatoParentBulk.recuperoIdOrdineAsString());
+					if ( !bContainNomeFiles)
+						return null;
+				}
+				return createFolderOrdineIfNotPresent(path, allegatoParentBulk);
+			}
+			return null;
 		} catch (ComponentException e) {
 			throw new BusinessProcessException(e);
 		}
+	}
+
+	public String getStorePath(OrdineAcqBulk allegatoParentBulk) throws BusinessProcessException{
+		String path =null;
+		if ( allegatoParentBulk.getDacr().compareTo(DateUtils.firstDateOfTheYear(2024))<=0) {
+			path = getStorePathOldPath(allegatoParentBulk);
+			if (path != null)
+				return path;
+		}
+		return getStorePathNewPath(allegatoParentBulk);
 	}
 
 	public String getStorePathDettaglio(OrdineAcqRigaBulk ordineAcqRigaBulk) throws BusinessProcessException{
