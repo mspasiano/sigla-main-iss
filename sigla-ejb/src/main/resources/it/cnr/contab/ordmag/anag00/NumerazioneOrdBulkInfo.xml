@@ -126,7 +126,9 @@
 		inputSize="6"
 		maxLength="6"
 		enabledOnEdit="false"
-		label="Progressivo Corrente" />
+		label="Progressivo Corrente"
+		nullable="false"
+		formatName="it.cnr.contab.util.PositiveDecimalFormat"/>
 	<fieldProperty
 		name="dataProgressivo"
 		property="dataProgressivo"
