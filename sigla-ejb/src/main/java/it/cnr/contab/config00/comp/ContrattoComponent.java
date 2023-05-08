@@ -112,6 +112,10 @@ import java.util.stream.Stream;
 import javax.ejb.EJBException;
 import javax.swing.text.html.Option;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
  * @author mspasiano
  *
@@ -119,6 +123,7 @@ import javax.swing.text.html.Option;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class ContrattoComponent extends it.cnr.jada.comp.CRUDDetailComponent implements Cloneable, Serializable, IPrintMgr {
+	private static final Logger logger = LoggerFactory.getLogger(ContrattoComponent.class);
 
 	public Query select(UserContext userContext,CompoundFindClause clauses,OggettoBulk bulk) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
 		if(bulk instanceof ContrattoBulk)
@@ -157,24 +162,43 @@ public class ContrattoComponent extends it.cnr.jada.comp.CRUDDetailComponent imp
 	 */
 	public SQLBuilder selectContratto_padreByClause (UserContext userContext, OggettoBulk bulk, ContrattoBulk contratto_padre,CompoundFindClause clause)	throws ComponentException, PersistencyException
 	{
-		if(((ContrattoBulk)bulk).getPg_contratto() != null && ((ContrattoBulk)bulk).getNatura_contabile() != null && 
+		if(((ContrattoBulk)bulk).getPg_contratto() != null && ((ContrattoBulk)bulk).getNatura_contabile() != null &&
 		   (((ContrattoBulk)bulk).getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI) /*||
 		   ((ContrattoBulk)bulk).getStato().equals(ContrattoBulk.STATO_PROVVISORIO)*/))
-		   throw new ApplicationException("Non è possibile associare un contratto di riferimento!");		
-		if (clause == null) 
+		   throw new ApplicationException("Non è possibile associare un contratto di riferimento!");
+		if (clause == null)
 		  clause = contratto_padre.buildFindClauses(null);
+
 		SQLBuilder sql = getHome(userContext, contratto_padre).createSQLBuilder();
-		sql.openNotParenthesis("AND");
-		  sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
-		  sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());		
-		  sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
-		sql.closeParenthesis();
-		sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI);
-		sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
-		if (clause != null) 
-		  sql.addClause(clause);		
+		if ( this.isNaturaContabilePassivo(bulk) ) {
+			logger.info("Eseguo la ricerca come natura contabile passivo");
+			return this.loadWhereClauseNaturaContabilePassivo(sql);
+		} else {
+			logger.info("Eseguo la ricerca come natura contabile non passivo");
+			sql.openNotParenthesis("AND");
+			sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
+			sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());
+			sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
+			sql.closeParenthesis();
+			sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI);
+			sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+			// sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ((ContrattoBulk)bulk).getNatura_contabile());
+			if (clause != null)
+				sql.addClause(clause);
+			return sql;
+		}
+	}
+
+	private Boolean isNaturaContabilePassivo(OggettoBulk bulk){
+		return ((ContrattoBulk)bulk	).getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_PASSIVO);
+	}
+
+	private SQLBuilder loadWhereClauseNaturaContabilePassivo(SQLBuilder sql){
+		sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO);
 		return sql;
 	}
+
+
 	/**
 	 * Pre:  Ricerca Tipo Contratto
 	 * Post: Limitazione ai tipi con Tipo Gestione uguale a quella in oggetto
@@ -513,6 +537,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
+		logger.info("Sono creaConBulk");
 		if(oggettobulk instanceof ContrattoBulk)
 			try {
 				validaCampiObbligatori(usercontext,(ContrattoBulk)oggettobulk);
@@ -525,6 +550,14 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				throw new ComponentException(e);
 			}
 		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
+
+		// TODO inserire controllo che gli importi passivi di tutti i contratti con NaturaContabile Passivo non eccedano l'ammontare dell'AccordoQuadro
+		if ( contratto.isPassivo() ) {
+			throw new ApplicationException("TODO: implementare logica degli importi accordo quadro");
+		}
+
+
+
 		if (contratto.getCig() != null && contratto.getCig().isToBeCreated()){
 			super.creaConBulk(usercontext, contratto.getCig());
 		}
@@ -543,6 +576,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	 * Post: Aggiorno il progressivo dai numeratori
 	 */  			
 	public OggettoBulk modificaConBulk(UserContext userContext, ContrattoBulk bulk) throws ComponentException{
+		logger.info("Sono in modificaConBulk");
 		try {
 			validaCampiObbligatori(userContext,(ContrattoBulk)bulk);
 			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
@@ -1703,6 +1737,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	}
 
 	public ContrattoBulk salvaDefinitivo(UserContext userContext, ContrattoBulk contratto) throws ComponentException{
+		logger.info("Sono in salva definitivo");
 		try {
 			ContrattoService contrattoService = SpringUtil.getBean("contrattoService",
 					ContrattoService.class);

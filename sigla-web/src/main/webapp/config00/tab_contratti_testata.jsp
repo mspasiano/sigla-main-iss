@@ -204,10 +204,19 @@
 	       	<td><% bp.getController().writeFormInput(out,null,"im_contratto_passivo_netto", false,null,"");%></td>                 	    
 	      </tr>                  
 	      <% } else if (((ContrattoBulk)bp.getModel()).isAccordoQuadro()) {%>
-	        <td><% bp.getController().writeFormLabel(out,"im_contratto_attivo");%></td>
-	        <td><% bp.getController().writeFormInput(out,"default","im_contratto_attivo", bp.isPublishHidden(),null,null);%></td>                	    
+          <tr>
+             <td><% bp.getController().writeFormLabel(out,"cig");%></td>
+             <td colspan="3">
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","cig", bp.isPublishHidden(),null,null);%></div>
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","crea_cig", bp.isPublishHidden(),null,null);%></div>
+             </td>
+          </tr>
+	      <tr>
 	        <td><% bp.getController().writeFormLabel(out,"im_contratto_passivo");%></td>
 	        <td><% bp.getController().writeFormInput(out,"default","im_contratto_passivo", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
+	       	<td><% bp.getController().writeFormLabel(out,"im_contratto_passivo_netto");%></td>
+	       	<td><% bp.getController().writeFormInput(out,null,"im_contratto_passivo_netto", false,null,"");%></td>
+	       </tr>
 		  <% } %>
 		  <tr>
 		    <td><% bp.getController().writeFormLabel(out,"dt_stipula");%></td>

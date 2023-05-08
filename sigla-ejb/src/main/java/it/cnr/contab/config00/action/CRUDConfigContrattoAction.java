@@ -48,6 +48,9 @@ import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.upload.UploadedFile;
 import it.cnr.si.spring.storage.StorageObject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.math.BigDecimal;
 
 /**
@@ -57,7 +60,6 @@ import java.math.BigDecimal;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class CRUDConfigContrattoAction extends CRUDAction {
-
 	/**
 	 * Construtor from superclass
 	 *
@@ -65,6 +67,12 @@ public class CRUDConfigContrattoAction extends CRUDAction {
 	public CRUDConfigContrattoAction() {
 		super();
 	}
+
+	@Override
+	public Forward doSearch(ActionContext actioncontext, String s) {
+		return super.doSearch(actioncontext, s);
+	}
+
 	/**
 	 * Ripulisce il searchtool del Tipo Contratto
 	 * @author mspasiano
