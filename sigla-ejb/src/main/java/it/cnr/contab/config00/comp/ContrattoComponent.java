@@ -533,7 +533,29 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch (SQLException e) {
 			throw new ComponentException(e);
 		}
-	}	
+	}
+
+	private void validaAccordoQuadro(ContrattoBulk contratto) throws ApplicationException {
+		// Valutare se l'importo passivo del contratto è minore o uguale all'ammontare presente sul padre
+		try{
+			BigDecimal importoPassivo = contratto.getIm_contratto_passivo();
+			BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
+			logger.info("Importo Passivo: " + importoPassivo);
+			logger.info("Importo Passivo Padre: " + importoPassivoPadre);
+			if ( importoPassivo.compareTo(importoPassivoPadre) <= 0 ) {
+				logger.info("Importo figlio minore del padre => OK");
+			} else {
+				logger.error("Importo figlio maggiore del padre => KO");
+				throw new ApplicationException(
+						"Accordo quadro selezionato non ha capienza economica per associare il contratto. Selezionare un differente accordo quadro."
+				);
+			}
+		} catch ( NullPointerException ex ) {
+			logger.error("Non c'è il padre");
+			throw new ApplicationException("Associare un contratto di accordo quadro");
+		}
+	}
+
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
@@ -550,13 +572,9 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				throw new ComponentException(e);
 			}
 		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
-
-		// TODO inserire controllo che gli importi passivi di tutti i contratti con NaturaContabile Passivo non eccedano l'ammontare dell'AccordoQuadro
 		if ( contratto.isPassivo() ) {
-			throw new ApplicationException("TODO: implementare logica degli importi accordo quadro");
+			validaAccordoQuadro(contratto);
 		}
-
-
 
 		if (contratto.getCig() != null && contratto.getCig().isToBeCreated()){
 			super.creaConBulk(usercontext, contratto.getCig());
