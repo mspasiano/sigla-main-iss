@@ -624,6 +624,7 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 		scadSuccessivaIndex++;
 	} while (
 			scadSuccessiva.getPg_doc_passivo() != null ||
+			scadSuccessiva.getPg_ordine() != null ||
 			delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0 ||
 			scadSuccessivaIndex <= obbligazione.getObbligazione_scadenzarioColl().size())
 	);
