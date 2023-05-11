@@ -637,6 +637,10 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 	if ( scadSuccessiva.getPg_doc_passivo() != null )		
 		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata a doc. amministrativi");
 
+	//segnalo impossibilità di modificare importo se ci sono ordini associati
+	if ( scadSuccessiva.getPg_ordine() != null )
+		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata ad un ordine");
+
 	//aggiorno importo scadenza successiva
 	scadSuccessivaIniziale = new Obbligazione_scadenzarioBulk();
 	scadSuccessivaIniziale.setIm_scadenza( scadSuccessiva.getIm_scadenza());
