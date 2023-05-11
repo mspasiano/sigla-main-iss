@@ -7268,8 +7268,6 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                 //throw new it.cnr.jada.comp.ApplicationException("Attenzione: non è possibile aggiungere, eliminare o modificare i dettagli quando lo stato IVA della " + fatturaPassiva.getDescrizioneEntita() + " è B o C.");
                 //else {
                 original.setFattura_passiva_dettColl(new BulkList(originalRows));
-                for (Iterator i = original.getFattura_passiva_dettColl().iterator(); i.hasNext(); )
-                    ((Fattura_passiva_rigaBulk) i.next()).calcolaCampiDiRiga();
                 original.setChangeOperationOn(original.getValuta());
                 validaConConsuntivi(
                         aUC,
