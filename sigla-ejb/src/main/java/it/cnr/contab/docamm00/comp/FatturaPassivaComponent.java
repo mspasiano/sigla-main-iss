@@ -3010,15 +3010,16 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                 riga.setIm_totale_divisa(fatturaOrdineBulk.getImTotaleConsegna());
                 riga.setIm_imponibile(fatturaOrdineBulk.getImImponibile());
                 riga.setIm_iva(fatturaOrdineBulk.getImIva());
+                riga.setIm_totale_divisa(fatturaOrdineBulk.getImImponibile());
                 Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato())
                         .ifPresent(imp -> {
                             riga.setIm_imponibile(imp);
-                            riga.setIm_totale_divisa(imp.add(riga.getIm_iva()).setScale(2,RoundingMode.HALF_UP));
+                            riga.setIm_totale_divisa(imp.setScale(2,RoundingMode.HALF_UP));
                         });
                 Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata())
                         .ifPresent(imp -> {
                             riga.setIm_iva(imp);
-                            riga.setIm_totale_divisa(imp.add(riga.getIm_imponibile()).setScale(2,RoundingMode.HALF_UP));
+                            riga.setFl_iva_forzata(Boolean.TRUE);
                         });
 
                 riga.setIm_diponibile_nc(
