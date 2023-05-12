@@ -618,8 +618,16 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 			generaDettagliScadenzaObbligazione( aUC, obbligazione, scadSuccessivaNew, false);
 		}
 	}
-		
-	scadSuccessiva = (Obbligazione_scadenzarioBulk) obbligazione.getObbligazione_scadenzarioColl().get( scadSuccessivaIndex );
+
+	do {
+		scadSuccessiva = (Obbligazione_scadenzarioBulk) obbligazione.getObbligazione_scadenzarioColl().get( scadSuccessivaIndex );
+		scadSuccessivaIndex++;
+	} while (
+			scadSuccessiva.getPg_doc_passivo() != null ||
+			scadSuccessiva.getPg_ordine() != null ||
+			delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0 ||
+			scadSuccessivaIndex <= obbligazione.getObbligazione_scadenzarioColl().size())
+	);
 
 	//scadenza successiva ha importo inferiore a delta		
 	if ( delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0 ))

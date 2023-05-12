@@ -43,6 +43,8 @@ import it.cnr.contab.ordmag.ordini.bulk.*;
 import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
@@ -51,6 +53,7 @@ import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.PersistentHome;
@@ -486,11 +489,15 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 		if (movimentoDaAnnullare.getTipoMovimentoMag().isMovimentoDiCarico()){
 			MovimentiMagHome movimentiHome = (MovimentiMagHome)getHome(userContext, MovimentiMagBulk.class);
 	    	try {
-				List lista = movimentiHome.recuperoMovimentiDaLotto(movimentoDaAnnullare);
+				List lista = movimentiHome.recuperoMovimentiDaLotto(userContext,movimentoDaAnnullare);
 				if (lista != null && !lista.isEmpty()){
 					for (Object obj : lista){
 						MovimentiMagBulk mag = (MovimentiMagBulk)obj;
-						if (movimentoDaAnnullare.getPgMovimentoRif() != null && mag.getPgMovimento().compareTo(movimentoDaAnnullare.getPgMovimento()) != 0 && mag.getPgMovimento().compareTo(movimentoDaAnnullare.getPgMovimentoRif()) != 0){
+
+						if(mag.getPgMovimento().compareTo(movimentoDaAnnullare.getPgMovimento()) != 0 &&
+								((movimentoDaAnnullare.getPgMovimentoRif() != null && mag.getPgMovimento().compareTo(movimentoDaAnnullare.getPgMovimentoRif()) != 0)
+																||
+								(movimentoDaAnnullare.getPgMovimentoRif() == null && mag.getTipoMovimentoMag().isMovimentoDiScarico()))){
 							throw new ApplicationException("Impossibile annullare il movimento. Esiste un altro movimento con progressivo "+mag.getPgMovimento() + " per il lotto del movimento per cui si sta chiedendo l'annullamento");
 						}
 					}

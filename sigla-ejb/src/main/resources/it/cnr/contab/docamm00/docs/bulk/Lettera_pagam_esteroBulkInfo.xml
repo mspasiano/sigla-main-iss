@@ -106,6 +106,7 @@
 		name="sospeso"
 		property="sospeso"
 		inputType="SEARCHTOOL"
+		formName="searchtool"
 		readonlyProperty="ROSospesoSearchTool"
 		enabledOnSearch="true"
 		enabledOnFreeSearch="false"
