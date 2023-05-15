@@ -105,14 +105,6 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                     (getParentModel() != null &&
                     ((IDocumentoAmministrativoBulk) getParentModel()).isEditable() &&
                     !((IDocumentoAmministrativoBulk) getParentModel()).isDeleting());
-            if (modelEditable) {
-                if (getParentModel() instanceof Fattura_passiva_IBulk) {
-                    modelEditable = !((Fattura_passiva_IBulk) getParentModel()).isDoc1210Associato();
-                } else if (getParentModel() instanceof Documento_genericoBulk &&
-                        !((Documento_genericoBulk) getParentModel()).isGenericoAttivo()) {
-                    modelEditable = !((Documento_genericoBulk) getParentModel()).isDoc1210Associato();
-                }
-            }
         }
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,

@@ -508,17 +508,16 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 		os.flush();
 
 	}
-
+	private static final String NOME_REPORT_JASPER="ordini_acq.jasper";
 	public File stampaOrdine(
 			UserContext userContext,
 			OrdineAcqBulk ordine) throws ComponentException {
 		try {
-			String jasperOrdineName = "ordini_acq.jasper";
-			String nomeFileOrdineOut = getOutputFileNameOrdine(jasperOrdineName, ordine);
+			String nomeFileOrdineOut = getOutputFileNameOrdine(NOME_REPORT_JASPER, ordine);
 			File output = new File(System.getProperty("tmp.dir.SIGLAWeb") + "/tmp/", File.separator + nomeFileOrdineOut);
 			Print_spoolerBulk print = new Print_spoolerBulk();
 			print.setFlEmail(false);
-			print.setReport("/ordmag/ordini/" + jasperOrdineName);
+			print.setReport("/ordmag/ordini/" + NOME_REPORT_JASPER);
 			print.setNomeFile(nomeFileOrdineOut);
 			print.setUtcr(userContext.getUser());
 			print.setPgStampa(UUID.randomUUID().getLeastSignificantBits());
@@ -687,19 +686,16 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	public SimpleDetailCRUDController getDettaglioObbligazioneController() {
 		return dettaglioObbligazioneController;
 	}
-	public void delete(ActionContext context) throws it.cnr.jada.action.BusinessProcessException 
+	public void delete(ActionContext context) throws it.cnr.jada.action.BusinessProcessException
 	{
 		int crudStatus = getModel().getCrudStatus();
-		try 
+		try
 		{
 			OrdineAcqBulk ordine = (OrdineAcqBulk) getModel();
-			if ( !ordine.isStatoInserito()){
+			if ( !ordine.isStatoInserito())
 				throw new ApplicationException( "Non è possibile cancellare un ordine in stato diverso da inserito");
-			} else {
-				ordine = ((OrdineAcqComponentSession)createComponentSession()).cancellaOrdine(context.getUserContext(),(OrdineAcqBulk)getModel());
-				setModel( context, ordine );
-				setMessage("Cancellazione effettuata");			
-			}
+			((OrdineAcqComponentSession)createComponentSession()).eliminaConBulk(context.getUserContext(),ordine);
+			this.commitUserTransaction();
 		} catch(Exception e) {
 			getModel().setCrudStatus(crudStatus);
 			throw handleException(e);

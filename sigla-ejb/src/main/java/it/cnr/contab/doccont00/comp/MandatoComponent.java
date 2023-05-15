@@ -5883,43 +5883,6 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                     }
                 }
             }
-            /**
-             * Controllo se la modalità di pagamento è stata cambiata in tal caso aggiorno anche quella sulle righe del documento amministrativo collegato
-             */
-            final BancaBulk bancaBulk = mandato.getMandato_rigaColl()
-                    .stream()
-                    .map(Mandato_rigaBulk::getBanca)
-                    .findAny()
-                    .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
-            final Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = mandato.getMandato_rigaColl()
-                    .stream()
-                    .map(Mandato_rigaBulk::getModalita_pagamento)
-                    .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
-                    .findAny()
-                    .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
-
-            final MandatoHome mandatoHome = (MandatoHome)getHome(userContext, mandato);
-            final List<MandatoHome.MandatoRigaComplete> mandatoRigaCompletes = mandatoHome.completeRigheMandato(userContext, mandato);
-            super.modificaConBulk(
-                    userContext,
-                    mandatoRigaCompletes.stream()
-                    .map(mandatoRigaComplete -> {
-                        return mandatoRigaComplete
-                                .getDocammRighe()
-                                .stream()
-                                .filter(iDocumentoAmministrativoRigaBulk -> {
-                                    return !iDocumentoAmministrativoRigaBulk.getBanca().equalsByPrimaryKey(bancaBulk) ||
-                                            !iDocumentoAmministrativoRigaBulk.getModalita_pagamento().equalsByPrimaryKey(rifModalitaPagamentoBulk);
-                                }).map(iDocumentoAmministrativoRigaBulk -> {
-                                    iDocumentoAmministrativoRigaBulk.setBanca(bancaBulk);
-                                    iDocumentoAmministrativoRigaBulk.setModalita_pagamento(rifModalitaPagamentoBulk);
-                                    ((OggettoBulk) iDocumentoAmministrativoRigaBulk).setToBeUpdated();
-                                    return iDocumentoAmministrativoRigaBulk;
-                                })
-                                .filter(OggettoBulk.class::isInstance)
-                                .map(OggettoBulk.class::cast)
-                                .collect(Collectors.toList());
-                    }).collect(ArrayList::new, List::addAll, List::addAll).toArray(new OggettoBulk[]{}));
         } catch (Exception e) {
             throw handleException(e);
         }

@@ -3331,62 +3331,6 @@ REVERSALE
         } catch (Exception e) {
             throw handleException(e);
         }
-        /**
-         * Controllo se la modalità di pagamento è stata cambiata in tal caso aggiorno anche quella sulle righe del documento amministrativo collegato
-         */
-        final BancaBulk bancaBulk = reversale.getReversale_rigaColl()
-                .stream()
-                .map(Reversale_rigaBulk::getBanca)
-                .findAny()
-                .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
-        final Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = reversale.getReversale_rigaColl()
-                .stream()
-                .map(Reversale_rigaBulk::getModalita_pagamento)
-                .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
-                .findAny()
-                .orElseThrow(() -> APPLICATION_EXCEPTION_TOO_MANY_MDO_PAG);
-
-        final Reversale_rigaHome home = (Reversale_rigaHome) getHome(userContext, Reversale_rigaBulk.class);
-        reversale.getReversale_rigaColl()
-                .stream()
-                .forEach(reversaleRigaBulk -> {
-                    try {
-                        final IDocumentoAmministrativoEntrataBulk documentoAmministrativoEntrataBulk = home.getDocumentoAmministrativoBulk(userContext, reversaleRigaBulk);
-                        if (documentoAmministrativoEntrataBulk instanceof Fattura_attivaBulk) {
-                            Fattura_attivaBulk fatturaAttivaBulk = (Fattura_attivaBulk)documentoAmministrativoEntrataBulk;
-                            if (!bancaBulk.equalsByPrimaryKey(fatturaAttivaBulk.getBanca_uo()) ||
-                                    !rifModalitaPagamentoBulk.equalsByPrimaryKey(fatturaAttivaBulk.getModalita_pagamento_uo())) {
-                                fatturaAttivaBulk.setBanca_uo(bancaBulk);
-                                fatturaAttivaBulk.setModalita_pagamento_uo(rifModalitaPagamentoBulk);
-                                fatturaAttivaBulk.setToBeUpdated();
-                                super.updateBulk(userContext, fatturaAttivaBulk);
-                            }
-                        } else if (documentoAmministrativoEntrataBulk instanceof Documento_genericoBulk) {
-                            Documento_genericoBulk documentoGenericoAttivoBulk = (Documento_genericoBulk)documentoAmministrativoEntrataBulk;
-                            Documento_genericoHome documentoGenericoHome = (Documento_genericoHome)getHome(userContext, Documento_genericoBulk.class);
-                            final List<Documento_generico_rigaBulk> documentoGenericoRigheList = documentoGenericoHome.findDocumentoGenericoRigheList(documentoGenericoAttivoBulk);
-                            for (Documento_generico_rigaBulk documentoGenericoRigaBulk : documentoGenericoRigheList) {
-                                if (documentoGenericoRigaBulk.getAccertamento_scadenziario().equalsByPrimaryKey(
-                                        new Accertamento_scadenzarioBulk(
-                                                reversaleRigaBulk.getCd_cds(),
-                                                reversaleRigaBulk.getEsercizio_accertamento(),
-                                                reversaleRigaBulk.getEsercizio_ori_accertamento(),
-                                                reversaleRigaBulk.getPg_accertamento(),
-                                                reversaleRigaBulk.getPg_accertamento_scadenzario()
-                                        )
-                                ) && !bancaBulk.equalsByPrimaryKey(documentoGenericoRigaBulk.getBanca_uo_cds()) ||
-                                        !rifModalitaPagamentoBulk.equalsByPrimaryKey(documentoGenericoRigaBulk.getModalita_pagamento_uo_cds())) {
-                                    documentoGenericoRigaBulk.setBanca_uo_cds(bancaBulk);
-                                    documentoGenericoRigaBulk.setModalita_pagamento_uo_cds(rifModalitaPagamentoBulk);
-                                    documentoGenericoRigaBulk.setToBeUpdated();
-                                    super.updateBulk(userContext, documentoGenericoRigaBulk);
-                                }
-                            }
-                        }
-                    } catch (ComponentException | PersistencyException _ex) {
-                        throw new DetailedRuntimeException(_ex);
-                    }
-                });
     }
 
     /**
