@@ -22,6 +22,7 @@
 package it.cnr.contab.config00.contratto.bulk;
 
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
+import it.cnr.contab.config00.comp.ContrattoComponent;
 import it.cnr.contab.config00.consultazioni.bulk.VContrattiTotaliDetBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
@@ -38,11 +39,15 @@ import it.cnr.jada.persistency.PersistentCache;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.persistency.sql.SQLUnion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class ContrattoHome extends BulkHome {
+    private static final Logger logger = LoggerFactory.getLogger(ContrattoHome.class);
+
     public ContrattoHome(java.sql.Connection conn) {
         super(ContrattoBulk.class, conn);
     }
@@ -83,6 +88,24 @@ public class ContrattoHome extends BulkHome {
         sql.addSQLClause("AND", "STATO_CONTRATTO", sql.EQUALS, testata.getStato());
         sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, testata.getPg_contratto());
         sql.addOrderBy("CD_UNITA_ORGANIZZATIVA");
+        return dettHome.fetchAll(sql);
+    }
+
+    /**
+     * @param contratto
+     * @return true se esiste un contratto valido per il tipo passato, false altrimenti
+     * @throws SQLException
+     * @throws PersistencyException
+     * @author mspasiano
+     */
+    public java.util.Collection findContrattiPassiviConAccordoQuadro(ContrattoBulk contratto) throws SQLException, PersistencyException {
+        // TODO verificare se inserire qui la query
+        PersistentHome dettHome = getHomeCache().getHome(ContrattoBulk.class);
+        SQLBuilder sql = dettHome.createSQLBuilder();
+        sql.addSQLClause("AND", "PG_CONTRATTO_PADRE", sql.EQUALS, contratto.getPg_contratto_padre());
+        sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, contratto.getEsercizio());
+        // FIXME rimuovere log
+        logger.info("SQL: " + sql);
         return dettHome.fetchAll(sql);
     }
 

@@ -535,14 +535,28 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		}
 	}
 
-	private void validaAccordoQuadro(ContrattoBulk contratto) throws ApplicationException {
-		// Valutare se l'importo passivo del contratto è minore o uguale all'ammontare presente sul padre
+	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ApplicationException{
+		ContrattoHome home;
 		try{
-			BigDecimal importoPassivo = contratto.getIm_contratto_passivo();
+			home = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
+		} catch ( ComponentException ex ) {
+			throw new ApplicationException(ex);
+		}
+
+		try{
+			Collection contratti = home.findContrattiPassiviConAccordoQuadro(contratto);
+			Iterator<ContrattoBulk> iterator = contratti.iterator();
+
 			BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
-			logger.info("Importo Passivo: " + importoPassivo);
+			BigDecimal totaleImportoContrattoPassivo = new BigDecimal(0);
+			while (iterator.hasNext()) {
+				ContrattoBulk c = iterator.next();
+				totaleImportoContrattoPassivo = totaleImportoContrattoPassivo.add(c.getIm_contratto_passivo());
+				logger.info("ImportoContrattoPassivo" + c.getIm_contratto_passivo() + ", Totale: " + totaleImportoContrattoPassivo);
+			}
+			logger.info("Totale Passivo figli: " + totaleImportoContrattoPassivo);
 			logger.info("Importo Passivo Padre: " + importoPassivoPadre);
-			if ( importoPassivo.compareTo(importoPassivoPadre) <= 0 ) {
+			if ( totaleImportoContrattoPassivo.compareTo(importoPassivoPadre) <= 0 ) {
 				logger.info("Importo figlio minore del padre => OK");
 			} else {
 				logger.error("Importo figlio maggiore del padre => KO");
@@ -553,12 +567,18 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch ( NullPointerException ex ) {
 			logger.error("Non c'è il padre");
 			throw new ApplicationException("Associare un contratto di accordo quadro");
+		} catch ( SQLException ex ) {
+			throw new ApplicationException(ex);
+		} catch ( PersistencyException ex ) {
+			throw new ApplicationException(ex);
 		}
 	}
 
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
+		// TODO esegue la chiamata
+
 		logger.info("Sono creaConBulk");
 		if(oggettobulk instanceof ContrattoBulk)
 			try {
@@ -573,7 +593,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			}
 		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 		if ( contratto.isPassivo() ) {
-			validaAccordoQuadro(contratto);
+			validaAccordoQuadro(usercontext, contratto);
 		}
 
 		if (contratto.getCig() != null && contratto.getCig().isToBeCreated()){
@@ -598,7 +618,14 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		try {
 			validaCampiObbligatori(userContext,(ContrattoBulk)bulk);
 			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
+
 			ContrattoBulk contratto=(ContrattoBulk)bulk;
+			if ( contratto.isPassivo() ) {
+				validaAccordoQuadro(userContext, contratto);
+			}
+
+
+
 			validaAssociazioneContrattoAccertamenti(userContext,(ContrattoBulk)bulk);
 
 			Date dataStipulaParametri = ((Parametri_cnrBulk)getHome(userContext, Parametri_cnrBulk.class).
