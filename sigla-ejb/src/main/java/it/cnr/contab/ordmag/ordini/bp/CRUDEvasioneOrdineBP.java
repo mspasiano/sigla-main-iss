@@ -270,6 +270,8 @@ public class CRUDEvasioneOrdineBP extends SimpleCRUDBP {
 		Optional.ofNullable(consegna).ifPresent(cns->{
 			Optional.ofNullable(unitaMisura).ifPresent(um->{
 				cns.setUnitaMisuraEvasa(um);
+				cns.setCoefConvEvasa(BigDecimal.ZERO);
+				cns.setQuantitaEvasa(BigDecimal.ZERO);
 				Optional.ofNullable(cns.getOrdineAcqRiga().getBeneServizio())
 					.filter(bene->bene.getUnitaMisura().equalsByPrimaryKey(unitaMisura)).ifPresent(bs->{
 					cns.setCoefConvEvasa(BigDecimal.ONE);

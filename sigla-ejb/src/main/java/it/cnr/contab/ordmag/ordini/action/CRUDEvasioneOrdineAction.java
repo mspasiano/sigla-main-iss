@@ -191,8 +191,8 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			if (!Optional.ofNullable(consegna.getUnitaMisuraEvasa())
 						 .map(UnitaMisuraBulk::getCdUnitaMisura)
 						 .isPresent()) {
-				consegna.setUnitaMisuraEvasa(consegna.getOrdineAcqRiga().getBeneServizio().getUnitaMisura());
-				consegna.setCoefConvEvasa(BigDecimal.ONE);
+				consegna.setUnitaMisuraEvasa(consegna.getOrdineAcqRiga().getUnitaMisura());
+				consegna.setCoefConvEvasa(consegna.getOrdineAcqRiga().getCoefConv());
 				consegna.setQuantitaEvasa(consegna.getQuantita());
 				bp.setDettConsegneCollapse(Boolean.TRUE);
 			}

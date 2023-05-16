@@ -597,29 +597,17 @@ public class OrdineAcqComponent
     public OggettoBulk inizializzaBulkPerModifica(UserContext usercontext, OggettoBulk oggettobulk)
             throws ComponentException {
         OrdineAcqBulk ordine = (OrdineAcqBulk) super.inizializzaBulkPerModifica(usercontext, oggettobulk);
-
         ordine.setUnicoMagazzinoAbilitato(unicoMagazzinoAbilitato(usercontext, ordine));
-        it.cnr.jada.bulk.BulkHome homeRiga = getHome(usercontext, OrdineAcqRigaBulk.class);
-        it.cnr.jada.persistency.sql.SQLBuilder sql = homeRiga.createSQLBuilder();
-        sql.addClause("AND", "numero", SQLBuilder.EQUALS, ordine.getNumero());
-        sql.addClause("AND", "cdCds", SQLBuilder.EQUALS, ordine.getCdCds());
-        sql.addClause("AND", "cdUnitaOperativa", SQLBuilder.EQUALS, ordine.getCdUnitaOperativa());
-        sql.addClause("AND", "esercizio", SQLBuilder.EQUALS, ordine.getEsercizio());
-        sql.addClause("AND", "cdNumeratore", SQLBuilder.EQUALS, ordine.getCdNumeratore());
-        sql.addOrderBy("cd_cds");
-        sql.addOrderBy("cd_unita_operativa");
-        sql.addOrderBy("esercizio");
-        sql.addOrderBy("cd_numeratore");
-        sql.addOrderBy("numero");
-        sql.addOrderBy("riga");
 
         try {
-            ordine.setRigheOrdineColl(new it.cnr.jada.bulk.BulkList(homeRiga.fetchAll(sql)));
+            OrdineAcqHome homeOrdine = (OrdineAcqHome)getHome(usercontext, OrdineAcqBulk.class);
+            ordine.setRigheOrdineColl(new BulkList(homeOrdine.findOrdineRigheList(ordine)));
 
             for (java.util.Iterator i = ordine.getRigheOrdineColl().iterator(); i.hasNext(); ) {
                 OrdineAcqRigaBulk riga = (OrdineAcqRigaBulk) i.next();
 
-                riga.setRigheConsegnaColl(new it.cnr.jada.bulk.BulkList(recuperoRigheConsegnaCollegate(usercontext, getHome(usercontext, OrdineAcqConsegnaBulk.class), riga)));
+                OrdineAcqRigaHome homeRigaOrdine = (OrdineAcqRigaHome)getHome(usercontext, OrdineAcqRigaBulk.class);
+                riga.setRigheConsegnaColl(new BulkList(homeRigaOrdine.findOrdineRigheConsegnaList(riga)));
 
                 getHomeCache(usercontext).fetchAll(usercontext);
 
@@ -656,18 +644,6 @@ public class OrdineAcqComponent
         //    impostaTotaliOrdine(ordine);
         rebuildObbligazioni(usercontext, ordine);
         return inizializzaOrdine(usercontext, ordine, false);
-    }
-
-    private List recuperoRigheConsegnaCollegate(UserContext usercontext, BulkHome homeConsegna, OrdineAcqRigaBulk riga) throws ComponentException, PersistencyException {
-        it.cnr.jada.persistency.sql.SQLBuilder sqlConsegna = homeConsegna.createSQLBuilder();
-        sqlConsegna.addClause("AND", "numero", SQLBuilder.EQUALS, riga.getNumero());
-        sqlConsegna.addClause("AND", "cdCds", SQLBuilder.EQUALS, riga.getCdCds());
-        sqlConsegna.addClause("AND", "cdUnitaOperativa", SQLBuilder.EQUALS, riga.getCdUnitaOperativa());
-        sqlConsegna.addClause("AND", "esercizio", SQLBuilder.EQUALS, riga.getEsercizio());
-        sqlConsegna.addClause("AND", "cdNumeratore", SQLBuilder.EQUALS, riga.getCdNumeratore());
-        sqlConsegna.addClause("AND", "riga", SQLBuilder.EQUALS, riga.getRiga());
-        sqlConsegna.addOrderBy("consegna");
-        return homeConsegna.fetchAll(sqlConsegna);
     }
 
     protected void impostaCampiDspRiga(UserContext userContext, OrdineAcqRigaBulk riga) throws ComponentException {
@@ -2574,7 +2550,7 @@ public class OrdineAcqComponent
                                                 ordine.getNumero(),
                                                 riga.getRiga()
                                         ));
-                                rigaDB.setRigheConsegnaColl(new BulkList<>(recuperoRigheConsegnaCollegate(aUC, getTempHome(aUC, OrdineAcqConsegnaBulk.class), rigaDB)));
+                                rigaDB.setRigheConsegnaColl((BulkList)((OrdineAcqRigaHome)getTempHome(aUC, OrdineAcqRigaBulk.class)).findOrdineRigheConsegnaList(rigaDB));
                             } catch (PersistencyException e) {
                                 throw new ComponentException(e);
                             }
