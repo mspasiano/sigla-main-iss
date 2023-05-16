@@ -23,6 +23,7 @@ import it.cnr.contab.config00.bulk.Parametri_enteBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.progettiric00.core.bulk.*;
@@ -37,6 +38,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoTypeBulk;
 import it.cnr.contab.varstanz00.bulk.Var_stanz_resBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Config;
@@ -1149,5 +1151,10 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
 
     public SimpleDetailCRUDController getCrudProgetto_anagrafico() {
         return crudProgetto_anagrafico;
+    }
+
+    public boolean isUoEnte( UserContext uc ){
+        return  Optional.ofNullable(this.getUoScrivania()).filter(Unita_organizzativaBulk::isUoEnte).isPresent();
+
     }
 }

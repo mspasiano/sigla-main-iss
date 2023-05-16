@@ -100,7 +100,13 @@ public class ProgettoHome extends BulkHome {
         return super.select(persistent);
     }
 
-    /**
+	@Override
+	public void initializeBulkForInsert(UserContext usercontext, OggettoBulk oggettobulk) throws PersistencyException, ComponentException {
+		super.initializeBulkForInsert(usercontext, oggettobulk);
+		(( Progetto_uoBulk)oggettobulk).setFl_visibile(Boolean.TRUE);
+	}
+
+	/**
 	 * Recupera tutti i dati nella tabella Progetto_uo relativi alla testata in uso.
 	 *
 	 * @param testata La testata in uso.
@@ -1082,4 +1088,54 @@ public class ProgettoHome extends BulkHome {
 
 		return this.fetchAll(sql);
 	}
+
+	private SQLBuilder selectFromFlVisibile(Integer esercizio, String cdUnitaOrganizzativa, String cdCdS) throws PersistencyException {
+		Unita_organizzativaBulk uo = (Unita_organizzativaBulk)getHomeCache().getHome(Unita_organizzativaBulk.class)
+				.findByPrimaryKey(new Unita_organizzativaBulk(cdUnitaOrganizzativa));
+		Progetto_uoHome progettoUohome = (Progetto_uoHome)getHomeCache().getHome(Progetto_uoBulk.class);
+		SQLBuilder sql = progettoUohome.createSQLBuilder();
+
+		sql.addTableToHeader("UNITA_ORGANIZZATIVA");
+		sql.addSQLJoin("UNITA_ORGANIZZATIVA.CD_UNITA_ORGANIZZATIVA", "PROGETTO_UO.CD_UNITA_ORGANIZZATIVA");
+		sql.openParenthesis("AND");
+
+		Parametri_enteBulk parEnte = ((Parametri_enteHome)getHomeCache().getHome(Parametri_enteBulk.class)).getParametriEnteAttiva();
+		boolean abilProgettoUO = parEnte.isAbilProgettoUO();
+		Optional<String> abilProgetti = ((Parametri_cdsHome) getHomeCache().getHome(Parametri_cdsBulk.class)).getAbilProgetti(esercizio, cdCdS);
+		if (abilProgetti.isPresent()) {
+			abilProgettoUO = abilProgetti.get().equalsIgnoreCase(V_struttura_organizzativaHome.LIVELLO_UO);
+		}
+		if (abilProgettoUO)
+			sql.addSQLClause(FindClause.AND,"PROGETTO_UO.CD_UNITA_ORGANIZZATIVA",SQLBuilder.EQUALS,cdUnitaOrganizzativa);
+		else
+			sql.addSQLClause("AND","UNITA_ORGANIZZATIVA.CD_UNITA_PADRE",SQLBuilder.EQUALS,cdCdS);
+
+		if (uo.getCd_tipo_unita().compareTo(it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome.TIPO_UO_AREA)==0){
+			PersistentHome parCNRHome = getHomeCache().getHome(Parametri_cnrBulk.class);
+			Parametri_cnrBulk parCNR = (Parametri_cnrBulk)parCNRHome.findByPrimaryKey(new Parametri_cnrBulk(esercizio));
+			if (!parCNR.getFl_nuovo_pdg()) {
+				SQLBuilder sqlArea = getHomeCache().getHome(Ass_uo_areaBulk.class).createSQLBuilder();
+				sqlArea.addTableToHeader("UNITA_ORGANIZZATIVA UO");
+				sqlArea.addSQLJoin("UNITA_ORGANIZZATIVA.CD_UNITA_PADRE", "UO.CD_UNITA_PADRE");
+				sqlArea.addSQLJoin("ASS_UO_AREA.CD_UNITA_ORGANIZZATIVA", "UO.CD_UNITA_ORGANIZZATIVA");
+				sqlArea.addSQLClause("AND","ASS_UO_AREA.CD_AREA_RICERCA",SQLBuilder.EQUALS,cdCdS);
+				sqlArea.addSQLClause("AND","ASS_UO_AREA.ESERCIZIO",SQLBuilder.EQUALS, esercizio);
+				sql.addSQLExistsClause("OR",sqlArea);
+			}
+		}
+		sql.closeParenthesis();
+		sql.addSQLJoin("PROGETTO_UO.PG_PROGETTO","V_PROGETTO_PADRE.PG_PROGETTO");
+		sql.addSQLJoin("PROGETTO_UO.FL_VISIBILE","'Y'");
+		return sql;
+
+	}
+
+	public SQLBuilder selectFromFlVisibile(it.cnr.jada.UserContext userContext) throws PersistencyException{
+		return selectFromFlVisibile(
+				CNRUserContext.getEsercizio(userContext),
+				CNRUserContext.getCd_unita_organizzativa(userContext),
+				CNRUserContext.getCd_cds(userContext)
+		);
+	}
+
 }

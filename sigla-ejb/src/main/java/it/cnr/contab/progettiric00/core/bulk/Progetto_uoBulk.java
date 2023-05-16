@@ -17,12 +17,8 @@
 
 package it.cnr.contab.progettiric00.core.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
-
 public class Progetto_uoBulk extends Progetto_uoBase {
+
 
 	private it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa;
 public Progetto_uoBulk() {

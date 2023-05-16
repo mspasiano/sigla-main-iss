@@ -533,6 +533,8 @@ public ProgettoRicercaComponent() {
 		   if (!((CNRUserContext) userContext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
 			   try {
 				  sql.addSQLExistsClause("AND",progettohome.abilitazioniCommesse(userContext));
+				   sql.addSQLExistsClause("AND",progettohome.selectFromFlVisibile(userContext));
+
 				} catch (Exception e) {
 					throw handleException(e);
 				}

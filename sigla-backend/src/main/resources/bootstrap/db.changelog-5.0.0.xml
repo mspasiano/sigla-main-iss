@@ -6000,6 +6000,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/modify_length_val0X_Configurazione_cnr.xml"/>
     <!-- Autore : VALENTINA TOMADA - Modificata lunghezza colonna LINEA_DESCRIZIONE della tabella DOCUMENTO_ELE_LINEA da 1000 a 1500 caratteri-->
     <include file="bootstrap/modify_length_column_documento_ele_linea.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta colonna fl_visbile su progetto_uo -->
+    <include file="bootstrap/add_column_fl_visibile_progetto_uo.xml"/>
 
 
 </databaseChangeLog>

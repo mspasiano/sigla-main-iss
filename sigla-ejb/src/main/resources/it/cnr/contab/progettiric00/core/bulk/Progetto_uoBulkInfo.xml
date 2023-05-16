@@ -53,6 +53,17 @@
 		formatName="it.cnr.contab.util.EuroFormat"
 		label="Importo" />
 
+	<fieldProperty
+			name="fl_visibile"
+			property="fl_visibile"
+			inputType="CHECKBOX"
+			label="Visibile a UO"
+			enabledOnSearch="false"
+			enabledOnEdit="true"
+			enabledOnInsert="true"
+			 />
+
+
 	<form name="uo">
 		<formFieldProperty
 			name="cd_unita_organizzativa"
@@ -62,11 +73,27 @@
 			property="unita_organizzativa.ds_unita_organizzativa"
 			label="Descrizione Unità Organizzativa"
 			/>
+		<columnFieldProperty
+				name="fl_visibile"/>
 		<!-- Per ora l'importo non è gestito 	
 		<formFieldProperty
 			name="importo"
 			/> -->
 	</form>
+	<columnSet name="uo999">
+		<columnFieldProperty
+				name="cd_unita_organizzativa"/>
+		<columnFieldProperty
+				name="ds_unita_organizzativa"
+				property="unita_organizzativa.ds_unita_organizzativa"
+				label="Descrizione Unità Organizzativa"/>
+		<columnFieldProperty
+				name="fl_visibile"/>
+		<!-- Per ora l'importo non è gestito
+		<columnFieldProperty
+			name="importo"/> -->
+	</columnSet>
+
 	<columnSet name="uo">
 		<columnFieldProperty
 			name="cd_unita_organizzativa"/>
@@ -74,6 +101,7 @@
 			name="ds_unita_organizzativa"
 			property="unita_organizzativa.ds_unita_organizzativa"
 			label="Descrizione Unità Organizzativa"/>
+
 		<!-- Per ora l'importo non è gestito 	
 		<columnFieldProperty
 			name="importo"/> -->
@@ -87,6 +115,8 @@
 		name="unita_organizzativa" />
 	<formFieldProperty
 		name="importo" />
+	<formFieldProperty
+			name="fl_visibile" />
 
 	<columnFieldProperty
 		name="cd_unita_organizzativa" />
@@ -94,6 +124,8 @@
 		name="pg_progetto" />
 	<columnFieldProperty
 		name="importo" />
+	<columnFieldProperty
+			name="fl_visibile" />
 
 	<findFieldProperty
 		name="cd_unita_organizzativa" />
