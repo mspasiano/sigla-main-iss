@@ -392,6 +392,33 @@ BEGIN
 		rec.RIGA||'/'||rec.CONSEGNA||'. Valorizzazione movimento di fattura non coerente con il tipo di associazione indicato sulla consegna.');
 	END LOOP;
 
+    FOR REC IN (SELECT * FROM MOVIMENTI_MAG mm
+                WHERE CD_TIPO_MOVIMENTO IN ('C19','C20')
+                AND PREZZO_UNITARIO != 0
+                AND (CD_CDS_LOTTO, CD_MAGAZZINO_LOTTO, ESERCIZIO_LOTTO, CD_NUMERATORE_LOTTO, PG_LOTTO) IN
+                    (SELECT CD_CDS_LOTTO, CD_MAGAZZINO_LOTTO, ESERCIZIO_LOTTO, CD_NUMERATORE_LOTTO, PG_LOTTO
+                     FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA vcoac
+                     WHERE PREZZO_UNITARIO_SCONTATO_ORDINE_IVATO = PREZZO_UNITARIO_SCONTATO_FATTURA_IVATO )) LOOP
+		contaanomalie := contaanomalie + 1;
+		dbms_output.put_line('Movimento di magazzino con progressivo '||rec.PG_MOVIMENTO||'. Riporta un valore non nullo anche se in fase di associazione fattura non è cambiato il prezzo.');
+    END LOOP;
+
+    FOR REC IN (SELECT *
+                FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA vcoac
+                WHERE vcoac.PREZZO_UNITARIO_SCONTATO_ORDINE_IVATO != vcoac.PREZZO_UNITARIO_SCONTATO_FATTURA_IVATO
+                AND NOT EXISTS(SELECT * FROM MOVIMENTI_MAG mm
+                               WHERE MM.CD_TIPO_MOVIMENTO IN ('C19','C20')
+                               AND MM.PREZZO_UNITARIO != 0
+                               AND MM.CD_CDS_LOTTO = vcoac.CD_CDS_LOTTO
+                               AND mm.CD_MAGAZZINO_LOTTO = vcoac.CD_MAGAZZINO_LOTTO
+                               AND mm.ESERCIZIO_LOTTO = vcoac.ESERCIZIO_LOTTO
+                               AND mm.CD_NUMERATORE_LOTTO = vcoac.CD_NUMERATORE_LOTTO
+                               AND mm.PG_LOTTO = vcoac.PG_LOTTO)) LOOP
+		contaanomalie := contaanomalie + 1;
+		dbms_output.put_line('Consegna '||rec.CD_CDS||'/'||rec.CD_UNITA_OPERATIVA||'/'||rec.ESERCIZIO||'/'||rec.CD_NUMERATORE||'/'||rec.NUMERO||'/'||
+		rec.RIGA||'/'||rec.CONSEGNA||'. Non risulta essere presente il movimento di magazzino C20 anche se in fase di associazione fattura è cambiato il prezzo.');
+    END LOOP;
+
 	--controllo lotti tranne quelli migrati
 	FOR recLotto IN (SELECT * FROM LOTTO_MAG lm
 	                 LEFT JOIN BENE_SERVIZIO bs ON bs.CD_BENE_SERVIZIO = lm.CD_BENE_SERVIZIO
