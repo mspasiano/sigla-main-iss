@@ -1484,7 +1484,7 @@ public class OrdineAcqComponent
             voceIva = parametri.getVoceIva();
         }
 
-        BigDecimal importoIva = (Utility.divide(imponibile, Utility.CENTO, 6)).multiply(voceIva.getPercentuale());
+        BigDecimal importoIva = Utility.divide(imponibile.multiply(voceIva.getPercentuale()), Utility.CENTO, 6);
         BigDecimal ivaNonDetraibile = importoIva.multiply((Utility.CENTO.subtract(voceIva.getPercentuale_detraibilita())));
 
         BigDecimal ivaPerCalcoloProrata = importoIva.subtract(ivaNonDetraibile);
