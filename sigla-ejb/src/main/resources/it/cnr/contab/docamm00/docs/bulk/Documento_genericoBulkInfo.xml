@@ -479,6 +479,7 @@
 		name="sospeso"
 		property="lettera_pagamento_estero.sospeso"
 		inputType="SEARCHTOOL"
+		formName="searchtool"
 		readonlyProperty="ROSospesoSearchTool"
 		enabledOnSearch="true"
 		enabledOnFreeSearch="false"

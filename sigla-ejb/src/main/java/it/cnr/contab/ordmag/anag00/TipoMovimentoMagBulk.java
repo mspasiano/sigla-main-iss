@@ -402,6 +402,10 @@ public class TipoMovimentoMagBulk extends TipoMovimentoMagBase {
 	public Boolean isMovimentoDiCarico(){
 		return getTipo() != null && (getTipo().equals(CARICO_MANUALE) || getTipo().equals(CARICO_AUTOMATICO) || getTipo().equals(CARICO_TRASFERIMENTO));
 	}
+	public Boolean isMovimentoDiScarico(){
+		return getTipo() != null && (getTipo().equals(SCARICO_MANUALE) || getTipo().equals(SCARICO_AUTOMATICO) || getTipo().equals(SCARICO_TRASFERIMENTO));
+
+	}
 
 	public Boolean isCaricoDaOrdine(){
 		return getTipo() != null && (getTipo().equals(CARICO_AUTOMATICO));
