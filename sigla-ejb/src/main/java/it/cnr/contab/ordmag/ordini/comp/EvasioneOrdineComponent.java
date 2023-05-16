@@ -202,15 +202,15 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 
 					if (consegnaSelected.isQuantitaEvasaMinoreOrdine()) {
 						consegnaDB.setQuantitaOrig(consegnaSelected.getQtEvasaConvertita());
-						consegnaDB.setQuantita(consegnaDB.getQuantitaOrig().divide(consegnaSelected.getOrdineAcqRiga().getCoefConv(),5,RoundingMode.HALF_EVEN));
+						consegnaDB.setQuantita(consegnaDB.getQuantitaOrig().divide(consegnaSelected.getOrdineAcqRiga().getCoefConv(),5,RoundingMode.HALF_UP));
 
 						//Ricalcolo i campi imponibile e imposta, calcolati in base alla vecchia quantità (consegnaSelected.getQuantita()) in proporzione alla nuova quantita (consegnaDB.getQuantita())
-						consegnaDB.setImImponibile(consegnaSelected.getImImponibile().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
-						consegnaDB.setImIva(consegnaSelected.getImIva().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
-						consegnaDB.setImImponibileDivisa(consegnaSelected.getImImponibileDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
-						consegnaDB.setImIvaDivisa(consegnaSelected.getImIvaDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
-						consegnaDB.setImIvaD(consegnaSelected.getImIvaD().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
-						consegnaDB.setImIvaNd(consegnaSelected.getImIvaNd().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_EVEN));
+						consegnaDB.setImImponibile(consegnaSelected.getImImponibile().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIva(consegnaSelected.getImIva().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImImponibileDivisa(consegnaSelected.getImImponibileDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaDivisa(consegnaSelected.getImIvaDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaD(consegnaSelected.getImIvaD().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaNd(consegnaSelected.getImIvaNd().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
 						consegnaDB.setImTotaleConsegna(consegnaDB.getImImponibile().add(consegnaDB.getImIva()));
 
 						//Creo una nuova consegna

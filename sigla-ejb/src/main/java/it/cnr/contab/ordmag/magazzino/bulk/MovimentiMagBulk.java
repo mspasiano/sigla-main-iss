@@ -319,7 +319,7 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 		if (this.getPrezzoUnitario()==null || this.getPrezzoUnitario().compareTo(BigDecimal.ZERO)==0)
 			return BigDecimal.ZERO;
 
-		return this.getPrezzoUnitario().divide(this.getCoeffConv(), 6, RoundingMode.HALF_EVEN);
+		return this.getPrezzoUnitario().divide(this.getCoeffConv(), 6, RoundingMode.HALF_UP);
 	}
 
 }

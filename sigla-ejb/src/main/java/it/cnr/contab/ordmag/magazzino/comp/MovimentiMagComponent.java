@@ -140,7 +140,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 			BigDecimal prezzoUnitario = recuperoPrezzoUnitario(userContext, consegna);
 			//Rapporto il prezzo unitario al Coefficiente di Conversione usato nell'evasione se diverso da quello indicato sulla riga
 			if (!movimentoMag.getCoeffConv().equals(consegna.getOrdineAcqRiga().getCoefConv()))
-				prezzoUnitario = prezzoUnitario.multiply(movimentoMag.getCoeffConv()).divide(consegna.getOrdineAcqRiga().getCoefConv(),5, RoundingMode.HALF_EVEN);
+				prezzoUnitario = prezzoUnitario.multiply(movimentoMag.getCoeffConv()).divide(consegna.getOrdineAcqRiga().getCoefConv(),6, RoundingMode.HALF_UP);
 			movimentoMag.setPrezzoUnitario(prezzoUnitario);
 		} catch (RemoteException e) {
 			throw new ComponentException(e);

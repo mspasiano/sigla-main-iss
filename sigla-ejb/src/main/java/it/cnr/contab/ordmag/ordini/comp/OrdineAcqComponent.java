@@ -1871,8 +1871,8 @@ public class OrdineAcqComponent
                 importoScadVoce = osv.getIm_voce();
                 break;
             } else {
-                BigDecimal percentuale = osv.getIm_voce().divide(importoVecchioScadenza, 2, RoundingMode.HALF_EVEN);
-                BigDecimal nuovoImporto = osv.getIm_voce().multiply(obbligazione_scadenzario.getIm_scadenza()).divide(importoVecchioScadenza, 2, RoundingMode.HALF_EVEN);
+                BigDecimal percentuale = osv.getIm_voce().divide(importoVecchioScadenza, 2, RoundingMode.HALF_UP);
+                BigDecimal nuovoImporto = osv.getIm_voce().multiply(obbligazione_scadenzario.getIm_scadenza()).divide(importoVecchioScadenza, 2, RoundingMode.HALF_UP);
                 osv.setIm_voce(nuovoImporto);
                 osv.setToBeUpdated();
                 importoScadVoce = importoScadVoce.add(osv.getIm_voce());
