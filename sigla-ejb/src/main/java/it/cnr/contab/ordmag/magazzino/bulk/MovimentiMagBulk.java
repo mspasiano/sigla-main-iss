@@ -322,4 +322,7 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 		return this.getPrezzoUnitario().divide(this.getCoeffConv(), 6, RoundingMode.HALF_UP);
 	}
 
+	public boolean isStatoAnnullato() {
+		return STATO_ANNULLATO.equals(this.getStato());
+	}
 }

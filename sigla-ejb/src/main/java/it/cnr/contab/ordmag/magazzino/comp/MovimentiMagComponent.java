@@ -372,8 +372,10 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 
     public void annullaMovimento(UserContext userContext, MovimentiMagBulk movimentoDaAnnullare) throws ComponentException, PersistencyException, RemoteException, ApplicationException {
     	controlliAnnullamento(userContext, movimentoDaAnnullare);
+		movimentoDaAnnullare = (MovimentiMagBulk)findByPrimaryKey(userContext, movimentoDaAnnullare);
+		if (movimentoDaAnnullare.isStatoAnnullato())
+			return;
     	MovimentiMagBulk movimentoDiStorno = preparaMovimentoDiAnnullamento(userContext, movimentoDaAnnullare);
-    	movimentoDaAnnullare = (MovimentiMagBulk)findByPrimaryKey(userContext, movimentoDaAnnullare);
     	if (movimentoDaAnnullare.getPgMovimentoRif() != null){
     		MovimentiMagBulk movimentoRifDaAnnullare = (MovimentiMagBulk)findByPrimaryKey(userContext, new MovimentiMagBulk(movimentoDaAnnullare.getPgMovimentoRif()));
     		MovimentiMagBulk movimentoRifDiStorno = preparaMovimentoDiAnnullamento(userContext, movimentoRifDaAnnullare);
