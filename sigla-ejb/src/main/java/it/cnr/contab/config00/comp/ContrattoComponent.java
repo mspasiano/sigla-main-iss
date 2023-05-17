@@ -544,11 +544,11 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		Iterator<ContrattoBulk> iterator = contratti.iterator();
 		while (iterator.hasNext()) {
 			ContrattoBulk c = iterator.next();
-			if (c.equals(contratto)) {
-				logger.info("Contratto da aggiungere presente nella lista dei contratti figli!!!");
-			}
 			importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
 		}
+		// aggiungo importo contratto da salvare
+		importiPassiviFigli = importiPassiviFigli.add(contratto.getContratto_padre().getIm_contratto_passivo());
+
 		logger.info("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
 		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ){
 			throw new ApplicationException("Impossibile associare accordo quadro per mancanza fondi.");
