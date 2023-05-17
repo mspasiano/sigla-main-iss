@@ -43,6 +43,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ContrattoHome extends BulkHome {
@@ -93,20 +95,21 @@ public class ContrattoHome extends BulkHome {
 
     /**
      * @param contratto
-     * @return true se esiste un contratto valido per il tipo passato, false altrimenti
-     * @throws SQLException
+     * @return elenco dei contratti passivi che hanno lo stesso AccordoQuadro padre
      * @throws PersistencyException
-     * @author mspasiano
+     * @author Piergiorgio Faraglia
      */
-    public java.util.Collection findContrattiPassiviConAccordoQuadro(ContrattoBulk contratto) throws SQLException, PersistencyException {
-        // TODO verificare se inserire qui la query
+    public java.util.Collection findContrattiPassiviConAccordoQuadro(ContrattoBulk contratto) {
         PersistentHome dettHome = getHomeCache().getHome(ContrattoBulk.class);
         SQLBuilder sql = dettHome.createSQLBuilder();
         sql.addSQLClause("AND", "PG_CONTRATTO_PADRE", sql.EQUALS, contratto.getPg_contratto_padre());
         sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, contratto.getEsercizio());
-        // FIXME rimuovere log
-        logger.info("SQL: " + sql);
-        return dettHome.fetchAll(sql);
+        try{
+            return dettHome.fetchAll(sql);
+        } catch (PersistencyException ex) {
+            logger.error(ex.toString());
+            return Collections.EMPTY_LIST;
+        }
     }
 
     /**

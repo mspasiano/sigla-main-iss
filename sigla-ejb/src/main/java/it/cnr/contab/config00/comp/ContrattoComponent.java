@@ -535,55 +535,40 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		}
 	}
 
-	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ApplicationException{
-		ContrattoHome home;
-		try{
-			home = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
-		} catch ( ComponentException ex ) {
-			throw new ApplicationException(ex);
+	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ComponentException {
+		BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
+		BigDecimal importiPassiviFigli = new BigDecimal(0);
+
+		ContrattoHome home = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
+		Collection contratti = home.findContrattiPassiviConAccordoQuadro(contratto);
+		Iterator<ContrattoBulk> iterator = contratti.iterator();
+		while (iterator.hasNext()) {
+			ContrattoBulk c = iterator.next();
+			if (c.equals(contratto)) {
+				logger.info("Contratto da aggiungere presente nella lista dei contratti figli!!!");
+			}
+			importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
 		}
-
-		try{
-			Collection contratti = home.findContrattiPassiviConAccordoQuadro(contratto);
-			Iterator<ContrattoBulk> iterator = contratti.iterator();
-
-			BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
-			BigDecimal totaleImportoContrattoPassivo = new BigDecimal(0);
-			while (iterator.hasNext()) {
-				ContrattoBulk c = iterator.next();
-				totaleImportoContrattoPassivo = totaleImportoContrattoPassivo.add(c.getIm_contratto_passivo());
-				logger.info("ImportoContrattoPassivo" + c.getIm_contratto_passivo() + ", Totale: " + totaleImportoContrattoPassivo);
-			}
-			logger.info("Totale Passivo figli: " + totaleImportoContrattoPassivo);
-			logger.info("Importo Passivo Padre: " + importoPassivoPadre);
-			if ( totaleImportoContrattoPassivo.compareTo(importoPassivoPadre) <= 0 ) {
-				logger.info("Importo figlio minore del padre => OK");
-			} else {
-				logger.error("Importo figlio maggiore del padre => KO");
-				throw new ApplicationException(
-						"Accordo quadro selezionato non ha capienza economica per associare il contratto. Selezionare un differente accordo quadro."
-				);
-			}
-		} catch ( NullPointerException ex ) {
-			logger.error("Non c'è il padre");
-			throw new ApplicationException("Associare un contratto di accordo quadro");
-		} catch ( SQLException ex ) {
-			throw new ApplicationException(ex);
-		} catch ( PersistencyException ex ) {
-			throw new ApplicationException(ex);
+		logger.info("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
+		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ){
+			throw new ApplicationException("Impossibile associare accordo quadro per mancanza fondi.");
 		}
 	}
 
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
-		// TODO esegue la chiamata
-
+		// FIXME rimuovere il log
 		logger.info("Sono creaConBulk");
-		if(oggettobulk instanceof ContrattoBulk)
+
+		if(oggettobulk instanceof ContrattoBulk){
 			try {
+				ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 				validaCampiObbligatori(usercontext,(ContrattoBulk)oggettobulk);
 				validaDettaglioContratto( usercontext,(ContrattoBulk)oggettobulk);
+				if ( contratto.isPassivo() && contratto.getContratto_padre() != null ) {
+					validaAccordoQuadro(usercontext, contratto);
+				}
 			} catch (PersistencyException e) {
 				throw new ComponentException(e);
 			} catch (IntrospectionException e) {
@@ -591,10 +576,9 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			} catch (SQLException e) {
 				throw new ComponentException(e);
 			}
-		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
-		if ( contratto.isPassivo() ) {
-			validaAccordoQuadro(usercontext, contratto);
 		}
+
+		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 
 		if (contratto.getCig() != null && contratto.getCig().isToBeCreated()){
 			super.creaConBulk(usercontext, contratto.getCig());
