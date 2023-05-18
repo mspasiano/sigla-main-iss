@@ -76,13 +76,13 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	final public static String NATURA_CONTABILE_PASSIVO = "P";
 	final public static String NATURA_CONTABILE_ATTIVO_E_PASSIVO = "E";
 	final public static String NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI = "N";
-	final public static String NATURA_CONTABILE_ACCORDO_QUADRO= "Q";
+	// final public static String NATURA_CONTABILE_ACCORDO_QUADRO= "Q";
 	static {
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_ATTIVO,"Attivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_PASSIVO,"Passivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_ATTIVO_E_PASSIVO,"Attivo e Passivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI,"Senza flussi finanziari");
-		ti_natura_contabileKeys.put(NATURA_CONTABILE_ACCORDO_QUADRO,"Accordo Quadro");
+		// ti_natura_contabileKeys.put(NATURA_CONTABILE_ACCORDO_QUADRO,"Accordo Quadro");
 	}
 	public static final java.util.Dictionary tipoDettaglioContrattoKeys = new it.cnr.jada.util.OrderedHashtable();
 
@@ -195,10 +195,7 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	public boolean isAttivo_e_Passivo(){
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_ATTIVO_E_PASSIVO));
 	}
-	public boolean isAccordoQuadro(){
-		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_ACCORDO_QUADRO));
-	}
-	
+
 	public boolean isCIGVisible(){
 		if (isFromFlussoAcquisti()){
 			return true;

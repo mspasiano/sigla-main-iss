@@ -166,36 +166,25 @@ public class ContrattoComponent extends it.cnr.jada.comp.CRUDDetailComponent imp
 		   (((ContrattoBulk)bulk).getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI) /*||
 		   ((ContrattoBulk)bulk).getStato().equals(ContrattoBulk.STATO_PROVVISORIO)*/))
 		   throw new ApplicationException("Non è possibile associare un contratto di riferimento!");
-		if (clause == null)
-		  clause = contratto_padre.buildFindClauses(null);
+		if (clause == null) {
+			clause = contratto_padre.buildFindClauses(null);
+		}
 
 		SQLBuilder sql = getHome(userContext, contratto_padre).createSQLBuilder();
-		if ( this.isNaturaContabilePassivo(bulk) ) {
-			logger.info("Eseguo la ricerca come natura contabile passivo");
-			return this.loadWhereClauseNaturaContabilePassivo(sql);
-		} else {
-			logger.info("Eseguo la ricerca come natura contabile non passivo");
-			sql.openNotParenthesis("AND");
-			sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
-			sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());
-			sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
-			sql.closeParenthesis();
-			sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI);
-			sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
-			// sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ((ContrattoBulk)bulk).getNatura_contabile());
-			if (clause != null)
-				sql.addClause(clause);
-			return sql;
+
+		sql.openNotParenthesis("AND");
+		sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
+		sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());
+		sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
+		sql.closeParenthesis();
+		sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI);
+		sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
+		// sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ((ContrattoBulk)bulk).getNatura_contabile());
+		if (clause != null) {
+			sql.addClause(clause);
 		}
-	}
-
-	private Boolean isNaturaContabilePassivo(OggettoBulk bulk){
-		return ((ContrattoBulk)bulk	).getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_PASSIVO);
-	}
-
-	private SQLBuilder loadWhereClauseNaturaContabilePassivo(SQLBuilder sql){
-		sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO);
 		return sql;
+		//}
 	}
 
 
@@ -537,30 +526,39 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 
 	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ComponentException {
 		BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
+		BigDecimal importoPassivoNettoPadre = contratto.getContratto_padre().getIm_contratto_passivo_netto();
+
 		BigDecimal importiPassiviFigli = new BigDecimal(0);
+		BigDecimal importiPassiviNettiFigli = new BigDecimal(0);
 
 		ContrattoHome home = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
 		Collection contratti = home.findContrattiPassiviConAccordoQuadro(contratto);
 		Iterator<ContrattoBulk> iterator = contratti.iterator();
 		while (iterator.hasNext()) {
 			ContrattoBulk c = iterator.next();
-			importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
+			if ( !c.equals(contratto) ) {
+				importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
+				importiPassiviNettiFigli = importiPassiviNettiFigli.add(c.getIm_contratto_passivo_netto());
+			} else {
+				logger.error("Il contratto è già presente: " + c.getPg_contratto());
+			}
 		}
 		// aggiungo importo contratto da salvare
-		importiPassiviFigli = importiPassiviFigli.add(contratto.getContratto_padre().getIm_contratto_passivo());
+		importiPassiviFigli = importiPassiviFigli.add(contratto.getIm_contratto_passivo());
+		importiPassiviNettiFigli = importiPassiviNettiFigli.add(contratto.
+				getIm_contratto_passivo_netto());
 
 		logger.info("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
-		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ){
-			throw new ApplicationException("Impossibile associare accordo quadro per mancanza fondi.");
+		logger.info("ImportiPassiviNetti] Padre: " + importoPassivoNettoPadre + ", Figli: " + importiPassiviNettiFigli);
+
+		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 || importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0){
+			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
 		}
 	}
 
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
-		// FIXME rimuovere il log
-		logger.info("Sono creaConBulk");
-
 		if(oggettobulk instanceof ContrattoBulk){
 			try {
 				ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
@@ -604,7 +602,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
 
 			ContrattoBulk contratto=(ContrattoBulk)bulk;
-			if ( contratto.isPassivo() ) {
+			if ( contratto.isPassivo() && contratto.getContratto_padre() != null ) {
 				validaAccordoQuadro(userContext, contratto);
 			}
 
@@ -854,9 +852,9 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			   return contratto;			   
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI))
 			   return calcolaTotDocContForPadre(userContext,contratto);
-			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO))
+			// if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO))
 				// TODO: Gestire metodo per il salvataggio
-			   return calcolaTotDocContForPadre(userContext,contratto);
+			   // return calcolaTotDocContForPadre(userContext,contratto);
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO))
 			   return calcolaTotDocContForAttivoPassivo(userContext,contratto);			   
 			ContrattoHome testataHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
