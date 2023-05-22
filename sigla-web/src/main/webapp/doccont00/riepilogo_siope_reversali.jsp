@@ -22,7 +22,7 @@
 	boolean isFieldReadOnly = true;
 %>
 
-	<div class="Group" style="width:100%">
+	<div class="Group card" style="width:100%">
 		<table width="100%">
 		
 			  <tr>
@@ -60,7 +60,11 @@
 				<td> <% bp.getController().writeFormInput(out,null,"dt_trasmissione_a",false,null,"");%></td>
 			 </tr>
 				
- 			 
+             <tr>
+                <td> <% bp.getController().writeFormLabel(out,"tipoIncasso");%></td>
+                <td colspan="3"> <% bp.getController().writeFormInput(out,null,"tipoIncasso",false,null,"");%></td>
+             </tr>
+
 	</table>
 		
 	</div>
