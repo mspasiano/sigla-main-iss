@@ -2526,7 +2526,9 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                         if (fattura_passiva instanceof Fattura_passiva_IBulk) {
                             final Nota_di_credito_rigaHome notaDiCreditoRigaHome = (Nota_di_credito_rigaHome) getHome(userContext, Nota_di_credito_rigaBulk.class);
                             final Optional<Nota_di_credito_rigaBulk> rigaOrigine = notaDiCreditoRigaHome.findRigaNota((Fattura_passiva_rigaIBulk) riga);
-                            if (!rigaOrigine.isPresent() || !rigaOrigine.filter(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_totale_divisa().equals(riga.getIm_totale_divisa())).isPresent()) {
+                            if (!rigaOrigine.isPresent() || rigaOrigine
+                                    .filter(fatturaPassivaRigaBulk -> fatturaPassivaRigaBulk.getIm_totale_divisa().compareTo(riga.getIm_totale_divisa()) != 0)
+                                    .isPresent()) {
                                 throw new ApplicationMessageFormatException("Il dettaglio \"{0}\" NON è stato contabilizzato!", riga.getDs_riga_fattura());
                             }
                         } else {
@@ -7600,7 +7602,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                             return rev.getStato_trasmissione().equals(MandatoBulk.STATO_TRASMISSIONE_TRASMESSO);
                         }
                     }
-
+                    return true;
                 }
                 return false;
             }
