@@ -340,42 +340,6 @@ public class CRUDDistintaCassiereBP extends AllegatiCRUDBP<AllegatoGenericoBulk,
             throw handleException(e);
         }
         super.init(config, context);
-
-        Distinta_cassiereBulk distintaCassiereBulk = new Distinta_cassiereBulk();
-        distintaCassiereBulk.setEsercizio(2023);
-        try {
-            final List<Distinta_cassiereBulk> find = createComponentSession().find(context.getUserContext(), Distinta_cassiereBulk.class, "find", distintaCassiereBulk);
-            find
-                    .stream()
-                    .forEach(distintaCassiereBulk1 -> {
-                        try {
-                            final String storePath = getStorePath(distintaCassiereBulk1, false);
-                            storeService.getChildren(storeService.getStorageObjectByPath(storePath).getKey())
-                                    .stream()
-                                    .filter(storageObject -> ((String)storageObject.getPropertyValue("cmis:name")).startsWith("2023-000.000"))
-                                    .forEach(storageObject -> {
-                                        InputStream is = storeService.getResource(storageObject);
-                                        try {
-                                            File file1 = new File("/home/mspasiano/Documenti/ISS/Distinte/" + storageObject.getPropertyValue("cmis:name"));
-                                            FileOutputStream fileOutputStream = new FileOutputStream(file1);
-                                            IOUtils.copy(is, fileOutputStream);
-                                        } catch (FileNotFoundException e) {
-                                            throw new RuntimeException(e);
-                                        } catch (IOException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                    });
-                        } catch (BusinessProcessException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
-
-
-        } catch (ComponentException e) {
-            throw new RuntimeException(e);
-        } catch (RemoteException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /*
