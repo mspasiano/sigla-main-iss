@@ -100,4 +100,12 @@ public class MovimentiMagHome extends BulkHome {
 		sql.addClause("AND","stato",sql.EQUALS, MovimentiMagBulk.STATO_INSERITO);
 		return evHome.fetchAll(sql);	
 	}
+	public java.util.List findBeniInTransito( MovimentiMagBulk movimento ) throws IntrospectionException,PersistencyException
+	{
+		PersistentHome evHome = getHomeCache().getHome(Transito_beni_ordiniBulk.class);
+		SQLBuilder sql = evHome.createSQLBuilder();
+		sql.addClause("AND","id_movimenti_mag",sql.EQUALS, movimento.getPgMovimento());
+
+		return evHome.fetchAll(sql);
+	}
 }
