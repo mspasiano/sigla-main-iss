@@ -187,6 +187,13 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
                 .orElse(Rif_modalita_pagamentoBulk.ALTRO);
     }
 
+    public boolean isPAGOPA() {
+        return Optional.ofNullable(getTipo_pagamento_siope())
+                .map(s -> s.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA.value()))
+                .orElse(Boolean.FALSE);
+    }
+
+
     public static Dictionary getTipoPagamentoSiopePlusKeys() {
         return tipoPagamentoSiopePlusKeys;
     }
@@ -209,7 +216,8 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
         DISPOSIZIONEDOCUMENTOESTERNO("DISPOSIZIONE DOCUMENTO ESTERNO"),
         COMPENSAZIONE("COMPENSAZIONE"),
         BONIFICOESTEROEURO("BONIFICO ESTERO EURO"),
-        SOSTITUZIONE("SOSTITUZIONE");
+        SOSTITUZIONE("SOSTITUZIONE"),
+        AVVISOPAGOPA("AVVISO PAGOPA");
 
         private final String value;
 
