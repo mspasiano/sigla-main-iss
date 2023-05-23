@@ -15,15 +15,17 @@
 	 boolean isUoEnte = bp.isUoEnte(HttpActionContext.getUserContext(session));
 %>
 
-<%	controller.writeHTMLTable(pageContext,(isUoEnte?"uo999":"uo999"),true,false,true,"100%","100px"); %>
+<%	controller.writeHTMLTable(pageContext,(isUoEnte?"uo999":"uo"),true,false,true,"100%","100px"); %>
 
 	<table class="Panel">
 		<tr>
 			<% controller.writeFormField(out,"default","unita_organizzativa"); %>
 		</tr>
-		<tr>
-        			<% controller.writeFormField(out,"default","fl_visibile"); %>
-        		</tr>
+		<%if ( isUoEnte){%>
+            <tr>
+                  <% controller.writeFormField(out,"default","fl_visibile"); %>
+            </tr>
+           <%}%>
 		<!-- Per ora l'importo non è gestito 
 		<tr>
 			<% controller.writeFormField(out,"default","importo"); %>

@@ -533,9 +533,11 @@ public ProgettoRicercaComponent() {
 		   if (!((CNRUserContext) userContext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
 			   try {
 				  sql.addSQLExistsClause("AND",progettohome.abilitazioniCommesse(userContext));
-				   sql.addSQLExistsClause("AND",progettohome.selectFromFlVisibile(userContext));
-
-				} catch (Exception e) {
+				   sql.addTableToHeader("PROGETTO_UO");
+				   sql.addSQLJoin("V_PROGETTO_PADRE.PG_PROGETTO", "PROGETTO_UO.PG_PROGETTO");
+				   sql.addSQLClause("AND","PROGETTO_UO.FL_VISIBILE", sql.EQUALS, "Y");
+				  sql.addSQLClause("AND","PROGETTO_UO.CD_UNITA_ORGANIZZATIVA", sql.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
+				  } catch (Exception e) {
 					throw handleException(e);
 				}
 		   }
