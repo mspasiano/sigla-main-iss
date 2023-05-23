@@ -187,8 +187,6 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
                 .orElse(Rif_modalita_pagamentoBulk.ALTRO);
     }
 
-
-
     public static Dictionary getTipoPagamentoSiopePlusKeys() {
         return tipoPagamentoSiopePlusKeys;
     }
