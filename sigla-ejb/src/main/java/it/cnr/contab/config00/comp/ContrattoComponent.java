@@ -536,7 +536,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		Iterator<ContrattoBulk> iterator = contratti.iterator();
 		while (iterator.hasNext()) {
 			ContrattoBulk c = iterator.next();
-			if ( !c.equals(contratto) ) {
+			if ( !c.toString().equals(contratto.toString()) ) {
 				importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
 				importiPassiviNettiFigli = importiPassiviNettiFigli.add(c.getIm_contratto_passivo_netto());
 			} else {
