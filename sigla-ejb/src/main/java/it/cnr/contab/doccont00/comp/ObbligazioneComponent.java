@@ -601,32 +601,33 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 			scadSuccessivaIndex = index + 1;
 		index++;
 	}
-	//non esiste scadenza successiva
-	//se residuo proprio e il delta è positivo (è stata diminuito l'importo della scadenza precedente)
-	//inserisco una nuova scadenza		
-	if ( scadSuccessivaIndex == obbligazione.getObbligazione_scadenzarioColl().size() ) {
-		//Lello - Sdoppiamento scadenza anche su obbligazione 
-		//if (!obbligazione.isObbligazioneResiduo() || delta.doubleValue() < 0)
-		if (delta.doubleValue() < 0)
-			throw handleException( new ApplicationException( "Non esiste una scadenza successiva da aggiornare" ));
-		else {
-			scadSuccessivaNew = new Obbligazione_scadenzarioBulk();
-			scadSuccessivaNew.setDt_scadenza(scadenzario.getDt_scadenza());
-			scadSuccessivaNew.setDs_scadenza(scadenzario.getDs_scadenza());
-			scadSuccessivaNew.setIm_scadenza(Utility.ZERO);
-			scadSuccessivaIndex = obbligazione.addToObbligazione_scadenzarioColl(scadSuccessivaNew);
-			generaDettagliScadenzaObbligazione( aUC, obbligazione, scadSuccessivaNew, false);
-		}
-	}
 
 	do {
+		/**
+		**	non esiste scadenza successiva se residuo proprio e il delta è positivo (è stata diminuito l'importo della scadenza precedente)
+		**	inserisco una nuova scadenza
+		**/
+		if ( scadSuccessivaIndex == obbligazione.getObbligazione_scadenzarioColl().size() ) {
+			//Lello - Sdoppiamento scadenza anche su obbligazione
+			//if (!obbligazione.isObbligazioneResiduo() || delta.doubleValue() < 0)
+			if (delta.doubleValue() < 0)
+				throw handleException( new ApplicationException( "Non esiste una scadenza successiva da aggiornare" ));
+			else {
+				scadSuccessivaNew = new Obbligazione_scadenzarioBulk();
+				scadSuccessivaNew.setDt_scadenza(scadenzario.getDt_scadenza());
+				scadSuccessivaNew.setDs_scadenza(scadenzario.getDs_scadenza());
+				scadSuccessivaNew.setIm_scadenza(Utility.ZERO);
+				scadSuccessivaIndex = obbligazione.addToObbligazione_scadenzarioColl(scadSuccessivaNew);
+				generaDettagliScadenzaObbligazione( aUC, obbligazione, scadSuccessivaNew, false);
+			}
+		}
 		scadSuccessiva = (Obbligazione_scadenzarioBulk) obbligazione.getObbligazione_scadenzarioColl().get( scadSuccessivaIndex );
 		scadSuccessivaIndex++;
 	} while (
-			scadSuccessiva.getPg_doc_passivo() != null ||
-			scadSuccessiva.getPg_ordine() != null ||
-			delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0 ||
-			scadSuccessivaIndex <= obbligazione.getObbligazione_scadenzarioColl().size())
+			(scadSuccessiva.getPg_doc_passivo() != null ||
+					scadSuccessiva.getPg_ordine() != null ||
+					(delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0))) &&
+					scadSuccessivaIndex <= obbligazione.getObbligazione_scadenzarioColl().size()
 	);
 
 	//scadenza successiva ha importo inferiore a delta		
@@ -636,6 +637,10 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 	//segnalo impossibilità di modificare importo se ci sono doc amministrativi associati
 	if ( scadSuccessiva.getPg_doc_passivo() != null )		
 		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata a doc. amministrativi");
+
+	//segnalo impossibilità di modificare importo se ci sono ordini associati
+	if ( scadSuccessiva.getPg_ordine() != null )
+		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata ad un ordine");
 
 	//aggiorno importo scadenza successiva
 	scadSuccessivaIniziale = new Obbligazione_scadenzarioBulk();

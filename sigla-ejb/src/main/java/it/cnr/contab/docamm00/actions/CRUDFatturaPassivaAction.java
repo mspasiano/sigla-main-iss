@@ -49,6 +49,7 @@ import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.utenze00.bulk.CNRUserInfo;
 import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.DetailedRuntimeException;
@@ -4135,6 +4136,18 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             java.util.List models = selection.select(bp.getDettaglioObbligazioneController().getDetails());
             for (java.util.Iterator i = models.iterator(); i.hasNext(); ) {
                 Fattura_passiva_rigaBulk fpr = (Fattura_passiva_rigaBulk) i.next();
+                if (fpr.getFattura_passiva()
+                        .getFattura_passiva_ordini()
+                        .stream()
+                        .filter(fatturaOrdineBulk -> fatturaOrdineBulk.getFatturaPassivaRiga().equalsByPrimaryKey(fpr))
+                        .findAny()
+                        .isPresent()) {
+                    throw new ApplicationMessageFormatException("Impossibile scollegare il dettaglio \"{0}\" perchè è associato ad una riga di consegna!",
+                            ((fpr.getDs_riga_fattura() != null) ?
+                                    fpr.getDs_riga_fattura() :
+                                    String.valueOf(fpr.getProgressivo_riga().longValue())));
+
+                }
                 if (fpr.getTi_associato_manrev() != null && fpr.ASSOCIATO_A_MANDATO.equalsIgnoreCase(fpr.getTi_associato_manrev()))
                     throw new it.cnr.jada.comp.ApplicationException("Impossibile scollegare il dettaglio \"" +
                             ((fpr.getDs_riga_fattura() != null) ?

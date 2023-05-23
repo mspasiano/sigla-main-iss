@@ -34,6 +34,7 @@ import it.cnr.contab.docamm00.ejb.CategoriaGruppoInventComponentSession;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_voceBulk;
+import it.cnr.contab.doccont00.bp.CRUDReversaleBP;
 import it.cnr.contab.doccont00.bp.CRUDVirtualObbligazioneBP;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
@@ -54,6 +55,7 @@ import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.action.BulkBP;
 import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.jada.util.action.OptionBP;
 
 import javax.persistence.PersistenceException;
 import java.math.BigDecimal;
@@ -2210,5 +2212,25 @@ public class CRUDOrdineAcqAction extends it.cnr.jada.util.action.CRUDAction {
 
         return context.findDefaultForward();
     }
+
+    public Forward doRemoveAssociazioneConsegnaFattura(ActionContext actionContext) throws BusinessProcessException {
+        return openConfirm(actionContext, "Sei sicuro di voler eliminare l'associazione alla fattura?", "doConfirmRemoveAssociazioneConsegnaFattura");
+    }
+
+    public Forward doConfirmRemoveAssociazioneConsegnaFattura(ActionContext context, int choice) throws java.rmi.RemoteException {
+        try {
+            fillModel(context);
+            CRUDBP bp = getBusinessProcess(context);
+            CRUDOrdineAcqBP crudOrdineAcqBP = (CRUDOrdineAcqBP) context.getBusinessProcess();
+            if (choice == OptionBP.OK_BUTTON) {
+                crudOrdineAcqBP.deleteAssociazioneConsegnaFattura(context);
+                crudOrdineAcqBP.setMessage("Operazione effettuata");
+            }
+            return context.findDefaultForward();
+        } catch (Throwable e) {
+            return handleException(context, e);
+        }
+    }
+
 }
 

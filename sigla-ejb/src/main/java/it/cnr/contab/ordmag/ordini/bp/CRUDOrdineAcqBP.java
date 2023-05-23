@@ -52,6 +52,7 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.GenerazioneReportException;
 import it.cnr.jada.ejb.CRUDComponentSession;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.Config;
 import it.cnr.jada.util.action.BulkBP;
 import it.cnr.jada.util.action.FormController;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
@@ -65,16 +66,14 @@ import org.apache.commons.io.IOUtils;
 
 import javax.activation.MimetypesFileTypeMap;
 import javax.servlet.ServletException;
+import javax.servlet.jsp.PageContext;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * Gestisce le catene di elementi correlate con il documento in uso.
@@ -164,6 +163,25 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 			return super.addDetail(oggettobulk);
 		}
 
+		@Override
+		public void writeHTMLToolbar(PageContext pagecontext, boolean canAddToCRUD, boolean canFilter, boolean canRemoveFromCRUD, boolean closedToolbar) throws IOException, ServletException {
+			super.writeHTMLToolbar(pagecontext, canAddToCRUD, canFilter, canRemoveFromCRUD, false);
+			final Optional<OrdineAcqConsegnaBulk> ordineAcqConsegnaBulk = Optional.ofNullable(getModel())
+					.filter(OrdineAcqConsegnaBulk.class::isInstance)
+					.map(OrdineAcqConsegnaBulk.class::cast)
+					.filter(bulk -> bulk.getStatoFatt().equalsIgnoreCase(OrdineAcqConsegnaBulk.STATO_FATT_ASSOCIATA_TOTALMENTE));
+			if (ordineAcqConsegnaBulk.isPresent()) {
+				try {
+					if (createComponentSession().find(null, FatturaOrdineBulk.class, "findByRigaConsegna", ordineAcqConsegnaBulk.get()).isEmpty()) {
+						final Button button = new Button(Config.getHandler().getProperties(CRUDOrdineAcqBP.class), "Toolbar.disassociaFattura");
+						button.writeToolbarButton(pagecontext.getOut(), true, HttpActionContext.isFromBootstrap(pagecontext));
+					}
+				} catch (ComponentException|RemoteException|BusinessProcessException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			super.closeButtonGROUPToolbar(pagecontext);
+		}
 	};
 
 	private final ObbligazioniCRUDController obbligazioniController = new ObbligazioniCRUDController("Obbligazioni",	Obbligazione_scadenzarioBulk.class,"ordineObbligazioniHash", this) {
@@ -823,5 +841,19 @@ public class CRUDOrdineAcqBP extends AllegatiCRUDBP<AllegatoOrdineBulk, OrdineAc
 	@Override
 	public CRUDComponentSession initializeModelForGenericSearch(BulkBP bp, ActionContext context) throws BusinessProcessException {
 		return createComponentSession();
+	}
+
+	public void deleteAssociazioneConsegnaFattura(ActionContext context) throws BusinessProcessException {
+		final OrdineAcqConsegnaBulk ordineAcqConsegnaBulk = Optional.ofNullable(getConsegne().getModel())
+				.filter(OrdineAcqConsegnaBulk.class::isInstance)
+				.map(OrdineAcqConsegnaBulk.class::cast)
+				.orElseThrow(() -> new BusinessProcessException("Consegna non trovata"));
+		ordineAcqConsegnaBulk.setToBeUpdated();
+		ordineAcqConsegnaBulk.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_NON_ASSOCIATA);
+		try {
+			((CRUDComponentSession)createComponentSession("JADAEJB_CRUDComponentSession")).modificaConBulk(context.getUserContext(), ordineAcqConsegnaBulk);
+		} catch (ComponentException|RemoteException e) {
+			throw handleException(e);
+		}
 	}
 }

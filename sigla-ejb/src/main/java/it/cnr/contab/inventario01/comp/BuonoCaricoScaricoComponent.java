@@ -25,6 +25,7 @@ package it.cnr.contab.inventario01.comp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -6644,7 +6645,8 @@ private void validaBuonoCarico (UserContext aUC,Buono_carico_scaricoBulk buonoCa
 				}
 				// V.T. Imposta valore imponibile ammortamento
 				if(dett.getBene().getImponibile_ammortamento() == null){
-					dett.getBene().setImponibile_ammortamento(dett.getBene().getValoreBene());
+					//dett.getBene().setImponibile_ammortamento(dett.getBene().getValoreBene());
+					dett.getBene().setImponibile_ammortamento(dett.getValore_unitario().setScale(2, RoundingMode.HALF_UP));
 				}
 			}
 		}
