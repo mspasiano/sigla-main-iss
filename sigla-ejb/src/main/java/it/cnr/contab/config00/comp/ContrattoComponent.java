@@ -23,6 +23,7 @@
  */
 package it.cnr.contab.config00.comp;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoHome;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
@@ -559,12 +560,13 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
+		Boolean hasFlussiFinanziariConImporti = false;
 		if(oggettobulk instanceof ContrattoBulk){
 			try {
 				ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 				validaCampiObbligatori(usercontext,(ContrattoBulk)oggettobulk);
 				validaDettaglioContratto( usercontext,(ContrattoBulk)oggettobulk);
-				if ( contratto.isPassivo() && contratto.getContratto_padre() != null ) {
+				if ( hasFlussiFinanziariConImporti &&  contratto.isPassivo() && contratto.getContratto_padre() != null ) {
 					validaAccordoQuadro(usercontext, contratto);
 				}
 			} catch (PersistencyException e) {
@@ -597,16 +599,15 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	 */  			
 	public OggettoBulk modificaConBulk(UserContext userContext, ContrattoBulk bulk) throws ComponentException{
 		logger.info("Sono in modificaConBulk");
+		Boolean hasFlussiFinanziariConImporti = false;
 		try {
 			validaCampiObbligatori(userContext,(ContrattoBulk)bulk);
 			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
 
 			ContrattoBulk contratto=(ContrattoBulk)bulk;
-			if ( contratto.isPassivo() && contratto.getContratto_padre() != null ) {
+			if ( hasFlussiFinanziariConImporti && contratto.isPassivo() && contratto.getContratto_padre() != null ) {
 				validaAccordoQuadro(userContext, contratto);
 			}
-
-
 
 			validaAssociazioneContrattoAccertamenti(userContext,(ContrattoBulk)bulk);
 
