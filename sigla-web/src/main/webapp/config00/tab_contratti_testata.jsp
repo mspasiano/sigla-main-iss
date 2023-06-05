@@ -210,7 +210,7 @@
 	       	<td><% bp.getController().writeFormLabel(out,"im_contratto_passivo_netto");%></td>
 	       	<td><% bp.getController().writeFormInput(out,null,"im_contratto_passivo_netto", false,null,"");%></td>                 	    
 	      </tr>                  
-	      <% } else if(((ContrattoBulk)bp.getModel()).isSenzaFlussiFinanziari()){%>
+	      <% } else if(((ContrattoBulk)bp.getModel()).isSenzaFlussiFinanziari() && ((ContrattoBulk)bp.getModel()).hasGestioneFlussiFinanziari() ){%>
           <tr>
              <td><% bp.getController().writeFormLabel(out,"cig");%></td>
              <td colspan="3">

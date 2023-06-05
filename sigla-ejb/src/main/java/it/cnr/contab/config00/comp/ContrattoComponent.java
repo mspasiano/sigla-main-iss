@@ -602,8 +602,8 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	 */  			
 	public OggettoBulk modificaConBulk(UserContext userContext, ContrattoBulk bulk) throws ComponentException{
 		logger.info("Sono in modificaConBulk");
-		Boolean hasFlussiFinanziariConImporti = false;
 		try {
+			Boolean hasFlussiFinanziariConImporti = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(userContext);
 			validaCampiObbligatori(userContext,(ContrattoBulk)bulk);
 			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
 
@@ -637,6 +637,8 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch (IntrospectionException e) {
 			throw new ComponentException(e);
 		} catch (SQLException e) {
+			throw new ComponentException(e);
+		} catch (RemoteException e) {
 			throw new ComponentException(e);
 		}
 		return super.modificaConBulk(userContext,bulk);

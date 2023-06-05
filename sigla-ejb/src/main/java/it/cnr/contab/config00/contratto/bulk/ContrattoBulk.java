@@ -20,6 +20,7 @@
 * Date 09/04/2005
 */
 package it.cnr.contab.config00.contratto.bulk;
+import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,10 +29,15 @@ import java.util.stream.Collectors;
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.cnr.contab.config00.comp.ContrattoComponent;
 import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperMagBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.BulkCollection;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.CRUDBP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -58,7 +64,8 @@ import it.cnr.si.spring.storage.annotation.StorageType;
 @StorageType(name="F:sigla_contratti:appalti")
 @JsonInclude(value=Include.NON_NULL)
 public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamente{
-	
+	private static final Logger logger = LoggerFactory.getLogger(ContrattoBulk.class);
+
 	private static final java.util.Dictionary ti_statoKeys = new it.cnr.jada.util.OrderedHashtable();
 	
 	final public static String STATO_PROVVISORIO = "P";
@@ -188,6 +195,22 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	public boolean isSenzaFlussiFinanziari(){
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI));
 	}
+
+	public boolean hasGestioneFlussiFinanziari(){
+		try{
+			// TODO prelevare user context poiché ottengo sempre False invocando il metodo con null
+			Boolean hasGestione = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(null);
+			logger.info(hasGestione.toString());
+			return hasGestione;
+		} catch (RemoteException ex){
+			logger.error(ex.toString());
+			return false;
+		} catch (ComponentException ex){
+			logger.error(ex.toString());
+			return false;
+		}
+	}
+
 
 	public boolean isPassivo(){
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_PASSIVO));
