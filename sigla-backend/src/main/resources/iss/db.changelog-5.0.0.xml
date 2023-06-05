@@ -100,4 +100,9 @@
     <include file="iss/update_print_priority_stampa_ordine.xml"/>
     <!-- Autore : CIRO SALVIO-TI_ACCESSO=D CFGPROGERCOREPROGAMM -->
     <include file="iss/update_ti_accesso_amministra_progetti.xml"></include>
+
+    <!-- Autore: PIERGIORGIO FARAGLIA -
+        Configurazione del flag di gestione degli importi sui contratti di natura contabile del tipo FLUSSI_FINANZIARI
+     -->
+    <include file="iss/add_flag_gestione_importi_flussi_finanziari.xml"/>
 </databaseChangeLog>

@@ -90,6 +90,8 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	protected Date dataStipulaParametri;
 	protected Boolean flagPubblicaContratto;
 	private boolean attivoOrdini = false;
+
+	private boolean gestioneImportiFlussiFinanziari = false;
 	private boolean attachRestContrStoredFromSigla = false;
 	private final SimpleDetailCRUDController crudDettaglio_contratto = new SimpleDetailCRUDController("Dettaglio_contratto", Dettaglio_contrattoBulk.class, "dettaglio_contratto", this){
 		public void validateForDelete(ActionContext context, OggettoBulk detail) throws ValidationException {
@@ -103,10 +105,16 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	public boolean isAttivoOrdini() {
 		return attivoOrdini;
 	}
+
+	public boolean hasGestioneImportiFlussiFinanziari() {
+		return gestioneImportiFlussiFinanziari;
+	}
+
 	@Override
 	protected void init(Config config, ActionContext actioncontext) throws BusinessProcessException {
 		try {
 			attivoOrdini = Utility.createConfigurazioneCnrComponentSession().isAttivoOrdini(actioncontext.getUserContext());
+			// gestioneImportiFlussiFinanziari = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(actioncontext.getUserContext());
 			attachRestContrStoredFromSigla = Utility.createConfigurazioneCnrComponentSession().isAttachRestContrStoredFromSigla(actioncontext.getUserContext());
 		} catch (ComponentException e) {
 			throw handleException(e);

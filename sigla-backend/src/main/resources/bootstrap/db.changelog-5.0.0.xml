@@ -5999,5 +5999,10 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : VALENTINA TOMADA - Modificata lunghezza colonna LINEA_DESCRIZIONE della tabella DOCUMENTO_ELE_LINEA da 1000 a 1500 caratteri-->
     <include file="bootstrap/modify_length_column_documento_ele_linea.xml"/>
 
+    <!-- Autore: PIERGIORGIO FARAGLIA -
+        Configurazione del flag di gestione degli importi sui contratti di natura contabile del tipo FLUSSI_FINANZIARI
+     -->
+    <include file="bootstrap/add_flag_gestione_importi_flussi_finanziari.xml"/>
+
 
 </databaseChangeLog>

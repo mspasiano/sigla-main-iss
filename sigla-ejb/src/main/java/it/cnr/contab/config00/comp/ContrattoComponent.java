@@ -560,9 +560,10 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
-		Boolean hasFlussiFinanziariConImporti = false;
 		if(oggettobulk instanceof ContrattoBulk){
 			try {
+				// Boolean hasFlussiFinanziariConImporti = false;
+				Boolean hasFlussiFinanziariConImporti = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(usercontext);
 				ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 				validaCampiObbligatori(usercontext,(ContrattoBulk)oggettobulk);
 				validaDettaglioContratto( usercontext,(ContrattoBulk)oggettobulk);
@@ -574,6 +575,8 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			} catch (IntrospectionException e) {
 				throw new ComponentException(e);
 			} catch (SQLException e) {
+				throw new ComponentException(e);
+			} catch (RemoteException e) {
 				throw new ComponentException(e);
 			}
 		}
