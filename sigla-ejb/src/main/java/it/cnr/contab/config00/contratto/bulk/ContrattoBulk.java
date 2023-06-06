@@ -64,7 +64,6 @@ import it.cnr.si.spring.storage.annotation.StorageType;
 @StorageType(name="F:sigla_contratti:appalti")
 @JsonInclude(value=Include.NON_NULL)
 public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamente{
-	private static final Logger logger = LoggerFactory.getLogger(ContrattoBulk.class);
 
 	private static final java.util.Dictionary ti_statoKeys = new it.cnr.jada.util.OrderedHashtable();
 	
@@ -196,20 +195,6 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI));
 	}
 
-	public boolean hasGestioneFlussiFinanziari(){
-		try{
-			// TODO prelevare user context poiché ottengo sempre False invocando il metodo con null
-			Boolean hasGestione = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(null);
-			logger.info(hasGestione.toString());
-			return hasGestione;
-		} catch (RemoteException ex){
-			logger.error(ex.toString());
-			return false;
-		} catch (ComponentException ex){
-			logger.error(ex.toString());
-			return false;
-		}
-	}
 
 
 	public boolean isPassivo(){

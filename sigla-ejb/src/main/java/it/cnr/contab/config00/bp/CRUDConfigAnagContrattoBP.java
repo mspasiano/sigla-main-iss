@@ -59,6 +59,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.util.RecordFormatException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ejb.EJBException;
 import javax.ejb.RemoveException;
@@ -79,6 +81,9 @@ import java.util.stream.Stream;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
+
+	private static final Logger logger = LoggerFactory.getLogger(CRUDConfigAnagContrattoBP.class);
+
 
 	private static final long serialVersionUID = 1L;
 
@@ -114,7 +119,7 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	protected void init(Config config, ActionContext actioncontext) throws BusinessProcessException {
 		try {
 			attivoOrdini = Utility.createConfigurazioneCnrComponentSession().isAttivoOrdini(actioncontext.getUserContext());
-			// gestioneImportiFlussiFinanziari = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(actioncontext.getUserContext());
+			gestioneImportiFlussiFinanziari = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(actioncontext.getUserContext());
 			attachRestContrStoredFromSigla = Utility.createConfigurazioneCnrComponentSession().isAttachRestContrStoredFromSigla(actioncontext.getUserContext());
 		} catch (ComponentException e) {
 			throw handleException(e);
@@ -319,7 +324,8 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 			return contratto.isRODefinitivo();
 		return false;
 	}
-	
+
+
 	private it.cnr.contab.config00.bulk.Parametri_cnrBulk getParametri_cnrBulk(it.cnr.jada.action.ActionContext context) throws ComponentException, RemoteException, EJBException{
 		return Utility.createParametriCnrComponentSession().
 			getParametriCnr(context.getUserContext(), CNRUserContext.getEsercizio(context.getUserContext()));
