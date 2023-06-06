@@ -23,11 +23,14 @@ package it.cnr.contab.config00.sto.bulk;
 import java.util.Collection;
 import java.util.List;
 
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 public class V_struttura_organizzativaHome extends BulkHome {
@@ -124,6 +127,21 @@ public class V_struttura_organizzativaHome extends BulkHome {
 		List result = cdrHome.fetchAll( sql );
 		if (result.size() > 0)
 			return (CdrBulk)result.get(0);		
+		return null;
+	}
+	public V_struttura_organizzativaBulk findByRoot(UserContext userContext, CdrBulk cdrSource) throws PersistencyException
+	{
+		PersistentHome homeStrutt = getHomeCache().getHome( V_struttura_organizzativaBulk.class );
+		SQLBuilder sqlStrutt = homeStrutt.createSQLBuilder();
+
+
+		sqlStrutt.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+		sqlStrutt.addSQLClause(FindClause.AND, "CD_ROOT", SQLBuilder.EQUALS, cdrSource.getCd_centro_responsabilita());
+
+
+		List result = homeStrutt.fetchAll( sqlStrutt );
+		if (result.size() > 0)
+			return (V_struttura_organizzativaBulk)result.get(0);
 		return null;
 	}
 	/**

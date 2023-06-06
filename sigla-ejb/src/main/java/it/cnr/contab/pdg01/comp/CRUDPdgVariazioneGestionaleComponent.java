@@ -68,6 +68,7 @@ import it.cnr.contab.util.ICancellatoLogicamente;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ApplicationRuntimeException;
@@ -1730,11 +1731,20 @@ private void aggiornaLimiteSpesa(UserContext userContext,Pdg_variazioneBulk pdg)
 						.filter(el -> el.getCd_centro_responsabilita().equals(cdrSource.getCd_centro_responsabilita()))
 						.findFirst().get();
 
+
 				Pdg_variazione_riga_gestBulk riga1 = new Pdg_variazione_riga_gestBulk();
 				assPdgVariazioneCdrBulkSource.addToRigheVariazioneSpeGest(riga1);
 				riga1.setLinea_attivita(gaeSource);
 				riga1.setElemento_voce(obbligazione.getElemento_voce());
-				riga1.setArea(obbligazione.getCds());
+
+				V_struttura_organizzativaHome struttHome = (V_struttura_organizzativaHome)getHome(userContext,V_struttura_organizzativaBulk.class);
+				V_struttura_organizzativaBulk v_struttura_organizzativaBulk = struttHome.findByRoot(userContext, cdrSource);
+
+				CdsHome areahome = (CdsHome)getHome(userContext, CdsBulk.class);
+				CdsBulk area = (CdsBulk)areahome.findByPrimaryKey(new CdsBulk(v_struttura_organizzativaBulk.getCd_cds()));
+
+				riga1.setArea(area);
+
 				if (gaeSource.getNatura().isFonteInterna())
 					riga1.setIm_spese_gest_decentrata_int(imVariazione.negate());
 				else
@@ -1792,4 +1802,5 @@ private void aggiornaLimiteSpesa(UserContext userContext,Pdg_variazioneBulk pdg)
 			throw handleException(e);
 		}
 	}
+
 }
