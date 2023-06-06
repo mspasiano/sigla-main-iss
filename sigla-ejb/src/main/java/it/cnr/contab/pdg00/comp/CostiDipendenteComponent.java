@@ -2556,6 +2556,7 @@ public boolean isCostiDipendenteRipartiti (UserContext userContext, String cd_un
 					contributoRitenutaBulk.setIm_cori_sospeso(BigDecimal.ZERO);
 					contributoRitenutaBulk.setTi_ente_percipiente(el.getTi_ente_percipiente());
 					contributoRitenutaBulk.setStato_cofi_cr(compensoBulk.getStato_cofi());
+					contributoRitenutaBulk.setFl_versamento(tipoContributoRitenutaBulk.getFl_versamento());
 
 					if (el.getAmmontare().compareTo(BigDecimal.ZERO) > 0) {
 						//Creo l'accertamento partita di giro che poi legherò alla reversale
