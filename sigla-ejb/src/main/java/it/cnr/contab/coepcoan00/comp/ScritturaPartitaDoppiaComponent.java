@@ -307,9 +307,9 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			long giorniTotali = giorniAnniPrecedenti + giorniAnnoCorrenteESuccessivi;
 
 			if (giorniAnniPrecedenti > 0)
-				importoAnniPrecedenti = importo.multiply(BigDecimal.valueOf(giorniAnniPrecedenti)).divide(BigDecimal.valueOf(giorniTotali), 2, RoundingMode.HALF_EVEN);
+				importoAnniPrecedenti = importo.multiply(BigDecimal.valueOf(giorniAnniPrecedenti)).divide(BigDecimal.valueOf(giorniTotali), 2, RoundingMode.HALF_UP);
 			if (giorniAnnoCorrenteESuccessivi > 0)
-				importoAnnoCorrenteESuccessivi = importo.multiply(BigDecimal.valueOf(giorniAnnoCorrenteESuccessivi)).divide(BigDecimal.valueOf(giorniTotali), 2, RoundingMode.HALF_EVEN);
+				importoAnnoCorrenteESuccessivi = importo.multiply(BigDecimal.valueOf(giorniAnnoCorrenteESuccessivi)).divide(BigDecimal.valueOf(giorniTotali), 2, RoundingMode.HALF_UP);
 
 			//Scarico il delta prodotto fdall'arrotondamento sulla competenza anno in corso....altrimenti su quella anno precedente... altrimenti su quella successiva
 			delta = importo.subtract(importoAnniPrecedenti).subtract(importoAnnoCorrenteESuccessivi);
@@ -4341,7 +4341,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		//Chiudo i conti in percentuale
 		for (Iterator<Movimento_cogeBulk> i = dettPnPatrimonialePartita.iterator(); i.hasNext(); ) {
 			Movimento_cogeBulk dettPN=i.next();
-			BigDecimal imRiga = imReversale.multiply(dettPN.getIm_movimento()).divide(totContiEp,2, RoundingMode.HALF_EVEN);
+			BigDecimal imRiga = imReversale.multiply(dettPN.getIm_movimento()).divide(totContiEp,2, RoundingMode.HALF_UP);
 			if (imRiga.compareTo(imDaRipartire)>0 || !i.hasNext()) {
 				testataPrimaNota.addDettaglio(userContext, partita.getTipoDocumentoEnum().getTipoPatrimoniale(), Movimento_cogeBulk.getControSezione(partita.getTipoDocumentoEnum().getSezionePatrimoniale()),
 						dettPN.getConto(), imDaRipartire, rigaReversale.getCd_terzo(), partita);

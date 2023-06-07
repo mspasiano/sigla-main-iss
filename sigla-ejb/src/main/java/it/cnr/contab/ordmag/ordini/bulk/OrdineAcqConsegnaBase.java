@@ -33,14 +33,6 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 
 public class OrdineAcqConsegnaBase extends OrdineAcqConsegnaKey implements Keyed {
-	public BigDecimal getQuantitaOrig() {
-		return quantitaOrig;
-	}
-
-	public void setQuantitaOrig(BigDecimal quantitaOrig) {
-		this.quantitaOrig = quantitaOrig;
-	}
-
 	//    STATO VARCHAR(3) NOT NULL
 	private java.lang.String stato;
  
@@ -439,6 +431,12 @@ public class OrdineAcqConsegnaBase extends OrdineAcqConsegnaKey implements Keyed
 	}
 	public void setVecchiaConsegna(java.lang.Integer vecchiaConsegna) {
 		this.vecchiaConsegna = vecchiaConsegna;
+	}
+	public BigDecimal getQuantitaOrig() {
+		return quantitaOrig;
+	}
+	public void setQuantitaOrig(BigDecimal quantitaOrig) {
+		this.quantitaOrig = quantitaOrig;
 	}
 	public static Timestamp recuperoDataDefaultPrevistaConsegna(UserContext userContext){
 		BigDecimal value = null;

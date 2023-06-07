@@ -20,11 +20,20 @@
  * Date 21/09/2017
  */
 package it.cnr.contab.ordmag.ordini.bulk;
+
+import it.cnr.contab.ordmag.anag00.UnitaMisuraBulk;
 import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 public class EvasioneOrdineRigaBulk extends EvasioneOrdineRigaBase {
+	private UnitaMisuraBulk unitaMisuraEvasaBolla;
+
+	private java.math.BigDecimal coefConvEvasaBolla;
+
+	private java.math.BigDecimal quantitaEvasaBolla;
+
 	public MovimentiMagBulk getMovimentiMag() {
 		return movimentiMag;
 	}
@@ -276,5 +285,29 @@ public class EvasioneOrdineRigaBulk extends EvasioneOrdineRigaBase {
 	 **/
 	public void setConsegna(java.lang.Integer consegna)  {
 		this.getOrdineAcqConsegna().setConsegna(consegna);
+	}
+
+	public UnitaMisuraBulk getUnitaMisuraEvasaBolla() {
+		return unitaMisuraEvasaBolla;
+	}
+
+	public void setUnitaMisuraEvasaBolla(UnitaMisuraBulk unitaMisuraEvasaBolla) {
+		this.unitaMisuraEvasaBolla = unitaMisuraEvasaBolla;
+	}
+
+	public BigDecimal getCoefConvEvasaBolla() {
+		return coefConvEvasaBolla;
+	}
+
+	public void setCoefConvEvasaBolla(BigDecimal coefConvEvasaBolla) {
+		this.coefConvEvasaBolla = coefConvEvasaBolla;
+	}
+
+	public BigDecimal getQuantitaEvasaBolla() {
+		return quantitaEvasaBolla;
+	}
+
+	public void setQuantitaEvasaBolla(BigDecimal quantitaEvasaBolla) {
+		this.quantitaEvasaBolla = quantitaEvasaBolla;
 	}
 }

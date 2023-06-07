@@ -36,7 +36,6 @@ import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.ejb.EsercizioComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -48,22 +47,18 @@ import it.cnr.contab.doccont00.intcass.bulk.*;
 import it.cnr.contab.doccont00.intcass.giornaliera.MovimentoContoEvidenzaBulk;
 import it.cnr.contab.doccont00.intcass.giornaliera.MovimentoContoEvidenzaHome;
 import it.cnr.contab.doccont00.service.DocumentiContabiliService;
-import it.cnr.contab.doccont00.tabrif.bulk.CupBulk;
-import it.cnr.contab.doccont00.tabrif.bulk.CupKey;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
 import it.cnr.contab.logs.ejb.BatchControlComponentSession;
 import it.cnr.contab.messaggio00.bulk.MessaggioBulk;
-import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
-import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaHome;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.RemoveAccent;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.contab.util.enumeration.TipoDebitoSIOPE;
-import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
@@ -77,11 +72,9 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.*;
-import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.SendMail;
 import it.cnr.jada.util.ejb.EJBCommonServices;
-import it.cnr.si.service.dto.anagrafica.letture.PersonaEntitaOrganizzativaWebDto;
 import it.cnr.si.spring.storage.MimeTypes;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.bulk.StorageFile;
@@ -6192,6 +6185,36 @@ public class DistintaCassiereComponent extends
                 ));
         if (pagopaMap.size() > 1) {
             new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!");
+        }
+
+
+        if ( pagopaMap.isEmpty()){
+            MandatoBulk mandatoBulk = Optional.ofNullable(
+                            mandatoHome.findByPrimaryKey(
+                                    new MandatoIBulk(bulk.getCd_cds(), bulk.getEsercizio(), bulk.getPg_documento_cont()
+                                    )
+                            )).filter(MandatoBulk.class::isInstance)
+                    .map(MandatoBulk.class::cast)
+                    .orElseThrow(() -> new ApplicationMessageFormatException("Mandato non trovato!"));
+
+            //check se ci sono fatture con pagamenti PagoPA( workaround per pagare fattura PAGOPA da implementare)
+            List<Mandato_rigaBulk> l= mandatoBulk.getMandato_rigaColl().stream().
+                        filter( el->el.getCd_tipo_documento_amm().compareTo(Numerazione_doc_ammBulk.TIPO_FATTURA_PASSIVA)==0).
+                        filter(el->el.getModalita_pagamento().getRif_modalita_pagamento().isPAGOPA()).
+                        collect(Collectors.toList());
+            if (l!=null && l.size() > 1) {
+                new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!");
+            }
+            if ( !l.isEmpty()){
+                avvisoPagoPA.setNumeroAvviso("numeroAvvisoFattura");
+                avvisoPagoPA.setCodiceIdentificativoEnte("codiceIdentificaEntePagoPa");
+                return avvisoPagoPA;
+            }
+
+
+        }
+        if (pagopaMap.isEmpty()) {
+            new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!");
         }
         final Map.Entry<String, String> pagopaEntry = pagopaMap.entrySet().stream().findFirst().get();
         avvisoPagoPA.setNumeroAvviso(pagopaEntry.getKey());

@@ -420,7 +420,7 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 	}
 	
 	public Boolean isConsegnaMagazzino(){
-		return getTipoConsegna() != null && getTipoConsegna().equals(Bene_servizioBulk.TIPO_CONSEGNA_MAGAZZINO);
+		return Bene_servizioBulk.TIPO_CONSEGNA_MAGAZZINO.equals(this.getTipoConsegna());
 	}
 	
 	public BulkList getRigheRichiestaCollegate() {
@@ -529,8 +529,9 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 	}
 	
 	public java.math.BigDecimal getQtConvertita() {
-		return Utility.round5Decimali(Optional.ofNullable(this.getQuantita()).orElse(BigDecimal.ZERO)
-				.multiply(Optional.ofNullable(this.getOrdineAcqRiga().getCoefConv()).orElse(BigDecimal.ZERO)));
+		return Optional.ofNullable(this.getQuantitaOrig()).orElse(
+				Utility.round5Decimali(Optional.ofNullable(this.getQuantita()).orElse(BigDecimal.ZERO)
+					.multiply(Optional.ofNullable(this.getOrdineAcqRiga().getCoefConv()).orElse(BigDecimal.ZERO))));
 	}
 
 	public java.math.BigDecimal getQtEvasaConvertita() {
@@ -558,6 +559,18 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 
 	public Dictionary getStatoOrdineKeys() {
 		return OrdineAcqBulk.STATO;
+	}
+
+	public Boolean isStatoConsegnaInserita(){
+		return OrdineAcqConsegnaBulk.STATO_INSERITA.equals(this.getStato());
+	}
+
+	public Boolean isStatoConsegnaEvasa(){
+		return OrdineAcqConsegnaBulk.STATO_EVASA.equals(this.getStato());
+	}
+
+	public Boolean isStatoConsegnaEvasaForzatamente(){
+		return OrdineAcqConsegnaBulk.STATO_EVASA_FORZATAMENTE.equals(this.getStato());
 	}
 
 }

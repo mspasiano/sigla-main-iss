@@ -21,10 +21,13 @@
  */
 package it.cnr.contab.doccont00.consultazioni.bulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.Persistent;
-import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.jada.util.OrderedHashtable;
+
+import java.util.Dictionary;
+import java.util.Optional;
+
 public class V_cons_siope_reversaliBulk extends OggettoBulk implements Persistent {
 		
 //  CD_CDS VARCHAR(30) NOT NULL
@@ -100,7 +103,40 @@ public class V_cons_siope_reversaliBulk extends OggettoBulk implements Persisten
  
 	
 	private boolean roFindCds;
-	
+
+	private String tipoIncasso;
+
+	public final static Dictionary tipo_IncassoKeys = new OrderedHashtable();
+
+	static {
+		for (TipoPagamentoEnum tipoPagamentoEnum : TipoPagamentoEnum.values()) {
+			tipo_IncassoKeys.put(tipoPagamentoEnum.value, tipoPagamentoEnum.value);
+		}
+	}
+
+	public enum TipoPagamentoEnum {
+		BANCA_TESORIERE("Banca Tesoriere"),
+		BANCA_ITALIA("Banca d'Italia"),
+		TUTTI("Tutti");
+
+		private final String value;
+
+		private TipoPagamentoEnum(String value) {
+			this.value = value;
+		}
+
+		public String value() {
+			return value;
+		}
+
+		public static TipoPagamentoEnum getValueFrom(String value) {
+			for (TipoPagamentoEnum tipoPagamentoEnum : TipoPagamentoEnum.values()) {
+				if (tipoPagamentoEnum.value.equals(value))
+					return tipoPagamentoEnum;
+			}
+			throw new IllegalArgumentException("No found for value: " + value);
+		}
+	}
 	public V_cons_siope_reversaliBulk() {
 		super();
 	}
@@ -308,4 +344,20 @@ public class V_cons_siope_reversaliBulk extends OggettoBulk implements Persisten
 	public void setDs_tipo_doc_amm(java.lang.String ds_tipo_doc_amm) {
 		this.ds_tipo_doc_amm = ds_tipo_doc_amm;
 	}
+
+
+	public String getTipoIncasso() {
+		return tipoIncasso;
+	}
+
+	public void setTipoIncasso(String tipoIncasso) {
+		this.tipoIncasso = tipoIncasso;
+	}
+
+	public boolean isTipoIncassoValorizzato() {
+		return Optional.ofNullable(getTipoIncasso())
+				.filter(s -> !s.equalsIgnoreCase(V_cons_siope_mandatiBulk.TipoPagamentoEnum.TUTTI.value()))
+				.isPresent();
+	}
+
 }

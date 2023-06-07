@@ -20,11 +20,15 @@
  * Date 06/07/2007
  */
 package it.cnr.contab.doccont00.consultazioni.bulk;
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.Persistent;
-import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.jada.util.OrderedHashtable;
+
+import java.util.Dictionary;
+import java.util.Optional;
+
 public class V_cons_siope_mandatiBulk extends OggettoBulk implements Persistent{
 	
 //  CD_CDS VARCHAR(30) NOT NULL
@@ -97,8 +101,40 @@ public class V_cons_siope_mandatiBulk extends OggettoBulk implements Persistent{
 	private java.sql.Timestamp dt_trasmissione;
 	private java.sql.Timestamp dt_trasmissione_da;
 	private java.sql.Timestamp dt_trasmissione_a;
-	
-	
+
+	private String tipoPagamento;
+
+	public final static Dictionary tipo_PagamentoKeys = new OrderedHashtable();
+
+	static {
+		for (TipoPagamentoEnum tipoPagamentoEnum : TipoPagamentoEnum.values()) {
+			tipo_PagamentoKeys.put(tipoPagamentoEnum.value, tipoPagamentoEnum.value);
+		}
+	}
+
+	public enum TipoPagamentoEnum {
+		BANCA_TESORIERE("Banca Tesoriere"),
+		BANCA_ITALIA("Banca d'Italia"),
+		TUTTI("Tutti");
+
+		private final String value;
+
+		private TipoPagamentoEnum(String value) {
+			this.value = value;
+		}
+
+		public String value() {
+			return value;
+		}
+
+		public static TipoPagamentoEnum getValueFrom(String value) {
+			for (TipoPagamentoEnum tipoPagamentoEnum : TipoPagamentoEnum.values()) {
+				if (tipoPagamentoEnum.value.equals(value))
+					return tipoPagamentoEnum;
+			}
+			throw new IllegalArgumentException("No found for value: " + value);
+		}
+	}
 	private boolean roFindCds;
 	
 	public V_cons_siope_mandatiBulk() {
@@ -306,6 +342,14 @@ public class V_cons_siope_mandatiBulk extends OggettoBulk implements Persistent{
 		roFindCds = b;
 		}
 
+	public String getTipoPagamento() {
+		return tipoPagamento;
+	}
+
+	public void setTipoPagamento(String tipoPagamento) {
+		this.tipoPagamento = tipoPagamento;
+	}
+
 	public java.lang.String getDs_tipo_doc_amm() {
 		return ds_tipo_doc_amm;
 	}
@@ -313,4 +357,11 @@ public class V_cons_siope_mandatiBulk extends OggettoBulk implements Persistent{
 	public void setDs_tipo_doc_amm(java.lang.String ds_tipo_doc_amm) {
 		this.ds_tipo_doc_amm = ds_tipo_doc_amm;
 	}
+
+	public boolean isTipoPagamentoValorizzato() {
+		return Optional.ofNullable(getTipoPagamento())
+				.filter(s -> !s.equalsIgnoreCase(TipoPagamentoEnum.TUTTI.value()))
+				.isPresent();
+	}
+
 }

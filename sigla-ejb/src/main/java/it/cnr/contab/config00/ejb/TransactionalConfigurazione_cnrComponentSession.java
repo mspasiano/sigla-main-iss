@@ -866,4 +866,22 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
             }
         }
     }
+
+    @Override
+    public Boolean isGestioneStatoInizialeSospesiAttivo(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isGestioneStatoInizialeSospesiAttivo", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
 }

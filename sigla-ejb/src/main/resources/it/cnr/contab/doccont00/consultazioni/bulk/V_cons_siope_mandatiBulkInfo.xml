@@ -234,7 +234,14 @@
 		inputType="TEXT"
 		formatName="date_short"
 		label="A Data Trasmissione" />
-	
+	<fieldProperty
+		name="tipoPagamento"
+		property="tipoPagamento"
+		inputType="RADIOGROUP"
+		layout="HORIZONTAL"
+		keysProperty="tipo_PagamentoKeys"
+		label="Tipo Pagamento"/>
+
 	<formFieldProperty
 		name="cd_cds" />
 	<formFieldProperty
@@ -297,7 +304,9 @@
 		name="dt_trasmissione_da" />
 	<formFieldProperty
 		name="dt_trasmissione_a" />
-		
+	<formFieldProperty
+			name="tipoPagamento" />
+
 		
 	<findFieldProperty
 		name="cd_cds" />

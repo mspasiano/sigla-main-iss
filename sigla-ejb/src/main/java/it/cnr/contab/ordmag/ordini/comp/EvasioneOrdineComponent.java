@@ -17,25 +17,10 @@
 
 package it.cnr.contab.ordmag.ordini.comp;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioHome;
 import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.DivisaHome;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioHome;
 import it.cnr.contab.ordmag.anag00.NumerazioneMagBulk;
 import it.cnr.contab.ordmag.ejb.NumeratoriOrdMagComponentSession;
 import it.cnr.contab.ordmag.magazzino.bulk.BollaScaricoMagBulk;
@@ -43,8 +28,6 @@ import it.cnr.contab.ordmag.magazzino.bulk.BollaScaricoMagHome;
 import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
 import it.cnr.contab.ordmag.magazzino.ejb.MovimentiMagComponentSession;
 import it.cnr.contab.ordmag.ordini.bulk.*;
-import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
-import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
@@ -55,11 +38,20 @@ import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.ICRUDMgr;
-import it.cnr.jada.persistency.FetchAllPolicy;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.RemoteIterator;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent implements ICRUDMgr,Cloneable,Serializable {
 
@@ -72,7 +64,7 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 		it.cnr.jada.persistency.sql.SQLBuilder sql = ricercaOrdini(usercontext, filtro, home);
 
 		try {
-			BulkList<OrdineAcqConsegnaBulk> consegne = new BulkList<OrdineAcqConsegnaBulk>(home.fetchAll(sql));
+			BulkList<OrdineAcqConsegnaBulk> consegne = new BulkList<>(home.fetchAll(sql));
 			getHomeCache(usercontext).fetchAll(usercontext, home);
 			filtro.setRigheConsegnaDaEvadereColl(consegne);
 			return filtro;
@@ -184,268 +176,97 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 			OrdineAcqComponentSession ordineComponent = Utility.createOrdineAcqComponentSession();
 			MovimentiMagComponentSession movimentiMagComponent = Utility.createMovimentiMagComponentSession();
 
-			List<OrdineAcqConsegnaBulk> listaConsegneEvase = new ArrayList<>();
-
+			List<OrdineAcqConsegnaBulk> listaConsegneDaForzare = new ArrayList<>();
 			List<BollaScaricoMagBulk> listaBolleScarico = new ArrayList<>();
 			List<MovimentiMagBulk> listaMovimentiScarico = new ArrayList<>();
 
 			final List<OrdineAcqConsegnaBulk> consegneColl = evasioneOrdine.getRigheConsegnaSelezionate();
 			OrdineAcqConsegnaHome consegnaHome = (OrdineAcqConsegnaHome) getHome(userContext, OrdineAcqConsegnaBulk.class);
 
-			@SuppressWarnings("unchecked") final Supplier<Stream<OrdineAcqConsegnaBulk>> selectedElements = () ->
-					Optional.ofNullable(consegneColl)
-							.filter(List.class::isInstance)
-							.map(List.class::cast)
-							.filter(list -> !list.isEmpty())
-							.map(list -> list.stream())
-							.orElse(Stream.empty());
+			final Map<OrdineAcqBulk, List<OrdineAcqConsegnaBulk>> mapOrdine =
+					consegneColl.stream().collect(Collectors.groupingBy(o -> o.getOrdineAcqRiga().getOrdineAcq()));
 
-			selectedElements.get().forEach(obj -> {
-				if (obj.getQuantitaEvasa() == null)
-					throw new DetailedRuntimeException("Indicare la quantità da evadere per la consegna " + obj.getConsegnaOrdineString());
-				if (obj.isQuantitaEvasaMinoreOrdine() && obj.getOperazioneQuantitaEvasaMinore() == null)
-					throw new DetailedRuntimeException("Per la consegna " + obj.getConsegnaOrdineString() + " è necessario indicare se sdoppiare la riga o evaderla forzatamente");
-			});
+			for (OrdineAcqBulk ordineSelected : mapOrdine.keySet()) {
+				for (OrdineAcqConsegnaBulk consegnaSelected : consegneColl) {
+					Optional.ofNullable(consegnaSelected.getQuantitaEvasa()).filter(el->el.compareTo(BigDecimal.ZERO)>0)
+							.orElseThrow(()->new DetailedRuntimeException("Indicare la quantità da evadere per la consegna " + consegnaSelected.getConsegnaOrdineString()));
+					if (consegnaSelected.isQuantitaEvasaMinoreOrdine() && consegnaSelected.getOperazioneQuantitaEvasaMinore() == null)
+						throw new DetailedRuntimeException("Per la consegna " + consegnaSelected.getConsegnaOrdineString() + " è necessario indicare se bisogna solo sdoppiare la riga o anche evaderla forzatamente");
+					if (consegnaSelected.isQuantitaEvasaMaggioreOrdine())
+						throw new DetailedRuntimeException("La quantità evasa della consegna " + consegnaSelected.getConsegnaOrdineString() + " non può essere maggiore di quella ordinata.");
 
-			final Map<OrdineAcqBulk, Map<OrdineAcqRigaBulk, List<OrdineAcqConsegnaBulk>>> mapOrdine =
-					selectedElements.get().collect(Collectors.groupingBy(o -> o.getOrdineAcqRiga().getOrdineAcq(),
-							Collectors.groupingBy(o -> o.getOrdineAcqRiga())));
+					//Ricarico la consegna dal DB per verificare che non sia stata già evasa
+					OrdineAcqConsegnaBulk consegnaDB = (OrdineAcqConsegnaBulk) findByPrimaryKey(userContext, consegnaSelected);
+					if (consegnaDB.isStatoConsegnaEvasa())
+						throw new DetailedRuntimeException("La consegna " + consegnaDB.getConsegnaOrdineString() + " è stata già evasa");
 
-			mapOrdine.keySet().stream().forEach(ordine -> {
-				try {
-					OrdineAcqBulk ordineComp = (OrdineAcqBulk) ordineComponent.inizializzaBulkPerModifica(userContext, ordine);
-					ParametriCalcoloImportoOrdine parametriTestata = new ParametriCalcoloImportoOrdine();
-					parametriTestata.setCambio(ordine.getCambio());
-					parametriTestata.setDivisa(ordine.getDivisa());
-					parametriTestata.setDivisaRisultato(getEuro(userContext));
-					parametriTestata.setPercProrata(ordine.getPercProrata());
-					ordine.setImImponibile(BigDecimal.ZERO);
-					ordine.setImIva(BigDecimal.ZERO);
-					ordine.setImIvaD(BigDecimal.ZERO);
-					ordine.setImTotaleOrdine(BigDecimal.ZERO);
+					if (consegnaSelected.isQuantitaEvasaMinoreOrdine()) {
+						consegnaDB.setQuantitaOrig(consegnaSelected.getQtEvasaConvertita());
+						consegnaDB.setQuantita(consegnaDB.getQuantitaOrig().divide(consegnaSelected.getOrdineAcqRiga().getCoefConv(),5,RoundingMode.HALF_UP));
 
-					//ciclo sulle righe di ordine
-					mapOrdine.get(ordine).keySet().stream().forEach(ordineRiga -> {
-						//recupero la riga di ordine dall'oggetto proveniente dal Component
-						OrdineAcqRigaBulk ordineRigaComp =
-								Optional.ofNullable(ordineComp.getRigheOrdineColl())
-										.filter(list -> !list.isEmpty())
-										.map(list -> list.get(list.indexOfByPrimaryKey(ordineRiga)))
-										.orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della riga " + ordineRiga.getRigaOrdineString() + "."));
+						//Ricalcolo i campi imponibile e imposta, calcolati in base alla vecchia quantità (consegnaSelected.getQuantita()) in proporzione alla nuova quantita (consegnaDB.getQuantita())
+						consegnaDB.setImImponibile(consegnaSelected.getImImponibile().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIva(consegnaSelected.getImIva().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImImponibileDivisa(consegnaSelected.getImImponibileDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaDivisa(consegnaSelected.getImIvaDivisa().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaD(consegnaSelected.getImIvaD().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImIvaNd(consegnaSelected.getImIvaNd().multiply(consegnaDB.getQuantita()).divide(consegnaSelected.getQuantita(),2,RoundingMode.HALF_UP));
+						consegnaDB.setImTotaleConsegna(consegnaDB.getImImponibile().add(consegnaDB.getImIva()));
 
-						ParametriCalcoloImportoOrdine parametriRiga = (ParametriCalcoloImportoOrdine) parametriTestata.clone();
-						parametriRiga.setCoefacq(ordineRiga.getCoefConv());
-						parametriRiga.setPrezzo(ordineRiga.getPrezzoUnitario());
-						parametriRiga.setSconto1(ordineRiga.getSconto1());
-						parametriRiga.setSconto2(ordineRiga.getSconto2());
-						parametriRiga.setSconto3(ordineRiga.getSconto3());
-						parametriRiga.setVoceIva(ordineRiga.getVoceIva());
-						ordineRiga.setImImponibile(BigDecimal.ZERO);
-						ordineRiga.setImImponibileDivisa(BigDecimal.ZERO);
-						ordineRiga.setImIva(BigDecimal.ZERO);
-						ordineRiga.setImIvaDivisa(BigDecimal.ZERO);
-						ordineRiga.setImIvaD(BigDecimal.ZERO);
-						ordineRiga.setImIvaNd(BigDecimal.ZERO);
-						ordineRiga.setImTotaleRiga(BigDecimal.ZERO);
+						//Creo una nuova consegna
+						OrdineAcqConsegnaBulk newConsegna = (OrdineAcqConsegnaBulk) consegnaDB.clone();
+						newConsegna = (OrdineAcqConsegnaBulk) newConsegna.inizializza(userContext);
+						newConsegna.setVecchiaConsegna(consegnaDB.getConsegna());
+						newConsegna.setDtPrevConsegna(consegnaDB.getDtPrevConsegna());
+						newConsegna.setQuantitaOrig(consegnaSelected.getQtConvertita().subtract(consegnaDB.getQuantitaOrig()));
+						newConsegna.setQuantita(consegnaSelected.getQuantita().subtract(consegnaDB.getQuantita()));
+						newConsegna.setImImponibile(consegnaSelected.getImImponibile().subtract(consegnaDB.getImImponibile()));
+						newConsegna.setImIva(consegnaSelected.getImIva().subtract(consegnaDB.getImIva()));
+						newConsegna.setImImponibileDivisa(consegnaSelected.getImImponibileDivisa().subtract(consegnaDB.getImImponibileDivisa()));
+						newConsegna.setImIvaDivisa(consegnaSelected.getImIvaDivisa().subtract(consegnaDB.getImIvaDivisa()));
+						newConsegna.setImIvaD(consegnaSelected.getImIvaD().subtract(consegnaDB.getImIvaD()));
+						newConsegna.setImIvaNd(consegnaSelected.getImIvaNd().subtract(consegnaDB.getImIvaNd()));
+						newConsegna.setImTotaleConsegna(newConsegna.getImImponibile().add(newConsegna.getImIva()));
 
-						//ciclo sulle righe di consegna
-						mapOrdine.get(ordine).get(ordineRiga).stream().forEach(ordineConsegna -> {
-							//recupero la riga di consegna dall'oggetto proveniente dal Component
-							OrdineAcqConsegnaBulk ordineConsegnaComp =
-									Optional.ofNullable(ordineRigaComp.getRigheConsegnaColl())
-											.filter(list -> !list.isEmpty())
-											.map(list -> list.get(list.indexOfByPrimaryKey(ordineConsegna)))
-											.orElseThrow(() -> new DetailedRuntimeException("Errore nell'individuazione della consegna " + ordineConsegna.getConsegnaOrdineString() + "."));
+						//Ripulisco la chiave (valorizzata dall'istruzione clone) altrimenti non crea la nuova consegna
+						newConsegna.setConsegna(null);
+						newConsegna.setCrudStatus(OggettoBulk.TO_BE_CREATED);
+						makeBulkPersistent(userContext, newConsegna);
 
-							if (ordineConsegnaComp.getStato().equals(OrdineAcqConsegnaBulk.STATO_EVASA))
-								throw new DetailedRuntimeException("La consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " è stata già evasa");
-							else if (ordineConsegna.isQuantitaEvasaMaggioreOrdine())
-								throw new DetailedRuntimeException("La quantità evasa della consegna " + ordineConsegnaComp.getConsegnaOrdineString() + " non può essere maggiore di quella ordinata.");
+						if (consegnaSelected.isOperazioneEvasaForzata())
+							listaConsegneDaForzare.add(newConsegna);
+					}
 
-							//Creo una nuova consegna se richiesto 
-							if (ordineConsegna.isQuantitaEvasaMinoreOrdine()) {
-								if (ordineConsegna.isOperazioneCreaNuovaConsegna()) {
-									OrdineAcqConsegnaBulk newConsegna = (OrdineAcqConsegnaBulk) ordineConsegna.clone();
-									try {
-										getHomeCache(userContext).fetchAll(userContext, consegnaHome);
-									} catch (PersistencyException e) {
-										throw new DetailedRuntimeException(e);
-									} catch (ComponentException e) {
-										throw new DetailedRuntimeException(e);
-									}
-
-									newConsegna = (OrdineAcqConsegnaBulk) newConsegna.inizializza(userContext);
-									newConsegna.setConsegna(ordineRigaComp.getRigheConsegnaColl().size() + 1);
-									newConsegna.setVecchiaConsegna(ordineConsegna.getConsegna());
-									newConsegna.setQuantita(ordineConsegna.getQuantita().subtract(ordineConsegna.getQuantitaEvasa()));
-									newConsegna.setCrudStatus(OggettoBulk.TO_BE_CREATED);
-									ParametriCalcoloImportoOrdine parametriNewCons = (ParametriCalcoloImportoOrdine) parametriRiga.clone();
-									parametriNewCons.setQtaOrd(newConsegna.getQuantita());
-									try {
-										ImportoOrdine importo = ordineComponent.calcoloImportoOrdine(userContext, parametriNewCons);
-										newConsegna.setImImponibile(importo.getImponibile());
-										newConsegna.setImImponibileDivisa(importo.getImponibile());
-										newConsegna.setImIva(importo.getImportoIva());
-										newConsegna.setImIvaDivisa(importo.getImportoIva());
-										newConsegna.setImIvaD(importo.getImportoIvaDetraibile());
-										newConsegna.setImIvaNd(importo.getImportoIvaInd());
-										newConsegna.setImTotaleConsegna(importo.getTotale());
-									} catch (RemoteException|ComponentException e) {
-										throw new DetailedRuntimeException(e);
-									}
-									ordineRigaComp.addToRigheConsegnaColl(newConsegna);
-
-									if (Optional.ofNullable(newConsegna.getObbligazioneScadenzario()).isPresent()) {
-										try {
-											Obbligazione_scadenzarioHome obblHome = (Obbligazione_scadenzarioHome) getHome(userContext, Obbligazione_scadenzarioBulk.class);
-											Obbligazione_scadenzarioBulk obbl = (Obbligazione_scadenzarioBulk) obblHome.findByPrimaryKey(newConsegna.getObbligazioneScadenzario());
-											ordineComp.addToOrdineObbligazioniHash(obbl, newConsegna);
-										} catch (ComponentException | PersistencyException e) {
-											throw new DetailedRuntimeException(e);
-										}
-									}
-								} else {
-									ordineConsegna.setQuantitaOrig(ordineConsegna.getQuantita());
-								}
-
-								ParametriCalcoloImportoOrdine parametriOrdineConsegna = (ParametriCalcoloImportoOrdine) parametriRiga.clone();
-								parametriOrdineConsegna.setQtaOrd(ordineConsegna.getQuantitaEvasa());
-								try {
-									ImportoOrdine importo = ordineComponent.calcoloImportoOrdine(userContext, parametriOrdineConsegna);
-									ordineConsegna.setImImponibile(importo.getImponibile());
-									ordineConsegna.setImImponibileDivisa(importo.getImponibile());
-									ordineConsegna.setImIva(importo.getImportoIva());
-									ordineConsegna.setImIvaDivisa(importo.getImportoIva());
-									ordineConsegna.setImIvaD(importo.getImportoIvaDetraibile());
-									ordineConsegna.setImIvaNd(importo.getImportoIvaInd());
-									ordineConsegna.setImTotaleConsegna(importo.getTotale());
-								} catch (RemoteException|ComponentException e) {
-									throw new DetailedRuntimeException(e);
-								}
-							}
-
-							ordineConsegna.setQuantita(ordineConsegna.getQuantitaEvasa());
-							ordineConsegna.setStato(OrdineAcqConsegnaBulk.STATO_EVASA);
-							ordineConsegna.setToBeUpdated();
-
-							//rimuovo la vecchia consegna
-							ordineRigaComp.getRigheConsegnaColl().removeByPrimaryKey(ordineConsegnaComp);
-
-							//inserisco la nuova consegna
-							ordineRigaComp.getRigheConsegnaColl().add(ordineConsegna);
-							if (ordineConsegna.getQuantitaOrig() != null) {
-								ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegna);
-								ordineComp.setAggiornaImpegniInAutomatico(true);
-							}
-							try {
-								Bene_servizioHome bene_servizioHome = (Bene_servizioHome) getHome(userContext, Bene_servizioBulk.class);
-								Bene_servizioBulk bene_servizioBulk = (Bene_servizioBulk) bene_servizioHome.findByPrimaryKey(ordineRigaComp.getBeneServizio());
-								if (bene_servizioBulk.getFl_gestione_inventario()) {
-
-								}
-							} catch (ComponentException | PersistencyException e) {
-								throw new DetailedRuntimeException(e);
-							}
-
-							listaConsegneEvase.add(ordineConsegna);
-						});
-						/**
-						 * Verifico che la somma dell'imponibile delle righe di consegna sia uguale all'imponibile presente sulla riga
-						 * in caso di un disallineamento scarico la differenza sull'ultima riga di consegna.
-						 */
-						try {
-							final FatturaOrdineHome fatturaOrdineHome = (FatturaOrdineHome) getHome(userContext, FatturaOrdineBulk.class);
-							final BigDecimal diffImponibileConsegna = ordineRigaComp
-									.getRigheConsegnaColl()
-									.stream()
-									.map(ordineAcqConsegnaBulk -> {
-										try {
-											return fatturaOrdineHome
-													.findByRigaConsegna(ordineAcqConsegnaBulk)
-													.stream()
-													.findAny()
-													.map(FatturaOrdineBulk::getImImponibile)
-													.orElse(ordineAcqConsegnaBulk.getImImponibile());
-										} catch (PersistencyException e) {
-											throw new RuntimeException(e);
-										}
-									})
-									.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImImponibile()).negate();
-							final BigDecimal diffIvaConsegna = ordineRigaComp
-									.getRigheConsegnaColl()
-									.stream()
-									.map(ordineAcqConsegnaBulk -> {
-										try {
-											return fatturaOrdineHome
-													.findByRigaConsegna(ordineAcqConsegnaBulk)
-													.stream()
-													.findAny()
-													.map(FatturaOrdineBulk::getImIva)
-													.orElse(ordineAcqConsegnaBulk.getImIva());
-										} catch (PersistencyException e) {
-											throw new RuntimeException(e);
-										}
-									})
-									.reduce(BigDecimal.ZERO, BigDecimal::add).subtract(ordineRigaComp.getImIva()).negate();
-
-							if (!diffImponibileConsegna.equals(BigDecimal.ZERO.setScale(2))) {
-								ordineRigaComp
-										.getRigheConsegnaColl()
-										.stream()
-										.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
-										.findAny()
-										.ifPresent(ordineAcqConsegnaBulk -> {
-											ordineAcqConsegnaBulk.setImImponibile(
-													ordineAcqConsegnaBulk.getImImponibile().add(diffImponibileConsegna)
-											);
-											ordineAcqConsegnaBulk.setImImponibileDivisa(
-													ordineAcqConsegnaBulk.getImImponibileDivisa().add(diffImponibileConsegna)
-											);
-											ordineAcqConsegnaBulk.setImTotaleConsegna(
-													ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffImponibileConsegna)
-											);
-										});
-							}
-							if (!diffIvaConsegna.equals(BigDecimal.ZERO.setScale(2))) {
-								ordineRigaComp
-										.getRigheConsegnaColl()
-										.stream()
-										.filter(ordineAcqConsegnaBulk -> ordineAcqConsegnaBulk.getStato().equals(OrdineAcqConsegnaBulk.STATO_INSERITA))
-										.findAny()
-										.ifPresent(ordineAcqConsegnaBulk -> {
-											ordineAcqConsegnaBulk.setImIva(
-													ordineAcqConsegnaBulk.getImIva().add(diffIvaConsegna)
-											);
-											ordineAcqConsegnaBulk.setImIvaNd(
-													ordineAcqConsegnaBulk.getImIvaNd().add(diffIvaConsegna)
-											);
-											ordineAcqConsegnaBulk.setImIvaDivisa(
-													ordineAcqConsegnaBulk.getImIvaDivisa().add(diffIvaConsegna)
-											);
-											ordineAcqConsegnaBulk.setImTotaleConsegna(
-													ordineAcqConsegnaBulk.getImTotaleConsegna().add(diffIvaConsegna)
-											);
-										});
-							}
-							makeBulkListPersistent(userContext, ordineRigaComp.getRigheConsegnaColl());
-						} catch (ComponentException|PersistencyException e) {
-							throw new RuntimeException(e);
-						}
-					});
-				} catch (ComponentException | RemoteException e) {
-					throw new DetailedRuntimeException(e);
+					consegnaDB.setStato(OrdineAcqConsegnaBulk.STATO_EVASA);
+					consegnaDB.setToBeUpdated();
+					makeBulkPersistent(userContext, consegnaDB);
 				}
-			});
 
-			if (!listaConsegneEvase.isEmpty()) {
-				evasioneOrdine.setStato(OrdineAcqConsegnaBulk.STATO_INSERITA);
-				evasioneOrdine.setToBeCreated();
+				//Ricarico l'ordine
+				OrdineAcqBulk ordineComp = ((OrdineAcqHome)getHome(userContext, OrdineAcqBulk.class)).initializeBulkForEdit(ordineSelected);
+				getHomeCache(userContext).fetchAll(userContext);
 
-				for (OrdineAcqConsegnaBulk consegnaEvasa : listaConsegneEvase) {
+				for (OrdineAcqConsegnaBulk consegnaSelected : consegneColl) {
+					//recupero la riga nell'ambito dell'ordine ricaricato
+					OrdineAcqConsegnaBulk finalConsegnaEvasa = consegnaSelected;
+					OrdineAcqConsegnaBulk consegnaCompSelected = ordineComp.getRigheOrdineColl().stream().flatMap(el -> el.getRigheConsegnaColl().stream()).filter(el -> el.equalsByPrimaryKey(finalConsegnaEvasa))
+							.findAny().orElseThrow(() -> new DetailedRuntimeException("Attenzione! Non è stato possibile individuare nell'ordine una riga di consegna che risulta essere stata evasa. Aprire " +
+									"una segnalazione HelpDesk!"));
+
+					//Riallineo i campi del lotto fornitore noBaseTable di consegnaCompSelected con quelli presenti in consegnaSelected
+					consegnaCompSelected.setLottoFornitore(consegnaSelected.getLottoFornitore());
+					consegnaCompSelected.setDtScadenza(consegnaSelected.getDtScadenza());
+
+					//carico l'evasione
 					EvasioneOrdineRigaBulk evasioneOrdineRiga = new EvasioneOrdineRigaBulk();
-					evasioneOrdineRiga.setOrdineAcqConsegna(consegnaEvasa);
+					evasioneOrdineRiga.setOrdineAcqConsegna(consegnaCompSelected);
 					evasioneOrdineRiga.setStato(OrdineAcqConsegnaBulk.STATO_INSERITA);
-					evasioneOrdineRiga.setQuantitaEvasa(consegnaEvasa.getQuantita());
+					evasioneOrdineRiga.setQuantitaEvasa(consegnaCompSelected.getQuantita());
+
+					evasioneOrdineRiga.setQuantitaEvasaBolla(consegnaSelected.getQuantitaEvasa());
+					evasioneOrdineRiga.setUnitaMisuraEvasaBolla(consegnaSelected.getUnitaMisuraEvasa());
+					evasioneOrdineRiga.setCoefConvEvasaBolla(consegnaSelected.getCoefConvEvasa());
+
 					evasioneOrdineRiga.setToBeCreated();
 
 					evasioneOrdine.addToEvasioneOrdineRigheColl(evasioneOrdineRiga);
@@ -463,7 +284,11 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 						throw new DetailedRuntimeException(e);
 					}
 				}
+			}
 
+			if (!evasioneOrdine.getEvasioneOrdineRigheColl().isEmpty()) {
+				evasioneOrdine.setStato(OrdineAcqConsegnaBulk.STATO_INSERITA);
+				evasioneOrdine.setToBeCreated();
 				//rendo permanente l'evasione ordine
 				assegnaProgressivo(userContext, evasioneOrdine);
 				creaConBulk(userContext, evasioneOrdine);
@@ -476,8 +301,13 @@ public class EvasioneOrdineComponent extends it.cnr.jada.comp.CRUDComponent impl
 					throw handleException(e);
 				}
 			}
+
+			//Chiudo forzatamente le consegne richieste
+			for (OrdineAcqConsegnaBulk consegnaDaForzare : listaConsegneDaForzare)
+				ordineComponent.chiusuraForzataOrdini(userContext, consegnaDaForzare);
+
 			return listaBolleScarico;
-		} catch (DetailedRuntimeException e) {
+		} catch (DetailedRuntimeException|RemoteException e) {
 			throw new ApplicationException(e.getMessage());
 		}
 	}

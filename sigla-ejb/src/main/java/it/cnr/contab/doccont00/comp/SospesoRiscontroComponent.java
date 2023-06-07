@@ -19,6 +19,8 @@ package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioHome;
 import it.cnr.contab.config00.sto.bulk.*;
@@ -2554,6 +2556,27 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
         return 1;
     }
 
+    private CdsBulk getCdsDefaultSospesi(UserContext userContext) throws ComponentException, PersistencyException {
+        try {
+            Boolean isAttivoGestioneStatoIniziale = Utility.createConfigurazioneCnrComponentSession().isGestioneStatoInizialeSospesiAttivo(userContext);
+            if (isAttivoGestioneStatoIniziale) {
+                String cds = ((Configurazione_cnrHome) getHome(userContext, Configurazione_cnrBulk.class)).getConfigurazione(
+                        CNRUserContext.getEsercizio(userContext),
+                        null,
+                        Configurazione_cnrBulk.PK_SOSPESI,
+                        Configurazione_cnrBulk.SK_GESTIONE_STATO_INIZIALE).getVal(2);
+
+                return (CdsBulk) getHome(userContext, CdsBulk.class).
+                        findByPrimaryKey(new CdsKey(cds));
+            }
+            return null;
+        }catch( Exception e){
+            LOGGER.error("Errore recupero configurazione gestione stato inziale sospesi ( getCdsDefaultSospesi) " + e.getMessage());
+        }
+        return null;
+
+
+    }
     public Integer caricamentoRigaGiornaleCassa(UserContext userContext, boolean tesoreriaUnica, EnteBulk cdsEnte, MovimentoContoEvidenzaBulk riga) throws ComponentException, PersistencyException {
         try {
             SospesoHome homeSospeso = (SospesoHome)getHome(userContext, SospesoBulk.class);
@@ -2885,6 +2908,12 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         sospesoFiglio.setCd_sospeso(sospesoFiglio.getCd_sospeso()+"."+sospeso.getNextCdSospesoFiglio());
                         sospesoFiglio.setCd_proprio_sospeso(sospeso.getNextCdSospesoFiglio());
                         sospesoFiglio.setToBeCreated();
+                        CdsBulk cds=getCdsDefaultSospesi(userContext);
+                        if( cds!=null){
+                            sospesoFiglio.setCds_origine( cds);
+                            sospesoFiglio.setStato_sospeso(SospesoBulk.STATO_SOSP_ASS_A_CDS);
+                        }
+
                         super.insertBulk(userContext, sospesoFiglio);
 
                         if (riga.isIncassoPagopa()){

@@ -1663,6 +1663,7 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
                         notaDiCredito.addToFattura_passiva_dettColl(rigaNdC);
                         rigaNdC.setUser(context.getUserInfo().getUserid());
                         rigaNdC.copyFrom(dettaglio);
+                        rigaNdC.setToBeCreated();
                         //rigaNdC.setModalita(((FatturaPassivaComponentSession)bp.createComponentSession()).findModalita(context.getUserContext(),rigaNdC));
                         notaDiCredito.setIvaRecuperabile(rigaNdC.getRiga_fattura_origine() != null && rigaNdC.getRiga_fattura_origine().getFattura_passiva().getDt_fattura_fornitore() == null ||
                                 (rigaNdC.getTi_istituz_commerc().compareTo(TipoIVA.ISTITUZIONALE.value()) == 0) ||

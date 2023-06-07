@@ -1159,5 +1159,27 @@ public class Configurazione_cnrComponent extends it.cnr.jada.comp.GenericCompone
          return TipoRapportoTesoreriaEnum.valueOf(configurazione.getVal01());
     }
 
+    public Boolean isGestioneStatoInizialeSospesiAttivo(UserContext userContext) throws ComponentException {
+        try {
+            Configurazione_cnrKey configurazioneCnrKey = new Configurazione_cnrKey(
+                    Configurazione_cnrBulk.PK_SOSPESI,
+                    Configurazione_cnrBulk.SK_GESTIONE_STATO_INIZIALE,
+                    ASTERISCO,
+                    CNRUserContext.getEsercizio(userContext));
+            return val01YesNo(userContext, configurazioneCnrKey)
+                    .orElseGet(() -> {
+                        try {
+                            return val01YesNo(userContext, configurazioneCnrKey.esercizio(0))
+                                    .orElse(Boolean.FALSE);
+                        } catch (PersistencyException|ComponentException e) {
+                            throw new PersistencyError(e);
+                        }
+                    });
+        } catch (PersistencyException e) {
+            throw handleException(e);
+        }
+    }
+
+
 
 }

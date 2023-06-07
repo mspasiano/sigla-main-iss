@@ -20,24 +20,27 @@
  * Date 28/06/2017
  */
 package it.cnr.contab.ordmag.ordini.bulk;
-import java.sql.Connection;
-import java.util.Collection;
 
-import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
-import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoHome;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioHome;
-import it.cnr.contab.ordmag.anag00.*;
+import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
+import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
+
+import java.sql.Connection;
+import java.util.Collection;
+import java.util.List;
 
 public class OrdineAcqRigaHome extends BulkHome {
 	public OrdineAcqRigaHome(Connection conn) {
@@ -87,5 +90,16 @@ public class OrdineAcqRigaHome extends BulkHome {
 		return sql;
 	}
 
-
+	public List<OrdineAcqConsegnaBulk> findOrdineRigheConsegnaList(OrdineAcqRigaBulk ordineRiga) throws PersistencyException {
+		PersistentHome consegnaHome = getHomeCache().getHome(OrdineAcqConsegnaBulk.class);
+		SQLBuilder sqlConsegna = consegnaHome.createSQLBuilder();
+		sqlConsegna.addClause(FindClause.AND, "numero", SQLBuilder.EQUALS, ordineRiga.getNumero());
+		sqlConsegna.addClause(FindClause.AND, "cdCds", SQLBuilder.EQUALS, ordineRiga.getCdCds());
+		sqlConsegna.addClause(FindClause.AND, "cdUnitaOperativa", SQLBuilder.EQUALS, ordineRiga.getCdUnitaOperativa());
+		sqlConsegna.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, ordineRiga.getEsercizio());
+		sqlConsegna.addClause(FindClause.AND, "cdNumeratore", SQLBuilder.EQUALS, ordineRiga.getCdNumeratore());
+		sqlConsegna.addClause(FindClause.AND, "riga", SQLBuilder.EQUALS, ordineRiga.getRiga());
+		sqlConsegna.addOrderBy("consegna");
+		return consegnaHome.fetchAll(sqlConsegna);
+	}
 }

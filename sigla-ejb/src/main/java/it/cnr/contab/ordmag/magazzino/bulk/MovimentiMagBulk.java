@@ -30,6 +30,7 @@ import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 public class MovimentiMagBulk extends MovimentiMagBase {
 	public final static String STATO_INSERITO = "INS";
@@ -318,7 +319,10 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 		if (this.getPrezzoUnitario()==null || this.getPrezzoUnitario().compareTo(BigDecimal.ZERO)==0)
 			return BigDecimal.ZERO;
 
-		return this.getPrezzoUnitario().divide(this.getCoeffConv());
+		return this.getPrezzoUnitario().divide(this.getCoeffConv(), 6, RoundingMode.HALF_UP);
 	}
 
+	public boolean isStatoAnnullato() {
+		return STATO_ANNULLATO.equals(this.getStato());
+	}
 }

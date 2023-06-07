@@ -174,7 +174,14 @@ public class FatturaPassivaRigaCRUDController extends it.cnr.jada.util.action.Si
                                 bp.isManualModify());
 
                 Fattura_passiva_rigaBulk riga = (Fattura_passiva_rigaBulk) getModel();
-                enabled = enabled && !(riga == null || riga.getTi_associato_manrev() != null && riga.ASSOCIATO_A_MANDATO.equalsIgnoreCase(riga.getTi_associato_manrev()));
+                enabled = enabled && !(riga == null || riga.getTi_associato_manrev() != null && riga.ASSOCIATO_A_MANDATO.equalsIgnoreCase(riga.getTi_associato_manrev())) &&
+                            !riga.getFattura_passiva()
+                                    .getFattura_passiva_ordini()
+                                    .stream()
+                                    .filter(fatturaOrdineBulk -> fatturaOrdineBulk.getFatturaPassivaRiga().equalsByPrimaryKey(riga))
+                                    .findAny()
+                                    .isPresent();
+
 
                 it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                         context,

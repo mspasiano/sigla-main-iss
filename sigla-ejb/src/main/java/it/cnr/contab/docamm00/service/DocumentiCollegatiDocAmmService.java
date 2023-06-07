@@ -416,7 +416,7 @@ public class DocumentiCollegatiDocAmmService extends DocumentiContabiliService {
     	
         List<StorageObject> results = getDocuments(node, tipoDocumento);
         if (results.size() == 0)
-            return null;
+            return Collections.EMPTY_LIST;
         else {
             return results;
         }

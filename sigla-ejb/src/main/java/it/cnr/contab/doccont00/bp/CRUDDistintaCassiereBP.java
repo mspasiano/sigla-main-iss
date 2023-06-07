@@ -340,7 +340,6 @@ public class CRUDDistintaCassiereBP extends AllegatiCRUDBP<AllegatoGenericoBulk,
             throw handleException(e);
         }
         super.init(config, context);
-
     }
 
     /*

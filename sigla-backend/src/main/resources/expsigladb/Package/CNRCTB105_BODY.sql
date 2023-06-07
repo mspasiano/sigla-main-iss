@@ -68,7 +68,8 @@ begin
 
 			 rip_ParzRip := COMPLETAMENTE_RIPORTATO;
 
-		exception when TOO_MANY_ROWS then  -- estrae più di un esercizio
+		exception
+		    when TOO_MANY_ROWS then  -- estrae più di un esercizio
 			 select max(esercizio_accertamento) into aEsDocCont
 			 from fattura_passiva_riga
 			 where cd_cds 			      = aFP.cd_cds
@@ -77,6 +78,8 @@ begin
 			   and pg_fattura_passiva 	  = aFP.pg_fattura_passiva;
 
 			 rip_ParzRip := PARZIALMENTE_RIPORTATO;
+            when NO_DATA_FOUND then
+			 rip_ParzRip := COMPLETAMENTE_RIPORTATO;
 		end;
 
 	else -- fattura passiva e note di debito
@@ -91,7 +94,8 @@ begin
 
 			 rip_ParzRip := COMPLETAMENTE_RIPORTATO;
 
-		exception when TOO_MANY_ROWS then  -- estrae più di un esercizio
+		exception
+		    when TOO_MANY_ROWS then  -- estrae più di un esercizio
 			 select max(esercizio_obbligazione) into aEsDocCont
 			 from fattura_passiva_riga
 			 where cd_cds = aCdCds
@@ -100,6 +104,8 @@ begin
 			   and pg_fattura_passiva = aPg;
 
 			 rip_ParzRip := PARZIALMENTE_RIPORTATO;
+		    when NO_DATA_FOUND then
+			 rip_ParzRip := COMPLETAMENTE_RIPORTATO;
 		end;
 
 	end if;
