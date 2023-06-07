@@ -525,8 +525,8 @@ public class Configurazione_cnrComponent extends it.cnr.jada.comp.GenericCompone
     public Boolean hasGestioneImportiFlussiFinanziari(UserContext userContext) throws ComponentException {
         try {
             Configurazione_cnrKey configurazioneCnrKey = new Configurazione_cnrKey(
-                    Configurazione_cnrBulk.PK_FLUSSI_FINANZIARI,
-                    Configurazione_cnrBulk.SK_GESTIONE_IMPORTI,
+                    Configurazione_cnrBulk.PK_GESTIONE_CONTRATTI,
+                    Configurazione_cnrBulk.SK_CIG_IMP_SENZA_FLUSSI_FINANZ,
                     ASTERISCO,
                     CNRUserContext.getEsercizio(userContext));
             return val01YesNo(userContext, configurazioneCnrKey)

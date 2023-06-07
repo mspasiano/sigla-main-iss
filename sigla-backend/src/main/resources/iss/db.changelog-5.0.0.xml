@@ -104,7 +104,7 @@
     <!-- Autore: PIERGIORGIO FARAGLIA -
         Configurazione del flag di gestione degli importi sui contratti di natura contabile del tipo FLUSSI_FINANZIARI
      -->
-    <include file="iss/add_flag_gestione_importi_flussi_finanziari.xml"/>
+    <include file="iss/update_gestione_importi_flussi_finanziari.xml"/>
     <!-- Autore : CIRO SALVIO-STATO SOSPESO DEFAULT ASSEGNATO A CDS 000 -->
     <include file="iss/update_configurazione_cnr_stato_sospesi.xml"></include>
 
