@@ -28,12 +28,12 @@
   -- Date: 19/07/2007
   -- Version: 1.3
   -- Aggiunto il campo RITENUTE_TESTATA
+  -- Date: 14/06/2023
+  -- Version: 1.4
+  -- Nuova gestione competenza/residuo e gestione BT e BI
   --
   -- Body:
   --
-  -- Date: 14/06/2023
-    -- Version: 1.3
-    -- Nuova gestione competenza/residuo e gestione BT e BI
   mandato.ESERCIZIO,
   mandato.CD_CDS,
   mandato.PG_MANDATO,
@@ -76,4 +76,6 @@
   and   terzo.CD_TERZO = mandato_riga.CD_TERZO
   and   mandato_riga.pg_banca = banca.pg_banca AND mandato_riga.cd_terzo = banca.cd_terzo
   order by mandato.ESERCIZIO, mandato.CD_CDS, mandato.PG_MANDATO;
+
+  COMMENT ON TABLE "PRT_MAND_ELENCO_CNR"  IS 'Vista di stampa del Giornale dei Mandati';
 
