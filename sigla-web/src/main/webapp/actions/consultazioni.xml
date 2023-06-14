@@ -962,26 +962,26 @@
 		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
 		<init-param name="defaultAction" value="Estrazione_glafittAction" />
 	</businessProcess>
-	<action path="/ConsReversaliRiscontrateAction" actionClass="it.cnr.jada.util.action.ConsultazioniAction">
-	</action>
-	<businessProcess name="ConsReversaliRiscontrateBP"
-					 className="it.cnr.jada.util.action.ConsultazioniBP">
-		<forward name="default" path="/consultazioni/form_lista.jsp" />
-		<init-param name="bulkClassName"
-					value="it.cnr.contab.doccont00.consultazioni.bulk.V_cons_reversali_riscontrateBulk" />
+
+	<action path="/ConsReversaliRiscontrateAction" actionClass="it.cnr.jada.util.action.SelezionatoreListaAction"/>
+	<businessProcess name="ConsReversaliRiscontrateBP" className="it.cnr.contab.util.action.ConsSelezionatoreListaBP">
+		<forward name="default" path="/util/form_lista.jsp" />
+		<init-param name="multiSelezione" value="N" />
+		<init-param name="bulkClassName" value="it.cnr.contab.doccont00.consultazioni.bulk.V_cons_reversali_riscontrateBulk" />
 		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
 		<init-param name="defaultAction" value="ConsReversaliRiscontrateAction" />
 	</businessProcess>
-	<action path="/ConsMandatiRiscontratiAction" actionClass="it.cnr.jada.util.action.ConsultazioniAction">
-	</action>
-	<businessProcess name="ConsMandatiRiscontratiBP"
-					 className="it.cnr.jada.util.action.ConsultazioniBP">
-		<forward name="default" path="/consultazioni/form_lista.jsp" />
-		<init-param name="bulkClassName"
-					value="it.cnr.contab.doccont00.consultazioni.bulk.V_cons_mandati_riscontratiBulk" />
+
+	<action path="/ConsMandatiRiscontratiAction" actionClass="it.cnr.jada.util.action.SelezionatoreListaAction"/>
+	<businessProcess name="ConsMandatiRiscontratiBP" className="it.cnr.contab.util.action.ConsSelezionatoreListaBP">
+		<forward name="default" path="/util/form_lista.jsp" />
+		<init-param name="multiSelezione" value="N" />
+		<init-param name="bulkClassName" value="it.cnr.contab.doccont00.consultazioni.bulk.V_cons_mandati_riscontratiBulk" />
 		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
 		<init-param name="defaultAction" value="ConsMandatiRiscontratiAction" />
 	</businessProcess>
+
+
 	<action path="/ConsVarPDGGAreaAction"
 			actionClass="it.cnr.contab.prevent01.consultazioni.action.ConsVarPDGGAreaAction">
 	</action>
