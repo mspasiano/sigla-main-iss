@@ -37,6 +37,7 @@ import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdHome;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
+import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
@@ -101,12 +102,12 @@ public class ParametriSelezioneMovimentiHome extends AbilitazioneMagazzinoHome {
 	
 	public SQLBuilder selectNumerazioneOrdByClause(UserContext userContext, ParametriSelezioneMovimentiBulk parametri, 
 			NumerazioneOrdHome numerazioneHome, NumerazioneOrdBulk numerazioneBulk, 
-			CompoundFindClause compoundfindclause) throws PersistencyException{
-		if (parametri == null || parametri.getUnitaOperativaOrdine() == null || parametri.getUnitaOperativaOrdine().getCdUnitaOperativa() == null ){
-			throw new PersistencyException("Selezionare prima l'unità operativa");
+			CompoundFindClause compoundfindclause) throws PersistencyException, ApplicationException {
+		if (parametri == null || parametri.getUnitaOperativaAbilitata()== null || parametri.getUnitaOperativaAbilitata().getCdUnitaOperativa() == null ){
+			throw new ApplicationException("Selezionare prima l'unità operativa");
 		}
 		SQLBuilder sql = numerazioneHome.selectByClause(userContext, compoundfindclause);
-		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, parametri.getUnitaOperativaOrdine().getCdUnitaOperativa());
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, parametri.getUnitaOperativaAbilitata().getCdUnitaOperativa());
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
 		return sql;
