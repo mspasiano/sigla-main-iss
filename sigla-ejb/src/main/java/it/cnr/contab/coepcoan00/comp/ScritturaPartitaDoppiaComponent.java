@@ -1819,7 +1819,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 				spd.get().setDt_cancellazione(dtCancellazione.get());
 			}
 		}
-		return spd.get();
+		return spd.orElse(null);
 	}
 
 	private List<TestataPrimaNota> proposeTestataPrimaNotaDocumento(UserContext userContext, IDocumentoAmministrativoBulk docamm) throws ComponentException, ScritturaPartitaDoppiaNotRequiredException {
