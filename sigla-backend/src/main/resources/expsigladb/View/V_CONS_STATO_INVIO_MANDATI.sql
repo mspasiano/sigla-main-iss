@@ -51,12 +51,18 @@
           mandato.im_ritenute,
           NVL (mandato.im_mandato, 0) - NVL (mandato.im_ritenute, 0) im_netto,
           mandato.im_pagato, mandato.dt_emissione, mandato.dt_annullamento,
-          mandato.dt_pagamento, distinta_cassiere.pg_distinta, distinta_cassiere.pg_distinta_def,
-          distinta_cassiere.dt_emissione dt_emis_dis,
-          distinta_cassiere.dt_invio dt_invio_dis,(select decode(max(cd_modalita_pag),min(cd_modalita_pag),max(cd_modalita_pag),null) from mandato_riga
+          mandato.dt_pagamento,
+          max(distinta_cassiere.pg_distinta),
+          max(distinta_cassiere.pg_distinta_def),
+          max(distinta_cassiere.dt_emissione) dt_emis_dis,
+          max(distinta_cassiere.dt_invio) dt_invio_dis,
+          (select decode(max(cd_modalita_pag),min(cd_modalita_pag),max(cd_modalita_pag),null) from mandato_riga
           where   mandato_riga.cd_cds   = mandato.cd_cds And
                              mandato_riga.esercizio  = mandato.esercizio And
-                             mandato_riga.pg_mandato = mandato.pg_mandato) cd_modalita_pag,esito_operazione,dt_ora_esito_operazione,errore_siope_plus
+                             mandato_riga.pg_mandato = mandato.pg_mandato) cd_modalita_pag,
+          esito_operazione,
+          dt_ora_esito_operazione,
+          errore_siope_plus
    From   mandato, distinta_cassiere, distinta_cassiere_det
    Where  mandato.cd_cds = distinta_cassiere_det.cd_cds_origine And
           mandato.esercizio = distinta_cassiere_det.esercizio And
@@ -64,4 +70,11 @@
           distinta_cassiere.cd_cds = distinta_cassiere_det.cd_cds And
           distinta_cassiere.esercizio = distinta_cassiere_det.esercizio And
           distinta_cassiere.cd_unita_organizzativa = distinta_cassiere_det.cd_unita_organizzativa And
-          distinta_cassiere.pg_distinta = distinta_cassiere_det.pg_distinta;
+          distinta_cassiere.pg_distinta = distinta_cassiere_det.pg_distinta
+   group by mandato.cd_cds, mandato.esercizio, mandato.pg_mandato,
+                      mandato.cd_unita_organizzativa, mandato.ti_mandato,
+                      mandato.ds_mandato, mandato.stato, mandato.im_mandato,
+                      mandato.im_ritenute,
+                      NVL (mandato.im_mandato, 0) - NVL (mandato.im_ritenute, 0),
+                      mandato.im_pagato, mandato.dt_emissione, mandato.dt_annullamento,
+                      mandato.dt_pagamento, esito_operazione, dt_ora_esito_operazione, errore_siope_plus;
