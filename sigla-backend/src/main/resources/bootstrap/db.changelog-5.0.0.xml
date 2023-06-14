@@ -5986,6 +5986,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_accessi_amministra_fattura.xml"/>
     <!-- Autore : MARCO SPASIANO - Aggiunto accesso per la variazione delle Reversali -->
     <include file="bootstrap/add_accesso_variazione_reversali.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunto accesso per la variazione delle Reversali -->
+    <include file="bootstrap/add_configurazione_cnr_stato_sospesi.xml"/>
     <!-- Autore : MARCO SPASIANO - Aggiunti campi per rettifiche sul riscontro a valore -->
     <include file="bootstrap/add_column_imponibile_iva_rettificata_to_fattura_ordine.xml"/>
     <!-- Autore : RAFFAELE PAGANO - Create viste per il controllo quadratura dati accertamenti-->
@@ -5998,6 +6000,10 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/modify_length_val0X_Configurazione_cnr.xml"/>
     <!-- Autore : VALENTINA TOMADA - Modificata lunghezza colonna LINEA_DESCRIZIONE della tabella DOCUMENTO_ELE_LINEA da 1000 a 1500 caratteri-->
     <include file="bootstrap/modify_length_column_documento_ele_linea.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta colonna fl_visbile su progetto_uo -->
+    <include file="bootstrap/add_column_fl_visibile_progetto_uo.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunto il campo FL_VERSAMENTO su contributo_ritenuta -->
+    <include file="bootstrap/add_fl_versamento_contributo_ritenuta.xml"/>
 
 
 </databaseChangeLog>

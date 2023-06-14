@@ -56,8 +56,20 @@ public class CRUDTransitoBeniOrdiniBP extends SimpleCRUDBP {
 
 
 
-		Button[] toolbar = super.createToolbar();
-		return toolbar;
+		Button[] abutton = new Button[9];
+		int i = 0;
+		int var3 = i + 1;
+		abutton[i] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.search");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.startSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.freeSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.startLastSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.new");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.save");
+		//abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.delete");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.bringBack");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.print");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.undoBringBack");
+		return abutton;
 	}
 
 

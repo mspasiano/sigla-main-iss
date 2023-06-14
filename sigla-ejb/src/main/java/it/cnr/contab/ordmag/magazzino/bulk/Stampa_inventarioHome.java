@@ -148,7 +148,8 @@ public class Stampa_inventarioHome extends BulkHome {
 		sql.generateJoin(LottoMagBulk.class, Bene_servizioBulk.class, "beneServizio", "BENE_SERVIZIO");
 		//sql.addSQLJoin("BENE_SERVIZIO.cd_bene_servizio","LOTTO_MAG.cd_bene_servizio");
 		sql.addTableToHeader("MAGAZZINO","m");
-		sql.addSQLJoin("m.cd_magazzino","LOTTO_MAG.cd_magazzino");
+		sql.addSQLJoin("m.cd_cds","LOTTO_MAG.cd_cds_mag");
+		sql.addSQLJoin("m.cd_magazzino","LOTTO_MAG.cd_magazzino_mag");
 		sql.addTableToHeader("Categoria_Gruppo_Invent","c");
 		sql.addSQLJoin("c.cd_categoria_gruppo","BENE_SERVIZIO.cd_categoria_gruppo(+)");
 		sql.addSQLClause(FindClause.AND,"LOTTO_MAG.DT_CARICO",SQLBuilder.LESS_EQUALS, new Timestamp(dt.getTime()));

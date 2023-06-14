@@ -17,10 +17,7 @@
 
 package it.cnr.contab.compensi00.docs.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.persistency.Keyed;
 
 public class Contributo_ritenutaBase extends Contributo_ritenutaKey implements Keyed {
 	// ALIQUOTA DECIMAL(10,6)
@@ -87,7 +84,9 @@ public class Contributo_ritenutaBase extends Contributo_ritenutaKey implements K
 	private java.lang.String stato_cofi_cr;
 	
 	// IM_CORI_SOSPESO DECIMAL(15,2) NOT NULL
-	private java.math.BigDecimal im_cori_sospeso;	
+	private java.math.BigDecimal im_cori_sospeso;
+
+	private java.lang.Boolean fl_versamento;
 
 public Contributo_ritenutaBase() {
 	super();
@@ -355,4 +354,11 @@ public void setStato_cofi_cr(java.lang.String stato_cofi_cr) {
 		this.im_cori_sospeso = im_cori_sospeso;
 	}
 
+	public Boolean getFl_versamento() {
+		return fl_versamento;
+	}
+
+	public void setFl_versamento(Boolean fl_versamento) {
+		this.fl_versamento = fl_versamento;
+	}
 }

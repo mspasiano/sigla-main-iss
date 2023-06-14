@@ -90,6 +90,19 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 	}
 
 
+
+
+	public Long getId_movimenti_mag(){
+		MovimentiMagBulk movimentiMag = this.getMovimentiMag();
+		if (movimentiMag == null)
+			return null;
+		return getMovimentiMag().getPgMovimento();
+	}
+	public void setId_movimenti_mag(java.lang.Long pgMovimento)  {
+		this.getMovimentiMag().setPgMovimento(pgMovimento);
+	}
+
+
 	public Timestamp getDtOrdine() {
 		if(getMovimentiMag() != null){
 			if(getMovimentiMag().getLottoMag() !=null){

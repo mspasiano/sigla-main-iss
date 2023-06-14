@@ -128,4 +128,5 @@ public interface Configurazione_cnrComponentSession extends it.cnr.jada.ejb.Gene
 
     TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException;
 
+    Boolean isGestioneStatoInizialeSospesiAttivo(UserContext param0) throws ComponentException, RemoteException;
 }

@@ -265,8 +265,7 @@ public class Contributo_ritenutaBulk extends Contributo_ritenutaBase {
 	}
 
 	public boolean isTipoContributoDaVersare() {
-		return Optional.ofNullable(this.getTipoContributoRitenuta())
-				.map(Tipo_contributo_ritenutaBulk::getFl_versamento)
+		return Optional.ofNullable(this.getFl_versamento())
 				.orElse(Boolean.TRUE);
 	}
 }

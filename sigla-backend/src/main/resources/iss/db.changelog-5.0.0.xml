@@ -100,4 +100,8 @@
     <include file="iss/update_print_priority_stampa_ordine.xml"/>
     <!-- Autore : CIRO SALVIO-TI_ACCESSO=D CFGPROGERCOREPROGAMM -->
     <include file="iss/update_ti_accesso_amministra_progetti.xml"></include>
+    <!-- Autore : CIRO SALVIO-STATO SOSPESO DEFAULT ASSEGNATO A CDS 000 -->
+    <include file="iss/update_configurazione_cnr_stato_sospesi.xml"></include>
+
+
 </databaseChangeLog>

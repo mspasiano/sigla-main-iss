@@ -22,6 +22,7 @@ import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioHome;
 import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.DivisaHome;
+import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
 import it.cnr.contab.ordmag.anag00.*;
 import it.cnr.contab.ordmag.magazzino.bulk.*;
 import it.cnr.contab.ordmag.ordini.bulk.*;
@@ -460,6 +461,8 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 
 	private void annullaRigaBollaDiScarico(UserContext userContext, MovimentiMagBulk movimentoDaAnnullare)
 			throws ComponentException, PersistencyException, ApplicationException {
+
+    	verificaBeneDaAnnullare(userContext, movimentoDaAnnullare);
 		MovimentiMagHome movimentiHome = (MovimentiMagHome)getHome(userContext, MovimentiMagBulk.class);
 		try {
 			List listaRigaBolle = movimentiHome.findRigheBollaDiScarico(movimentoDaAnnullare);
@@ -475,6 +478,37 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
 			throw new ComponentException(e);
 		}
 		
+	}
+
+
+	private void verificaBeneDaAnnullare(UserContext userContext, MovimentiMagBulk movimentoDaAnnullare) throws ComponentException, PersistencyException, ApplicationException{
+
+		MovimentiMagHome movimentiHome = (MovimentiMagHome)getHome(userContext, MovimentiMagBulk.class);
+		try {
+			List listaBeniInTrasito = movimentiHome.findBeniInTransito(movimentoDaAnnullare);
+			if (listaBeniInTrasito != null){
+
+				// ciclo per verificare che non ci siano beni già inventariati
+				for (Object obj : listaBeniInTrasito) {
+					Transito_beni_ordiniBulk beneTrans = (Transito_beni_ordiniBulk) obj;
+					if (!beneTrans.getStato().equals(Transito_beni_ordiniBulk.STATO_ANNULLATO)) {
+						if (beneTrans.getStato().equals(Transito_beni_ordiniBulk.STATO_TRASFERITO)) {
+
+							throw new ApplicationException("Non è possibile annullare il movimento, risulta un bene già inventariato");
+						}
+					}
+				}
+				// se non ci sono beni inventariati annullo i beni in transito
+				for (Object obj : listaBeniInTrasito) {
+					Transito_beni_ordiniBulk beneTrans = (Transito_beni_ordiniBulk) obj;
+					beneTrans.setStato(Transito_beni_ordiniBulk.STATO_ANNULLATO);
+					beneTrans.setToBeUpdated();
+					super.modificaConBulk(userContext, beneTrans);
+				}
+			}
+		} catch (IntrospectionException e) {
+			throw new ComponentException(e);
+		}
 	}
 	
 	private void controlliAnnullamento(UserContext userContext, MovimentiMagBulk movimentoDaAnnullare)

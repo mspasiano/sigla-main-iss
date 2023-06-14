@@ -18,8 +18,6 @@
 package it.cnr.contab.coepcoan00.ejb;
 
 import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
-import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.contab.doccont00.comp.DateServices;
 import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
@@ -43,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Stateless(name = "CNRCOEPCOAN00_EJB_AsyncScritturaPartitaDoppiaFromDocumentoComponentSession")
 public class AsyncScritturaPartitaDoppiaFromDocumentoComponentSessionBean extends it.cnr.jada.ejb.CRUDComponentSessionBean implements AsyncScritturaPartitaDoppiaFromDocumentoComponentSession {
@@ -54,7 +51,7 @@ public class AsyncScritturaPartitaDoppiaFromDocumentoComponentSessionBean extend
     }
 
 	@Asynchronous
-	public void asyncLoadScritturePatrimoniali(UserContext param0, Integer param1, String param2) throws ComponentException, PersistencyException, RemoteException {
+	public void asyncLoadScritturePatrimoniali(UserContext param0, Integer pEsercizio, String pCdCds) throws ComponentException {
 		String subjectError = "Errore caricamento scritture patrimoniali";
 		try {
 			ScritturaPartitaDoppiaFromDocumentoComponentSession session = Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession();
@@ -63,7 +60,7 @@ public class AsyncScritturaPartitaDoppiaFromDocumentoComponentSessionBean extend
 			Batch_log_tstaBulk log = new Batch_log_tstaBulk();
 			log.setDs_log("Registrazione Coge/Coan Java");
 			log.setCd_log_tipo(Batch_log_tstaBulk.LOG_TIPO_CONTAB_COGECOAN00);
-			log.setNote("Batch di registrazione economica Java. Esercizio: " + param1 + " - CDS: *  Start: " + formatterTime.format(it.cnr.jada.util.ejb.EJBCommonServices.getServerTimestamp().toInstant()));
+			log.setNote("Batch di registrazione economica Java. Esercizio: " + pEsercizio + " - CDS: *  Start: " + formatterTime.format(it.cnr.jada.util.ejb.EJBCommonServices.getServerTimestamp().toInstant()));
 			log.setToBeCreated();
 
 			BatchControlComponentSession batchControlComponentSession = (BatchControlComponentSession) EJBCommonServices
@@ -76,97 +73,63 @@ public class AsyncScritturaPartitaDoppiaFromDocumentoComponentSessionBean extend
 			}
 
 			final Batch_log_tstaBulk logDB = log;
-			List<String> listRigheAll = new ArrayList<>();
-			List<String> listInsertAll = new ArrayList<>();
-			List<String> listErrorAll = new ArrayList<>();
 			List<Batch_log_rigaBulk> listLogRighe = new ArrayList<>();
 
 			try {
 				List<String> listCdCds = new ArrayList<>();
-				if (param2.equals("*"))
+				List<IDocumentoCogeBulk> allDocuments;
+				try {
+					allDocuments = session.getAllDocumentiCogeDaContabilizzare(param0, pEsercizio, pCdCds.equals("*")?null:pCdCds);
+				} catch (ComponentException | RemoteException | PersistencyException ex) {
+					SendMail.sendErrorMail(subjectError, "Errore durante la lettura dei documenti dell'esercizio " + pEsercizio + (pCdCds.equals("*")?"":" del Cds:"+pCdCds)+" - Errore: " + ex.getMessage());
+					throw new DetailedRuntimeException(ex);
+				}
+
+				List<String> listInsert = new ArrayList<>();
+				List<String> listError = new ArrayList<>();
+
+				allDocuments.stream().filter(el-> Optional.ofNullable(el.getDt_contabilizzazione()).isPresent())
+						.filter(el-> MandatoBulk.STATO_COGE_N.equals(el.getStato_coge()) || MandatoBulk.STATO_COGE_R.equals(el.getStato_coge()))
+						.sorted(Comparator.comparing(IDocumentoCogeBulk::getDt_contabilizzazione)
+								.thenComparing(el->el.getTipoDocumentoEnum().getOrdineCostruzione())
+								.thenComparing(IDocumentoCogeBulk::getPg_doc))
+						.forEach(documentoCoge -> {
 					try {
-						listCdCds = Utility.createUnita_organizzativaComponentSession().findListaCds(param0, param1).stream()
-								.map(CdsBulk::getCd_unita_organizzativa).collect(Collectors.toList());
-						if (!listCdCds.stream().filter(el->el.equals("999")).findAny().isPresent())
-							listCdCds.add("999");
-					} catch (ComponentException | RemoteException ex) {
-						SendMail.sendErrorMail(subjectError, "Errore durante la ricerca di tutti i centri di spesa - Errore: " + ex.getMessage());
-						throw new DetailedRuntimeException(ex);
-					}
-				else
-					listCdCds.add(param2);
-
-				listCdCds.stream().sorted().forEach(cdCds -> {
-					List<IDocumentoCogeBulk> allDocuments;
-					try {
-						allDocuments = session.getAllDocumentiCogeDaContabilizzare(param0, param1, cdCds);
-					} catch (ComponentException | RemoteException | PersistencyException ex) {
-						SendMail.sendErrorMail(subjectError, "Errore durante la lettura dei documenti del cds " + cdCds + " - Errore: " + ex.getMessage());
-						throw new DetailedRuntimeException(ex);
-					}
-
-					List<String> listInsert = new ArrayList<>();
-					List<String> listError = new ArrayList<>();
-
-					allDocuments.stream().filter(el-> Optional.ofNullable(el.getDt_contabilizzazione()).isPresent())
-							.filter(el-> MandatoBulk.STATO_COGE_N.equals(el.getStato_coge()) || MandatoBulk.STATO_COGE_R.equals(el.getStato_coge()))
-							.sorted(Comparator.comparing(IDocumentoCogeBulk::getDt_contabilizzazione)
-									.thenComparing(el->el.getTipoDocumentoEnum().getOrdineCostruzione())
-									.thenComparing(el->el.getPg_doc()))
-							.forEach(documentoCoge -> {
+						System.out.println("Data: "+documentoCoge.getDt_contabilizzazione()+" - Tipo: "+
+								documentoCoge.getTipoDocumentoEnum().getValue() +" - Numero: "+
+								documentoCoge.getPg_doc());
+						logger.info("Documento in elaborazione: "+documentoCoge.getEsercizio()+"/"+documentoCoge.getCd_uo()+"/"+documentoCoge.getCd_tipo_doc()+"/"+documentoCoge.getPg_doc());
+						session.createScritturaRequiresNew(param0, documentoCoge);
+						listInsert.add("X");
+					} catch (Throwable e) {
+						listError.add("X");
+						Batch_log_rigaBulk log_riga = new Batch_log_rigaBulk();
+						log_riga.setPg_esecuzione(logDB.getPg_esecuzione());
+						log_riga.setPg_riga(BigDecimal.valueOf(listLogRighe.size() + 1));
+						log_riga.setTi_messaggio("E");
+						log_riga.setMessaggio("Esercizio:" + documentoCoge.getEsercizio() + "-CdUo:" + documentoCoge.getCd_uo() + "-CdTipoDoc:" + documentoCoge.getCd_tipo_doc() + "-PgDoc:" + documentoCoge.getPg_doc());
+						log_riga.setTrace(log_riga.getMessaggio());
+						log_riga.setNote(e.getMessage().substring(0, Math.min(e.getMessage().length(), 3999)));
+						log_riga.setToBeCreated();
 						try {
-							System.out.println("Data: "+documentoCoge.getDt_contabilizzazione()+" - Tipo: "+
-									documentoCoge.getTipoDocumentoEnum().getValue() +" - Numero: "+
-									documentoCoge.getPg_doc());
-							listRigheAll.add("X");
-							logger.info("Documento in elaborazione: "+documentoCoge.getEsercizio()+"/"+documentoCoge.getCd_uo()+"/"+documentoCoge.getCd_tipo_doc()+"/"+documentoCoge.getPg_doc());
-							session.createScritturaRequiresNew(param0, documentoCoge);
-							listInsert.add("X");
-							listInsertAll.add("X");
-						} catch (Throwable e) {
-							listError.add("X");
-							listErrorAll.add("X");
-							Batch_log_rigaBulk log_riga = new Batch_log_rigaBulk();
-							log_riga.setPg_esecuzione(logDB.getPg_esecuzione());
-							log_riga.setPg_riga(BigDecimal.valueOf(listLogRighe.size() + 1));
-							log_riga.setTi_messaggio("E");
-							log_riga.setMessaggio("Esercizio:" + documentoCoge.getEsercizio() + "-CdUo:" + documentoCoge.getCd_uo() + "-CdTipoDoc:" + documentoCoge.getCd_tipo_doc() + "-PgDoc:" + documentoCoge.getPg_doc());
-							log_riga.setTrace(log_riga.getMessaggio());
-							log_riga.setNote(e.getMessage().substring(0,e.getMessage().length()>3999?3999:e.getMessage().length()));
-							log_riga.setToBeCreated();
-							try {
-								listLogRighe.add((Batch_log_rigaBulk) batchControlComponentSession.creaConBulkRequiresNew(param0, log_riga));
-							} catch (ComponentException | RemoteException ex) {
-								SendMail.sendErrorMail(subjectError, "Errore durante l'inserimento dell'errore in Batch_log_rigaBulk " + ex.getMessage());
-								throw new DetailedRuntimeException(e);
-							}
+							listLogRighe.add((Batch_log_rigaBulk) batchControlComponentSession.creaConBulkRequiresNew(param0, log_riga));
+						} catch (ComponentException | RemoteException ex) {
+							SendMail.sendErrorMail(subjectError, "Errore durante l'inserimento dell'errore in Batch_log_rigaBulk " + ex.getMessage());
+							throw new DetailedRuntimeException(e);
 						}
-					});
-					Batch_log_rigaBulk log_riga = new Batch_log_rigaBulk();
-					log_riga.setPg_esecuzione(logDB.getPg_esecuzione());
-					log_riga.setPg_riga(BigDecimal.valueOf(listLogRighe.size() + 1));
-					log_riga.setTi_messaggio("I");
-					log_riga.setMessaggio("Esercizio: " + param1 + " - CDS: " + cdCds + " - Righe elaborate: " + allDocuments.size() + " - Righe processate: " + listInsert.size() + " - Errori: " + listError.size());
-					log_riga.setNote("Termine operazione caricamento automatico scritture prima nota CDS: " + cdCds + ".");
-					log_riga.setToBeCreated();
-					try {
-						listLogRighe.add((Batch_log_rigaBulk) batchControlComponentSession.creaConBulkRequiresNew(param0, log_riga));
-					} catch (ComponentException | RemoteException ex) {
-						SendMail.sendErrorMail(subjectError, "Errore durante l'inserimento della riga di chiusura di Batch_log_riga " + ex.getMessage());
-						throw new DetailedRuntimeException(ex);
 					}
 				});
 				Batch_log_rigaBulk log_riga = new Batch_log_rigaBulk();
 				log_riga.setPg_esecuzione(logDB.getPg_esecuzione());
 				log_riga.setPg_riga(BigDecimal.valueOf(listLogRighe.size() + 1));
 				log_riga.setTi_messaggio("I");
-				log_riga.setMessaggio("Caricamento automatico scritture prima nota. Righe elaborate: " + listRigheAll.size() + ". Righe processate: " + listInsertAll.size() + ". Errori: " + listErrorAll.size());
-				log_riga.setNote("Termine operazione caricamento automatico scritture prima nota." + formatterTime.format(DateServices.getDataOdierna().toInstant()));
+				log_riga.setMessaggio("Esercizio: " + pEsercizio + " - Righe elaborate: " + allDocuments.size() + " - Righe processate: " + listInsert.size() + " - Errori: " + listError.size());
+				log_riga.setNote("Termine operazione caricamento automatico scritture prima nota Esercizio: " + pEsercizio + ".");
 				log_riga.setToBeCreated();
 				try {
 					listLogRighe.add((Batch_log_rigaBulk) batchControlComponentSession.creaConBulkRequiresNew(param0, log_riga));
 				} catch (ComponentException | RemoteException ex) {
-					SendMail.sendErrorMail("Errore caricamento scritture patrimoniali", "Errore durante l'inserimento della riga di chiusura di Batch_log_riga " + ex.getMessage());
+					SendMail.sendErrorMail(subjectError, "Errore durante l'inserimento della riga di chiusura di Batch_log_riga " + ex.getMessage());
 					throw new DetailedRuntimeException(ex);
 				}
 			} catch (Exception ex) {

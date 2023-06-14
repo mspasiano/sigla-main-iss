@@ -33,6 +33,15 @@
 		enabledOnEdit = "false"
 		enabledOnSearch="false"/>
 	<fieldProperty
+			name="id_movimenti_mag"
+			property="movimentiMag.pgMovimento"
+			inputType="TEXT"
+			inputSize="12"
+			maxLength="12"
+			enabledOnEdit="false"
+			nullable="false"
+			label="pgMovimento" />
+	<fieldProperty
 		name="cdUnitaOperativa"
 		property="movimentiMag.unitaOperativaOrd.cdUnitaOperativa"
 		maxLength="15"
@@ -586,6 +595,8 @@
 			name="dsUnitaOperativa"/>
 	<columnFieldProperty
 			name="cd_categoria_beneForFreeSearch"/>
+	<columnFieldProperty
+			name="id_movimenti_mag" />
 
 
 	<findFieldProperty
@@ -620,6 +631,8 @@
 			name="dtOrdineForFreeSearch" />
 	<findFieldProperty
 			name="numeratoreOrdineForFreeSearch" />
+	<findFieldProperty
+			name="id_movimenti_mag" />
 
 
 

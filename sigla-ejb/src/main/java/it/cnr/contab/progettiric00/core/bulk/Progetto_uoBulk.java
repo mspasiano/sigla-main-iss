@@ -17,20 +17,18 @@
 
 package it.cnr.contab.progettiric00.core.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
-
 public class Progetto_uoBulk extends Progetto_uoBase {
+
 
 	private it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa;
 public Progetto_uoBulk() {
 	super();
+	setFl_visibile(Boolean.TRUE);
 }
 public Progetto_uoBulk(java.lang.Integer pg_progetto,it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk uo) {
 	super(pg_progetto, uo.getCd_unita_organizzativa());
 	setUnita_organizzativa(uo);
+	setFl_visibile(Boolean.TRUE);
 }
 
 public java.lang.String getCd_unita_organizzativa() {
