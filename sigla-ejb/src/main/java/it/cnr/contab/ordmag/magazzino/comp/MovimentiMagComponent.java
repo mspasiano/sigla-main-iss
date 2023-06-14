@@ -881,7 +881,7 @@ public class MovimentiMagComponent extends CRUDComponent implements ICRUDMgr, IP
     	sql.addColumn("BENE_SERVIZIO.DS_BENE_SERVIZIO");
     	sql.addSQLClause(FindClause.AND, "MOVIMENTI_MAG.stato", SQLBuilder.NOT_EQUALS, MovimentiMagBulk.STATO_ANNULLATO);
 		if (parametri.getMagazzinoAbilitato() != null ){
-			sql.addSQLClause(FindClause.AND, "cd_Magazzino", SQLBuilder.EQUALS, parametri.getMagazzinoAbilitato().getCdMagazzino());
+			sql.addSQLClause(FindClause.AND, "LOTTO_MAG.cd_Magazzino", SQLBuilder.EQUALS, parametri.getMagazzinoAbilitato().getCdMagazzino());
 		}
     	if (parametri.getDaDataMovimento() != null ){
     		sql.addSQLClause("AND","DT_MOVIMENTO",SQLBuilder.GREATER_EQUALS,parametri.getDaDataMovimento());
