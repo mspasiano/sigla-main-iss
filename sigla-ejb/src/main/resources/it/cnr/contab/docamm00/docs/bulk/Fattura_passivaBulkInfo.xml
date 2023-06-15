@@ -465,6 +465,12 @@
             enabledOnSearch="true"
             label="Extra U.E."/>
     <fieldProperty
+            name="fl_extra_ueForSearch"
+            property="fl_extra_ue"
+            inputType="CHECKBOX"
+            enabledOnSearch="true"
+            label="Extra U.E."/>
+    <fieldProperty
             name="fl_spedizioniere"
             property="fl_spedizioniere"
             inputType="CHECKBOX"
@@ -1260,9 +1266,8 @@
     <findFieldProperty name="ds_fornitore"/>
     <findFieldProperty name="fl_san_marino_con_iva"/>
     <findFieldProperty name="fl_san_marino_senza_iva"/>
-
     <findFieldProperty name="fl_intra_ueForSearch"/>
-    <findFieldProperty name="fl_extra_ue"/>
+    <findFieldProperty name="fl_extra_ueForSearch"/>
     <findFieldProperty name="stato_cofiForSearch"/>
     <findFieldProperty name="ti_associato_manrevForSearch"/>
     <findFieldProperty name="fl_autofattura"/>
