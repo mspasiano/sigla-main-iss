@@ -157,12 +157,18 @@
 			 	     	bp.getController().writeFormInput(out,"contoP");
 				} else if (Rif_modalita_pagamentoBulk.QUIETANZA.equalsIgnoreCase(fatturaPassiva.getBanca().getTi_pagamento())) {
 			 	     	bp.getController().writeFormInput(out,"contoQ");
-				} else if (Rif_modalita_pagamentoBulk.ALTRO.equalsIgnoreCase(fatturaPassiva.getBanca().getTi_pagamento())) { 
+				} else if (Rif_modalita_pagamentoBulk.ALTRO.equalsIgnoreCase(fatturaPassiva.getBanca().getTi_pagamento())
+				        && !fatturaPassiva.getModalita_pagamento().isPAGOPA()) {
 			 	     	bp.getController().writeFormInput(out,"contoA");
 				} else if (Rif_modalita_pagamentoBulk.IBAN.equalsIgnoreCase(fatturaPassiva.getBanca().getTi_pagamento())) { 
 		 	     	bp.getController().writeFormInput(out,"contoN");
 				} else if (Rif_modalita_pagamentoBulk.BANCA_ITALIA.equalsIgnoreCase(fatturaPassiva.getBanca().getTi_pagamento()) && fatturaPassiva.getBanca().isTABB()) {
                     bp.getDettaglio().writeFormInput(out,"contoB");
+                } else if (fatturaPassiva.getModalita_pagamento().isPAGOPA()) {
+                    %>
+                        <tr><% bp.getDettaglio().writeFormField(out,"codice_identificativo_ente_pagopa"); %></tr>
+                        <tr><% bp.getDettaglio().writeFormField(out,"numero_avviso_pagopa"); %></tr>
+                    <%
                 }
 			} else if (fatturaPassiva.getModalita_pagamento() != null && (fornitore != null && fornitore.getCrudStatus() != fornitore.UNDEFINED)) { %>
 				<span class="FormLabel" style="color:red">

@@ -154,6 +154,12 @@ public class Fattura_passiva_rigaBase extends Fattura_passiva_rigaKey implements
     // FL_ATTESA_NOTA CHAR(1) NOT NULL
     private java.lang.Boolean fl_attesa_nota;
 
+    // CODICE_IDENTIFICATIVO_ENTE_PAGOPA VARCHAR2(11)
+    private java.lang.String codice_identificativo_ente_pagopa;
+
+    // NUMERO_AVVISO_PAGOPA VARCHAR2(18)
+    private java.lang.String numero_avviso_pagopa;
+
     public Fattura_passiva_rigaBase() {
         super();
     }
@@ -737,4 +743,20 @@ public class Fattura_passiva_rigaBase extends Fattura_passiva_rigaKey implements
 	public void setFl_attesa_nota(Boolean fl_attesa_nota) {
 		this.fl_attesa_nota = fl_attesa_nota;
 	}
+
+    public String getCodice_identificativo_ente_pagopa() {
+        return codice_identificativo_ente_pagopa;
+    }
+
+    public void setCodice_identificativo_ente_pagopa(String codice_identificativo_ente_pagopa) {
+        this.codice_identificativo_ente_pagopa = codice_identificativo_ente_pagopa;
+    }
+
+    public String getNumero_avviso_pagopa() {
+        return numero_avviso_pagopa;
+    }
+
+    public void setNumero_avviso_pagopa(String numero_avviso_pagopa) {
+        this.numero_avviso_pagopa = numero_avviso_pagopa;
+    }
 }
