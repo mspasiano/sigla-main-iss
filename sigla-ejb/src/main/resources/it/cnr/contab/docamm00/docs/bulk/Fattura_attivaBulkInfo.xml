@@ -654,7 +654,8 @@
 		maxLength="30"
 		inputSize="30"
 		label="Identificativo SDI"
-		inputType="ROTEXT"/>
+		inputType="TEXT"
+		/>
 	<fieldProperty
 		name="statoInvioSdi"
 		property="statoInvioSdi"
