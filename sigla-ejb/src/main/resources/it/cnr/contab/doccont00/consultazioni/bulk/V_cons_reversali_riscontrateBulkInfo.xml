@@ -19,7 +19,9 @@
 <bulkInfo
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xmlns="https://contab.cnr.it/schema/SIGLA" 
-		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd"
+		shortDescription="Consultazione reversali riscontrate"
+		longDescription="Consultazione reversali riscontrate">
 	<fieldProperty
 		name="esercizio"
 		property="esercizio"
@@ -32,7 +34,13 @@
 		property="dt_registrazione"
 		inputType="TEXT"
 		formatName="date_short"
-		label="Data Registrazione" />
+		label="Data Emissione Reversale" />
+	<fieldProperty
+		name="dt_incasso"
+		property="dt_incasso"
+		inputType="TEXT"
+		formatName="date_short"
+		label="Data Incasso Reversale" />
 	<fieldProperty
 		name="cd_sospeso"
 		property="cd_sospeso"
@@ -54,6 +62,14 @@
 		inputSize="30"
 		maxLength="30"
 		label="Prog. Reversale" />
+	<fieldProperty
+		name="ti_reversale"
+		property="ti_reversale"
+		inputType="SELECT"
+		keysProperty = "tipoReversaleKeys"
+		inputSize="1"
+		maxLength="1"
+		label="Tipo Reversale" />
 	<fieldProperty
 		name="cd_cds"
 		property="cd_cds"
@@ -81,11 +97,15 @@
 	<formFieldProperty
 		name="cd_unita_organizzativa" />
 	<formFieldProperty
-		name="pg_reversale" />	
+		name="pg_reversale" />
+	<formFieldProperty
+		name="ti_reversale" />
 	<formFieldProperty
 		name="cd_sospeso" />	
 	<formFieldProperty
 		name="dt_registrazione" />
+	<formFieldProperty
+		name="dt_incasso" />
 	<formFieldProperty
 		name="im_sospeso" />
 	<formFieldProperty
@@ -96,11 +116,15 @@
 	<findFieldProperty
 		name="cd_unita_organizzativa" />
 	<findFieldProperty
-		name="pg_reversale" />	
+		name="pg_reversale" />
+	<findFieldProperty
+		name="ti_reversale" />
 	<findFieldProperty
 		name="cd_sospeso" />	
 	<findFieldProperty
 		name="dt_registrazione" />
+	<findFieldProperty
+		name="dt_incasso" />
 	<findFieldProperty
 		name="im_sospeso" />
 	<findFieldProperty
@@ -113,11 +137,15 @@
 	<columnFieldProperty
 		name="cd_unita_organizzativa" />
 	<columnFieldProperty
-		name="pg_reversale" />	
+		name="pg_reversale" />
+	<columnFieldProperty
+		name="ti_reversale" />
 	<columnFieldProperty
 		name="cd_sospeso" />	
 	<columnFieldProperty
 		name="dt_registrazione" />
+	<columnFieldProperty
+		name="dt_incasso" />
 	<columnFieldProperty
 		name="im_sospeso" />
 	<columnFieldProperty

@@ -30,7 +30,10 @@ import it.cnr.contab.docamm00.intrastat.bulk.Fattura_passiva_intraBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
 import it.cnr.contab.doccont00.bp.IDefferedUpdateSaldiBP;
-import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
+import it.cnr.contab.doccont00.core.bulk.IDefferUpdateSaldi;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.ejb.BuonoCaricoScaricoComponentSession;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
@@ -38,11 +41,6 @@ import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
-import it.cnr.jada.util.DateUtils;
-import it.cnr.jada.util.ejb.EJBCommonServices;
-import it.cnr.si.spring.storage.StorageObject;
-import it.cnr.si.spring.storage.StoreService;
-import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
 import it.cnr.jada.action.ActionContext;
@@ -54,9 +52,15 @@ import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.action.CollapsableDetailCRUDController;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+import it.cnr.jada.util.ejb.EJBCommonServices;
+import it.cnr.si.spring.storage.StorageObject;
+import it.cnr.si.spring.storage.StoreService;
+import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.util.Pair;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -75,7 +79,6 @@ import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Stream;
-import org.springframework.data.util.Pair;
 /**
  * Gestisce le catene di elementi correlate con la fattura passiva in uso.
  */
@@ -1638,7 +1641,14 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             pages.put(i++, TAB_FATTURA_PASSIVA_ALLEGATI_RICEVUTI);
             pages.put(i++, TAB_FATTURA_PASSIVA_ALLEGATI_AGGIUNTI);
         }
-
+        if (fattura instanceof Fattura_passiva_IBulk) {
+            final Optional<Fattura_passiva_IBulk> fattura_passiva_IBulk1 = Optional.ofNullable(getModel())
+                    .filter(Fattura_passiva_IBulk.class::isInstance)
+                    .map(Fattura_passiva_IBulk.class::cast)
+                    .filter(fattura_passiva_IBulk -> Optional.ofNullable(fattura_passiva_IBulk.getPg_fattura_passiva()).isPresent());
+            if ( !Optional.ofNullable(fattura.getDocumentoEleTestata()).isPresent() && fattura_passiva_IBulk1.isPresent())
+                pages.put(i++, TAB_FATTURA_PASSIVA_ALLEGATI_AGGIUNTI);
+        }
         String[][] tabs = new String[i][3];
         for (int j = 0; j < i; j++)
             tabs[j] = new String[]{pages.get(j)[0], pages.get(j)[1], pages.get(j)[2]};

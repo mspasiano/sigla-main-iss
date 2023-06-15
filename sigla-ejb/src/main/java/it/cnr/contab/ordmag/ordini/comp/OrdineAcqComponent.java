@@ -2550,7 +2550,7 @@ public class OrdineAcqComponent
                                                 ordine.getNumero(),
                                                 riga.getRiga()
                                         ));
-                                rigaDB.setRigheConsegnaColl((BulkList)((OrdineAcqRigaHome)getTempHome(aUC, OrdineAcqRigaBulk.class)).findOrdineRigheConsegnaList(rigaDB));
+                                rigaDB.setRigheConsegnaColl(new BulkList(((OrdineAcqRigaHome)getTempHome(aUC, OrdineAcqRigaBulk.class)).findOrdineRigheConsegnaList(rigaDB)));
                             } catch (PersistencyException e) {
                                 throw new ComponentException(e);
                             }

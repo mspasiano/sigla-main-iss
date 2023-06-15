@@ -20,10 +20,14 @@
  * Date 01/10/2007
  */
 package it.cnr.contab.doccont00.consultazioni.bulk;
+import it.cnr.contab.doccont00.core.bulk.ReversaleBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.util.action.CRUDBP;
+
+import java.sql.Timestamp;
+
 public class V_cons_reversali_riscontrateBulk extends OggettoBulk implements Persistent {
 	public V_cons_reversali_riscontrateBulk() {
 		super();
@@ -33,7 +37,10 @@ public class V_cons_reversali_riscontrateBulk extends OggettoBulk implements Per
  
 //    DT_REGISTRAZIONE TIMESTAMP(7) NOT NULL
 	private java.sql.Timestamp dt_registrazione;
- 
+
+	//    DT_INCASSO TIMESTAMP(7) NOT NULL
+	private java.sql.Timestamp dt_incasso;
+
 //    CD_SOSPESO VARCHAR(24) NOT NULL
 	private java.lang.String cd_sospeso;
  
@@ -51,7 +58,11 @@ public class V_cons_reversali_riscontrateBulk extends OggettoBulk implements Per
  
 //    IM_ASSOCIATO DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal im_associato;
- 
+
+	// TI_REVERSALE CHAR(1) NOT NULL
+	private java.lang.String ti_reversale;
+
+	public final static java.util.Dictionary tipoReversaleKeys = ReversaleBulk.tipoReversaleCdSKeys;
 	public java.lang.Integer getEsercizio() {
 		return esercizio;
 	}
@@ -99,5 +110,21 @@ public class V_cons_reversali_riscontrateBulk extends OggettoBulk implements Per
 	}
 	public void setPg_reversale(java.lang.Long pg_reversale) {
 		this.pg_reversale = pg_reversale;
+	}
+
+	public Timestamp getDt_incasso() {
+		return dt_incasso;
+	}
+
+	public void setDt_incasso(Timestamp dt_incasso) {
+		this.dt_incasso = dt_incasso;
+	}
+
+	public String getTi_reversale() {
+		return ti_reversale;
+	}
+
+	public void setTi_reversale(String ti_reversale) {
+		this.ti_reversale = ti_reversale;
 	}
 }
