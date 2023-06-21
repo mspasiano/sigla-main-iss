@@ -52,7 +52,10 @@
   terzo.DENOMINAZIONE_SEDE,
   reversale_riga.DS_REVERSALE_RIGA,
   reversale_riga.PG_ACCERTAMENTO_SCADENZARIO,
-  ti_pagamento
+  ti_pagamento,
+  reversale.dt_trasmissione,
+  reversale.dt_ritrasmissione,
+  reversale.dt_annullamento
   from reversale, reversale_riga, accertamento, terzo,banca
   where reversale_riga.CD_CDS = reversale.CD_CDS
   and   reversale_riga.ESERCIZIO = reversale.ESERCIZIO
