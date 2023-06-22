@@ -640,12 +640,10 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 				return Boolean.TRUE;
 		}	
 		if (documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale()!= null && 
-			(documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_02.name()) ||
-			 documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_19.name()))		
-		   )
+			(documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_02.name()))) {
 			return Boolean.TRUE;
-			
-	return Boolean.FALSE;
+		}
+		return Boolean.FALSE;
 	}
 
 	@Override
