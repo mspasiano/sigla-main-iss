@@ -51,7 +51,7 @@ import java.util.stream.Stream;
  */
 public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDetailCRUDController implements TableCustomizer {
     private boolean rettificheCollapse = true;
-    private static BigDecimal range = new BigDecimal(0.02);
+    private static BigDecimal range = new BigDecimal(2.02);
     public boolean isRettificheCollapse() {
         return rettificheCollapse;
     }
