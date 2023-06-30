@@ -96,6 +96,7 @@ public class FatturaPassivaRigaCRUDController extends it.cnr.jada.util.action.Si
 
     public void validate(ActionContext context, OggettoBulk model) throws ValidationException {
         try {
+            super.validate(context,model);
             ((FatturaPassivaComponentSession) (((SimpleCRUDBP) getParentController()).createComponentSession())).validaRiga(context.getUserContext(), (Fattura_passiva_rigaBulk) model);
         } catch (it.cnr.jada.comp.ApplicationException e) {
             throw new ValidationException(e.getMessage());

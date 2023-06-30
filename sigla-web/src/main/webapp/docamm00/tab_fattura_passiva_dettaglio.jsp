@@ -196,12 +196,18 @@
 			 	     	bp.getDettaglio().writeFormInput(out,"contoP");
 				} else if (Rif_modalita_pagamentoBulk.QUIETANZA.equalsIgnoreCase(riga.getBanca().getTi_pagamento())) {
 			 	     	bp.getDettaglio().writeFormInput(out,"contoQ");
-				} else if (Rif_modalita_pagamentoBulk.ALTRO.equalsIgnoreCase(riga.getBanca().getTi_pagamento())) { 
+				} else if (Rif_modalita_pagamentoBulk.ALTRO.equalsIgnoreCase(riga.getBanca().getTi_pagamento()) &&
+				    !riga.getModalita_pagamento().isPAGOPA()) {
 			 	     	bp.getDettaglio().writeFormInput(out,"contoA");
 				} else if (Rif_modalita_pagamentoBulk.IBAN.equalsIgnoreCase(riga.getBanca().getTi_pagamento())) { 
 		 	     	bp.getDettaglio().writeFormInput(out,"contoN");
 				} else if (Rif_modalita_pagamentoBulk.BANCA_ITALIA.equalsIgnoreCase(riga.getBanca().getTi_pagamento()) && riga.getBanca().isTABB()) {
                     bp.getDettaglio().writeFormInput(out,"contoB");
+                } else if (fatturaPassiva.getModalita_pagamento().isPAGOPA()) {
+                        %>
+                            <tr><% bp.getDettaglio().writeFormField(out,"codice_identificativo_ente_pagopa"); %></tr>
+                            <tr><% bp.getDettaglio().writeFormField(out,"numero_avviso_pagopa"); %></tr>
+                        <%
                 }
 			} else if (riga != null && riga.getModalita_pagamento() != null && (riga.getFornitore() != null && riga.getFornitore().getCrudStatus() != riga.getFornitore().UNDEFINED)) { %>
 				<span class="FormLabel" style="color:red">

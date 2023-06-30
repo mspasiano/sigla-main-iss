@@ -101,6 +101,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DistintaCassiereComponent extends
         it.cnr.jada.comp.CRUDDetailComponent implements IDistintaCassiereMgr,
@@ -6178,43 +6179,35 @@ public class DistintaCassiereComponent extends
                 .filter(MandatoIHome.class::isInstance)
                 .map(MandatoIHome.class::cast)
                 .orElseThrow(() -> new ComponentException("Home del mandato non trovata!"));
-        final Map<String, String> pagopaMap = mandatoHome.findDocumentoGenericoRiga(userContext, bulk).stream()
+
+
+        final List<Fattura_passiva_rigaIBulk> fatturePassiveRighePagoPa=mandatoHome.findFatturaPassivaRiga(userContext, bulk);
+        final List<Documento_generico_rigaBulk> documentiGenericiRighePagoPa= mandatoHome.findDocumentoGenericoRiga(userContext, bulk);
+
+
+        if ((documentiGenericiRighePagoPa.size()+ fatturePassiveRighePagoPa.size())> 1) {
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if (documentiGenericiRighePagoPa.isEmpty() && fatturePassiveRighePagoPa.isEmpty()) {
+            throw new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+
+        final Map<String, String> pagopaMap = Stream.of(documentiGenericiRighePagoPa.stream()
+                        .collect(Collectors.toMap(
+                                Documento_generico_rigaBulk::getNumero_avviso_pagopa,
+                                Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa
+                        )), fatturePassiveRighePagoPa.stream()
                 .collect(Collectors.toMap(
-                        Documento_generico_rigaBulk::getNumero_avviso_pagopa,
-                        Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa
-                ));
-        if (pagopaMap.size() > 1) {
-            new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!");
-        }
+                            Fattura_passiva_rigaIBulk::getNumero_avviso_pagopa,
+                            Fattura_passiva_rigaIBulk::getCodice_identificativo_ente_pagopa)))
+                .flatMap(map -> map.entrySet().stream())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (value1, value2) -> value1));
 
-
-        if ( pagopaMap.isEmpty()){
-            MandatoBulk mandatoBulk = Optional.ofNullable(
-                            mandatoHome.findByPrimaryKey(
-                                    new MandatoIBulk(bulk.getCd_cds(), bulk.getEsercizio(), bulk.getPg_documento_cont()
-                                    )
-                            )).filter(MandatoBulk.class::isInstance)
-                    .map(MandatoBulk.class::cast)
-                    .orElseThrow(() -> new ApplicationMessageFormatException("Mandato non trovato!"));
-
-            //check se ci sono fatture con pagamenti PagoPA( workaround per pagare fattura PAGOPA da implementare)
-            List<Mandato_rigaBulk> l= mandatoBulk.getMandato_rigaColl().stream().
-                        filter( el->el.getCd_tipo_documento_amm().compareTo(Numerazione_doc_ammBulk.TIPO_FATTURA_PASSIVA)==0).
-                        filter(el->el.getModalita_pagamento().getRif_modalita_pagamento().isPAGOPA()).
-                        collect(Collectors.toList());
-            if (l!=null && l.size() > 1) {
-                new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!");
-            }
-            if ( !l.isEmpty()){
-                avvisoPagoPA.setNumeroAvviso("numeroAvvisoFattura");
-                avvisoPagoPA.setCodiceIdentificativoEnte("codiceIdentificaEntePagoPa");
-                return avvisoPagoPA;
-            }
-
-
-        }
         if (pagopaMap.isEmpty()) {
-            new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!");
+            new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
         }
         final Map.Entry<String, String> pagopaEntry = pagopaMap.entrySet().stream().findFirst().get();
         avvisoPagoPA.setNumeroAvviso(pagopaEntry.getKey());
