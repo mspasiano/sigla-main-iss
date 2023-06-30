@@ -17,13 +17,6 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Dictionary;
-import java.util.Optional;
-
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
@@ -35,10 +28,18 @@ import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.util.enumeration.TipoIVA;
-import it.cnr.jada.bulk.BulkCollection;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Dictionary;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public abstract class Fattura_passiva_rigaBulk
         extends Fattura_passiva_rigaBase
@@ -748,5 +749,32 @@ public abstract class Fattura_passiva_rigaBulk
     @Override
     public TerzoBulk getTerzo() {
         return this.getFornitore();
+    }
+
+    @Override
+    public void validate(OggettoBulk oggettobulk) throws ValidationException {
+        super.validate(oggettobulk);
+        try {
+            Optional.ofNullable(getCodice_identificativo_ente_pagopa())
+                    .ifPresent(s -> {
+                        final String regex = "[0-9]{11}";
+                        if (!Pattern.compile(regex, Pattern.MULTILINE)
+                                .matcher(s)
+                                .find()) {
+                            throw new DetailedRuntimeException("L'identificativo ente può contenere solo numeri e la sua lunghezza deve essere di 11 caratteri!");
+                        }
+                    });
+            Optional.ofNullable(getNumero_avviso_pagopa())
+                    .ifPresent(s -> {
+                        final String regex = "[0-9]{18}";
+                        if (!Pattern.compile(regex, Pattern.MULTILINE)
+                                .matcher(s)
+                                .find()) {
+                            throw new DetailedRuntimeException("Il numero dell'avviso può contenere solo numeri e la sua lunghezza deve essere di 18 caratteri!");
+                        }
+                    });
+        } catch (DetailedRuntimeException _ex) {
+            throw new ValidationException(_ex.getMessage());
+        }
     }
 }

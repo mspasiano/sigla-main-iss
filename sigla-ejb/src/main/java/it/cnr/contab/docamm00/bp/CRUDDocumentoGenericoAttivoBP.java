@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2019  CoNsiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -38,8 +38,6 @@ import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
 import it.cnr.contab.doccont00.core.bulk.IDefferUpdateSaldi;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
-import it.cnr.contab.service.SpringUtil;
-import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
@@ -49,21 +47,14 @@ import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.util.Config;
 import it.cnr.jada.util.action.CollapsableDetailCRUDController;
-import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
-import it.cnr.jada.util.jsp.Button;
 import it.cnr.jada.util.jsp.JSPUtils;
-import it.cnr.si.spring.storage.StorageDriver;
 
 import javax.ejb.EJBException;
 import java.rmi.RemoteException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 public class CRUDDocumentoGenericoAttivoBP
         extends AllegatiCRUDBP<AllegatoGenericoBulk, Documento_genericoBulk>

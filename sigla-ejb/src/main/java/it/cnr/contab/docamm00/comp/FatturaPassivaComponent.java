@@ -94,7 +94,6 @@ import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -6695,6 +6694,27 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
      * Viene inviato un messaggio:"Attenzione non si possono modificare questi campi in fatture pagate o in stato IVA B o C"
      */
 //^^@@
+    private void validateRighePagoPa(UserContext usercontext, OggettoBulk oggettobulk) throws ApplicationMessageFormatException {
+        final List<Fattura_passiva_rigaBulk> fattauraPasssivaRighePAGOPA = Optional.ofNullable(oggettobulk)
+                .filter(Fattura_passivaBulk.class::isInstance)
+                .map(Fattura_passivaBulk.class::cast)
+                .map(Fattura_passivaBulk::getFattura_passiva_dettColl)
+                .orElse(new BulkList<Fattura_passiva_rigaBulk>())
+                .stream()
+                .filter(fattura_passiva_rigaBulk -> fattura_passiva_rigaBulk.getModalita_pagamento() != null && fattura_passiva_rigaBulk.getModalita_pagamento().isPAGOPA()).
+                collect(Collectors.toList());
+
+        if (!fattauraPasssivaRighePAGOPA.isEmpty()) {
+            for (Fattura_passiva_rigaBulk riga : fattauraPasssivaRighePAGOPA) {
+                if (!Optional.ofNullable(riga.getCodice_identificativo_ente_pagopa()).isPresent()) {
+                    throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Codice Identificato Ente!", riga.getDs_riga_fattura());
+                }
+                if (!Optional.ofNullable(riga.getNumero_avviso_pagopa()).isPresent()) {
+                    throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Numero dell''avviso!", riga.getDs_riga_fattura());
+                }
+            }
+        }
+    }
     public void validaFattura(UserContext aUC, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
         ObbligazioniTable obbligazioniHash = fatturaPassiva.getFattura_passiva_obbligazioniHash();
 
@@ -6766,6 +6786,9 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             if (fatturaPassiva.getCompenso() == null)
                 throw new it.cnr.jada.comp.ApplicationException("Prima di salvare la fattura occorre generare il compenso!");
         }
+
+        //qui
+
         if (fatturaPassiva instanceof Fattura_passiva_IBulk) {
             Rif_modalita_pagamentoBulk mod = null;
             BancaBulk banca = null;
@@ -6789,6 +6812,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         controllaQuadraturaObbligazioni(aUC, fatturaPassiva);
         // TODO Per ora remmato Marco Spasiano
         //controllaQuadraturaOrdini(aUC, fatturaPassiva);
+        //validateRighePagoPa(aUC,fatturaPassiva);
     }
 
     public void controlliCig(Fattura_passiva_rigaBulk riga) throws ApplicationException {
@@ -7055,6 +7079,15 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                     riga.getVoce_iva().getNaturaOperNonImpSdi().compareTo(Voce_ivaBulk.REVERSE_CHARGE) == 0)
                 throw new it.cnr.jada.comp.ApplicationException("Attenzione: voce IVA non valida per il dettaglio - " + riga.getDs_riga_fattura());
         }
+        if ( riga.getModalita_pagamento().isPAGOPA()){
+            if (!Optional.ofNullable(riga.getCodice_identificativo_ente_pagopa()).isPresent()) {
+                throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Codice Identificato Ente!", riga.getDs_riga_fattura());
+            }
+            if (!Optional.ofNullable(riga.getNumero_avviso_pagopa()).isPresent()) {
+                throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Numero dell''avviso!", riga.getDs_riga_fattura());
+            }
+        }
+
 
     }
 

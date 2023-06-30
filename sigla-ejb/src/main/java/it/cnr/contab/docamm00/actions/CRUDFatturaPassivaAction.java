@@ -34,8 +34,10 @@ import it.cnr.contab.docamm00.ejb.VoceIvaComponentSession;
 import it.cnr.contab.docamm00.tabrif.bulk.*;
 import it.cnr.contab.doccont00.bp.CRUDVirtualObbligazioneBP;
 import it.cnr.contab.doccont00.comp.DateServices;
-import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
-import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
+import it.cnr.contab.doccont00.core.bulk.SospesoBulk;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario00.bp.AssBeneFatturaBP;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
@@ -1255,6 +1257,13 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     .ifPresent(fattura_passiva_rigaBulk -> {
                         fattura_passiva_rigaBulk.setBene_servizio(new Bene_servizioBulk());
                         fattura_passiva_rigaBulk.setVoce_iva(new Voce_ivaBulk());
+                        if ( fattura_passiva_rigaBulk.getModalita_pagamento().isPAGOPA()){
+                            fattura_passiva_rigaBulk.setCodice_identificativo_ente_pagopa(
+                                    Optional.ofNullable(fattura_passiva_rigaBulk.getTerzo())
+                                            .map(t->t.getCodice_fiscale_anagrafico()!=null?t.getCodice_fiscale_anagrafico():t.getPartita_iva_anagrafico())
+                                            .orElse(null)
+                            );
+                        }
                     });
             return context.findDefaultForward();
         } catch (Throwable e) {
@@ -3611,6 +3620,15 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                         fattura_riga.setModalita_pagamento(fattura.getModalita_pagamento());
                         fattura_riga.setBanca((coll == null || coll.isEmpty()) ? null : (BancaBulk) new java.util.Vector(coll).firstElement());
                         fattura_riga.setCessionario(fpcs.findCessionario(context.getUserContext(), fattura_riga));
+                        fattura_riga.setCodice_identificativo_ente_pagopa(null);
+                        if (fattura_riga.getModalita_pagamento().isPAGOPA()) {
+                            fattura_riga.setCodice_identificativo_ente_pagopa(
+                                    Optional.ofNullable(fattura_riga.getTerzo())
+                                            .map(t->t.getCodice_fiscale_anagrafico()!=null?t.getCodice_fiscale_anagrafico():t.getPartita_iva_anagrafico())
+                                            .orElse(null)
+                            );
+                        }
+
                     }
                 }
 
@@ -3694,6 +3712,14 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
 
                 fattura_riga.setBanca((coll == null || coll.isEmpty()) ? null : (BancaBulk) new java.util.Vector(coll).firstElement());
                 fattura_riga.setCessionario(fpcs.findCessionario(context.getUserContext(), fattura_riga));
+                fattura_riga.setCodice_identificativo_ente_pagopa(null);
+                if (fattura_riga.getModalita_pagamento().isPAGOPA()) {
+                    fattura_riga.setCodice_identificativo_ente_pagopa(
+                            Optional.ofNullable(fattura_riga.getTerzo())
+                                    .map(t->t.getCodice_fiscale_anagrafico()!=null?t.getCodice_fiscale_anagrafico():t.getPartita_iva_anagrafico())
+                                    .orElse(null)
+                    );
+                }
             } else {
                 fattura_riga.setBanca(null);
                 fattura_riga.setCessionario(null);

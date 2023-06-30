@@ -72,7 +72,6 @@ import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DocumentoGenericoComponent
         extends ScritturaPartitaDoppiaFromDocumentoComponent
@@ -6353,21 +6352,23 @@ public class DocumentoGenericoComponent
     @Override
     protected void validaCreaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
         super.validaCreaModificaConBulk(usercontext, oggettobulk);
-        final Optional<Documento_generico_rigaBulk> documentoGenericoRigaPAGOPA = Optional.ofNullable(oggettobulk)
+        final List<Documento_generico_rigaBulk> documentoGenericoRighePAGOPA = Optional.ofNullable(oggettobulk)
                 .filter(Documento_genericoBulk.class::isInstance)
                 .map(Documento_genericoBulk.class::cast)
                 .map(Documento_genericoBulk::getDocumento_generico_dettColl)
                 .orElse(new BulkList<Documento_generico_rigaBulk>())
                 .stream()
-                .filter(documentoGenericoRigaBulk -> documentoGenericoRigaBulk.getModalita_pagamento()!=null && documentoGenericoRigaBulk.getModalita_pagamento().isPAGOPA())
-                .findAny();
-        if (documentoGenericoRigaPAGOPA.isPresent()) {
-            if (!Optional.ofNullable(documentoGenericoRigaPAGOPA.get().getCodice_identificativo_ente_pagopa()).isPresent()) {
-                throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Codice Identificato Ente!", documentoGenericoRigaPAGOPA.get().getDs_riga());
-            }
-            if (!Optional.ofNullable(documentoGenericoRigaPAGOPA.get().getNumero_avviso_pagopa()).isPresent()) {
-                throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Numero dell''avviso!", documentoGenericoRigaPAGOPA.get().getDs_riga());
-            }
+                .filter(documentoGenericoRigaBulk -> documentoGenericoRigaBulk.getModalita_pagamento()!=null && documentoGenericoRigaBulk.getModalita_pagamento().isPAGOPA()).
+                collect(Collectors.toList());
+                if (!documentoGenericoRighePAGOPA.isEmpty()) {
+                    for ( Documento_generico_rigaBulk riga:documentoGenericoRighePAGOPA){
+                        if (!Optional.ofNullable(riga.getCodice_identificativo_ente_pagopa()).isPresent()) {
+                            throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Codice Identificato Ente!", riga.getDs_riga());
+                        }
+                        if (!Optional.ofNullable(riga.getNumero_avviso_pagopa()).isPresent()) {
+                            throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Numero dell''avviso!", riga.getDs_riga());
+                    }
+                }
         }
     }
 
