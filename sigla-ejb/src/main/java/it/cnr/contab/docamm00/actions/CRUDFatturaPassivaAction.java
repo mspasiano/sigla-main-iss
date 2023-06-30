@@ -5858,16 +5858,18 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             Fattura_passivaBulk fp = (Fattura_passivaBulk) bp.getModel();
             Integer oldEsercizio = fp.getEsercizio();
             fillModel(context);
-            if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context))>0) {
-                fp.setEsercizio(oldEsercizio);
-                throw new ApplicationException("Non è possibile inserire un esercizio superiore a quello di scrivania!");
-            } else if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context))<0) {
-                fp.setDt_registrazione(DateServices.getLastDayOfYear(fp.getEsercizio()));
-                fp.setDt_da_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
-                fp.setDt_a_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
-            } else {//esercizio=scrivania
-                fp.setPg_fattura_passiva(null);
-                fp.setDt_registrazione(DateServices.getDataOdierna());
+            if(fp.getEsercizio() != null) {
+                if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context)) > 0) {
+                    fp.setEsercizio(oldEsercizio);
+                    throw new ApplicationException("Non è possibile inserire un esercizio superiore a quello di scrivania!");
+                } else if (fp.getEsercizio().compareTo(CNRUserInfo.getEsercizio(context)) < 0) {
+                    fp.setDt_registrazione(DateServices.getLastDayOfYear(fp.getEsercizio()));
+                    fp.setDt_da_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
+                    fp.setDt_a_competenza_coge(DateServices.getLastDayOfYear(fp.getEsercizio()));
+                } else {//esercizio=scrivania
+                    fp.setPg_fattura_passiva(null);
+                    fp.setDt_registrazione(DateServices.getDataOdierna());
+                }
             }
             return context.findDefaultForward();
         } catch(Throwable e) {
