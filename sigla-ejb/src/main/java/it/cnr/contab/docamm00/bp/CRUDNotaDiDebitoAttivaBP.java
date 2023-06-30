@@ -17,17 +17,16 @@
 
 package it.cnr.contab.docamm00.bp;
 
-import it.cnr.contab.doccont00.core.bulk.*;
-import it.cnr.contab.docamm00.docs.bulk.*;
-import it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_attiva_rigaBulk;
+import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
+import it.cnr.contab.docamm00.docs.bulk.Nota_di_debitoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_attivaBulk;
-import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
+import it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_attiva_rigaBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.util.ObjectReplacer;
-import it.cnr.jada.util.action.SimpleDetailCRUDController;
 
 /**
  * Insert the type's description here.
@@ -168,12 +167,14 @@ public boolean isDocumentoContabileModificato(it.cnr.contab.doccont00.core.bulk.
 	return getDocumentiContabiliModificati().get(scadenza) != null;
 }
 public boolean isInventariaButtonEnabled() {
-	
+	if ( !attivaInventaria)
+		return Boolean.FALSE;
 	return	getModel() != null &&
 			!getDettaglio().getDetails().isEmpty();
 }
 public boolean isInventariaButtonHidden() {
-	
+	if ( !attivaInventaria)
+		return Boolean.TRUE;
 	return true;//isSearching();
 }
 public boolean isNewButtonHidden() {

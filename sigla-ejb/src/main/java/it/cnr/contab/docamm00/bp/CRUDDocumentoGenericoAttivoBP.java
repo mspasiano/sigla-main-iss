@@ -78,6 +78,7 @@ public class CRUDDocumentoGenericoAttivoBP
     private boolean contoEnte;
     private boolean attivaEconomicaParallela = false;
     private boolean supervisore = false;
+    private boolean attivaInventaria = false;
 
     public CRUDDocumentoGenericoAttivoBP() {
         super();
@@ -403,6 +404,7 @@ public class CRUDDocumentoGenericoAttivoBP
             int solaris = Documento_genericoBulk.getDateCalendar(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate()).get(java.util.Calendar.YEAR);
             int esercizioScrivania = it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context.getUserContext()).intValue();
             attivaEconomicaParallela = Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(context.getUserContext());
+            attivaInventaria= Utility.createConfigurazioneCnrComponentSession().isAttivoInventariaDocumenti(context.getUserContext());
             setAnnoSolareInScrivania(solaris == esercizioScrivania);
             setRibaltato(initRibaltato(context));
             setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
@@ -1075,11 +1077,15 @@ public class CRUDDocumentoGenericoAttivoBP
     }
 
     public boolean isInventariaButtonEnabled() {
-
+        if ( !attivaInventaria)
+            return Boolean.FALSE;
         return (isEditing() || isInserting());
     }
 
     public boolean isInventariaButtonHidden() {
+        if ( !attivaInventaria)
+            return Boolean.TRUE;
+
         return isSearching() || isDeleting();
     }
 

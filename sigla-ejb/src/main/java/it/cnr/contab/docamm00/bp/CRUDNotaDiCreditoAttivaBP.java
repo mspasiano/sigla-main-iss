@@ -253,14 +253,16 @@ public class CRUDNotaDiCreditoAttivaBP
     }
 
     public boolean isInventariaButtonEnabled() {
-
+        if ( !attivaInventaria)
+            return Boolean.FALSE;
         return getModel() != null &&
                 !getDettaglio().getDetails().isEmpty();
     }
 
     public boolean isInventariaButtonHidden() {
-
-        return true;//isSearching();
+        if ( !attivaInventaria)
+            return Boolean.TRUE;
+        return Boolean.TRUE;//isSearching();
     }
 
     public boolean isNewButtonHidden() {

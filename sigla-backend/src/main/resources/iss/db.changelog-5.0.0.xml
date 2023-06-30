@@ -107,6 +107,8 @@
     <include file="iss/update_gestione_importi_flussi_finanziari.xml"/>
     <!-- Autore : CIRO SALVIO-STATO SOSPESO DEFAULT ASSEGNATO A CDS 000 -->
     <include file="iss/update_configurazione_cnr_stato_sospesi.xml"></include>
+    <!-- Autore : CIRO SALVIO-GESTIONE INVENTARIA DA DOCUMENTI -->
+    <include file="iss/update_gestione_inventaria_documenti.xml"></include>
 
 
 </databaseChangeLog>

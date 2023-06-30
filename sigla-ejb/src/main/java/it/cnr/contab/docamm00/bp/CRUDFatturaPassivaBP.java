@@ -164,6 +164,9 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     protected boolean attivaEconomicaParallela = false;
     private boolean supervisore = false;
 
+    private boolean attivaInventaria = false;
+
+
     /**
      * CRUDAnagraficaBP constructor comment.
      */
@@ -561,6 +564,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
             attivoOrdini = Utility.createConfigurazioneCnrComponentSession().isAttivoOrdini(context.getUserContext());
             propostaFatturaDaOrdini = Utility.createConfigurazioneCnrComponentSession().propostaFatturaDaOrdini(context.getUserContext());
             attivaEconomicaParallela = Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(context.getUserContext());
+            attivaInventaria= Utility.createConfigurazioneCnrComponentSession().isAttivoInventariaDocumenti(context.getUserContext());
             setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
             super.init(config, context);
 
@@ -768,7 +772,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     }
 
     public boolean isInventariaButtonEnabled() {
-
+        if ( !attivaInventaria)
+            return Boolean.FALSE;
         return (isEditing() || isInserting()) && getModel() != null
                 && !getDettaglio().getDetails().isEmpty()
                 && !((Fattura_passivaBulk) getModel()).isGenerataDaCompenso()
@@ -776,7 +781,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
     }
 
     public boolean isInventariaButtonHidden() {
-
+        if ( !attivaInventaria)
+            return Boolean.TRUE;
         return isSearching() || isDeleting();
     }
 

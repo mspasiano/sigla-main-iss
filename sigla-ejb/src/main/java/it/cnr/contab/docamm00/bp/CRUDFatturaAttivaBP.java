@@ -108,6 +108,7 @@ public abstract class CRUDFatturaAttivaBP
     protected boolean attivaEconomicaParallela = false;
     private boolean supervisore = false;
 
+    protected boolean attivaInventaria = true;
     public CRUDFatturaAttivaBP() {
         this(Fattura_attiva_rigaBulk.class);
     }
@@ -419,6 +420,7 @@ public abstract class CRUDFatturaAttivaBP
             int solaris = Fattura_attivaBulk.getDateCalendar(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate()).get(java.util.Calendar.YEAR);
             int esercizioScrivania = it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context.getUserContext()).intValue();
             attivaEconomicaParallela = Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(context.getUserContext());
+            attivaInventaria= Utility.createConfigurazioneCnrComponentSession().isAttivoInventariaDocumenti(context.getUserContext());
             setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
             setAnnoSolareInScrivania(solaris == esercizioScrivania);
             setRibaltato(initRibaltato(context));
