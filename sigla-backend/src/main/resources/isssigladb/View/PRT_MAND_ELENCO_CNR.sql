@@ -80,4 +80,4 @@
   and   mandato_riga.pg_banca = banca.pg_banca AND mandato_riga.cd_terzo = banca.cd_terzo
   order by mandato.ESERCIZIO, mandato.CD_CDS, mandato.PG_MANDATO;
 
-   COMMENT ON TABLE "PRT_MAND_ELENCO_CNR"  IS 'Vista di stampa del Giornale dei Mandati';
+COMMENT ON TABLE "PRT_MAND_ELENCO_CNR"  IS 'Vista di stampa del Giornale dei Mandati';

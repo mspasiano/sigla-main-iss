@@ -68,4 +68,4 @@
   and   reversale_riga.pg_banca = banca.pg_banca AND reversale_riga.cd_terzo_uo = banca.cd_terzo
   order by reversale.ESERCIZIO, reversale.CD_CDS, reversale.PG_REVERSALE;
 
-   COMMENT ON TABLE "PRT_REVE_ELENCO_CNR"  IS 'Vista di stampa del Giornale delle Reversali';
+  COMMENT ON TABLE "PRT_REVE_ELENCO_CNR"  IS 'Vista di stampa del Giornale delle Reversali';
