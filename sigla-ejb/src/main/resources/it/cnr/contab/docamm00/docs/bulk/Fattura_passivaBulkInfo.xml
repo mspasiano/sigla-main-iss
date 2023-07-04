@@ -452,10 +452,22 @@
             enabledOnSearch="true"
             label="Intra U.E."/>
     <fieldProperty
+            name="fl_intra_ueForSearch"
+            property="fl_intra_ue"
+            inputType="CHECKBOX"
+            enabledOnSearch="true"
+            label="Intra U.E."/>
+    <fieldProperty
             name="fl_extra_ue"
             property="fl_extra_ue"
             inputType="CHECKBOX"
             readonlyProperty="ROFl_extra_ue"
+            enabledOnSearch="true"
+            label="Extra U.E."/>
+    <fieldProperty
+            name="fl_extra_ueForSearch"
+            property="fl_extra_ue"
+            inputType="CHECKBOX"
             enabledOnSearch="true"
             label="Extra U.E."/>
     <fieldProperty
@@ -1254,8 +1266,8 @@
     <findFieldProperty name="ds_fornitore"/>
     <findFieldProperty name="fl_san_marino_con_iva"/>
     <findFieldProperty name="fl_san_marino_senza_iva"/>
-    <findFieldProperty name="fl_intra_ue"/>
-    <findFieldProperty name="fl_extra_ue"/>
+    <findFieldProperty name="fl_intra_ueForSearch"/>
+    <findFieldProperty name="fl_extra_ueForSearch"/>
     <findFieldProperty name="stato_cofiForSearch"/>
     <findFieldProperty name="ti_associato_manrevForSearch"/>
     <findFieldProperty name="fl_autofattura"/>

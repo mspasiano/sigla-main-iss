@@ -413,7 +413,8 @@
 		readonlyProperty="abledToModifyFlagsTipoFattura"
 		keysProperty="intra_ueKeys"
 		label="Intra U.E."
-		enabledOnEdit="false"/>
+		enabledOnEdit="false"
+	/>
 	<fieldProperty
 		name="fl_liquidazione_differita"
 		property="fl_liquidazione_differita"
@@ -646,7 +647,7 @@
 		property="codiceUnivocoUfficioIpa"
 		maxLength="6"
 		inputSize="6"
-		inputType="ROTEXT"
+		inputType="TEXT"
 		label="Codice IPA"/>	
 	<fieldProperty
 		name="codiceInvioSdi"
@@ -654,7 +655,8 @@
 		maxLength="30"
 		inputSize="30"
 		label="Identificativo SDI"
-		inputType="ROTEXT"/>
+		inputType="TEXT"
+		/>
 	<fieldProperty
 		name="statoInvioSdi"
 		property="statoInvioSdi"
@@ -682,8 +684,9 @@
 		property="dtConsegnaSdi"
 		maxLength="10"
 		inputSize="10"
-		inputType="ROTEXT"
-		label="Data Consegna SDI"/>		
+		inputType="TEXT"
+		formatName="date_short"
+		label="Data Consegna SDI"/>
 	<fieldProperty
 		name="dtRicezioneSdi"
 		property="dtRicezioneSdi"
