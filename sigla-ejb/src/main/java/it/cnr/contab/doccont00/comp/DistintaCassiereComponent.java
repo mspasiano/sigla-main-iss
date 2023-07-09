@@ -101,7 +101,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class DistintaCassiereComponent extends
         it.cnr.jada.comp.CRUDDetailComponent implements IDistintaCassiereMgr,
@@ -5240,11 +5239,14 @@ public class DistintaCassiereComponent extends
 
     public Mandato creaMandatoFlussoSiopeplus(UserContext userContext, V_mandato_reversaleBulk bulk) throws ComponentException, RemoteException {
         try {
+
             Configurazione_cnrComponentSession sess = (Configurazione_cnrComponentSession) EJBCommonServices
                     .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession");
             DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             final ObjectFactory objectFactory = new ObjectFactory();
+            getAvvisoPagoPA(userContext, objectFactory, bulk);
+
             BancaBulk bancauo = recuperaIbanUo(userContext, bulk.getUo());
             Mandato mandato = objectFactory.createMandato();
             List list = findDocumentiFlusso(userContext, bulk);
@@ -6180,39 +6182,61 @@ public class DistintaCassiereComponent extends
                 .map(MandatoIHome.class::cast)
                 .orElseThrow(() -> new ComponentException("Home del mandato non trovata!"));
 
+        final Map< String , Map<String,List<Fattura_passiva_rigaBulk>> > fatturePassiveRighePagoPa=
+                    Optional.ofNullable(mandatoHome.findFatturaPassivaRiga(userContext, bulk)).
+                    get().stream().filter(s-> s.getNumero_avviso_pagopa()!=null).
+                    filter(s-> !s.getNumero_avviso_pagopa().isEmpty()).
+                    filter(s-> s.getCodice_identificativo_ente_pagopa()!=null).
+                    filter(s-> !s.getCodice_identificativo_ente_pagopa().isEmpty()).
+                            filter(Fattura_passiva_rigaIBulk.class::isInstance)
+                            .map(Fattura_passiva_rigaIBulk.class::cast).
+                            collect(Collectors.groupingBy(Fattura_passiva_rigaBulk::getNumero_avviso_pagopa,
+                                    Collectors.groupingBy(Fattura_passiva_rigaBulk::getCodice_identificativo_ente_pagopa)));
 
-        final List<Fattura_passiva_rigaIBulk> fatturePassiveRighePagoPa=mandatoHome.findFatturaPassivaRiga(userContext, bulk);
-        final List<Documento_generico_rigaBulk> documentiGenericiRighePagoPa= mandatoHome.findDocumentoGenericoRiga(userContext, bulk);
+        final Map< String , Map<String,List<Documento_generico_rigaBulk>> >  documentiGenericiRighePagoPa=
+                Optional.ofNullable(mandatoHome.findDocumentoGenericoRiga(userContext, bulk)).
+                        get().
+                        stream().filter(s-> s.getNumero_avviso_pagopa()!=null).
+                        filter(s-> !s.getNumero_avviso_pagopa().isEmpty()).
+                        filter(s-> s.getCodice_identificativo_ente_pagopa()!=null).
+                        filter(s-> !s.getCodice_identificativo_ente_pagopa().isEmpty()).
+                        filter(Documento_generico_rigaBulk.class::isInstance)
+                        .map(Documento_generico_rigaBulk.class::cast).
+                        collect(Collectors.groupingBy(Documento_generico_rigaBulk::getNumero_avviso_pagopa,
+                                Collectors.groupingBy(Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa)));
 
-
-        if ((documentiGenericiRighePagoPa.size()+ fatturePassiveRighePagoPa.size())> 1) {
-            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
-        }
         if (documentiGenericiRighePagoPa.isEmpty() && fatturePassiveRighePagoPa.isEmpty()) {
-            throw new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
-        }
-
-        final Map<String, String> pagopaMap = Stream.of(documentiGenericiRighePagoPa.stream()
-                        .collect(Collectors.toMap(
-                                Documento_generico_rigaBulk::getNumero_avviso_pagopa,
-                                Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa
-                        )), fatturePassiveRighePagoPa.stream()
-                .collect(Collectors.toMap(
-                            Fattura_passiva_rigaIBulk::getNumero_avviso_pagopa,
-                            Fattura_passiva_rigaIBulk::getCodice_identificativo_ente_pagopa)))
-                .flatMap(map -> map.entrySet().stream())
-                .collect(Collectors.toMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue,
-                        (value1, value2) -> value1));
-
-        if (pagopaMap.isEmpty()) {
             new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
         }
-        final Map.Entry<String, String> pagopaEntry = pagopaMap.entrySet().stream().findFirst().get();
-        avvisoPagoPA.setNumeroAvviso(pagopaEntry.getKey());
-        avvisoPagoPA.setCodiceIdentificativoEnte(pagopaEntry.getValue());
-        return avvisoPagoPA;
+        if ( documentiGenericiRighePagoPa.size()>1 ||fatturePassiveRighePagoPa.size()>1){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if ( ( !documentiGenericiRighePagoPa.isEmpty() && documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().size()>1) ||
+                ( !fatturePassiveRighePagoPa.isEmpty() &&  fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().size()>1)){
+                throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un Codice Identificativo Ente PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if ( documentiGenericiRighePagoPa.size()==1 && fatturePassiveRighePagoPa.size()==1
+            && (!documentiGenericiRighePagoPa.keySet().stream().findFirst().get().equalsIgnoreCase(fatturePassiveRighePagoPa.keySet().stream().findFirst().get()))){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+
+        if ( documentiGenericiRighePagoPa.size()==1 && fatturePassiveRighePagoPa.size()==1
+                && (!fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get().
+                    equalsIgnoreCase(documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get()))){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un Codice Identificativo Ente PAGOPA!",bulk.getPg_documento_cont());
+        }
+
+        if (documentiGenericiRighePagoPa.size()>0) {
+            avvisoPagoPA.setNumeroAvviso(documentiGenericiRighePagoPa.keySet().stream().findFirst().get());
+            avvisoPagoPA.setCodiceIdentificativoEnte(documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get());
+            return avvisoPagoPA;
+        };
+        if (fatturePassiveRighePagoPa.size()>0) {
+            avvisoPagoPA.setNumeroAvviso(fatturePassiveRighePagoPa.keySet().stream().findFirst().get());
+            avvisoPagoPA.setCodiceIdentificativoEnte(fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get());
+            return avvisoPagoPA;
+        };
+        throw new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
     }
 
     private void caricaClassificazione(UserContext userContext,
