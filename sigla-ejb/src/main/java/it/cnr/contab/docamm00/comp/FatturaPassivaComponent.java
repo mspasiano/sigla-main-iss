@@ -2769,7 +2769,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                             if (fatturaPassiva instanceof Fattura_passiva_IBulk &&
                                     deroga1210) {
                                 totale = calcolaTotaleIVAPer((List) fatturaPassiva.getObbligazioniHash().get(scadenza));
-                                if (scadenza.getIm_scadenza().compareTo(totale) <= 0)
+                                if (scadenza.getIm_scadenza().compareTo(totale) < 0)
                                     throw new it.cnr.jada.comp.ApplicationException("Attenzione: l'importo della scadenza \"" + scadenza.getDs_scadenza() + "\" deve essere strettamente maggiore dell'importo totale IVA dei dettagli ad essa associati!");
                             }
                         }
