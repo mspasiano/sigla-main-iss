@@ -5245,7 +5245,6 @@ public class DistintaCassiereComponent extends
             DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             final ObjectFactory objectFactory = new ObjectFactory();
-            getAvvisoPagoPA(userContext, objectFactory, bulk);
 
             BancaBulk bancauo = recuperaIbanUo(userContext, bulk.getUo());
             Mandato mandato = objectFactory.createMandato();
