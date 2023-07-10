@@ -113,7 +113,8 @@
 					
 		</tr>
 		<%
-			if (riga!= null && !riga.getBuono_cs().isByOrdini()){
+		    //da eliminare altrimenti quando inventariamo da ordine non è possibile censire beni come accessori
+			if (riga!= null ){
 		%>
 		<tr>
 			<td>
