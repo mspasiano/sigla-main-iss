@@ -68,8 +68,18 @@
 			propertyName="ti_bene_servizio"
 			converterClassName="it.cnr.contab.util.AsteriskToNullConverter"
 			nullable="true" />	
-	</defaultColumnMap>		
-
+	</defaultColumnMap>
+	<columnMap
+			name="LISTA_DOC_AMM"
+			tableName="FATTURA_ATTIVA"
+			extends="default">
+		<columnMapping
+			columnName="TIPO_SEZIONALE.DS_TIPO_SEZIONALE"
+			propertyName="tipo_sezionale.ds_tipo_sezionale"
+			sqlTypeName="VARCHAR"
+			columnSize="50"
+			nullable="true"/>
+	</columnMap>
 	<persistentProperty
 		name="tipo_sezionale" />
 	<persistentProperty

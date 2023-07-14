@@ -4829,9 +4829,14 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
             CompoundFindClause clauses,
             OggettoBulk bulk)
             throws ComponentException, it.cnr.jada.persistency.PersistencyException {
-
-        it.cnr.jada.persistency.sql.SQLBuilder sql =
-                (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
+        it.cnr.jada.persistency.sql.SQLBuilder sql;
+        if (Optional.ofNullable(bulk).filter(Documento_amministrativo_attivoBulk.class::isInstance).isPresent()) {
+            final BulkHome home = getHome(userContext, bulk, "LISTA_DOC_AMM");
+            sql = home.selectByClause(userContext, clauses);
+            sql.generateJoin("tipo_sezionale", "TIPO_SEZIONALE");
+        } else {
+            sql = (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
+        }
         TerzoBulk cliente = ((Fattura_attivaBulk) bulk).getCliente();
         sql.addSQLClause("AND", "FATTURA_ATTIVA.ESERCIZIO", sql.EQUALS, ((Fattura_attivaBulk) bulk).getEsercizio());
         if (cliente != null) {
