@@ -26,7 +26,7 @@
 			columnName="DESCRIZIONE"
 			propertyName="descrizione"
 			sqlTypeName="VARCHAR"
-			columnSize="200"
+			columnSize="500"
 			nullable="false" />
 		<columnMapping
 			columnName="DT_CANC"
