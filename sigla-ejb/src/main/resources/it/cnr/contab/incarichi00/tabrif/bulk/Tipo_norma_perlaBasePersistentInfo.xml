@@ -26,7 +26,7 @@
 			columnName="DS_TIPO_NORMA"
 			propertyName="ds_tipo_norma"
 			sqlTypeName="VARCHAR"
-			columnSize="50"
+			columnSize="150"
 			nullable="false" />
 		<columnMapping
 			columnName="CD_TIPO_NORMA_PERLA"
