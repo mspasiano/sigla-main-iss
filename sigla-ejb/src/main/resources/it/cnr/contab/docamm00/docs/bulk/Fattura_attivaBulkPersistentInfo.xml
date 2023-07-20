@@ -79,6 +79,12 @@
 			sqlTypeName="VARCHAR"
 			columnSize="50"
 			nullable="true"/>
+		<columnMapping
+				columnName="DIVISA.DS_DIVISA"
+				propertyName="valuta.ds_divisa"
+				sqlTypeName="VARCHAR"
+				columnSize="50"
+				nullable="true"/>
 	</columnMap>
 	<persistentProperty
 		name="tipo_sezionale" />

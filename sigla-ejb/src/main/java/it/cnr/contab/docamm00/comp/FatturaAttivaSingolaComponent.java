@@ -4834,6 +4834,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
             final BulkHome home = getHome(userContext, bulk, "LISTA_DOC_AMM");
             sql = home.selectByClause(userContext, clauses);
             sql.generateJoin("tipo_sezionale", "TIPO_SEZIONALE");
+            sql.generateJoin("valuta", "DIVISA");
         } else {
             sql = (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
         }

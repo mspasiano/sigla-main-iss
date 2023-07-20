@@ -153,8 +153,18 @@
             inputType="SELECT"
             nullable="false"
             enabledOnSearch="true"
+            enabledOnFreeSearch="true"
             readonlyProperty="abledToModifyTipoFattura"
             label="Sezionale"/>
+
+    <fieldProperty
+            name="cd_tipo_sezionale"
+            property="tipo_sezionale.cd_tipo_sezionale"
+            inputSize="15"
+            label="Cod. Sezionale"
+            inputType="TEXT"
+            enabledOnSearch="true"
+            enabledOnFreeSearch="true"/>
     <fieldProperty
             name="sezionaliFlagsRadioGroup"
             property="sezionaliFlag"
@@ -662,6 +672,18 @@
             nullable="false"
             label="Totale Euro"/>
     <fieldProperty
+            name="im_totale_quadratura"
+            property="im_totale_quadratura"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnInsert="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnFreeSearch="false"
+            nullable="false"
+            label="Totale quandratura"/>
+
+    <fieldProperty
             name="im_totale_fattura_calcolato"
             property="im_totale_fattura_calcolato"
             inputType="TEXT"
@@ -680,6 +702,16 @@
             enabledOnSearch="false"
             enabledOnInsert="false"
             label="Imponibile"/>
+    <fieldProperty
+            name="im_totale_imponibile_divisa"
+            property="im_totale_imponibile_divisa"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroPositivoFormat"
+            nullable="false"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnInsert="false"
+            label="Imponibile in divisa"/>
     <fieldProperty
             name="cambio"
             property="cambio"
@@ -1239,6 +1271,16 @@
             enabledOnSearch="true"
             readonlyProperty="ROFlDaOrdini"
             label="Da Ordini"/>
+    <fieldProperty
+            name="stato_coan"
+            property="stato_coan"
+            inputSize="1"
+            inputType="TEXT"
+            label="Stato COAN"
+            enabledOnEdit="false"
+            enabledOnSearch="false"
+            enabledOnInsert="false"
+            enabledOnFreeSearch="false"/>
 
 
     <findFieldProperty name="esercizio"/>
@@ -1254,7 +1296,7 @@
     <findFieldProperty name="dt_scadenza"/>
     <findFieldProperty name="dt_registrazione"/>
     <findFieldProperty name="ti_istituz_commercSearch"/>
-    <findFieldProperty name="sezionale"/>
+    <findFieldProperty name="cd_tipo_sezionale"/>
     <findFieldProperty name="im_totale_fattura"/>
     <findFieldProperty name="cd_precedente"/>
     <findFieldProperty name="ragione_sociale"/>
@@ -1426,6 +1468,9 @@
 
     <formFieldProperty
             name="sezionale"/>
+    <formFieldProperty
+            name="cd_tipo_sezionale"/>
+
 
     <formFieldProperty
             name="im_totale_fattura"
@@ -1609,7 +1654,11 @@
     <columnFieldProperty
             name="ti_istituz_commerc"/>
     <columnFieldProperty
-            name="sezionale"/>
+            name="sezionale"
+            property="tipo_sezionale.ds_tipo_sezionale"
+            printProperty=""/>
+    <columnFieldProperty
+            name="cd_tipo_sezionale"/>
     <columnFieldProperty
             name="nr_fattura_fornitore"/>
     <columnFieldProperty
@@ -1625,13 +1674,36 @@
     <columnFieldProperty
             name="ragione_sociale"/>
     <columnFieldProperty
+            name="codice_fiscale"/>
+    <columnFieldProperty
+            name="partita_iva"/>
+    <columnFieldProperty
+            name="im_totale_imponibile_divisa"/>
+    <columnFieldProperty
+            name="im_totale_imponibile" />
+    <columnFieldProperty
+            name="im_totale_iva" />
+    <columnFieldProperty
             name="im_totale_fattura"/>
     <columnFieldProperty
             name="ds_divisa"
             property="valuta.ds_divisa"
             label="Valuta"/>
     <columnFieldProperty
+            name="cambio"/>
+    <columnFieldProperty
+            name="im_totale_quadratura"/>
+
+
+    <columnFieldProperty
             name="stato_cofi"/>
+    <columnFieldProperty
+            name="stato_coge"
+            label="Stato EP"/>
+    <columnFieldProperty
+            name="dt_da_competenza_coge"/>
+    <columnFieldProperty
+            name="dt_a_competenza_coge"/>
     <columnFieldProperty
             name="ti_associato_manrev"/>
     <columnFieldProperty
@@ -1641,6 +1713,18 @@
     <columnFieldProperty name="progr_univoco"/>
     <columnFieldProperty name="identificativoSdi"/>
     <columnFieldProperty name="progressivo"/>
+    <columnFieldProperty name="stato_coan"/>
+    <columnFieldProperty name="stato_pagamento_fondo_eco"/>
+    <columnFieldProperty name="ti_bene_servizio"/>
+    <columnFieldProperty name="esercizio_compenso"/>
+    <columnFieldProperty name="cds_compenso"/>
+    <columnFieldProperty name="uo_compenso"/>
+    <columnFieldProperty name="pg_compenso"/>
+    <columnFieldProperty name="fl_merce_extra_ue"/>
+    <columnFieldProperty name="fl_liquidazione_differita"/>
+    <columnFieldProperty name="fl_merce_intra_ue"/>
+    <columnFieldProperty name="fl_split_payment"/>
+    <columnFieldProperty name="flDaOrdini"/>
 
     <form
             name="documentoSearchtool">

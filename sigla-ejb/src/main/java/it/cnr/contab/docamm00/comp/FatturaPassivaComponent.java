@@ -5029,8 +5029,9 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
                 if (dettaglio.getBene_servizio().getFl_gestione_inventario().booleanValue()) {
                     dettaglio.setInventariato(true);
                     dettaglio.setInventariato(ha_beniColl(userContext, dettaglio).booleanValue());
-                } else
+                } else {
                     dettaglio.setInventariato(false);
+                }
                 if (dettaglio.checkIfRiportata()) {
                     dettaglio.setRiportata(dettaglio.RIPORTATO);
                     fattura_passiva.setRiportata(fattura_passiva.PARZIALMENTE_RIPORTATO);
@@ -5982,7 +5983,18 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
     }
 
     protected it.cnr.jada.persistency.sql.Query select(UserContext userContext, CompoundFindClause clauses, OggettoBulk bulk) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
-        it.cnr.jada.persistency.sql.SQLBuilder sql = (SQLBuilder) super.select(userContext, clauses, bulk);
+
+        it.cnr.jada.persistency.sql.SQLBuilder sql;
+        if (Optional.ofNullable(bulk).filter(Documento_amministrativo_passivoBulk.class::isInstance).isPresent()) {
+            final BulkHome home = getHome(userContext, bulk, "LISTA_DOC_AMM");
+            sql = home.selectByClause(userContext, clauses);
+            sql.generateJoin("tipo_sezionale", "TIPO_SEZIONALE");
+            sql.generateJoin("valuta", "DIVISA");
+
+        } else {
+            sql = (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
+        }
+
         TerzoBulk fornitore = ((Fattura_passivaBulk) bulk).getFornitore();
         if (fornitore != null) {
             sql.addTableToHeader("TERZO");

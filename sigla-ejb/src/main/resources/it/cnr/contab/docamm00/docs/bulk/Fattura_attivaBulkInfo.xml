@@ -173,7 +173,7 @@
 		maxLength="6"
 		inputSize="6"
 		inputType="TEXT"
-		label="Cod. tipo sez." 
+		label="Cod. Sezionale"
 		enabledOnEdit="false"/>
 	<fieldProperty
 		name="cd_uo_origine"
@@ -589,7 +589,7 @@
 		maxLength="25"
 		inputSize="25"
 		inputType="TEXT"
-		label="stato_coge"
+		label="stato Coge"
 		caseSensitiveSearch="false" />
 	<fieldProperty
 		name="termini_pagamento_uo"
@@ -725,7 +725,18 @@
 		name="fl_stampa"
 		property="fl_stampa"
 		inputType="CHECKBOX"
-		label="fl_stampa" />
+		label="stampa" />
+	<fieldProperty
+			name="fl_pagamento_anticipato"
+			property="fl_pagamento_anticipato"
+			inputType="CHECKBOX"
+			label="pagamento anticipato" />
+	<fieldProperty
+			name="ncAnnulloSdi"
+			property="ncAnnulloSdi"
+			inputType="CHECKBOX"
+			label="Nota Credito annullo SDI" />
+
 	<fieldProperty
 		name="flFatturaElettronica"
 		property="flFatturaElettronica"
@@ -875,6 +886,16 @@
 			enabledOnEdit="true"
 			enabledOnSearch="true"
 			enabledOnFreeSearch="true"/>
+	<fieldProperty
+			name="progrUnivocoAnno"
+			property="progrUnivocoAnno"
+			inputType="TEXT"
+			inputSize="10"
+			label="Progressivo Anno"
+			enabledOnInsert="false"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnFreeSearch="false"/>
 
 	<findFieldProperty name="pg_fattura_attiva"/>
 	<findFieldProperty name="protocollo_iva" />	
@@ -892,6 +913,7 @@
 	<findFieldProperty name="im_totale_fattura" />
 	<findFieldProperty name="im_totale_iva" />	
 	<findFieldProperty name="ds_fattura_attiva" />
+	<findFieldProperty name="cd_tipo_sezionale" />
 	<findFieldProperty name="nome" />
 	<findFieldProperty name="cognome" />
 	<findFieldProperty name="ragione_sociale" />
@@ -910,6 +932,9 @@
 	<findFieldProperty name="dt_ordine" />
 	<findFieldProperty name="fl_ordine_elettronico" />
 	<findFieldProperty name="codiceUnivocoUfficioOrdine" />
+
+
+
 
 	<formFieldProperty
 		name="statoFattElett" />
@@ -1085,6 +1110,13 @@
 		name="im_totale_fattura" />
 	<formFieldProperty
 		name="im_totale_imponibile" />
+	<columnFieldProperty
+			name="ds_divisa"
+			property="valuta.ds_divisa"
+			label="Valuta"/>
+	<formFieldProperty
+			name="cambio" />
+
 	<formFieldProperty
 		name="ragione_sociale" />
 	<formFieldProperty
@@ -1143,15 +1175,38 @@
 		property="tipo_sezionale.ds_tipo_sezionale"
 		printProperty=""/>
 	<columnFieldProperty
+		name="cd_tipo_sezionale" />
+	<columnFieldProperty
 		name="protocollo_iva" />
 	<columnFieldProperty
+		name="protocollo_iva_generale" />
+	<columnFieldProperty
+		name="fl_liquidazione_differita" />
+	<columnFieldProperty
+			name="modalita_pagamento_uo" />
+
+
+	<columnFieldProperty
 		name="dt_emissione" />
+	<columnFieldProperty
+			name="dt_scadenza" />
+	<columnFieldProperty
+			name="im_totale_imponibile" />
+	<columnFieldProperty
+			name="im_totale_iva" />
 	<columnFieldProperty
 		name="im_totale_fattura" />
 	<columnFieldProperty
 		name="ti_associato_manrev" />
 	<columnFieldProperty
 		name="stato_cofi" />
+	<columnFieldProperty
+			name="stato_coge"
+			label="Stato EP"/>
+	<columnFieldProperty
+			name="dt_da_competenza_coge"/>
+	<columnFieldProperty
+			name="dt_a_competenza_coge"/>
 	<columnFieldProperty
 		name="codiceUnivocoUfficioIpa" />
 	<columnFieldProperty
@@ -1160,6 +1215,43 @@
 		name="dtConsegnaSdi" />
 	<columnFieldProperty
 		name="statoInvioSdi" />
+	<columnFieldProperty
+			name="noteInvioSdi" />
+	<columnFieldProperty
+			name="ncAnnulloSdi" />
+	<columnFieldProperty
+			name="pecFatturaElettronica" />
+	<columnFieldProperty
+			name="dtRicezioneSdi" />
+
+
+	<columnFieldProperty
+			name="riferimento_ordine" />
+	<columnFieldProperty
+			name="dt_ordine" />
+
+	<columnFieldProperty
+			name="ti_bene_servizio" />
+	<columnFieldProperty
+			name="codiceDestinatarioFatt" />
+
+
+	<columnFieldProperty
+			name="fl_intra_ue" />
+	<columnFieldProperty
+			name="fl_extra_ue" />
+	<columnFieldProperty
+			name="fl_san_marino" />
+	<columnFieldProperty
+			name="fl_stampa" />
+	<columnFieldProperty
+			name="fl_pagamento_anticipato" />
+	<columnFieldProperty
+			name="progrUnivocoAnno" />
+
+
+
+
 
 	<columnSet
 		name="protocollazioneIvaSet">
