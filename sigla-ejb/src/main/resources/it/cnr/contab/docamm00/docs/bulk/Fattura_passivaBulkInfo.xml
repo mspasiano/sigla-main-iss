@@ -1684,6 +1684,8 @@
     <columnFieldProperty
             name="im_totale_iva" />
     <columnFieldProperty
+            name="im_totale_quadratura"/>
+    <columnFieldProperty
             name="im_totale_fattura"/>
     <columnFieldProperty
             name="ds_divisa"
@@ -1691,9 +1693,6 @@
             label="Valuta"/>
     <columnFieldProperty
             name="cambio"/>
-    <columnFieldProperty
-            name="im_totale_quadratura"/>
-
 
     <columnFieldProperty
             name="stato_cofi"/>
