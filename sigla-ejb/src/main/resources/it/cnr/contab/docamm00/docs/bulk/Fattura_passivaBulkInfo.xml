@@ -213,9 +213,10 @@
             optionsProperty="valute"
             maxLength="10"
             inputSize="10"
-            inputType="TEXT"
+            inputType="SELECT"
+            readonlyProperty="ROValuta"
             enabledOnSearch="true"
-            enabledOnFreeSearch="true"
+            nullable="false"
             label="Valuta"
     />
     <fieldProperty
