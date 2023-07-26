@@ -206,7 +206,6 @@
             enabledOnSearch="false"
             enabledOnFreeSearch="false"
             label="Competenza dal"/>
-
     <fieldProperty
             name="valuta"
             property="valuta"
@@ -214,22 +213,21 @@
             optionsProperty="valute"
             maxLength="10"
             inputSize="10"
-            inputType="SELECT"
-            readonlyProperty="ROValuta"
+            inputType="TEXT"
             enabledOnSearch="true"
-            nullable="false"
-            label="Valuta"/>
+            enabledOnFreeSearch="true"
+            label="Valuta"
+    />
     <fieldProperty
             name="valutaForSearch"
-            property="valuta"
-            printProperty="ds_divisa"
-            optionsProperty="valute"
-            maxLength="10"
-            inputSize="10"
-            inputType="SELECT"
+            property="valuta.cd_divisa"
+            inputSize="15"
+            label="Valuta"
+            inputType="TEXT"
             enabledOnSearch="true"
-            nullable="true"
-            label="Valuta"/>
+            enabledOnFreeSearch="true"
+            caseSensitiveSearch="false"
+    />
     <fieldProperty
             name="inizio_validita_valuta"
             property="inizio_validita_valuta"
