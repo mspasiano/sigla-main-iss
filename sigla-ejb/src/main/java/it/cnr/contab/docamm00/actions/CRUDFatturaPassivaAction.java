@@ -2079,7 +2079,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
             CRUDFatturaPassivaBP bp = (CRUDFatturaPassivaBP) getBusinessProcess(context);
             Fattura_passivaBulk fattura = (Fattura_passivaBulk) bp.getModel();
             java.sql.Timestamp dataEmissione = fattura.getDt_fattura_fornitore();
-            boolean isBPAmministra = bp instanceof CRUDFatturaPassivaAmministraBP;
+            boolean isBPAmministra = bp instanceof CRUDFatturaPassivaAmministraBP ||
+                    (bp.getParent() != null && bp.getParent() instanceof CRUDFatturaPassivaAmministraBP);
             try {
                 fillModel(context);
                 if (!bp.isSearching())
