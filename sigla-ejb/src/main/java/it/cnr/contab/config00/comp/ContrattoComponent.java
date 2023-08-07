@@ -514,11 +514,17 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		importiPassiviNettiFigli = importiPassiviNettiFigli.add(contratto.
 				getIm_contratto_passivo_netto());
 
-		logger.info("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
-		logger.info("ImportiPassiviNetti] Padre: " + importoPassivoNettoPadre + ", Figli: " + importiPassiviNettiFigli);
-
-		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 || importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0){
-			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
+		logger.debug("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
+		logger.debug("ImportiPassiviNetti] Padre: " + importoPassivoNettoPadre + ", Figli: " + importiPassiviNettiFigli);
+		if ( Optional.ofNullable(importoPassivoPadre).isPresent()) {
+			if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ) {
+				throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
+			}
+		}
+		if ( Optional.ofNullable(importoPassivoNettoPadre).isPresent()) {
+			if (importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0) {
+				throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
+			}
 		}
 	}
 
