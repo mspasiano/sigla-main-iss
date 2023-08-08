@@ -38,6 +38,10 @@ public class Scrittura_partita_doppiaBulk extends Scrittura_partita_doppiaBase {
 
     public final static String TIPO_COGE = "COGE";
     public final static String ORIGINE_CAUSALE = "CAUSALE";
+    public final static String ORIGINE_DOCAMM = "DOCAMM";
+    public final static String ORIGINE_DOCCONT = "DOCCONT";
+    public final static String ORIGINE_STIPENDI = "STIPENDI";
+    public final static String ORIGINE_LIQUID_IVA = "LIQUID_IVA";
     public final static String TIPO_PRIMA_SCRITTURA = "P";
     public final static String STATO_DEFINITIVO = "D";
     public final static java.util.Dictionary STATO_ATTIVA;

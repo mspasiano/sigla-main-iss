@@ -5160,6 +5160,18 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		scritturaPartitaDoppia.setReport_id_liquid(doccoge.getReportIdLiquid());
 		scritturaPartitaDoppia.setAttiva(Scrittura_partita_doppiaBulk.ATTIVA_YES);
 
+		TipoDocumentoEnum tipoDocumento = TipoDocumentoEnum.fromValue(scritturaPartitaDoppia.getCd_tipo_documento());
+		if (tipoDocumento.isGenericoStipendiSpesa())
+			scritturaPartitaDoppia.setOrigine_scrittura(Scrittura_partita_doppiaBulk.ORIGINE_STIPENDI);
+		else if (tipoDocumento.isLiquidazioneIva())
+			scritturaPartitaDoppia.setOrigine_scrittura(Scrittura_partita_doppiaBulk.ORIGINE_LIQUID_IVA);
+		else if (tipoDocumento.isDocumentoAttivo() || tipoDocumento.isDocumentoPassivo())
+			scritturaPartitaDoppia.setOrigine_scrittura(Scrittura_partita_doppiaBulk.ORIGINE_DOCAMM);
+		else if (tipoDocumento.isMandato() || tipoDocumento.isReversale())
+			scritturaPartitaDoppia.setOrigine_scrittura(Scrittura_partita_doppiaBulk.ORIGINE_DOCCONT);
+		else
+			scritturaPartitaDoppia.setOrigine_scrittura(Scrittura_partita_doppiaBulk.ORIGINE_CAUSALE);
+
 		testataPrimaNota.forEach(testata -> {
 			if (accorpaConti) {
 				//Prima analizzo i conti patrimoniali con partita senza cori
