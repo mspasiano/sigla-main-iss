@@ -98,7 +98,7 @@ public class MagazzinoHome extends BulkHome {
 	public SQLBuilder selectTipoMovimentoMagTraScaByClause(UserContext userContext, MagazzinoBulk magazzinoBulk, TipoMovimentoMagHome  tipoMovimentoMagHome, TipoMovimentoMagBulk tipoMovimentoMagBulk, CompoundFindClause clause)  throws PersistencyException,ComponentException, EJBException, RemoteException {
 		if ( clause==null)
 			clause =  new CompoundFindClause();
-		clause.addClause(FindClause.AND, "tipo", SQLBuilder.EQUALS, TipoMovimentoMagBulk.SCARICO_AUTOMATICO);
+		clause.addClause(FindClause.AND, "tipo", SQLBuilder.EQUALS, TipoMovimentoMagBulk.SCARICO_TRASFERIMENTO);
 		return selectTipoMovimento(userContext,magazzinoBulk,tipoMovimentoMagHome,tipoMovimentoMagBulk,clause);
 	}
 
