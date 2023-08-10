@@ -55,7 +55,7 @@
 		inputType="TEXT"
 		inputSize="10"
 		maxLength="10"
-		label="Prog. Accertamento" />
+		label="Numero Accertamento" />
 	<fieldProperty
 		name="pg_acc_scad"
 		property="pg_acc_scad"
@@ -114,6 +114,13 @@
 		maxLength="300"
 		inputSize="50"
 		label="Denominazione"/>
+	<fieldProperty
+			name="acc_desc"
+			property="acc_desc"
+			inputType="TEXT"
+			maxLength="300"
+			inputSize="300"
+			label="Descrizione Accertamento"/>
 		
 	<formFieldProperty
 		name="cds" />
@@ -131,6 +138,8 @@
 		name="voce_bilancio" />
 	<formFieldProperty
 		name="data_scad" />
+	<formFieldProperty
+			name="acc_desc" />
 	<formFieldProperty
 		name="ds_scad" />
 	<formFieldProperty
@@ -141,7 +150,7 @@
 		name="imp_ass_doc_cont" />
 	<formFieldProperty
 		name="debitore" />
-		
+
 	<findFieldProperty
 		name="cds" />
 	<findFieldProperty
@@ -158,6 +167,8 @@
 		name="voce_bilancio" />
 	<findFieldProperty
 		name="data_scad" />
+	<findFieldProperty
+			name="acc_desc" />
 	<findFieldProperty
 		name="ds_scad" />
 	<findFieldProperty
@@ -167,8 +178,8 @@
 	<findFieldProperty
 		name="imp_ass_doc_cont" />
 	<findFieldProperty
-		name="debitore" />	
-		
+		name="debitore" />
+
 	<columnFieldProperty
 		name="cds" />
 	<columnFieldProperty
@@ -185,6 +196,8 @@
 		name="voce_bilancio" />
 	<columnFieldProperty
 		name="data_scad" />
+	<columnFieldProperty
+			name="acc_desc" />
 	<columnFieldProperty
 		name="ds_scad" />
 	<columnFieldProperty
@@ -195,4 +208,7 @@
 		name="imp_ass_doc_cont" />
 	<columnFieldProperty
 		name="debitore" />
+
+
+
 </bulkInfo>
