@@ -243,7 +243,7 @@
 		<welcome-file>Login.do</welcome-file>
 	</welcome-file-list>
 	<login-config>
-		<auth-method>FORM</auth-method>
+		<auth-method>BASIC?silent=true,FORM</auth-method>
 		<realm-name>SIGLA realm</realm-name>
 		<form-login-config>
 			<form-login-page>/util/index.jsp</form-login-page>
