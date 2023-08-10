@@ -35,10 +35,14 @@
     <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ALTROPERSONALESUPROGETTOCOMPLETO">
         <sqlFile dbms="oracle" path="../isssigladb/View/AltroPersonaleSuProgettoCompleto.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
     </changeSet>
+
     <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ISS-PRT_MAND_ELENCO_CNR">
         <sqlFile dbms="oracle" path="../isssigladb/View/PRT_MAND_ELENCO_CNR.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
     </changeSet>
     <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ISS-PRT_REVE_ELENCO_CNR">
         <sqlFile dbms="oracle" path="../isssigladb/View/PRT_REVE_ELENCO_CNR.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="valentina.tomada" runOnChange="true" id="create-view-ISS-PRT_STAMPA_REGISTRO_INVENTARIO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/PRT_STAMPA_REGISTRO_INVENTARIO.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
     </changeSet>
 </databaseChangeLog>
