@@ -896,6 +896,29 @@
 			enabledOnEdit="false"
 			enabledOnSearch="false"
 			enabledOnFreeSearch="false"/>
+	<fieldProperty
+			name="utcr"
+			property="utcr"
+			inputSize="20"
+			inputType="TEXT"
+			label="Utente Creazione"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnInsert="false"
+			enabledOnFreeSearch="false"/>
+	<fieldProperty
+			name="dacr"
+			property="dacr"
+			maxLength="10"
+			inputSize="10"
+			inputType="TEXT"
+			formatName="date_short"
+			label="Data Creazione"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnInsert="false"
+			enabledOnFreeSearch="false"/>
+
 
 	<findFieldProperty name="pg_fattura_attiva"/>
 	<findFieldProperty name="protocollo_iva" />	
@@ -1248,7 +1271,8 @@
 			name="fl_pagamento_anticipato" />
 	<columnFieldProperty
 			name="progrUnivocoAnno" />
-
+	<columnFieldProperty name="utcr"/>
+	<columnFieldProperty name="dacr"/>
 
 
 
