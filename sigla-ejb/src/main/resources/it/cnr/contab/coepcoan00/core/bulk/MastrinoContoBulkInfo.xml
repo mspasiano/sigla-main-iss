@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<bulkInfo
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns="https://contab.cnr.it/schema/SIGLA" 
+		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+
+	<columnSet
+			name="mastrino_conto_tot_all">
+		<columnFieldProperty
+				label="Conto"
+				name="cd_voce_ep"
+				property="cdVoceEpColumnValue"/>
+		<columnFieldProperty
+				name="ds_voce_ep"
+				property="dsVoceEpColumnValue"/>
+
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Dare"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_dare"
+				property="im_movimento_dare"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Avere"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_avere"
+				property="im_movimento_avere"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Differenza"
+				name="differenza"
+				formatName="it.cnr.contab.util.EuroFormat"
+				property="differenza"/>
+	</columnSet>
+
+	<columnSet
+			name="mastrino_conto_tot_uo">
+		<columnFieldProperty
+				label="Conto"
+				name="cd_voce_ep"
+				property="cdVoceEpColumnValue"/>
+		<columnFieldProperty
+				name="ds_voce_ep"
+				property="dsVoceEpColumnValue"/>
+
+		<columnFieldProperty
+				headerLabel="Unità Organizzativa"
+				name="cd_unita_organizzativa"
+				property="cdUnitaOrganizzativaColumnValue"/>
+		<columnFieldProperty
+				headerLabel="Unità Organizzativa"
+				name="ds_unita_organizzativa"
+				property="dsUnitaOrganizzativaColumnValue"/>
+
+		<columnFieldProperty
+				label="Tipologia"
+				inputType="SELECT"
+				keysProperty="tipoRigaKeys"
+				name="ti_riga"/>
+
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Dare"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_dare"
+				property="im_movimento_dare"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Avere"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_avere"
+				property="im_movimento_avere"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Differenza"
+				name="differenza"
+				formatName="it.cnr.contab.util.EuroFormat"
+				property="differenza"/>
+	</columnSet>
+
+	<columnSet
+			name="mastrino_conto">
+		<columnFieldProperty
+				headerLabel="Scrittura"
+				label="Num."
+				name="pg_scrittura"
+				property="pgScritturaColumnValue"/>
+		<columnFieldProperty
+				headerLabel="Scrittura"
+				label="Data"
+				formatName="date_short"
+				name="dt_contabilizzazione"
+				property="dtContabilizzazioneColumnValue"/>
+		<columnFieldProperty
+				headerLabel="Scrittura"
+				label="Desc."
+				name="ds_scrittura"
+				property="dsScritturaColumnValue"/>
+		<columnFieldProperty
+				label="Conto"
+				name="cd_voce_ep"
+				property="cdVoceEpColumnValue"/>
+		<columnFieldProperty
+				name="ds_voce_ep"
+				property="dsVoceEpColumnValue"/>
+
+		<columnFieldProperty
+				headerLabel="Unità Organizzativa"
+				name="cd_unita_organizzativa"
+				property="cdUnitaOrganizzativaColumnValue"/>
+		<columnFieldProperty
+				headerLabel="Unità Organizzativa"
+				name="ds_unita_organizzativa"
+				property="dsUnitaOrganizzativaColumnValue"/>
+
+		<columnFieldProperty
+				headerLabel="Partita"
+				label="Tipo"
+				inputType="SELECT"
+				keysProperty="tipoDocAmmKeys"
+				name="cd_tipo_documento"
+				property="cd_tipo_documento"/>
+		<columnFieldProperty
+				headerLabel="Partita"
+				label="Anno"
+				name="esercizio_documento"
+				property="esercizio_documento"/>
+		<columnFieldProperty
+				headerLabel="Partita"
+				label="CdS"
+				name="cd_cds_documento"
+				property="cd_cds_documento"/>
+		<columnFieldProperty
+				headerLabel="Partita"
+				label="UO"
+				name="cd_uo_documento"
+				property="cd_uo_documento"/>
+		<columnFieldProperty
+				headerLabel="Partita"
+				label="Numero"
+				name="pg_numero_documento"
+				property="pg_numero_documento"/>
+		<columnFieldProperty
+				label="Terzo"
+				name="cd_terzo"
+				property="terzo.cd_terzo"/>
+		<columnFieldProperty
+				label="Codice CO/RI"
+				name="cd_contributo_ritenuta"
+				property="cd_contributo_ritenuta"/>
+		<columnFieldProperty
+				label="Tipologia"
+				inputType="SELECT"
+				keysProperty="tipoRigaKeys"
+				name="ti_riga"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Dare"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_dare"
+				property="im_movimento_dare"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Avere"
+				formatName="it.cnr.contab.util.EuroFormat"
+				name="im_movimento_avere"
+				property="im_movimento_avere"/>
+		<columnFieldProperty
+				headerLabel="Importo"
+				label="Differenza"
+				name="differenza"
+				formatName="it.cnr.contab.util.EuroFormat"
+				property="differenza"/>
+	</columnSet>
+
+	<freeSearchSet name="default">
+		<findFieldProperty name="cd_voce_ep" label="Codice Conto" inputType="TEXT"/>
+	</freeSearchSet>
+</bulkInfo>

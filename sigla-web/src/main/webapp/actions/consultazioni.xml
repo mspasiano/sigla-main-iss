@@ -259,6 +259,8 @@
 	<action path="/ConsNonAcquisitiAction" actionClass="it.cnr.contab.doccont00.consultazioni.action.ConsNonAcquisitiAction"/>
 	<action path="/ConsBeneServizioAction" actionClass="it.cnr.jada.util.action.ConsultazioniAction">
 	</action>
+	<action path="/ConsultazioneMastrinoContoAction" actionClass="it.cnr.contab.coepcoan00.action.ConsultazioneMastrinoContoAction"/>
+
 
 	<businessProcess name="ConsObbligazioniBP"
 					 className="it.cnr.contab.consultazioni.bp.ConsObbligazioniBP">
@@ -434,6 +436,15 @@
 					value="it.cnr.contab.coepcoan00.core.bulk.PartitarioBulk" />
 		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
 		<init-param name="defaultAction" value="SelezionatoreSearchProviderAction" />
+	</businessProcess>
+
+	<businessProcess name="ConsultazioneMastrinoContoBP"
+					 className="it.cnr.contab.coepcoan00.consultazioni.bp.ConsultazioneMastrinoContoBP">
+		<forward name="default" path="/consultazioni/form_lista.jsp" />
+		<init-param name="bulkClassName"
+					value="it.cnr.contab.coepcoan00.core.bulk.MastrinoContoBulk" />
+		<init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
+		<init-param name="defaultAction" value="ConsultazioneMastrinoContoAction" />
 	</businessProcess>
 
 	<businessProcess name="ConsSchedaAnaliticaContoBP"

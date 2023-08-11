@@ -6012,4 +6012,5 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : CIRO SALVIO - Aggiunti campi su Fattura Passiva Riga per pagamento PAGOPA  -->
     <include file="bootstrap/add_flag_gestione_inventaria_documenti.xml"/>
 
+    <include file="bootstrap/add_accessi_mastrino_conto.xml"/>
 </databaseChangeLog>
