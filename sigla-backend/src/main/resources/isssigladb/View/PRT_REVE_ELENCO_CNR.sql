@@ -1,6 +1,3 @@
---------------------------------------------------------
---  DDL for View PRT_REVE_ELENCO_CNR
---------------------------------------------------------
 
   CREATE OR REPLACE FORCE EDITIONABLE VIEW "PRT_REVE_ELENCO_CNR" ("ESERCIZIO", "COD_CDS", "PROGRESSIVO", "DATA_EMISSIONE", "UO_EMITTENTE", "TIPOLOGIA", "STATO", "STATO_TRASMISSIONE", "COMPETENZA_RESIDUO", "ANNO_ACCERTAMENTO", "ANNO_ORI_ACCERTAMENTO", "NUM_ACCERTAMENTO", "CDS_ORI_ACCERTAMENTO", "UO_ORI_ACCERTAMENTO", "TERZO_COD", "LORDO", "COD_VOCE", "TERZO_DES", "RIGA_DES", "PG_SCAD_ACC", "TI_PAGAMENTO", "DT_TRASMISSIONE", "DT_RITRASMISSIONE", "DT_ANNULLAMENTO") AS
   select distinct
@@ -29,6 +26,9 @@
   -- Version: 1.3
   -- Nuova gestione competenza/residuo e gestione BT e BI
   --
+  -- Date: 14/08/2023
+    -- Version: 1.4
+    -- Nuova gestione filtro per Data Trasmissione
   -- Body:
   --
   reversale.ESERCIZIO,
@@ -53,9 +53,9 @@
   reversale_riga.DS_REVERSALE_RIGA,
   reversale_riga.PG_ACCERTAMENTO_SCADENZARIO,
   ti_pagamento,
-  reversale.dt_trasmissione,
-  reversale.dt_ritrasmissione,
-  reversale.dt_annullamento
+  TRUNC(reversale.dt_trasmissione)dt_trasmissione ,
+  TRUNC(reversale.dt_ritrasmissione)dt_ritrasmissione,
+  TRUNC(reversale.dt_annullamento) dt_annullamento
   from reversale, reversale_riga, accertamento, terzo,banca
   where reversale_riga.CD_CDS = reversale.CD_CDS
   and   reversale_riga.ESERCIZIO = reversale.ESERCIZIO
@@ -68,4 +68,4 @@
   and   reversale_riga.pg_banca = banca.pg_banca AND reversale_riga.cd_terzo_uo = banca.cd_terzo
   order by reversale.ESERCIZIO, reversale.CD_CDS, reversale.PG_REVERSALE;
 
-  COMMENT ON TABLE "PRT_REVE_ELENCO_CNR"  IS 'Vista di stampa del Giornale delle Reversali';
+   COMMENT ON TABLE "PRT_REVE_ELENCO_CNR"  IS 'Vista di stampa del Giornale delle Reversali';

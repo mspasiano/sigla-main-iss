@@ -1,8 +1,5 @@
---------------------------------------------------------
---  DDL for View PRT_MAND_ELENCO_CNR
---------------------------------------------------------
 
-  CREATE OR REPLACE FORCE EDITIONABLE VIEW "PRT_MAND_ELENCO_CNR" ("ESERCIZIO", "COD_CDS", "NUM_MANDATO", "DATA_EMISSIONE", "UO_EMITTENTE", "TIPOLOGIA", "STATO", "STATO_TRASMISSIONE", "COMPETENZA_RESIDUO", "ANNO_OBBLIGAZIONE", "ANNO_ORI_OBBLIGAZIONE", "NUM_OBBLIGAZIONE", "CDS_ORI_OBBLIGAZIONE", "UO_ORI_OBBLIGAZIONE", "TERZO_COD", "LORDO", "RITENUTE", "COD_VOCE", "TERZO_DES", "PG_SCAD_OBBL", "RITENUTE_TESTATA", "IMP_PAGATO", "TI_PAGAMENTO", "DT_TRASMISSIONE", "DT_RITRASMISSIONE", "DT_ANNULLAMENTO") AS
+  CREATE OR REPLACE FORCE EDITIONABLE VIEW "SIGLACOPIAPROD"."PRT_MAND_ELENCO_CNR" ("ESERCIZIO", "COD_CDS", "NUM_MANDATO", "DATA_EMISSIONE", "UO_EMITTENTE", "TIPOLOGIA", "STATO", "STATO_TRASMISSIONE", "COMPETENZA_RESIDUO", "ANNO_OBBLIGAZIONE", "ANNO_ORI_OBBLIGAZIONE", "NUM_OBBLIGAZIONE", "CDS_ORI_OBBLIGAZIONE", "UO_ORI_OBBLIGAZIONE", "TERZO_COD", "LORDO", "RITENUTE", "COD_VOCE", "TERZO_DES", "PG_SCAD_OBBL", "RITENUTE_TESTATA", "IMP_PAGATO", "TI_PAGAMENTO", "DT_TRASMISSIONE", "DT_RITRASMISSIONE", "DT_ANNULLAMENTO") AS
   select distinct
   --
   -- Date: 19/07/2007
@@ -32,6 +29,9 @@
   -- Version: 1.4
   -- Nuova gestione competenza/residuo e gestione BT e BI
   --
+  -- Date: 14/08/2023
+      -- Version: 1.4
+      -- Nuova gestione filtro per Data Trasmissione
   -- Body:
   --
   mandato.ESERCIZIO,
@@ -58,9 +58,9 @@
   mandato.im_ritenute,
   mandato.im_pagato,
   ti_pagamento,
-  mandato.dt_trasmissione,
-  mandato.dt_ritrasmissione,
-  mandato.dt_annullamento
+  TRUNC(mandato.dt_trasmissione) dt_trasmissione,
+  TRUNC(mandato.dt_ritrasmissione)dt_ritrasmissione,
+  TRUNC(mandato.dt_annullamento) dt_annullamento
   from  mandato, mandato_riga, obbligazione, obbligazione_scad_voce, terzo,banca
   where mandato_riga.CD_CDS = mandato.CD_CDS
   and   mandato_riga.ESERCIZIO = mandato.ESERCIZIO
@@ -80,4 +80,4 @@
   and   mandato_riga.pg_banca = banca.pg_banca AND mandato_riga.cd_terzo = banca.cd_terzo
   order by mandato.ESERCIZIO, mandato.CD_CDS, mandato.PG_MANDATO;
 
-COMMENT ON TABLE "PRT_MAND_ELENCO_CNR"  IS 'Vista di stampa del Giornale dei Mandati';
+   COMMENT ON TABLE "PRT_MAND_ELENCO_CNR"  IS 'Vista di stampa del Giornale dei Mandati';
