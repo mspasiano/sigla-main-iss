@@ -183,7 +183,8 @@ begin
            ,v_anagrafico_terzo vat
        where uo1.CD_UNITA_ORGANIZZATIVA = aDocGen.CD_CDS
          and uo2.CD_UNITA_ORGANIZZATIVA = aDocGen.CD_UO_ORIGINE
-         and vat.CD_UNITA_ORGANIZZATIVA =uoEnte.cd_unita_organizzativa; 
+         and vat.CD_UNITA_ORGANIZZATIVA =uoEnte.cd_unita_organizzativa
+         and vat.cd_terzo!=0;
 
        
 	   -- fine inserimento record di testata: (A,A)
