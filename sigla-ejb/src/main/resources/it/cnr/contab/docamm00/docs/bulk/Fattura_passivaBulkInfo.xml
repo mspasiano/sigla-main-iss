@@ -1289,7 +1289,7 @@
             enabledOnEdit="false"
             enabledOnSearch="false"
             enabledOnInsert="false"
-            enabledOnFreeSearch="false"/>
+            enabledOnFreeSearch="true"/>
     <fieldProperty
             name="dacr"
             property="dacr"

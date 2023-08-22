@@ -51,7 +51,7 @@
 
 	<findFieldProperty
 		name="pg_fattura_estera" />
-
+	<findFieldProperty name="utcr"/>
 
 
 </bulkInfo>

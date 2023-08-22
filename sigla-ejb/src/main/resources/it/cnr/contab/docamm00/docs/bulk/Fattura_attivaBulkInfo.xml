@@ -905,7 +905,7 @@
 			enabledOnEdit="false"
 			enabledOnSearch="false"
 			enabledOnInsert="false"
-			enabledOnFreeSearch="false"/>
+			enabledOnFreeSearch="true"/>
 	<fieldProperty
 			name="dacr"
 			property="dacr"
@@ -955,6 +955,7 @@
 	<findFieldProperty name="dt_ordine" />
 	<findFieldProperty name="fl_ordine_elettronico" />
 	<findFieldProperty name="codiceUnivocoUfficioOrdine" />
+	<findFieldProperty name="utcr"/>
 
 
 
