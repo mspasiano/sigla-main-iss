@@ -493,6 +493,11 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ComponentException {
 		BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
 		BigDecimal importoPassivoNettoPadre = contratto.getContratto_padre().getIm_contratto_passivo_netto();
+		if ( !Optional.ofNullable(importoPassivoPadre).isPresent())
+			throw new ApplicationException("Impossibile associare contratto di riferimento. Il contratto padre non ha impostato l'importo passivo.");
+		if ( !Optional.ofNullable(importoPassivoNettoPadre).isPresent())
+			throw new ApplicationException("Impossibile associare contratto di riferimento. Il contratto padre non ha impostato l'importo passivo Netto.");
+
 
 		BigDecimal importiPassiviFigli = new BigDecimal(0);
 		BigDecimal importiPassiviNettiFigli = new BigDecimal(0);
@@ -516,16 +521,14 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 
 		logger.debug("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
 		logger.debug("ImportiPassiviNetti] Padre: " + importoPassivoNettoPadre + ", Figli: " + importiPassiviNettiFigli);
-		if ( Optional.ofNullable(importoPassivoPadre).isPresent()) {
-			if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ) {
-				throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
-			}
+
+		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ) {
+			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
 		}
-		if ( Optional.ofNullable(importoPassivoNettoPadre).isPresent()) {
-			if (importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0) {
-				throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
-			}
+		if (importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0) {
+			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
 		}
+
 	}
 
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
