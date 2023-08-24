@@ -84,7 +84,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.xml.sax.SAXParseException;
 
 import javax.activation.DataSource;
 import java.io.*;
@@ -927,7 +926,7 @@ public class DocumentiContabiliService extends StoreService implements Initializ
                                     .concat(" - ")
                                     .concat(errore.getDescrizione())
                                     .concat(" - ")
-                                    .concat(errore.getElemento()))
+                                    .concat(errore.getElemento()==null?"":errore.getElemento()))
                             .peek(logger::error)
                             .forEach(s -> {
                                 error.append(s.concat("\n"));
