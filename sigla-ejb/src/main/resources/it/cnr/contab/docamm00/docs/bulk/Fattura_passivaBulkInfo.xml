@@ -1368,7 +1368,7 @@
             name="fl_split_payment"/>
     <findFieldProperty
             name="flDaOrdini"/>
-
+    <findFieldProperty name="utcr"/>
     <formFieldProperty
             name="ti_bene_servizio"/>
     <formFieldProperty
