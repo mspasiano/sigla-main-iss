@@ -17,6 +17,8 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
+import it.cnr.jada.bulk.ValidationException;
+
 /**
  * Insert the type's description here.
  * Creation date: (19/03/2003 10.52.15)
@@ -172,6 +174,8 @@ public void setTerzoForPrint(it.cnr.contab.anagraf00.core.bulk.TerzoBulk newTerz
 	terzoForPrint = newTerzoForPrint;
 }
 public void validate() throws it.cnr.jada.bulk.ValidationException {	
-	
+	if ( Stampa_vpg_doc_genericoBulk.GENERICO_E.equalsIgnoreCase(this.getTipo_documento().getCd_tipo_documento_amm()))
+		if (this.getIdTipoDocumentoGenericoParameter()==null)
+			throw new ValidationException("Per i documenti generici di Entrata è obbligatorio scegliere un Tipo Documento Generico");
 }
 }
