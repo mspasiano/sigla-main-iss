@@ -20,8 +20,8 @@
 * Date 27/04/2006
 */
 package it.cnr.contab.doccont00.consultazioni.bulk;
+
 import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.persistency.Keyed;
 import it.cnr.jada.persistency.Persistent;
 
 import java.sql.Timestamp;
@@ -82,6 +82,9 @@ public class V_cons_stato_invio_reversaliBase extends OggettoBulk implements Per
 
 	// ERRORE_SIOPE_PLUS VARCHAR2(2000)
 	private java.lang.String erroreSiopePlus;
+
+
+	private java.lang.String cd_modalita_pag;
  
 	public V_cons_stato_invio_reversaliBase() {
 		super();
@@ -205,5 +208,13 @@ public class V_cons_stato_invio_reversaliBase extends OggettoBulk implements Per
 
 	public void setErroreSiopePlus(String erroreSiopePlus) {
 		this.erroreSiopePlus = erroreSiopePlus;
+	}
+
+	public String getCd_modalita_pag() {
+		return cd_modalita_pag;
+	}
+
+	public void setCd_modalita_pag(String cd_modalita_pag) {
+		this.cd_modalita_pag = cd_modalita_pag;
 	}
 }

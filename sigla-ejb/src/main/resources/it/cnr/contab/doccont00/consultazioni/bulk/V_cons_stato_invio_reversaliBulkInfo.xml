@@ -133,6 +133,13 @@
             formatName="date_short"
             label="Data invio distinta"/>
     <fieldProperty
+            name="cd_modalita_pag"
+            property="cd_modalita_pag"
+            inputType="TEXT"
+            inputSize="10"
+            maxLength="10"
+            label="Modalità inc."/>
+    <fieldProperty
             name="esitoOperazione"
             property="esitoOperazione"
             keysProperty="esito_OperazioneKeys"
@@ -187,6 +194,9 @@
             name="dt_emis_dis"/>
     <formFieldProperty
             name="dt_invio_dis"/>
+    <formFieldProperty
+        name="cd_modalita_pag"/>
+
     <findFieldProperty
             name="cd_cds"/>
     <findFieldProperty
@@ -225,6 +235,8 @@
             name="dtOraEsitoOperazione"/>
     <findFieldProperty
             name="erroreSiopePlus"/>
+    <findFieldProperty
+            name="cd_modalita_pag"/>
 
     <columnFieldProperty
             name="cd_cds"/>
@@ -250,7 +262,8 @@
             name="dt_annullamento"/>
     <columnFieldProperty
             name="dt_incasso"/>
-
+    <columnFieldProperty
+            name="cd_modalita_pag"/>
     <columnFieldProperty
             name="pg_distinta"
             headerLabel="Distinta"
@@ -282,6 +295,8 @@
             label="Errore"/>
     <columnFieldProperty
             name="contabile"/>
+
+
     <columnSet name="elencoNonAcquisiti">
         <columnFieldProperty
                 name="cd_cds"/>
