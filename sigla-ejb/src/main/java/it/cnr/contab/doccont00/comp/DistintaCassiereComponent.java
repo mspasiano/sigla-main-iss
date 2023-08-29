@@ -681,7 +681,9 @@ public class DistintaCassiereComponent extends
                         .orElse(Boolean.TRUE) ||
                     Optional.ofNullable(docContabile.getStatoVarSos())
                             .map(s -> s.equals(StatoVariazioneSostituzione.VARIAZIONE_DEFINITIVA.value()))
-                            .orElse(Boolean.FALSE)
+                            .orElse(Boolean.FALSE)||
+                        ( MandatoBulk.STATO_MANDATO_ANNULLATO.equals(docContabile.getStato())
+                        && MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA.equals(docContabile.getStato_trasmissione()))
                 ) {
                     last_pg_dettaglio = inserisciDettaglioDistinta(userContext,
                             distinta, docContabile, last_pg_dettaglio);
