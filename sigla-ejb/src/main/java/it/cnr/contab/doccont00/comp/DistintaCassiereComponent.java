@@ -1490,21 +1490,8 @@ public class DistintaCassiereComponent extends
                         sql.addClause(docPassivo.buildFindClauses(null));
                     sql.addClause(clausole);
                     sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
-                    sql.openParenthesis(FindClause.AND);
-                        sql.openParenthesis(FindClause.AND);
-                            sql.addSQLJoin("V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT");
-                            sql.addSQLJoin("V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
-                        sql.closeParenthesis();
-                        //Anomalia su Annullamento mandato con reversale vincolata ma non è stata
-                        // inviata con il flusso di annullo del mandato
-                        sql.openParenthesis(FindClause.OR);
-                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS,"REV");
-                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont_padre", SQLBuilder.EQUALS,"MAN");
-                            sql.addClause(FindClause.AND, "stato", SQLBuilder.EQUALS,ReversaleBulk.STATO_REVERSALE_ANNULLATO);
-                            sql.addSQLClause(FindClause.AND, "esito_operazione", SQLBuilder.EQUALS,EsitoOperazione.ACQUISITO.value());
-                        sql.closeParenthesis();
-                     sql.closeParenthesis();
-
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT");
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
                     if (!tesoreriaUnica(userContext, distinta)) {
                         sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
                         sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
