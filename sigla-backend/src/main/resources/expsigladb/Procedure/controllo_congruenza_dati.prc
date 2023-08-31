@@ -230,13 +230,13 @@ BEGIN
 				dbms_output.put_line('Riga '||rec1.RIGA||' dell''ordine '||rec.CD_CDS||'/'||rec.CD_UNITA_OPERATIVA||'/'||
 						rec.ESERCIZIO||'/'||rec.CD_NUMERATORE||'/'||rec.NUMERO||
 						' di imponibile '||
-						ltrim(rtrim(to_char(rec.IM_IMPONIBILE,'999g999g999g999g990d00')))||
+						ltrim(rtrim(to_char(rec1.IM_IMPONIBILE,'999g999g999g999g990d00')))||
 						' e iva '||
-						ltrim(rtrim(to_char(rec.IM_IVA,'999g999g999g999g990d00')))||
-						' non coincidente con il totale riga ordine (imponibile: '||
-						ltrim(rtrim(to_char(rec.TOT_IMPONIBILE_CONSEGNA,'999g999g999g999g990d00')))||
+						ltrim(rtrim(to_char(rec1.IM_IVA,'999g999g999g999g990d00')))||
+						' non coincidente con il totale riga consegne (imponibile: '||
+						ltrim(rtrim(to_char(rec1.TOT_IMPONIBILE_CONSEGNA,'999g999g999g999g990d00')))||
 						' - iva: '||
-						ltrim(rtrim(to_char(rec.TOT_IVA_CONSEGNA,'999g999g999g999g990d00')))||').');
+						ltrim(rtrim(to_char(rec1.TOT_IVA_CONSEGNA,'999g999g999g999g990d00')))||').');
 			END LOOP;
 		END IF;
 	END LOOP;

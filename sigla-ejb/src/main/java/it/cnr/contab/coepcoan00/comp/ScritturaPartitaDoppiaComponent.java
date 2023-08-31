@@ -323,10 +323,17 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			try {
 				if (importoAnniPrecedenti.compareTo(BigDecimal.ZERO)!=0) {
 					Voce_epBulk aContoFatturaDaEmettereRicevere;
-					if (docamm instanceof Documento_amministrativo_attivoBulk)
-						aContoFatturaDaEmettereRicevere = findContoFattureDaEmettere(userContext, docamm.getEsercizio());
-					else
-						aContoFatturaDaEmettereRicevere = findContoFattureDaRicevere(userContext, docamm.getEsercizio());
+					if (docamm instanceof Documento_amministrativo_attivoBulk) {
+						if (docamm instanceof Nota_di_credito_attivaBulk)
+							aContoFatturaDaEmettereRicevere = findContoNotaCreditoDaEmettere(userContext, docamm.getEsercizio());
+						else
+							aContoFatturaDaEmettereRicevere = findContoFattureDaEmettere(userContext, docamm.getEsercizio());
+					} else {
+						if (docamm instanceof Nota_di_creditoBulk)
+							aContoFatturaDaEmettereRicevere = findContoNotaCreditoDaRicevere(userContext, docamm.getEsercizio());
+						else
+							aContoFatturaDaEmettereRicevere = findContoFattureDaRicevere(userContext, docamm.getEsercizio());
+					}
 					DettaglioPrimaNota dettPN = this.addDettaglioCostoRicavo(userContext, docamm, aContoFatturaDaEmettereRicevere, importoAnniPrecedenti, Boolean.FALSE, null, null, null, null, Boolean.TRUE);
 					dettPN.setModificabile(Boolean.FALSE);
 				}
@@ -4535,8 +4542,16 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		return this.findContoByConfigurazioneCNR(userContext, esercizio, Configurazione_cnrBulk.PK_VOCEEP_SPECIALE, Configurazione_cnrBulk.SK_FATTURE_DA_RICEVERE, 1);
 	}
 
+	private Voce_epBulk findContoNotaCreditoDaRicevere(UserContext userContext, Integer esercizio) throws ComponentException, RemoteException {
+		return this.findContoByConfigurazioneCNR(userContext, esercizio, Configurazione_cnrBulk.PK_VOCEEP_SPECIALE, Configurazione_cnrBulk.SK_FATTURE_DA_RICEVERE, 2);
+	}
+
 	private Voce_epBulk findContoFattureDaEmettere(UserContext userContext, Integer esercizio) throws ComponentException, RemoteException {
 		return this.findContoByConfigurazioneCNR(userContext, esercizio, Configurazione_cnrBulk.PK_VOCEEP_SPECIALE, Configurazione_cnrBulk.SK_FATTURE_DA_EMETTERE, 1);
+	}
+
+	private Voce_epBulk findContoNotaCreditoDaEmettere(UserContext userContext, Integer esercizio) throws ComponentException, RemoteException {
+		return this.findContoByConfigurazioneCNR(userContext, esercizio, Configurazione_cnrBulk.PK_VOCEEP_SPECIALE, Configurazione_cnrBulk.SK_FATTURE_DA_EMETTERE, 2);
 	}
 
 	private Voce_epBulk findContoRateiPassivi(UserContext userContext, Integer esercizio) throws ComponentException, RemoteException {
