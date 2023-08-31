@@ -61,4 +61,7 @@
         </insert>
     </changeSet>
 
+    <changeSet author="raffaele.pagano" runOnChange="true" id="create-view-V_MASTRINO_CONTO">
+        <sqlFile dbms="oracle" path="../expsigladb/View/V_MASTRINO_CONTO.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
 </databaseChangeLog>
