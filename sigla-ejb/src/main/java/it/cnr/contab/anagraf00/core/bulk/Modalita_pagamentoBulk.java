@@ -23,7 +23,6 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.jada.bulk.OggettoBulk;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**

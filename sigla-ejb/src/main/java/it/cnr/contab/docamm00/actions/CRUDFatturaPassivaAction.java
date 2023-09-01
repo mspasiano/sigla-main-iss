@@ -1257,7 +1257,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
                     .ifPresent(fattura_passiva_rigaBulk -> {
                         fattura_passiva_rigaBulk.setBene_servizio(new Bene_servizioBulk());
                         fattura_passiva_rigaBulk.setVoce_iva(new Voce_ivaBulk());
-                        if ( fattura_passiva_rigaBulk.getModalita_pagamento().isPAGOPA()){
+                        if (Optional.ofNullable(fattura_passiva_rigaBulk.getModalita_pagamento()).
+                                map(Rif_modalita_pagamentoBulk::isPAGOPA).orElse(false)) {
                             fattura_passiva_rigaBulk.setCodice_identificativo_ente_pagopa(
                                     Optional.ofNullable(fattura_passiva_rigaBulk.getTerzo())
                                             .map(t->t.getCodice_fiscale_anagrafico()!=null?t.getCodice_fiscale_anagrafico():t.getPartita_iva_anagrafico())
