@@ -459,14 +459,14 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                 scadenza.setUser(userContext.getUser());
                 if (scadenza.getIm_associato_doc_contabile().compareTo(scadenza.getIm_associato_doc_amm()) > 0)
                     throw new ApplicationException("La scadenza con esercizio: " + scadenza.getEsercizio() +
-                                    " Cds: " + scadenza.getCd_cds() +
-                                    " Esercizio impegno: " + scadenza.getEsercizio_originale() +
-                                    " Pg impegno: " + scadenza.getPg_obbligazione() +
-                                    " Pg scadenza: " + scadenza.getPg_obbligazione_scadenzario() +
-                                    " ha importo associato ai doc. contabili ("+
-                                    new EuroFormat().format(scadenza.getIm_associato_doc_contabile()) +
-                                    ") maggiore dell'importo associato a doc.amm (" +
-                                    new EuroFormat().format(scadenza.getIm_associato_doc_amm())+").");
+                            " Cds: " + scadenza.getCd_cds() +
+                            " Esercizio impegno: " + scadenza.getEsercizio_originale() +
+                            " Pg impegno: " + scadenza.getPg_obbligazione() +
+                            " Pg scadenza: " + scadenza.getPg_obbligazione_scadenzario() +
+                            " ha importo associato ai doc. contabili ("+
+                            new EuroFormat().format(scadenza.getIm_associato_doc_contabile()) +
+                            ") maggiore dell'importo associato a doc.amm (" +
+                            new EuroFormat().format(scadenza.getIm_associato_doc_amm())+").");
                 else if (scadenza.getIm_associato_doc_contabile().compareTo(scadenza.getIm_scadenza()) > 0)
                     throw new ApplicationException("La scadenza con esercizio: " + scadenza.getEsercizio() +
                             " Cds: " + scadenza.getCd_cds() +
@@ -2175,7 +2175,7 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
 
             ((MandatoIBulk) mandato).addToMandato_rigaColl(riga, docPassivo);
 
-            if (docPassivo.getCd_sospeso() != null)
+            if (docPassivo.getCd_sospeso() != null && docPassivo.getIm_imponibile_doc_amm().compareTo(BigDecimal.ZERO)>0)
                 ((MandatoIBulk) mandato).getSospesiDa1210List().add(
                         docPassivo.getCd_sospeso());
 
@@ -5129,21 +5129,25 @@ public class MandatoComponent extends ScritturaPartitaDoppiaFromDocumentoCompone
                             .find1210Collegati(riga);
                     for (Iterator j = docPassivi.iterator(); j.hasNext(); ) {
                         docPassivo = (V_doc_passivo_obbligazioneBulk) j.next();
-                        if (!mandato.isDocPassivoIncluso(docPassivo))
-                            throw new ApplicationException(
-                                    "Lettera di pagamento "
-                                            + riga.getPg_lettera()
-                                            + ": e' necessario includere nel mandato anche la scadenza "
-                                            + new java.text.SimpleDateFormat(
-                                            "dd.MM.yyyyy")
-                                            .format(docPassivo
-                                                    .getDt_scadenza())
-                                            + " dell'impegno "
-                                            + docPassivo
-                                            .getEsercizio_ori_obbligazione()
-                                            + "/"
-                                            + docPassivo.getPg_obbligazione()
-                                            + ".");
+
+                        if (riga.getIm_mandato_riga().compareTo(riga.getIm_ritenute_riga())!=0 &&
+                                docPassivo.getIm_imponibile_doc_amm().compareTo(BigDecimal.ZERO)>0){
+                            if (!mandato.isDocPassivoIncluso(docPassivo))
+                                throw new ApplicationException(
+                                        "Lettera di pagamento "
+                                                + riga.getPg_lettera()
+                                                + ": e' necessario includere nel mandato anche la scadenza "
+                                                + new java.text.SimpleDateFormat(
+                                                "dd.MM.yyyyy")
+                                                .format(docPassivo
+                                                        .getDt_scadenza())
+                                                + " dell'impegno "
+                                                + docPassivo
+                                                .getEsercizio_ori_obbligazione()
+                                                + "/"
+                                                + docPassivo.getPg_obbligazione()
+                                                + ".");
+                        }
                     }
                 }
             }
