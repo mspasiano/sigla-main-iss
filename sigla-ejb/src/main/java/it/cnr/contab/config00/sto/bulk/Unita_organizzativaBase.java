@@ -80,6 +80,9 @@ public class Unita_organizzativaBase extends Unita_organizzativaKey implements K
 	// CODICEAOOIPA VARCHAR(100)
 	private java.lang.String codiceAooIpa;
 
+	// SIGLA UO INTERNA ALL'ENTE
+	private String sigla_int_ente;
+
 	public Unita_organizzativaBase() {
 	super();
 }
@@ -304,5 +307,13 @@ public class Unita_organizzativaBase extends Unita_organizzativaKey implements K
 
 	public void setCodiceAooIpa(String codiceAooIpa) {
 		this.codiceAooIpa = codiceAooIpa;
+	}
+
+	public String getSigla_int_ente() {
+		return sigla_int_ente;
+	}
+
+	public void setSigla_int_ente(String sigla_int_ente) {
+		this.sigla_int_ente = sigla_int_ente;
 	}
 }
