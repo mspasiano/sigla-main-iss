@@ -34,7 +34,6 @@ import it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_obbligazioniVBulk;
 import it.cnr.contab.docamm00.docs.bulk.ObbligazioniTable;
 import it.cnr.contab.docamm00.ejb.CategoriaGruppoInventComponentSession;
 import it.cnr.contab.docamm00.tabrif.bulk.*;
-import it.cnr.contab.doccont00.comp.DateServices;
 import it.cnr.contab.doccont00.comp.DocumentoContabileComponentSession;
 import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -55,7 +54,6 @@ import it.cnr.contab.util.ICancellatoLogicamente;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.PrimaryKeyHashtable;
@@ -2213,6 +2211,8 @@ public class OrdineAcqComponent
                             if (ordine.getOrdineObbligazioniHash() == null ||
                                     ordine.getOrdineObbligazioniHash().getKey(scadenza) == null) {
                                 scadenza = caricaScadenzaObbligazionePer(aUC, scadenza);
+                            }else {
+                                scadenza = ordine.getOrdineObbligazioniHash().getKey(scadenza);
                             }
                             ordine.addToOrdineObbligazioniHash(scadenza, cons);
                         }
