@@ -73,6 +73,7 @@ public class CRUDTransitoBeniOrdiniBP extends SimpleCRUDBP {
 	}
 
 
+
 public CRUDTransitoBeniOrdiniBP() {
 	super("M");
 	setTab("tab","tabInventarioBeni");
@@ -349,4 +350,19 @@ public void setVisualizzazione(boolean b) {
 public boolean isEditable() {
 		return !isVisualizzazione()&&super.isEditable();
 }
+
+	public void update(ActionContext actioncontext) throws BusinessProcessException {
+		super.update(actioncontext);
+		Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)this.getModel();
+		if(transito.getStato().equals(Transito_beni_ordiniBulk.STATO_ANNULLATO)){
+
+			this.setVisualizzazione(true);
+			try {
+				fillModel(actioncontext);
+			} catch (FillException e) {
+				this.setMessage(e.getMessage());
+			}
+		}
+	}
 }
+

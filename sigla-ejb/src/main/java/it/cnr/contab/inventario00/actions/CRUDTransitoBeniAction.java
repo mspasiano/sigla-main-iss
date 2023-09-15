@@ -21,10 +21,12 @@ import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
 import it.cnr.contab.inventario00.bp.CRUDInventarioBeniBP;
 import it.cnr.contab.inventario00.consultazioni.bulk.V_cons_registro_inventarioBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_beniBulk;
+import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Utilizzatore_CdrVBulk;
 import it.cnr.contab.inventario00.docs.bulk.V_ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario00.ejb.Inventario_beniComponentSession;
 import it.cnr.contab.inventario00.tabrif.bulk.Tipo_ammortamentoBulk;
+import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.action.HookForward;
@@ -394,4 +396,20 @@ public Forward doDettagli(ActionContext context) {
 		 return handleException(context,e);
 	 }
   }
+	public Forward doOnChangeCheckCanc(ActionContext context) {
+		try {
+			fillModel(context);
+			Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)getBusinessProcess(context).getModel();
+			if(!transito.getFl_transito_canc()){
+				transito.setNota_canc(null);
+			}
+
+		}catch(java.lang.ClassCastException ex){
+			return context.findDefaultForward();
+		}catch(Throwable ex){
+			return handleException(context, ex);
+		}
+
+		return context.findDefaultForward();
+	}
 }

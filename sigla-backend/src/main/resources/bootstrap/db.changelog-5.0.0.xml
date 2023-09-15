@@ -6015,6 +6015,9 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_accessi_mastrino_conto.xml"/>
     <!-- Autore : VALENTINA TOMADA - Aggiunta nuova colonna in UNITA_ORGANIZZATIVA per sigla uo interna all'ente  -->
     <include file="bootstrap/add_column_unita_organizzativa_sigla_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - Aggiunta nuova colonna in TRANSITO_BENI_ORDINI per nota di cancellazione del bene dal transito  -->
+    <include file="bootstrap/add_column_transito_beni_ordini.xml"/>
+
 
 
 </databaseChangeLog>

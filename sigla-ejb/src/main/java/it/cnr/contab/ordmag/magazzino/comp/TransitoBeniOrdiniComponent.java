@@ -135,6 +135,16 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 		return bulk;
 	}
 
+	protected void validaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
+		super.validaCreaModificaConBulk(usercontext, oggettobulk);
+		Transito_beni_ordiniBulk bulk = (Transito_beni_ordiniBulk)oggettobulk;
+
+		if(bulk.getFl_transito_canc() && (bulk.getNota_canc()== null ||bulk.getNota_canc().isEmpty())){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: per cancellare il bene dal transito è necessario impostare la nota di cancellazione");
+		}
+
+	}
+
 	public Transito_beni_ordiniBulk  gestioneTransitoInventario(UserContext userContext, MovimentiMagBulk movimentoCarico)  throws ComponentException, PersistencyException, RemoteException, ApplicationException  {
 		try {
 			Bene_servizioHome bene_servizioHome = (Bene_servizioHome)getHome(userContext, Bene_servizioBulk.class);

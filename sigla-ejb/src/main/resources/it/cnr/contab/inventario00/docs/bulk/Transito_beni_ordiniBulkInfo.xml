@@ -430,6 +430,28 @@
 			nullable="false"
 			keysProperty="statoKeys"
 			label="Stato" />
+
+	<fieldProperty
+			name="nota_canc"
+			property="nota_canc"
+			inputType="TEXTAREA"
+			maxLength="1000"
+			inputSize="1000"
+			cols="75"
+			rows="4"
+			label="Nota di cancellazione"
+			readonlyProperty="checkCanc"/>
+
+	<fieldProperty
+			name="fl_transito_canc"
+			property="fl_transito_canc"
+			inputType="CHECKBOX"
+			label="Cancellare il bene dal transito"
+			command="doOnChangeCheckCanc"
+			/>
+
+
+
 	<formFieldProperty
 		name="etichetta" />
 	<formFieldProperty
@@ -537,6 +559,12 @@
 			name="cd_bene_servizio" />
 
 	<formFieldProperty
+			name="nota_canc"/>
+
+	<formFieldProperty
+			name="fl_transito_canc"/>
+
+	<formFieldProperty
 		name="cd_barre" />
 	<formFieldProperty
 		name="targa" />	
@@ -597,6 +625,7 @@
 			name="cd_categoria_beneForFreeSearch"/>
 	<columnFieldProperty
 			name="id_movimenti_mag" />
+
 
 
 	<findFieldProperty

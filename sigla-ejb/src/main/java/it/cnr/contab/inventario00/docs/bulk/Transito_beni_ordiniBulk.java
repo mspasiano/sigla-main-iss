@@ -68,6 +68,8 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 
 	private it.cnr.contab.anagraf00.core.bulk.TerzoBulk assegnatario;
 
+	private Boolean fl_transito_canc = false;
+
 	public final static Dictionary ISTITUZIONALE_COMMERCIALE;
 	public final static String ISTITUZIONALE      = "I";
 	public final static String COMMERCIALE      = "C";
@@ -474,5 +476,17 @@ public void setValore_unitario(java.math.BigDecimal newValore_unitario) {
 			return true;
 		}
 		return false;
+	}
+
+	public Boolean getFl_transito_canc() {
+		return fl_transito_canc;
+	}
+
+	public void setFl_transito_canc(Boolean fl_transito_canc) {
+		this.fl_transito_canc = fl_transito_canc;
+	}
+	public boolean isCheckCanc()
+	{
+		return !getFl_transito_canc();
 	}
 }

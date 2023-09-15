@@ -171,6 +171,10 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 	@Override
 	public void update(Persistent persistent, UserContext userContext) throws PersistencyException {
 		Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)persistent;
+
+		if(transito.getFl_transito_canc()){
+			transito.setStato(Transito_beni_ordiniBulk.STATO_ANNULLATO);
+		}
 		if (!transito.isStatoTrasferito() && !transito.isStatoAnnullato()){
 			if (transito.isTuttiCampiValorizzatiPerInventariazione()){
 				transito.setStato(Transito_beni_ordiniBulk.STATO_COMPLETO);
@@ -181,6 +185,7 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 		if (transito.getFl_ammortamento() != null && !transito.getFl_ammortamento()){
 			transito.setTi_ammortamento(null);
 		}
+
 		super.update(persistent, userContext);
 	}
 
