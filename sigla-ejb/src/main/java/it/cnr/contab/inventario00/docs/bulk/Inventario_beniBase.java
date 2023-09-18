@@ -92,7 +92,7 @@ public class Inventario_beniBase extends Inventario_beniKey implements Keyed {
 	// VALORE_INIZIALE DECIMAL(20,6) NOT NULL
 	private java.math.BigDecimal valore_iniziale;
 
-	private java.lang.Boolean fl_dismesso;
+	private java.lang.Boolean fl_dismesso=false;
 	private java.sql.Timestamp dt_dismesso;
 	private java.lang.String causale_dismissione;
 
