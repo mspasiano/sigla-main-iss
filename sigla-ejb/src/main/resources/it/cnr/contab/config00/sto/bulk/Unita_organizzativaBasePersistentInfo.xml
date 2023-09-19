@@ -215,4 +215,6 @@
 		name="fl_cds" />
 	<persistentProperty
 		name="codiceAooIpa" />
+	<persistentProperty
+			name="sigla_int_ente" />
 </SQLPersistentInfo>
