@@ -353,7 +353,8 @@
         <init-param name="reportName" value="/preventivo/preventivo/stampa_pdg_renddec.jasper"/>
     </businessProcess>
 
-    <businessProcess name="StampaMastroRendicontoFinanziarioBP" className="it.cnr.contab.prevent01.bp.StampaPdgpBilancioBP">
+    <businessProcess name="StampaMastroRendicontoFinanziarioBP"
+                     className="it.cnr.contab.prevent01.bp.StampaMastroRendicontoFinanziarioBP">
         <forward name="default" path="/prevent01/stampa_mastro_finanziario.jsp"/>
         <init-param name="bulkClassName" value="it.cnr.contab.prevent01.bulk.Stampa_pdgp_bilancioBulk"/>
         <init-param name="printbp" value="OfflineReportPrintBP"/>
