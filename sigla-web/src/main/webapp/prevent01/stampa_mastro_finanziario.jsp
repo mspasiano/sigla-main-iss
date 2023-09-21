@@ -12,7 +12,7 @@
 <% JSPUtils.printBaseUrl(pageContext);%>
 <%
    StampaMastroRendicontoFinanziarioBP bp = (StampaMastroRendicontoFinanziarioBP)BusinessProcess.getBusinessProcess(request);
-   Stampa_pdgp_bilancioBulk model = (Stampa_pdgp_bilancioBulk)bp.getModel();
+   StampaMastroRendicontoFinanziarioBulk model = (StampaMastroRendicontoFinanziarioBulk)bp.getModel();
 %>
 <script language="JavaScript" src="scripts/util.js"></script>
 <script language="javascript" src="scripts/css.js"></script>
@@ -34,26 +34,22 @@
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"ti_gestione"); %></td>
         <td><% bp.getController().writeFormInput(out,null,"ti_gestione",false,null,"onClick=\"submitForm('doOnTipoChange')\""); %></td>
-	  </tr>  
+	  </tr>
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"ti_stampa"); %></td>
-        <td><% bp.getController().writeFormInput(out,null,"ti_stampa",false,null,"onClick=\"submitForm('doOnTipoBilancioChange')\""); %></td>
+        <td><% bp.getController().writeFormInput(out,null,"ti_stampa",true,null,"onClick=\"submitForm('doOnTipoBilancioChange')\""); %></td>
 	  </tr>  
       <tr>
         <td><% bp.getController().writeFormLabel(out,"ti_aggregazione"); %></td>
-        <td><% bp.getController().writeFormInput(out,null,"ti_aggregazione",model.isTipoGestioneEntrata(),null,"onClick=\"submitForm('doOnTipoAggregazioneChange')\""); %></td>
+        <td><% bp.getController().writeFormInput(out,null,"ti_aggregazione",true,null,"onClick=\"submitForm('doOnTipoAggregazioneChange')\""); %></td>
       </tr>
           <tr>
             <td><% bp.getController().writeFormLabel(out,"ti_origine"); %></td>
-            <td><% bp.getController().writeFormInput(out,"ti_origine"); %></td>
+            <td><% bp.getController().writeFormInput(out,null,"ti_origine", true, null,""); %></td>
           </tr>
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"ti_livello"); %></td>
 		<td><% bp.getController().writeFormInput(out,"ti_livello"); %></td>
-	  </tr>
-	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"ti_riepilogo"); %></td>
-		<td><% bp.getController().writeFormInput(out,"ti_riepilogo"); %></td>
 	  </tr>
 	</table>
    </td>
