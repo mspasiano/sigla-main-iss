@@ -27,17 +27,22 @@ package it.cnr.contab.inventario00.bp;
  *	CRUDCaricoInventarioBP, per il Carico e CRUDScaricoInventarioBP, per lo Scarico.
 **/
 
+import it.cnr.contab.compensi00.docs.bulk.StampaCertificazioneVBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_beniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_utilizzatori_laBulk;
 import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Utilizzatore_CdrVBulk;
 import it.cnr.contab.inventario01.ejb.BuonoCaricoScaricoComponentSession;
 import it.cnr.contab.inventario01.ejb.TransactionalBuonoCaricoScaricoComponentSession;
+import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
+import it.cnr.contab.ordmag.magazzino.bulk.BollaScaricoMagBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Config;
+import it.cnr.jada.action.Forward;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.action.SelezionatoreListaBP;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
@@ -363,6 +368,35 @@ public boolean isEditable() {
 				this.setMessage(e.getMessage());
 			}
 		}
+	}
+
+
+	@Override
+	public it.cnr.jada.util.RemoteIterator find(ActionContext context,it.cnr.jada.persistency.sql.CompoundFindClause clauses,OggettoBulk model) throws it.cnr.jada.action.BusinessProcessException {
+		try {
+			Config config = this.getMapping().getConfig();
+			if(config.getInitParameter("RICERCA_ANNULLATI") != null){
+				Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk) model;
+				transito.setFl_search_ann(true);
+			}
+
+			return super.find(context,clauses,model);
+		} catch(Exception e) {
+			throw handleException(e);
+		}
+	}
+
+
+	public  String getSearchResultColumnSet(){
+		Config config = this.getMapping().getConfig();
+		if (config.getInitParameter("RICERCA_ANNULLATI") != null) {
+
+			getModel().getBulkInfo().setShortDescription("Beni Annullati dal Transito");
+			getModel().getBulkInfo().setLongDescription("Beni Annullati dal Transito");
+
+			return"beni_cancellati";
+		}
+		return null;
 	}
 }
 

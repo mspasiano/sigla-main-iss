@@ -17,8 +17,15 @@
 
 package it.cnr.contab.inventario00.actions;
 
+import it.cnr.contab.config00.sto.bulk.CdrBulk;
+import it.cnr.contab.config00.sto.bulk.CdsBulk;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaElettronicaBP;
+import it.cnr.contab.docamm00.bp.ListaDocumentiAmministrativiBP;
+import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleTestataBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
 import it.cnr.contab.inventario00.bp.CRUDInventarioBeniBP;
+import it.cnr.contab.inventario00.bp.CRUDTransitoBeniOrdiniBP;
 import it.cnr.contab.inventario00.consultazioni.bulk.V_cons_registro_inventarioBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_beniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
@@ -26,13 +33,21 @@ import it.cnr.contab.inventario00.docs.bulk.Utilizzatore_CdrVBulk;
 import it.cnr.contab.inventario00.docs.bulk.V_ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario00.ejb.Inventario_beniComponentSession;
 import it.cnr.contab.inventario00.tabrif.bulk.Tipo_ammortamentoBulk;
+import it.cnr.contab.missioni00.bp.CRUDAnticipoBP;
 import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
+import it.cnr.contab.utenze00.bulk.SelezionaCdsBulk;
 import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.action.HookForward;
-import it.cnr.jada.util.action.CRUDAction;
-import it.cnr.jada.util.action.SelezionatoreListaBP;
+import it.cnr.jada.bulk.BulkInfo;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.util.RemoteIterator;
+import it.cnr.jada.util.action.*;
+import it.cnr.jada.util.ejb.EJBCommonServices;
 
+import javax.ejb.RemoveException;
+import java.rmi.RemoteException;
 import java.util.Iterator;
 
 /**
@@ -412,4 +427,44 @@ public Forward doDettagli(ActionContext context) {
 
 		return context.findDefaultForward();
 	}
+
+	public Forward doCerca(ActionContext actioncontext) throws RemoteException,
+			InstantiationException, RemoveException {
+		try {
+
+			CRUDTransitoBeniOrdiniBP bp = (CRUDTransitoBeniOrdiniBP) actioncontext.getBusinessProcess();
+			Transito_beni_ordiniBulk bulk = (Transito_beni_ordiniBulk) bp.getModel();
+			BulkInfo bulkInfo = BulkInfo.getBulkInfo(Transito_beni_ordiniBulk.class);
+			fillModel(actioncontext);
+			RemoteIterator remoteiterator = bp.find(actioncontext, null, bulk);
+			if (remoteiterator == null || remoteiterator.countElements() == 0) {
+				EJBCommonServices.closeRemoteIterator(actioncontext, remoteiterator);
+				bp.setMessage("La ricerca non ha fornito alcun risultato.");
+				return actioncontext.findDefaultForward();
+			}
+			if (remoteiterator.countElements() == 1) {
+				OggettoBulk oggettobulk1 = (OggettoBulk) remoteiterator.nextElement();
+				EJBCommonServices.closeRemoteIterator(actioncontext, remoteiterator);
+				bp.setMessage(FormBP.INFO_MESSAGE, "La ricerca ha fornito un solo risultato.");
+				return doRiportaSelezione(actioncontext, oggettobulk1);
+			} else {
+				bp.setModel(actioncontext, bulk);
+				SelezionatoreListaBP selezionatorelistabp = (SelezionatoreListaBP) actioncontext.createBusinessProcess("Selezionatore");
+				selezionatorelistabp.setModel(actioncontext, bulk);
+				selezionatorelistabp.setIterator(actioncontext, remoteiterator);
+				selezionatorelistabp.setBulkInfo(bp.getSearchBulkInfo());
+				selezionatorelistabp.setColumns(getBusinessProcess(actioncontext).getSearchResultColumns());
+				if(bp.getMapping().getConfig().getInitParameter("RICERCA_ANNULLATI") != null){
+					selezionatorelistabp.setColumns(bulkInfo.getColumnFieldPropertyDictionary("beni_cancellati"));
+					selezionatorelistabp.getBulkInfo().setShortDescription("Beni Annullati dal Transito");
+					selezionatorelistabp.getBulkInfo().setLongDescription("Beni Annullati dal Transito");
+				}
+				actioncontext.addHookForward("seleziona", this, "doRiportaSelezione");
+				return actioncontext.addBusinessProcess(selezionatorelistabp);
+			}
+		} catch (Exception e) {
+			return handleException(actioncontext, e);
+		}
+	}
+
 }

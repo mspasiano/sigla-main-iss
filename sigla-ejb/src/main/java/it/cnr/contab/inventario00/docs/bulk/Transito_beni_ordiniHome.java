@@ -73,6 +73,7 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 	@Override
 	public SQLBuilder selectByClause(UserContext usercontext, CompoundFindClause compoundfindclause) throws PersistencyException {
 		SQLBuilder sql = super.selectByClause(usercontext, compoundfindclause);
+		boolean ricercaAnnullati=false;
 		if (compoundfindclause != null && compoundfindclause.getClauses() != null) {
 
 			Enumeration e = compoundfindclause.getClauses();
@@ -124,13 +125,22 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 							}
 						}
 					}
+					if (clause.getPropertyName() != null && clause.getPropertyName().equals("search_ann")) {
+						ricercaAnnullati=true;
+					}
 				}
+
 			}
 		}
-		sql.openParenthesis("AND");
-		sql.addClause("AND", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_COMPLETO);
-		sql.addClause("OR", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_INSERITO);
-		sql.closeParenthesis();
+		if(ricercaAnnullati){
+			sql.addSQLClause("AND", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_ANNULLATO);
+		}else {
+			sql.openParenthesis("AND");
+
+			sql.addClause("AND", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_COMPLETO);
+			sql.addClause("OR", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_INSERITO);
+			sql.closeParenthesis();
+		}
 		Id_inventarioHome inventarioHome = (Id_inventarioHome) getHomeCache().getHome(Id_inventarioBulk.class);
 		try {
 			Id_inventarioBulk inventario = inventarioHome.findInventarioFor(usercontext,false);

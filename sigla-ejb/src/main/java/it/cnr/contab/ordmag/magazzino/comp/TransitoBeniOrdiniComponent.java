@@ -39,10 +39,7 @@ import it.cnr.jada.bulk.OutdatedResourceException;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.Query;
-import it.cnr.jada.persistency.sql.SQLBuilder;
+import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 
@@ -194,6 +191,23 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 			throw new ComponentException(e);
 		}
 		return null;
+	}
+	@Override
+	protected Query select(UserContext usercontext, CompoundFindClause compoundfindclause, OggettoBulk oggettobulk) throws ComponentException, PersistencyException {
+		if (compoundfindclause == null) {
+			if (oggettobulk != null) {
+				compoundfindclause = oggettobulk.buildFindClauses((Boolean)null);
+			}
+		}
+		Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)oggettobulk;
+
+		if(transito.getFl_search_ann()){
+			FindClause clause;
+			clause = new SimpleFindClause("search_ann", it.cnr.jada.persistency.sql.SQLBuilder.EQUALS, transito.getFl_search_ann());
+			compoundfindclause = CompoundFindClause.and(compoundfindclause, clause);
+		}
+
+		return super.select(usercontext,compoundfindclause,oggettobulk);
 	}
 
 }
