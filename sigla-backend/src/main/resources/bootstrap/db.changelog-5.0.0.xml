@@ -6020,6 +6020,5 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : CIRO SALVIO - Modificato Tipo SIGLA_INT_ENTE a VARCHAR(10)di UNITA_ORGANIZZATIVA per sigla uo interna all'ente  -->
     <include file="bootstrap/mod_type_column_unita_organizzativa_sigla_iss.xml"/>
 
-
-
+    <include file="bootstrap/modifiche_nuovi_tipi_fatturazione_elettronica.xml"/>
 </databaseChangeLog>

@@ -45,6 +45,7 @@ import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComp
 import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaComponentSession;
 import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaFromDocumentoComponentSession;
 import it.cnr.contab.compensi00.ejb.CompensoComponentSession;
+import it.cnr.contab.docamm00.ejb.AutoFatturaComponentSession;
 import it.cnr.contab.docamm00.ejb.DocumentoGenericoComponentSession;
 import it.cnr.contab.doccont00.ejb.*;
 import it.cnr.contab.incarichi00.ejb.IncarichiEstrazioneFpComponentSession;
@@ -604,5 +605,8 @@ public final class Utility {
 	}
 	public static AsyncScritturaPartitaDoppiaFromDocumentoComponentSession createAsyncScritturaPartitaDoppiaFromDocumentoComponentSession() throws javax.ejb.EJBException{
 		return (AsyncScritturaPartitaDoppiaFromDocumentoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncScritturaPartitaDoppiaFromDocumentoComponentSession", ScritturaPartitaDoppiaFromDocumentoComponentSession.class);
+	}
+	public static AutoFatturaComponentSession createAutoFatturaComponentSession() throws javax.ejb.EJBException{
+		return (AutoFatturaComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCAMM00_EJB_AutoFatturaComponentSession", AutoFatturaComponentSession.class);
 	}
 }
