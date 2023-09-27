@@ -1491,4 +1491,8 @@ public class AnticipoBulk extends AnticipoBase implements IDefferUpdateSaldi, ID
         return this.getDt_registrazione();
     }
 
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_contabilizzazione();
+    }
 }

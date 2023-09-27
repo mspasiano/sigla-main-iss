@@ -1677,4 +1677,9 @@ public class OrdineAcqBulk extends OrdineAcqBase
         setStato(OrdineAcqBulk.STATO_ANNULLATO);
 
     }
+
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_contabilizzazione();
+    }
 }

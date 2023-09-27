@@ -1186,6 +1186,11 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
         return null;
     }
 
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_trasmissione();
+    }
+
     public String getIdMandatoAsString(){
         return getCd_cds()+"-"+getEsercizio()+"-"+getPg_mandato();
     }

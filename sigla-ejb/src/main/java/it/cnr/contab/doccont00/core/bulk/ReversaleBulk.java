@@ -902,6 +902,12 @@ public class ReversaleBulk extends ReversaleBase implements IManRevBulk, IDeffer
     public Timestamp getDt_contabilizzazione() {
         return this.getDt_incasso();
     }
+
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_trasmissione();
+    }
+
     public String getIdReversaleAsString(){
         return getCd_cds()+"-"+getEsercizio()+"-"+getPg_reversale();
     }

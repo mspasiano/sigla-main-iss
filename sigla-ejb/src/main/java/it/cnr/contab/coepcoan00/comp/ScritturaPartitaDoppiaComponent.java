@@ -903,6 +903,11 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 					calculateKeyHashCode(getPg_doc()) +
 					calculateKeyHashCode(getTipoDocumentoEnum());
 		}
+
+		@Override
+		public Timestamp getDtGenerazioneScrittura() {
+			return this.getDt_contabilizzazione();
+		}
 	}
 	/**
 	 * ScritturaPartitaDoppiaComponent constructor comment.

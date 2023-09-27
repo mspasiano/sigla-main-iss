@@ -2456,4 +2456,9 @@ public abstract class Fattura_attivaBulk extends Fattura_attivaBase
     public Integer getCdTerzoDocumentoElettronico() {
         return this.getCd_terzo();
     }
+
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_contabilizzazione();
+    }
 }
