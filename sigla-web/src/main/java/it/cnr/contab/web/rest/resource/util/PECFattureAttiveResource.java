@@ -166,9 +166,9 @@ public class PECFattureAttiveResource implements PECFattureAttiveLocal {
         final Optional<Fattura_attiva_IBulk> fatturaAttivaIBulk1 = Optional.ofNullable(fatturaAttivaSingolaComponentSession.findByPrimaryKey(userContext, fatturaAttivaIBulk))
                 .filter(Fattura_attiva_IBulk.class::isInstance)
                 .map(Fattura_attiva_IBulk.class::cast)
-                .filter(f -> f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_SCARTATA_DA_SDI) ||
-                        f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_RIFIUTATA_DESTINATARIO) ||
-                        f.getStatoInvioSdi().equalsIgnoreCase(Fattura_attivaBulk.FATT_ELETT_NON_RECAPITABILE));
+                .filter(f -> f.getStatoInvioSdi().equalsIgnoreCase(VDocammElettroniciAttiviBulk.FATT_ELETT_SCARTATA_DA_SDI) ||
+                        f.getStatoInvioSdi().equalsIgnoreCase(VDocammElettroniciAttiviBulk.FATT_ELETT_RIFIUTATA_DESTINATARIO) ||
+                        f.getStatoInvioSdi().equalsIgnoreCase(VDocammElettroniciAttiviBulk.FATT_ELETT_NON_RECAPITABILE));
         if (fatturaAttivaIBulk1.isPresent()) {
             final List<String> emails = fatturaAttivaSingolaComponentSession.sendMailForNotificationKo(userContext, fatturaAttivaIBulk1.get());
             return Response.ok(emails).build();
