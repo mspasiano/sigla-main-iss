@@ -35,7 +35,17 @@ import java.util.Enumeration;
  */
 public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioBulk {
 
-	public final static String TIPO_LIVELLO_VOCE = "5";
+	public final static Integer TIPO_VOCE = 6;
+
+	public Integer getLivello_stampa() {
+		return livello_stampa;
+	}
+
+	public void setLivello_stampa(Integer livello_stampa) {
+		this.livello_stampa = livello_stampa;
+	}
+
+	private Integer livello_stampa;
 
 	public String getVoce_da() {
 		return voce_da;
@@ -60,4 +70,9 @@ public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioB
 	public StampaMastroRendicontoFinanziarioBulk() {
 		super();
 	}
+
+	public Integer getNr_livello() {
+		return 5;
+	}
+
 }

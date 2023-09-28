@@ -62,9 +62,9 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
                 ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_stampa(StampaMastroRendicontoFinanziarioBulk.TIPO_GESTIONALE);
                 ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_aggregazione(StampaMastroRendicontoFinanziarioBulk.TIPO_FINANZIARIO);
                 ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_origine(StampaMastroRendicontoFinanziarioBulk.TIPO_REALE);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_livello(StampaMastroRendicontoFinanziarioBulk.TIPO_LIVELLO_VOCE);
                 ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_gestione(StampaMastroRendicontoFinanziarioBulk.TIPO_GESTIONE_ENTRATA);
                 ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_parte(StampaMastroRendicontoFinanziarioBulk.TIPO_PARTE_ENTRAMBE);
+                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setLivello_stampa(StampaMastroRendicontoFinanziarioBulk.TIPO_VOCE);
                 loadModelBulkOptions(context, (StampaMastroRendicontoFinanziarioBulk) oggettoBulk);
             }
             return oggettoBulk;

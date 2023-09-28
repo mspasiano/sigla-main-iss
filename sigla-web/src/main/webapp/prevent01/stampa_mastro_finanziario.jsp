@@ -48,11 +48,11 @@
             <td><% bp.getController().writeFormLabel(out,"ti_origine"); %></td>
             <td><% bp.getController().writeFormInput(out,null,"ti_origine", true, null,""); %></td>
           </tr>
-          -->
 	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"ti_livello"); %></td>
-		<td><% bp.getController().writeFormInput(out,"ti_livello"); %></td>
+		<td><% bp.getController().writeFormLabel(out,"livello_stampa"); %></td>
+		<td><% bp.getController().writeFormInput(out,"livello_stampa"); %></td>
 	  </tr>
+          -->
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"voce_da"); %></td>
 		<td><% bp.getController().writeFormInput(out,"voce_da"); %></td>

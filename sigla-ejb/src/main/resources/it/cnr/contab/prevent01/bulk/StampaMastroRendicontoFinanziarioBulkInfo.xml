@@ -67,12 +67,10 @@
 			layout="HORIZONTAL"
 			label="Fonte Dati" />
 	<fieldProperty
-			name="ti_livello"
-			property="ti_livello"
-			inputType="SELECT"
-			optionsProperty="livelliOptions"
-			nullable="false"
-			enabledOnSearch="true"
+			name="livello_stampa"
+			property="livello_stampa"
+			inputSize="5"
+			inputType="ROTEXT"
 			label="Livello Stampa" />
 	<fieldProperty
 			name="voce_da"
@@ -92,8 +90,7 @@
 	<formFieldProperty name="ti_stampa" />
 	<formFieldProperty name="ti_aggregazione" />
 	<formFieldProperty name="ti_origine" />
-	<formFieldProperty name="ti_livello" />
-	<formFieldProperty name="nr_livello" />
+	<formFieldProperty name="livello_stampa" />
 	<formFieldProperty name="voce_da" />
 	<formFieldProperty name="voce_a" />
 
@@ -134,8 +131,8 @@
 				paramNameJR="P_ORIGINE"
 				paramTypeJR="java.lang.String" />
 		<printFieldProperty
-				name="nr_livello"
-				property="nr_livello"
+				name="livello_stampa"
+				property="livello_stampa"
 				parameterPosition="5"
 				parameterType="INTEGER"
 				paramNameJR="P_NUM_LIV"
