@@ -627,6 +627,68 @@
 			name="id_movimenti_mag" />
 
 
+	<!-- Column set per beni in transito cancellati-->
+	<columnSet name="beni_cancellati" >
+		<columnFieldProperty
+				name="ds_bene"
+				style="width:300px" />
+		<columnFieldProperty
+				name="dtRiferimento"
+				style="width:50px" />
+		<columnFieldProperty
+				name="cd_categoria_bene"
+				style="width:50px" />
+		<columnFieldProperty
+				name="ds_categoria_bene"
+				style="width:100px" />
+		<columnFieldProperty
+				name="valore_iniziale"
+				style="width:80px"/>
+		<columnFieldProperty
+				name="dsTerzo"
+				style="width:100px"/>
+		<columnFieldProperty
+				name="dataBolla"
+				style="width:50px" />
+		<columnFieldProperty
+				name="numeroBolla"
+				style="width:80px" />
+		<columnFieldProperty
+				name="dtRiferimento"
+				style="width:50px" />
+		<columnFieldProperty
+				name="ds_assegnatario"
+				style="width:300px"/>
+		<columnFieldProperty
+				name="cd_ubicazione"
+				label="Ubicaz."
+				style="width:20px"/>
+		<columnFieldProperty
+				name="ds_ubicazione"
+				style="width:80px"/>
+		<columnFieldProperty
+				name="collocazione"
+				style="width:40px"/>
+		<columnFieldProperty
+				name="seriale"
+				style="width:40px"/>
+		<columnFieldProperty
+				name="cd_barre"
+				style="width:40px"/>
+		<columnFieldProperty
+				name="targa"
+				style="width:30px"/>
+		<columnFieldProperty
+				name="dsUnitaOperativa"/>
+		<columnFieldProperty
+				name="cd_categoria_beneForFreeSearch"/>
+		<columnFieldProperty
+				name="id_movimenti_mag" />
+		<columnFieldProperty
+				name="nota_canc"/>
+
+	</columnSet>
+
 
 	<findFieldProperty
 		name="ds_bene" />

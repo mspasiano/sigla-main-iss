@@ -96,6 +96,17 @@
 		<init-param name="componentSessionName" value="CNRINVENTARIO00_EJB_TransitoBeniOrdiniComponentSession"/>
 		<init-param name="defaultAction" value="CRUDTransitoBeniAction"/>
 	</businessProcess>
+
+	<businessProcess
+			name="CRUDTransitoBeniOrdiniAnnBP" className="it.cnr.contab.inventario00.bp.CRUDTransitoBeniOrdiniBP">
+		<forward name="default" path="/inventario00/transito_beni.jsp"/>
+		<init-param name="bulkClassName" value="it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk" />
+		<init-param name="componentSessionName" value="CNRINVENTARIO00_EJB_TransitoBeniOrdiniComponentSession"/>
+		<init-param name="defaultAction" value="CRUDTransitoBeniAction"/>
+		<init-param name="RICERCA_ANNULLATI" value="true" />
+	</businessProcess>
+
+
 	<businessProcess
 			name="CRUDSelezionatoreBeniInTransitoBP" className="it.cnr.contab.inventario00.bp.CRUDSelezionatoreBeniInTransitoBP">
 		<forward name="default" path="/inventario00/lista_beni_da_inventariare.jsp"/>

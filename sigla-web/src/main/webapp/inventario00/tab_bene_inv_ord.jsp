@@ -9,7 +9,9 @@
 %>
 <% CRUDTransitoBeniOrdiniBP bp = (CRUDTransitoBeniOrdiniBP)BusinessProcess.getBusinessProcess(request);
    Transito_beni_ordiniBulk bene = (Transito_beni_ordiniBulk)bp.getModel();
-
+   if(bene!=null && bene.getNota_canc() != null && !bene.getNota_canc().isEmpty()){
+        bene.setFl_transito_canc(true);
+   }
 
 
 %>
@@ -194,13 +196,14 @@
 		    </div>
 
                 <table>
+
                     <tr>
                         <td>
                             <% bp.getController().writeFormLabel(out,"fl_transito_canc"); %>
                         </td>
+
                         <td>
                             <% bp.getController().writeFormInput(out,null,"fl_transito_canc",false,null,null); %>
-
                         </td>
                     </tr>
 
