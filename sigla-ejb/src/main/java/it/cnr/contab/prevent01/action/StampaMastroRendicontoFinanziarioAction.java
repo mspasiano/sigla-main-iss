@@ -16,26 +16,46 @@
  */
 
 /*
- * Created on Oct 4, 2005
+ * Created on Apr 26, 2005
  *
  * To change the template for this generated file go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-package it.cnr.contab.prevent01.bulk;
+package it.cnr.contab.prevent01.action;
 
-import it.cnr.jada.bulk.OggettoBulk;
-
-import java.util.Enumeration;
+import it.cnr.contab.prevent01.bp.StampaMastroRendicontoFinanziarioBP;
+import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.action.Forward;
 
 /**
- * @author 
+ * @author xm3ron
  *
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioBulk {
+public class StampaMastroRendicontoFinanziarioAction extends StampaPdgpBilancioAction {
 
-	public StampaMastroRendicontoFinanziarioBulk() {
+	/**
+	 *
+	 */
+	public StampaMastroRendicontoFinanziarioAction() {
 		super();
 	}
+
+	public Forward doOnTipoChange(ActionContext context) {
+		try{
+			StampaMastroRendicontoFinanziarioBP bp = (StampaMastroRendicontoFinanziarioBP) context.getBusinessProcess();
+			fillModel(context);
+			try {
+				bp.loadModelBulkOptions(context);
+			} catch (BusinessProcessException e) {
+				return handleException(context, e);
+			}
+			return context.findDefaultForward();
+		}catch(it.cnr.jada.bulk.FillException ex){
+			return handleException(context, ex);
+		}
+	}
+
 }

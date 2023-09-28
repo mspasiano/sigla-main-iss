@@ -103,4 +103,9 @@
   <action
 	path="/StampaPdgpBilancioAction" actionClass="it.cnr.contab.prevent01.action.StampaPdgpBilancioAction">
   </action>
+
+    <action
+            path="/StampaMastroRendicontoFinanziarioAction"
+            actionClass="it.cnr.contab.prevent01.action.StampaMastroRendicontoFinanziarioAction">
+    </action>
 </action-mappings>
