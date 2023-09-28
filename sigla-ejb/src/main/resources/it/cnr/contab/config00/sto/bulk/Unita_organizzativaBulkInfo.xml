@@ -292,7 +292,8 @@
 			property="sigla_int_ente"
 			label="Sigla UO interna all'ente"
 			inputSize="10"
-			inputType="ROTEXT"
+			inputType="TEXT"
+			enabledOnFreeSearch="true"
 	/>
 
 	<form
@@ -375,6 +376,7 @@
 		<columnFieldProperty name="cd_unita_padre"/>
 		<columnFieldProperty name="fl_uo_cds"/>
 		<columnFieldProperty name="esercizio_fine"/>
+		<columnFieldProperty name="sigla_int_ente"/>
 	</columnSet>
 
 	<columnSet
@@ -545,5 +547,8 @@
 		/>
 	<findFieldProperty
 			name="codiceAooIpa" />
+
+	<findFieldProperty
+			name="sigla_int_ente" />
 
 </bulkInfo>
