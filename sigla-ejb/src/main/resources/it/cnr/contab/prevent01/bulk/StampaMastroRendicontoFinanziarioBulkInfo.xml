@@ -74,6 +74,18 @@
 			nullable="false"
 			enabledOnSearch="true"
 			label="Livello Stampa" />
+	<fieldProperty
+			name="voce_da"
+			property="voce_da"
+			inputSize="5"
+			inputType="TEXT"
+			label="Voce Da" />
+	<fieldProperty
+			name="voce_a"
+			property="voce_a"
+			inputSize="5"
+			inputType="TEXT"
+			label="Voce A" />
 
 	<formFieldProperty name="esercizio"/>
 	<formFieldProperty name="ti_gestione" />
@@ -82,6 +94,8 @@
 	<formFieldProperty name="ti_origine" />
 	<formFieldProperty name="ti_livello" />
 	<formFieldProperty name="nr_livello" />
+	<formFieldProperty name="voce_da" />
+	<formFieldProperty name="voce_a" />
 
 	<printForm
 			name="/preventivo/preventivo/mastro.jasper">
@@ -126,6 +140,20 @@
 				parameterType="INTEGER"
 				paramNameJR="P_NUM_LIV"
 				paramTypeJR="java.lang.Integer" />
+		<printFieldProperty
+				name="voce_da"
+				property="voce_da"
+				parameterPosition="6"
+				parameterType="STRING"
+				paramNameJR="P_VOCE_DA"
+				paramTypeJR="java.lang.String" />
+		<printFieldProperty
+				name="voce_a"
+				property="voce_a"
+				parameterPosition="7"
+				parameterType="STRING"
+				paramNameJR="P_VOCE_A"
+				paramTypeJR="java.lang.String" />
 	</printForm>
 
 </bulkInfo>

@@ -35,6 +35,28 @@ import java.util.Enumeration;
  */
 public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioBulk {
 
+	public final static String TIPO_LIVELLO_VOCE = "5";
+
+	public String getVoce_da() {
+		return voce_da;
+	}
+
+	public void setVoce_da(String voce_da) {
+		this.voce_da = voce_da;
+	}
+
+	private String voce_da;
+
+	public String getVoce_a() {
+		return voce_a;
+	}
+
+	public void setVoce_a(String voce_a) {
+		this.voce_a = voce_a;
+	}
+
+	private String voce_a;
+
 	public StampaMastroRendicontoFinanziarioBulk() {
 		super();
 	}

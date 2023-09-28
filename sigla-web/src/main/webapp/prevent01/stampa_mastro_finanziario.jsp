@@ -35,6 +35,7 @@
 		<td><% bp.getController().writeFormLabel(out,"ti_gestione"); %></td>
         <td><% bp.getController().writeFormInput(out,null,"ti_gestione",false,null,"onClick=\"submitForm('doOnTipoChange')\""); %></td>
 	  </tr>
+	  <!--
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"ti_stampa"); %></td>
         <td><% bp.getController().writeFormInput(out,null,"ti_stampa",true,null,"onClick=\"submitForm('doOnTipoBilancioChange')\""); %></td>
@@ -47,9 +48,18 @@
             <td><% bp.getController().writeFormLabel(out,"ti_origine"); %></td>
             <td><% bp.getController().writeFormInput(out,null,"ti_origine", true, null,""); %></td>
           </tr>
+          -->
 	  <tr>
 		<td><% bp.getController().writeFormLabel(out,"ti_livello"); %></td>
 		<td><% bp.getController().writeFormInput(out,"ti_livello"); %></td>
+	  </tr>
+	  <tr>
+		<td><% bp.getController().writeFormLabel(out,"voce_da"); %></td>
+		<td><% bp.getController().writeFormInput(out,"voce_da"); %></td>
+	  </tr>
+	  <tr>
+		<td><% bp.getController().writeFormLabel(out,"voce_a"); %></td>
+		<td><% bp.getController().writeFormInput(out,"voce_a"); %></td>
 	  </tr>
 	</table>
    </td>
