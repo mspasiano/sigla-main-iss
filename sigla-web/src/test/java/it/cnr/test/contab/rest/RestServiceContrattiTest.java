@@ -44,10 +44,10 @@ public class RestServiceContrattiTest {
 
         ObjectMapper mapper = new ObjectMapper();
         ContrattoDtoBulk c = new ContrattoDtoBulk();
-        c.setEsercizio(2022);
+        c.setEsercizio(2023);
         c.setCodiceFlussoAcquisti( "testCompleto23122022");
         c.setCd_unita_organizzativa("000.000");
-        c.setCodfisPivaRupExt("ZNCMRT79E49H501E");
+        c.setCodfisPivaRupExt("RGLNLR52E69Z600O");
         c.setCodfisPivaAggiudicatarioExt("05923561004");
         //c.setCodfisPivaFirmatarioExt("ZNCMRT79E49H501E");
 
@@ -69,11 +69,11 @@ public class RestServiceContrattiTest {
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
-        c.setDt_stipula(new java.sql.Timestamp(dateFormat.parse("20221122").getTime()));
-        c.setDt_inizio_validita(new java.sql.Timestamp(dateFormat.parse("20221122").getTime()));
+        c.setDt_stipula(new java.sql.Timestamp(dateFormat.parse("20231001").getTime()));
+        c.setDt_inizio_validita(new java.sql.Timestamp(dateFormat.parse("20231122").getTime()));
 
         c.setDt_fine_validita(new java.sql.Timestamp(dateFormat.parse("20241122").getTime()));
-        c.setDt_registrazione(new java.sql.Timestamp(dateFormat.parse("20221223").getTime()));
+        c.setDt_registrazione(new java.sql.Timestamp(dateFormat.parse("20231223").getTime()));
 
         //c.setCdCigExt();
         //c.setCdCupExt();
