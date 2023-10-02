@@ -2365,7 +2365,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				sql.addClause("AND", "codice_fiscale", sql.EQUALS, codFisPiva);
 				sql.addClause("or", "partita_iva", sql.EQUALS, codFisPiva);
 		        List lista = home.fetchAll(sql);
-		        if (lista != null){
+		        if ( Optional.ofNullable(lista).map(List::size).orElse(0)>0){
 			        return (V_persona_fisicaBulk) lista.get(0);
 		        }
 		        return null;
