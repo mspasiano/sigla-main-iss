@@ -24,8 +24,5 @@
   <changeSet author="iss" runOnChange="true" id="sigla-sql-438">
     <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoMandatoRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
   </changeSet>
-  <changeSet author="iss" runOnChange="true" id="sigla-sql-441">
-    <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoReversaleRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
-  </changeSet>
 
 </databaseChangeLog>
