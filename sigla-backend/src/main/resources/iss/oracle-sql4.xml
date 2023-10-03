@@ -27,5 +27,7 @@
   <changeSet author="iss" runOnChange="true" id="sigla-sql-441">
     <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoReversaleRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
   </changeSet>
-
+  <changeSet author="iss" runOnChange="true" id="update_procedura_x_stampa_mastro_rendiconto_finanziario">
+    <sqlFile dbms="oracle" path="../isssigladb/Procedure/PRC_LOAD_TABLE_STAMPA_RENDIC.prc" relativeToChangelogFile="true" splitStatements="true" stripComments="true"/>
+  </changeSet>
 </databaseChangeLog>
