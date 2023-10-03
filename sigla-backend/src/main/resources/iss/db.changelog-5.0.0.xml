@@ -110,5 +110,9 @@
     <!-- Autore : CIRO SALVIO-GESTIONE INVENTARIA DA DOCUMENTI -->
     <include file="iss/update_gestione_inventaria_documenti.xml"></include>
 
+    <changeSet author="iss" runOnChange="true" id="sigla-sql-441">
+        <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoReversaleRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
+    </changeSet>
+
 
 </databaseChangeLog>
