@@ -24,5 +24,11 @@
   <changeSet author="iss" runOnChange="true" id="sigla-sql-438">
     <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoMandatoRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
   </changeSet>
+  <changeSet author="iss" runOnChange="true" id="sigla-getStatoReversaleRangeDate">
+    <sqlFile dbms="oracle" path="../isssigladb/Function/getStatoReversaleRangeDate.fnc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
+  </changeSet>
+  <changeSet author="sigla" runOnChange="true" id="sigla-stampa-mastro">
+    <sqlFile dbms="oracle" path="../isssigladb/Procedure/prc_load_table_stampa_rendic.prc" relativeToChangelogFile="true" splitStatements="false" stripComments="true"/>
+  </changeSet>
 
 </databaseChangeLog>

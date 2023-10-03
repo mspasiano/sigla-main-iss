@@ -1,4 +1,4 @@
-CREATE OR REPLACE Procedure SIGLASVILUPPO.PRC_LOAD_TABLE_STAMPA_RENDIC
+create or replace Procedure PRC_LOAD_TABLE_STAMPA_RENDIC
 (P_ESERCIZIO IN ESERCIZIO.ESERCIZIO%TYPE,
 	P_TIPO IN VARCHAR2,
 	P_NUM_LIV IN NUMBER,
@@ -17,7 +17,6 @@ CREATE OR REPLACE Procedure SIGLASVILUPPO.PRC_LOAD_TABLE_STAMPA_RENDIC
 	P_VOCE_A IN VARCHAR2 DEFAULT NULL
 ) Is
 FONTE_DATI                  VARCHAR2(6);
-
 PREV_INI                    NUMBER(17,2) :=0;
 VARIAZIONI                  NUMBER(17,2) :=0;
 ASSESTATO                   NUMBER(17,2) :=0;
@@ -25,14 +24,12 @@ RIS_PAG                     NUMBER(17,2) :=0;
 RIM_RIS_PAG                 NUMBER(17,2) :=0;
 TOT_ACC_IMP                 NUMBER(17,2) :=0;
 DIFF_COMP                   NUMBER(17,2) :=0;
-
 RES_INI_ES                  NUMBER(17,2) :=0;
 RES_RIS_PAG                 NUMBER(17,2) :=0;
 RES_RIM_RIS_PAG             NUMBER(17,2) :=0;
 RES_TOTALI                  NUMBER(17,2) :=0;
 RES_VAR_PIU                 NUMBER(17,2) :=0;
 RES_VAR_MENO                NUMBER(17,2) :=0;
-
 PREVISIONE_INI_ES_PREC      NUMBER(17,2) :=0;
 SALDO_VARIAZIONI_ES_PREC    NUMBER(17,2) :=0;
 TOT_IMPACC_COMP_ES_PREC     NUMBER(17,2) :=0;
@@ -41,21 +38,16 @@ TOT_MANREV_COMP_ES_PREC     NUMBER(17,2) :=0;
 TOT_MANREV_RES_ES_PREC      NUMBER(17,2) :=0;
 TOT_MOD_IMPACC_RES_ES_PREC  NUMBER(17,2) :=0;
 ASSESTATO_CASSA_ES_PREC     NUMBER(17,2) :=0;
-
 CASSA_PREV                  NUMBER(17,2) :=0;
 CASSA_RIS_PAG               NUMBER(17,2) :=0;
 CASSA_DIFF                  NUMBER(17,2) :=0;
-
 TOT_RES_TER                 NUMBER(17,2) :=0;
-
 RES_INI_ES_PREC             NUMBER(17,2) :=0;
 TOT_ACC_IMP_PREC            NUMBER(17,2) :=0;
 RIS_PAG_PREC                NUMBER(17,2) :=0;
 CASSA_PREV_ES_PREC          NUMBER(17,2) :=0;
-
 SEQUENZA                    NUMBER := 0;
 NUM_MAX_LIV                 NUMBER;
-
 PARLIV1_DS                  VARCHAR2(20);
 PARLIV2_DS                  VARCHAR2(20);
 PARLIV3_DS                  VARCHAR2(20);
@@ -65,7 +57,6 @@ PARLIV6_DS                  VARCHAR2(20);
 PARLIV7_DS                  VARCHAR2(20);
 PARLIV8_DS                  VARCHAR2(20);
 PARLIV9_DS                  VARCHAR2(20);
-
 INNER_TIPO_AGGREGAZIONE     VARCHAR2(3);
 BEGIN
 	IF Nvl(P_AGG_COMPETENZA_AC,'N')='Y' or Nvl(P_AGG_RESIDUI_AC,'N')='Y' or Nvl(P_AGG_CASSA_AC,'N')='Y' or Nvl(P_AGG_COMPETENZA_AP,'N')='Y' or Nvl(P_AGG_RESIDUI_AP,'N')='Y' or Nvl(P_AGG_CASSA_AP,'N')='Y'
@@ -437,3 +428,4 @@ BEGIN
 		End If;
 	End If;
 End;
+/
