@@ -20,9 +20,8 @@
  * Date 21/09/2017
  */
 package it.cnr.contab.ordmag.ordini.bulk;
-import it.cnr.jada.persistency.Keyed;
 
-import java.math.BigDecimal;
+import it.cnr.jada.persistency.Keyed;
 
 public class EvasioneOrdineRigaBase extends EvasioneOrdineRigaKey implements Keyed {
 //    CD_CDS_ORDINE VARCHAR(30) NOT NULL

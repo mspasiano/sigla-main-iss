@@ -9,6 +9,7 @@
 
 <%
 	CRUDConfigAnagContrattoBP bp = (CRUDConfigAnagContrattoBP)BusinessProcess.getBusinessProcess(request);
+	ContrattoBulk contratto = (ContrattoBulk)bp.getModel();
 %>
 
    <fieldset class="fieldset">
@@ -22,7 +23,7 @@
 	    <td><% bp.getController().writeFormInput(out,"default","dt_registrazione", bp.isPublishHidden(),null,null);%></td>
         <td><% bp.getController().writeFormLabel(out,"cd_protocollo");%></td>
         <td><% bp.getController().writeFormInput(out,"cd_protocollo");%></td>
-      </tr>  	
+      </tr>
       <tr><td colspan=4>
 	      <div class="GroupLabel h3 text-primary">Estremi del protocollo informatico</div>          
 	      <div class="Group card">
@@ -49,11 +50,10 @@
 	         <td><% bp.getController().writeFormLabel(out,"firmatario");%></td>
 	         <td><% bp.getController().writeFormInput(out,"default","firmatario", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
 	      </tr>            
-		  <tr>         
-	         <td><% bp.getController().writeFormLabel(out,"responsabile");%></td>
-	         <td><% bp.getController().writeFormInput(out,"default","cd_terzo_resp", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%>
-	             <% bp.getController().writeFormInput(out,"ds_responsabile");%>
-	             <% bp.getController().writeFormInput(out,"default","responsabile", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
+		  <tr>
+		     <td><% bp.getController().writeFormLabel(out,"responsabile");%></td>
+             <td><% bp.getController().writeFormInput(out,"default","responsabile", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
+
 	      </tr>
 		  <tr>         
 	         <td><% bp.getController().writeFormLabel(out,"direttore");%></td>
@@ -118,19 +118,23 @@
 			  <tr>      
 			    <td><% bp.getController().writeFormLabel(out,"natura_contabile");%></td>
 			    <td colspan="5"><% bp.getController().writeFormInput(out,null,"natura_contabile",bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,"onChange=\"submitForm('doOnTipoChange')\""); %></td>
-		      </tr>        
-		      <% if ((ContrattoBulk)bp.getModel() != null && ((ContrattoBulk)bp.getModel()).isPassivo() || ((ContrattoBulk)bp.getModel()).isAttivo_e_Passivo()){%>
-			  <tr>         
-		         <td><% bp.getController().writeFormLabel(out,"fl_mepa");%></td>
-		         <td><% bp.getController().writeFormInput(out,"default","fl_mepa", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
 		      </tr>
+		      <% if ((ContrattoBulk)bp.getModel() != null && ((ContrattoBulk)bp.getModel()).isPassivo() || ((ContrattoBulk)bp.getModel()).isAttivo_e_Passivo()){%>
+                <%if(contratto.isPassivo() && bp.isAttivoOrdini()){%>
+    			  <tr>
+                    <td><% bp.getController().writeFormLabel(out,"tipo_dettaglio_contratto");%></td>
+                    <td><% bp.getController().writeFormInput(out,"tipo_dettaglio_contratto");%></td>
+    		      </tr>
+                <%}%>
+			    <tr>
+		            <td><% bp.getController().writeFormLabel(out,"fl_mepa");%></td>
+		            <td><% bp.getController().writeFormInput(out,"default","fl_mepa", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
+		        </tr>
 			 <%}%>
-			  <tr>         
-		         <td><% bp.getController().writeFormLabel(out,"tipo_contratto");%></td>
-		         <td>
-		         	<div style="float:left"><% bp.getController().writeFormInput(out,"default","tipo_contratto", bp.isPublishHidden(),null,null);%></div>
-		         	<div style="float:left"><% bp.getController().writeFormInput(out,"default","crea_tipo_contratto", bp.isPublishHidden(),null,null);%></div>
-		         </td>
+			  <tr>
+			  	 <td><% bp.getController().writeFormLabel(out,"tipo_contratto");%></td>
+              	 <td><% bp.getController().writeFormInput(out,"default","tipo_contratto", bp.isPublishHidden(),null,null);%></td>
+              	 <td><% bp.getController().writeFormInput(out,"default","crea_tipo_contratto", bp.isPublishHidden(),null,null);%></td>
 		      </tr>
 		      <% if (((ContrattoBulk)bp.getModel()).isCIGVisible()){%>
 			  <tr>         
@@ -142,16 +146,15 @@
 		      </tr>
 		      <%}%>
 			  <tr>
-		        <td><% bp.getController().writeFormLabel(out,"procedura_amministrativa");%></td>
-		        <td>
-		        	<div style="float:left"><% bp.getController().writeFormInput(out,"default","procedura_amministrativa", bp.isPublishHidden(),null,null);%></div>
-		        	<div style="float:left"><% bp.getController().writeFormInput(out,"default","crea_procedura_amministrativa", bp.isPublishHidden(),null,null);%></div>
-		        </td>	  
+			  	 <td><% bp.getController().writeFormLabel(out,"procedura_amministrativa");%></td>
+              	 <td><% bp.getController().writeFormInput(out,"default","procedura_amministrativa", bp.isPublishHidden(),null,null);%></td>
+              	 <td><% bp.getController().writeFormInput(out,"default","crea_procedura_amministrativa", bp.isPublishHidden(),null,null);%></td>
 		      </tr>
 		      <% if ((ContrattoBulk)bp.getModel() != null && ((ContrattoBulk)bp.getModel()).isPassivo() || ((ContrattoBulk)bp.getModel()).isAttivo_e_Passivo()){%>
-			  <tr>         
+			  <tr>
 		         <td><% bp.getController().writeFormLabel(out,"tipoNormaPerla");%></td>
 		         <td><% bp.getController().writeFormInput(out,"default","tipoNormaPerla", bp.isPublishHidden(),null,null);%></td>
+		         <td><% bp.getController().writeFormInput(out,"default","crea_norma_perla", bp.isPublishHidden(),null,null);%></td>
 		      </tr>
 		      <%}%>
 			  <tr>         
@@ -193,14 +196,36 @@
 	        <td><% bp.getController().writeFormLabel(out,"im_contratto_attivo");%></td>
 	        <td colspan="5"><% bp.getController().writeFormInput(out,"default","im_contratto_attivo", bp.isPublishHidden(),null,null);%></td>                	    
 	      </tr>            
-	      <%} else if(((ContrattoBulk)bp.getModel()).isPassivo()){%>
+	      <%} else if( ((ContrattoBulk)bp.getModel()).isPassivo() ) {%>
+          <tr>
+             <td><% bp.getController().writeFormLabel(out,"cig");%></td>
+             <td colspan="3">
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","cig", bp.isPublishHidden(),null,null);%></div>
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","crea_cig", bp.isPublishHidden(),null,null);%></div>
+             </td>
+          </tr>
 		  <tr>
 	        <td><% bp.getController().writeFormLabel(out,"im_contratto_passivo");%></td>
 	        <td><% bp.getController().writeFormInput(out,"default","im_contratto_passivo", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
 	       	<td><% bp.getController().writeFormLabel(out,"im_contratto_passivo_netto");%></td>
 	       	<td><% bp.getController().writeFormInput(out,null,"im_contratto_passivo_netto", false,null,"");%></td>                 	    
 	      </tr>                  
-	      <%}%>
+	      <% } else if( ( (ContrattoBulk) bp.getModel()).isSenzaFlussiFinanziari() && bp.hasGestioneImportiFlussiFinanziari() ){%>
+          <tr>
+             <td><% bp.getController().writeFormLabel(out,"cig");%></td>
+             <td colspan="3">
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","cig", bp.isPublishHidden(),null,null);%></div>
+                <div style="float:left"><% bp.getController().writeFormInput(out,"default","crea_cig", bp.isPublishHidden(),null,null);%></div>
+             </td>
+          </tr>
+		  <tr>
+	        <td><% bp.getController().writeFormLabel(out,"im_contratto_passivo");%></td>
+	        <td><% bp.getController().writeFormInput(out,"default","im_contratto_passivo", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>
+	       	<td><% bp.getController().writeFormLabel(out,"im_contratto_passivo_netto");%></td>
+	       	<td><% bp.getController().writeFormInput(out,null,"im_contratto_passivo_netto", false,null,"");%></td>
+	      </tr>
+	      <% }  %>
+
 		  <tr>
 		    <td><% bp.getController().writeFormLabel(out,"dt_stipula");%></td>
 		    <td><% bp.getController().writeFormInput(out,"default","dt_stipula", bp.isPublishHidden() || bp.isFromFlussoAcquisti(),null,null);%></td>

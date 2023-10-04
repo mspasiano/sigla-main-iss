@@ -43,7 +43,6 @@
                     <% bp.getController().writeFormLabel(out,"cd_soggetto");%>
                 </td>
                 <td colspan="3">
-                    <% bp.getController().writeFormInput(out,"cd_soggetto");%>
                     <% bp.getController().writeFormInput(out,"soggetto");%>
                 </td>
             </tr>
@@ -72,14 +71,6 @@
                     <%	} %>
                     <td  colspan="3">
                         <%bp.getController().writeFormInput(out,"ragione_sociale");%>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <% bp.getController().writeFormLabel(out,"denominazione_sede");%>
-                    </td>
-                    <td colspan="3">
-                        <% bp.getController().writeFormInput(out,"denominazione_sede");%>
                     </td>
                 </tr>
             <% } else { %>

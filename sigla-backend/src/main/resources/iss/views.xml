@@ -1,0 +1,51 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  ~ Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="sigla" runOnChange="true" id="create-view-PROGATTIVITASUBATTIVITA">
+        <sqlFile dbms="oracle" path="../isssigladb/View/ProgAttivitaSubAttivita.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="sigla" runOnChange="true" id="create-view-PROGATTIVITASUBATTIVITACOMPLETO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/ProgAttivitaSubAttivitaCompleto.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="sigla" runOnChange="true" id="create-view-CUPPROGETTI">
+        <sqlFile dbms="oracle" path="../isssigladb/View/cupprogetti.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="sigla" runOnChange="true" id="create-view-ALTROPERSONALESUPROGETTO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/AltroPersonaleSuProgetto.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="sigla" runOnChange="true" id="create-view-ALTROPERSONALESUPROGETTOCOMPLETO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/AltroPersonaleSuProgettoCompleto.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ALTROPERSONALESUPROGETTOCOMPLETO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/AltroPersonaleSuProgettoCompleto.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+
+    <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ISS-PRT_MAND_ELENCO_CNR">
+        <sqlFile dbms="oracle" path="../isssigladb/View/PRT_MAND_ELENCO_CNR.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="ciro.salvio" runOnChange="true" id="create-view-ISS-PRT_REVE_ELENCO_CNR">
+        <sqlFile dbms="oracle" path="../isssigladb/View/PRT_REVE_ELENCO_CNR.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="valentina.tomada" runOnChange="true" id="create-view-ISS-PRT_STAMPA_REGISTRO_INVENTARIO">
+        <sqlFile dbms="oracle" path="../isssigladb/View/PRT_STAMPA_REGISTRO_INVENTARIO.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+    <changeSet author="valentina.tomada" runOnChange="true" id="create-view-V_INVENTARIO_SGR">
+        <sqlFile dbms="oracle" path="../isssigladb/View/V_INVENTARIO_SGR.sql" relativeToChangelogFile="true" splitStatements="true" stripComments="false"/>
+    </changeSet>
+</databaseChangeLog>

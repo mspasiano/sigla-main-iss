@@ -39,7 +39,7 @@
 			propertyName="corrente"
 			sqlTypeName="DECIMAL"
 			columnSize="6"
-			nullable="true" />
+			nullable="false" />
 		<columnMapping
 			columnName="DATA_PROGRESSIVO"
 			propertyName="dataProgressivo"

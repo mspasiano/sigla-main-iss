@@ -23,6 +23,7 @@ import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Numerazione_doc_ammBulk;
 import it.cnr.contab.docamm00.docs.bulk.TipoDocumentoEnum;
+import it.cnr.contab.pdg00.cdip.bulk.Stipendi_cofiBulk;
 import it.cnr.contab.util.RemoveAccent;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
@@ -127,6 +128,8 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
     private java.math.BigDecimal im_disp_cassa_CNR;
 
     private Scrittura_partita_doppiaBulk scrittura_partita_doppia;
+
+    private Stipendi_cofiBulk stipendiCofiBulk;
 
     public MandatoBulk() {
         super();
@@ -324,7 +327,7 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
      *
      * @return Il valore della proprietà 'doc_contabili_collColl'
      */
-    public java.util.Collection getDoc_contabili_collColl() {
+    public java.util.Collection<V_ass_doc_contabiliBulk> getDoc_contabili_collColl() {
         return doc_contabili_collColl;
     }
 
@@ -334,7 +337,7 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
      *
      * @param newDoc_contabili_collColl Il valore da assegnare a 'doc_contabili_collColl'
      */
-    public void setDoc_contabili_collColl(java.util.Collection newDoc_contabili_collColl) {
+    public void setDoc_contabili_collColl(java.util.Collection<V_ass_doc_contabiliBulk> newDoc_contabili_collColl) {
         doc_contabili_collColl = newDoc_contabili_collColl;
     }
 
@@ -1178,9 +1181,52 @@ public class MandatoBulk extends MandatoBase implements IManRevBulk, IDefferUpda
 
     @Override
     public Timestamp getDt_contabilizzazione() {
-        return this.getDt_pagamento();
+        if (Optional.ofNullable(this.getDt_pagamento()).isPresent())
+            return this.getDt_emissione();
+        return null;
     }
+
     public String getIdMandatoAsString(){
         return getCd_cds()+"-"+getEsercizio()+"-"+getPg_mandato();
     }
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtInizioLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtFineLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public String getTipoLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Long getReportIdLiquid() {
+        return null;
+    }
+
+    public Stipendi_cofiBulk getStipendiCofiBulk() {
+        return stipendiCofiBulk;
+    }
+
+    public void setStipendiCofiBulk(Stipendi_cofiBulk stipendiCofiBulk) {
+        this.stipendiCofiBulk = stipendiCofiBulk;
+    }
+
 }

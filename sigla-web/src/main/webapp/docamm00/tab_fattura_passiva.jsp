@@ -32,9 +32,23 @@
 			</span>
 	      </tr>
 	  <% } %>
-	  <tr>      	
-      	<% bp.getController().writeFormField(out,"pg_fattura_passiva");%>      
-      	<% bp.getController().writeFormField(out,"esercizio");%>
+	  <tr>
+	    <td><% bp.getController().writeFormLabel(out,"pg_fattura_passiva");%></td>
+	    <td>
+	        <% if (bp instanceof CRUDFatturaPassivaAmministraBP)
+	                bp.getController().writeFormInput(out,"pg_fattura_passiva_amministra");
+	           else
+	                bp.getController().writeFormInput(out,"pg_fattura_passiva");
+	        %>
+	    </td>
+	    <td><% bp.getController().writeFormLabel(out,"esercizio");%></td>
+	    <td>
+	        <% if (bp instanceof CRUDFatturaPassivaAmministraBP)
+	                bp.getController().writeFormInput(out,"esercizio_amministra");
+	           else
+	                bp.getController().writeFormInput(out,"esercizio");
+	        %>
+	    </td>
       </tr>
       <tr>
 		<td>
@@ -172,12 +186,17 @@
 					      <tr>     	
 					   		<% bp.getController().writeFormField(out,"fl_spedizioniere");%>
 					      </tr>
-					      <tr>     	
+					      <tr>
 					   		<% bp.getController().writeFormField(out,"fl_bolla_doganale");%>
 					      </tr>
+                          <% if (bp.isAttivoOrdini()) { %>
+                              <tr>
+                                <% bp.getController().writeFormField(out,"flDaOrdini");%>
+                              </tr>
+                          <% } %>
 		      		</table>
 		      	</td>
-	      </tr>
+    	      </tr>
 		<% } else { %>
 	      <tr>     	
 	     	<td>

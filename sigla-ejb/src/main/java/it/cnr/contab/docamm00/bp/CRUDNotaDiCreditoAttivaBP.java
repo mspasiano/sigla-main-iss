@@ -145,7 +145,7 @@ public class CRUDNotaDiCreditoAttivaBP
         toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.downloadXml");
         toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.downloadFatturaFirmata");
         toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.ristampa");
-
+        toolbar = IDocAmmEconomicaBP.addPartitario(toolbar, attivaEconomicaParallela, isEditing(), getModel());
         return toolbar;
     }
 
@@ -253,14 +253,16 @@ public class CRUDNotaDiCreditoAttivaBP
     }
 
     public boolean isInventariaButtonEnabled() {
-
+        if ( !attivaInventaria)
+            return Boolean.FALSE;
         return getModel() != null &&
                 !getDettaglio().getDetails().isEmpty();
     }
 
     public boolean isInventariaButtonHidden() {
-
-        return true;//isSearching();
+        if ( !attivaInventaria)
+            return Boolean.TRUE;
+        return Boolean.TRUE;//isSearching();
     }
 
     public boolean isNewButtonHidden() {

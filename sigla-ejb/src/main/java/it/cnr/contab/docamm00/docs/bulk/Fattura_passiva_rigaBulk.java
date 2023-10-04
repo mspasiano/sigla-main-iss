@@ -17,10 +17,6 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
-import java.util.Calendar;
-import java.util.Dictionary;
-import java.util.Optional;
-
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
@@ -32,10 +28,18 @@ import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.util.enumeration.TipoIVA;
-import it.cnr.jada.bulk.BulkCollection;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Dictionary;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 public abstract class Fattura_passiva_rigaBulk
         extends Fattura_passiva_rigaBase
@@ -104,11 +108,6 @@ public abstract class Fattura_passiva_rigaBulk
         super(cd_cds, cd_unita_organizzativa, esercizio, pg_fattura_passiva, progressivo_riga);
     }
 
-    /**
-     * Insert the method's description here.
-     *
-     * @param newAccertamento it.cnr.contab.doccont00.core.bulk.AccertamentoBulk
-     */
     public void calcolaCampiDiRiga() {
 
         if (getQuantita() == null) setQuantita(new java.math.BigDecimal(1));
@@ -568,9 +567,13 @@ public abstract class Fattura_passiva_rigaBulk
             throw new ValidationException("Inserire correttamente le date di competenza " + dsRiga + ".");
 
         if (competenzaDa.before(competenzaDaTestata))
-            throw new ValidationException("La data di \"competenza Da\" deve essere successiva o uguale alla data di \"competenza da\" della testata " + dsRiga + ".");
+            throw new ValidationException("La data di \"competenza Da\" deve essere successiva o uguale " +
+                    "alla data di \"competenza da\" della testata " + LocalDateTime.ofInstant(competenzaDaTestata.toInstant(),
+                    ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " " + dsRiga + ".");
         if (competenzaA.after(competenzaATestata))
-            throw new ValidationException("La data di \"competenza A\" deve essere inferiore o uguale alla data di \"competenza a\" della testata " + dsRiga + ".");
+            throw new ValidationException("La data di \"competenza A\" deve essere inferiore o uguale " +
+                    "alla data di \"competenza a\" della testata " + LocalDateTime.ofInstant(competenzaATestata.toInstant(),
+                    ZoneId.systemDefault()).format(DateTimeFormatter.ofPattern("dd/MM/yyyy")) + " " + dsRiga + ".");
     }
 
     public TerzoBulk getFornitore() {
@@ -735,31 +738,6 @@ public abstract class Fattura_passiva_rigaBulk
         return TipoIVA.COMMERCIALE.value().equals(getTi_istituz_commerc());
     }
 
-    public BulkList<FatturaOrdineBulk> getFatturaOrdineColl() {
-        return fatturaOrdineColl;
-    }
-
-    public void setFatturaOrdineColl(BulkList<FatturaOrdineBulk> fatturaOrdineColl) {
-        this.fatturaOrdineColl = fatturaOrdineColl;
-    }
-
-    public int addToFatturaOrdineColl(FatturaOrdineBulk fatturaOrdineBulk) {
-        fatturaOrdineColl.add(fatturaOrdineBulk);
-        fatturaOrdineBulk.setFatturaPassivaRiga(this);
-        return fatturaOrdineColl.size() - 1;
-    }
-
-    public void removeFromFatturaOrdineColl(FatturaOrdineBulk fatturaOrdineBulk) {
-        fatturaOrdineColl.removeByPrimaryKey(fatturaOrdineBulk);
-    }
-
-    public BulkCollection[] getBulkLists() {
-        // Metti solo le liste di oggetti che devono essere resi persistenti
-        return new it.cnr.jada.bulk.BulkCollection[]{
-                fatturaOrdineColl
-        };
-    }
-
 	public CigBulk getCig() {
 		return cig;
 	}
@@ -768,4 +746,35 @@ public abstract class Fattura_passiva_rigaBulk
 		this.cig = cig;
 	}
 
+    @Override
+    public TerzoBulk getTerzo() {
+        return this.getFornitore();
+    }
+
+    @Override
+    public void validate(OggettoBulk oggettobulk) throws ValidationException {
+        super.validate(oggettobulk);
+        try {
+            Optional.ofNullable(getCodice_identificativo_ente_pagopa())
+                    .ifPresent(s -> {
+                        final String regex = "[0-9]{11}";
+                        if (!Pattern.compile(regex, Pattern.MULTILINE)
+                                .matcher(s)
+                                .find()) {
+                            throw new DetailedRuntimeException("L'identificativo ente può contenere solo numeri e la sua lunghezza deve essere di 11 caratteri!");
+                        }
+                    });
+            Optional.ofNullable(getNumero_avviso_pagopa())
+                    .ifPresent(s -> {
+                        final String regex = "[0-9]{18}";
+                        if (!Pattern.compile(regex, Pattern.MULTILINE)
+                                .matcher(s)
+                                .find()) {
+                            throw new DetailedRuntimeException("Il numero dell'avviso può contenere solo numeri e la sua lunghezza deve essere di 18 caratteri!");
+                        }
+                    });
+        } catch (DetailedRuntimeException _ex) {
+            throw new ValidationException(_ex.getMessage());
+        }
+    }
 }

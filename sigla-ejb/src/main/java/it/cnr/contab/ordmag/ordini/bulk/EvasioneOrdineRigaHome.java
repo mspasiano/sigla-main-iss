@@ -21,9 +21,12 @@
  */
 package it.cnr.contab.ordmag.ordini.bulk;
 import java.sql.Connection;
+import java.util.Collection;
+import java.util.List;
 
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_IBulk;
+import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
@@ -37,5 +40,28 @@ public class EvasioneOrdineRigaHome extends BulkHome {
 	}
 	public EvasioneOrdineRigaHome(Connection conn, PersistentCache persistentCache) {
 		super(EvasioneOrdineRigaBulk.class, conn, persistentCache);
+	}
+	public EvasioneOrdineRigaBulk findByConsegna(OrdineAcqConsegnaBulk consegna) throws PersistencyException {
+		SQLBuilder sqlBuilder = createSQLBuilder();
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.CD_CDS_ORDINE", SQLBuilder.EQUALS, consegna.getCdCds());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, consegna.getCdUnitaOperativa());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.ESERCIZIO_ORDINE", SQLBuilder.EQUALS, consegna.getEsercizio());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.CD_NUMERATORE_ORDINE", SQLBuilder.EQUALS, consegna.getCdNumeratore());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.NUMERO_ORDINE", SQLBuilder.EQUALS, consegna.getNumero());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.RIGA_ORDINE", SQLBuilder.EQUALS, consegna.getRiga());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.CONSEGNA", SQLBuilder.EQUALS, consegna.getConsegna());
+		sqlBuilder.addSQLClause(FindClause.AND, "EVASIONE_ORDINE_RIGA.STATO", SQLBuilder.EQUALS, OrdineAcqConsegnaBulk.STATO_INSERITA);
+		List lista = fetchAll(sqlBuilder);
+		if (lista != null && !lista.isEmpty()){
+			return (EvasioneOrdineRigaBulk)lista.get(0);
+		}
+		return null;
+	}
+
+
+	public List<EvasioneOrdineRigaBulk> findByMovimentiMag(MovimentiMagBulk movimentiMagBulk) throws PersistencyException {
+		SQLBuilder sqlBuilder = createSQLBuilder();
+		sqlBuilder.addClause(FindClause.AND, "movimentiMag", SQLBuilder.EQUALS, movimentiMagBulk);
+		return fetchAll(sqlBuilder);
 	}
 }

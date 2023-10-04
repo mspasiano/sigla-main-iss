@@ -37,4 +37,9 @@ public class CRUDObbligazioneResAmministraBP extends CRUDObbligazioneResBP {
 	public boolean isROStato() {
 		return false;
 	}
+
+	@Override
+	public boolean isRoCampiResiduoProprio() {
+		return false;
+	}
 }

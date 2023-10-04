@@ -20,10 +20,15 @@
  * Date 01/10/2007
  */
 package it.cnr.contab.doccont00.consultazioni.bulk;
+import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.util.action.CRUDBP;
+
+import java.sql.Timestamp;
+import java.util.Dictionary;
+
 public class V_cons_mandati_riscontratiBulk extends OggettoBulk implements Persistent {
 	public V_cons_mandati_riscontratiBulk() {
 		super();
@@ -33,7 +38,10 @@ public class V_cons_mandati_riscontratiBulk extends OggettoBulk implements Persi
  
 //    DT_REGISTRAZIONE TIMESTAMP(7) NOT NULL
 	private java.sql.Timestamp dt_registrazione;
- 
+
+	//    DT_PAGAMENTO TIMESTAMP(7) NOT NULL
+	private java.sql.Timestamp dt_pagamento;
+
 //    CD_SOSPESO VARCHAR(24) NOT NULL
 	private java.lang.String cd_sospeso;
  
@@ -42,7 +50,10 @@ public class V_cons_mandati_riscontratiBulk extends OggettoBulk implements Persi
  
 //    PG_MANDATO DECIMAL(10,0) NOT NULL
 	private java.lang.Long pg_mandato;
- 
+
+//    TI_MANDATO VARCHAR(1) NOT NULL
+	private java.lang.String ti_mandato;
+
 //    CD_CDS VARCHAR(30) NOT NULL
 	private java.lang.String cd_cds;
  
@@ -51,7 +62,9 @@ public class V_cons_mandati_riscontratiBulk extends OggettoBulk implements Persi
  
 //    IM_ASSOCIATO DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal im_associato;
- 
+
+	public static final Dictionary tipoMandatoKeys = MandatoBulk.tipoMandatoCdSKeys;
+
 	public java.lang.Integer getEsercizio() {
 		return esercizio;
 	}
@@ -99,5 +112,21 @@ public class V_cons_mandati_riscontratiBulk extends OggettoBulk implements Persi
 	}
 	public void setIm_associato(java.math.BigDecimal im_associato)  {
 		this.im_associato=im_associato;
+	}
+
+	public Timestamp getDt_pagamento() {
+		return dt_pagamento;
+	}
+
+	public void setDt_pagamento(Timestamp dt_pagamento) {
+		this.dt_pagamento = dt_pagamento;
+	}
+
+	public String getTi_mandato() {
+		return ti_mandato;
+	}
+
+	public void setTi_mandato(String ti_mandato) {
+		this.ti_mandato = ti_mandato;
 	}
 }

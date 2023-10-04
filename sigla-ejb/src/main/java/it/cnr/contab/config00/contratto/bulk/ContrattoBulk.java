@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2019  Consiglio Nazionale delle Ricerche
  *
- *     This program is free software: you can redistribute it and/or modify *     it under the terms of the GNU Affero General Public License as
+ *     This program is free software: you can redistribute it and/or modify
+ *     it under the terms of the GNU Affero General Public License as
  *     published by the Free Software Foundation, either version 3 of the
  *     License, or (at your option) any later version.
  *
@@ -19,15 +20,24 @@
 * Date 09/04/2005
 */
 package it.cnr.contab.config00.contratto.bulk;
+import java.rmi.RemoteException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.cnr.contab.config00.comp.ContrattoComponent;
+import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperMagBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.bulk.BulkCollection;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.CRUDBP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -54,7 +64,7 @@ import it.cnr.si.spring.storage.annotation.StorageType;
 @StorageType(name="F:sigla_contratti:appalti")
 @JsonInclude(value=Include.NON_NULL)
 public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamente{
-	
+
 	private static final java.util.Dictionary ti_statoKeys = new it.cnr.jada.util.OrderedHashtable();
 	
 	final public static String STATO_PROVVISORIO = "P";
@@ -72,12 +82,25 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	final public static String NATURA_CONTABILE_PASSIVO = "P";
 	final public static String NATURA_CONTABILE_ATTIVO_E_PASSIVO = "E";
 	final public static String NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI = "N";
+	// final public static String NATURA_CONTABILE_ACCORDO_QUADRO= "Q";
 	static {
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_ATTIVO,"Attivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_PASSIVO,"Passivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_ATTIVO_E_PASSIVO,"Attivo e Passivo");
 		ti_natura_contabileKeys.put(NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI,"Senza flussi finanziari");
+		// ti_natura_contabileKeys.put(NATURA_CONTABILE_ACCORDO_QUADRO,"Accordo Quadro");
 	}
+	public static final java.util.Dictionary tipoDettaglioContrattoKeys = new it.cnr.jada.util.OrderedHashtable();
+
+
+	final public static String DETTAGLIO_CONTRATTO_CATGRP = "CAT";
+	final public static String DETTAGLIO_CONTRATTO_ARTICOLI = "ART";
+
+	static {
+		tipoDettaglioContrattoKeys.put(DETTAGLIO_CONTRATTO_CATGRP,"Categoria Gruppo");
+		tipoDettaglioContrattoKeys.put(DETTAGLIO_CONTRATTO_ARTICOLI,"Articoli");
+	}
+
 	private ContrattoBulk contratto_padre;
 	private TerzoBulk figura_giuridica_interna;
 	private TerzoBulk figura_giuridica_esterna;
@@ -100,6 +123,7 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	private BulkList associazioneUO = new BulkList();
 	private BulkList associazioneUODisponibili = new BulkList();
 	private BulkList ditteInvitate = new BulkList();
+	private BulkList<Dettaglio_contrattoBulk> dettaglio_contratto= new it.cnr.jada.bulk.BulkList<Dettaglio_contrattoBulk>();
 		
 	@Transient
 	private BulkList<AllegatoContrattoDocumentBulk> archivioAllegati = new BulkList();
@@ -138,6 +162,13 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	public boolean isRODefinitivo(){
 		return getStato()!=null && isDefinitivo();
 	}
+	public boolean isROTipoContratto(){
+		if (Optional.ofNullable(getDettaglio_contratto()).filter(p->( !p.isEmpty())).isPresent()){
+			return Boolean.TRUE;
+		}
+		return Boolean.FALSE;
+
+	}
 	public boolean isRODati_cessazione(){
 		return getStato()!=null && !isDefinitivo();
 	}	
@@ -164,13 +195,15 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI));
 	}
 
+
+
 	public boolean isPassivo(){
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_PASSIVO));
 	}
 	public boolean isAttivo_e_Passivo(){
 		return (getNatura_contabile() != null && getNatura_contabile().equals(NATURA_CONTABILE_ATTIVO_E_PASSIVO));
 	}
-	
+
 	public boolean isCIGVisible(){
 		if (isFromFlussoAcquisti()){
 			return true;
@@ -237,8 +270,12 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	 */
 	public final java.util.Dictionary getTi_natura_contabileKeys() {
 		return ti_natura_contabileKeys;
-	}		
-	
+	}
+
+	public final java.util.Dictionary getTipoDettaglioContrattoKeys() {
+		return tipoDettaglioContrattoKeys;
+	}
+
 	@StorageProperty(name="sigla_contratti:natura_contabile")
 	public String getDescrizioneNaturaContabile(){
 		return (String) Optional.ofNullable(getNatura_contabile()).map(x -> ti_natura_contabileKeys.get(x)).orElse(null);
@@ -437,8 +474,14 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 	}
 	
 	public it.cnr.jada.bulk.BulkCollection[] getBulkLists() {
-		return new it.cnr.jada.bulk.BulkCollection[] {getAssociazioneUO(),getAssociazioneUODisponibili(),getArchivioAllegati(),getArchivioAllegatiFlusso(),getDitteInvitate()};
+		return new it.cnr.jada.bulk.BulkCollection[] {getAssociazioneUO(),getAssociazioneUODisponibili(),getArchivioAllegati(),
+				getArchivioAllegatiFlusso(),getDitteInvitate(),getDettaglio_contratto()};
 	}
+
+//	public List getChildren() {
+//		return getDettaglio_contratto();
+//	}
+
 	public Ass_contratto_uoBulk removeFromAssociazioneUO(int index) {
 		Ass_contratto_uoBulk dett = (Ass_contratto_uoBulk)getAssociazioneUO().remove(index);
 		return dett;
@@ -733,6 +776,18 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 		this.tot_doccont_cont_etr = tot_doccont_cont_etr;
 	}
 
+	public java.lang.String getCd_tipo_norma_perla () {
+		if(getTipoNormaPerla() != null)
+			return getTipoNormaPerla().getCd_tipo_norma();
+		return null;
+	}
+	/*
+	 *  (non-Javadoc)
+	 * @see it.cnr.contab.config00.contratto.bulk.ContrattoBase#setCd_tipo_contratto(java.lang.String)
+	 */
+	public void setCd_tipo_norma_perla(java.lang.String cd_tipo_norma_perla)  {
+		this.getTipoNormaPerla().setCd_tipo_norma(cd_tipo_norma_perla);
+	}
 
 	public BulkList<AllegatoContrattoDocumentBulk> getArchivioAllegati() {
 		return archivioAllegati;
@@ -978,4 +1033,32 @@ public class ContrattoBulk extends ContrattoBase implements ICancellatoLogicamen
 			setResponsabile(new V_persona_fisicaBulk());
 		return super.initializeForFreeSearch(crudbp, actioncontext);
 	}
+
+	public BulkList<Dettaglio_contrattoBulk> getDettaglio_contratto() {
+		return dettaglio_contratto;
+	}
+
+	public void setDettaglio_contratto(BulkList<Dettaglio_contrattoBulk> dettaglio_contratto) {
+		this.dettaglio_contratto = dettaglio_contratto;
+	}
+	public int addToDettaglio_contratto(Dettaglio_contrattoBulk dett) {
+		//dett.setUtente(this);
+		dett.setContratto(this);
+		getDettaglio_contratto().add(dett);
+		return getDettaglio_contratto().size()-1;
+	}
+	public Dettaglio_contrattoBulk removeFromDettaglio_contratto(int index) {
+		Dettaglio_contrattoBulk dett = (Dettaglio_contrattoBulk)getDettaglio_contratto().remove(index);
+		return dett;
+	}
+	public boolean isDettaglioContrattoPerArticoli()
+	{
+		return getTipo_dettaglio_contratto() != null && getTipo_dettaglio_contratto().equals(DETTAGLIO_CONTRATTO_ARTICOLI);
+	}
+
+	public boolean isDettaglioContrattoPerCategoriaGruppo()
+	{
+		return getTipo_dettaglio_contratto() != null && getTipo_dettaglio_contratto().equals(DETTAGLIO_CONTRATTO_CATGRP);
+	}
+
 }

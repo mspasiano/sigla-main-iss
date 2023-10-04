@@ -18,10 +18,7 @@
 package it.cnr.contab.ordmag.magazzino.comp;
 
 import it.cnr.contab.config00.sto.bulk.EnteBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioHome;
-import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.DivisaHome;
+import it.cnr.contab.docamm00.tabrif.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_beniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.*;
@@ -42,9 +39,7 @@ import it.cnr.jada.bulk.OutdatedResourceException;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.SQLBuilder;
+import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 
@@ -89,6 +84,22 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 					}
 				}
 			}
+			try {
+				if (Utility.createConfigurazioneCnrComponentSession().isGestioneEtichettaInventarioBeneAttivo(usercontext))
+				{
+					if(bene.getCd_condizione_bene() == null){
+						if(bene.getCondizioneBene()==null) {
+							bene.setCondizioneBene(new Condizione_beneBulk());
+						}
+						bene.setCd_condizione_bene("4");
+					}
+
+
+				}
+			} catch (RemoteException | ComponentException e) {
+
+			}
+
 		} catch (PersistencyException | IntrospectionException pe){
 			throw new it.cnr.jada.comp.ComponentException(pe);
 		}
@@ -121,6 +132,16 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 		return bulk;
 	}
 
+	protected void validaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
+		super.validaCreaModificaConBulk(usercontext, oggettobulk);
+		Transito_beni_ordiniBulk bulk = (Transito_beni_ordiniBulk)oggettobulk;
+
+		if(bulk.getFl_transito_canc() && (bulk.getNota_canc()== null ||bulk.getNota_canc().isEmpty())){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: per cancellare il bene dal transito è necessario impostare la nota di cancellazione");
+		}
+
+	}
+
 	public Transito_beni_ordiniBulk  gestioneTransitoInventario(UserContext userContext, MovimentiMagBulk movimentoCarico)  throws ComponentException, PersistencyException, RemoteException, ApplicationException  {
 		try {
 			Bene_servizioHome bene_servizioHome = (Bene_servizioHome)getHome(userContext, Bene_servizioBulk.class);
@@ -146,6 +167,20 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 					OrdineAcqHome ordineAcqHome = (OrdineAcqHome)getHome(userContext, OrdineAcqBulk.class);
 					OrdineAcqBulk ordineAcqBulk = (OrdineAcqBulk) ordineAcqHome.findByPrimaryKey(movimentoCarico.getLottoMag().getOrdineAcqConsegna().getOrdineAcqRiga().getOrdineAcq());
 					bene.setTi_commerciale_istituzionale(ordineAcqBulk.getTiAttivita());
+
+					Categoria_gruppo_inventHome catHome = (Categoria_gruppo_inventHome)getHome(userContext, Categoria_gruppo_inventBulk.class);
+					Categoria_gruppo_inventBulk cat = (Categoria_gruppo_inventBulk) catHome.findByPrimaryKey(bene.getMovimentiMag().getLottoMag().getBeneServizio().getCategoria_gruppo());
+
+					if (cat != null && cat.getFl_ammortamento()){
+						Tipo_ammortamentoHome tipo_ammortamentoHome = (Tipo_ammortamentoHome)getHome(userContext, Tipo_ammortamentoBulk.class);
+						Collection tiAmmortamenti = ((Tipo_ammortamentoHome)getHome(userContext, Tipo_ammortamentoBulk.class)).findTipiAmmortamentoFor(userContext, cat);
+						if (tiAmmortamenti != null && tiAmmortamenti.size() == 1){
+							Tipo_ammortamentoBulk tipo = (Tipo_ammortamentoBulk)tiAmmortamenti.iterator().next();
+							bene.setTi_ammortamento(tipo.getTi_ammortamento());
+							bene.setFl_ammortamento(true);
+						}
+					}
+
 					bene.setToBeCreated();
 					creaConBulk(userContext, bene);
 
@@ -157,4 +192,22 @@ public class TransitoBeniOrdiniComponent extends CRUDComponent implements ICRUDM
 		}
 		return null;
 	}
+	@Override
+	protected Query select(UserContext usercontext, CompoundFindClause compoundfindclause, OggettoBulk oggettobulk) throws ComponentException, PersistencyException {
+		if (compoundfindclause == null) {
+			if (oggettobulk != null) {
+				compoundfindclause = oggettobulk.buildFindClauses((Boolean)null);
+			}
+		}
+		Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)oggettobulk;
+
+		if(transito.getFl_search_ann()){
+			FindClause clause;
+			clause = new SimpleFindClause("search_ann", it.cnr.jada.persistency.sql.SQLBuilder.EQUALS, transito.getFl_search_ann());
+			compoundfindclause = CompoundFindClause.and(compoundfindclause, clause);
+		}
+
+		return super.select(usercontext,compoundfindclause,oggettobulk);
+	}
+
 }

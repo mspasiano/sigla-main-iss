@@ -13,21 +13,15 @@
 %>
 
 <div class="Group">
-	<table>
+	<table class="card p-2" cellpadding="2">
 		<tr>
-			<%
-				bp.getController().writeFormField(out, "findUnitaOperativaOrd");
-			%>
+			<td><%bp.getController().writeFormLabel(out, "findUnitaOperativaOrd");%></td>
+            <td colspan="9"><%bp.getController().writeFormInput(out, "findUnitaOperativaOrd");%></td>
 		</tr>
-	</table>
-	<table>
 		<tr>
-			<%
-				bp.getController().writeFormField(out, "findNumerazioneOrd");
-			%>
+			<td><%bp.getController().writeFormLabel(out, "findNumerazioneOrd");%></td>
+			<td colspan="9"><%bp.getController().writeFormInput(out, "findNumerazioneOrd");%></td>
 		</tr>
-	</table>
-	<table>
 		<tr>
 			<%
 				bp.getController().writeFormField(out, "esercizio");
@@ -48,7 +42,7 @@
 			   } %>
 		</tr>
 	</table>
-    <table>
+    <table class="card mt-1 p-2" cellpadding="2">
       <tr>      	
 			<td>
 				<% bp.getController().writeFormLabel(out,"dsRichiesta");%>
@@ -65,8 +59,6 @@
 				<% bp.getController().writeFormInput(out,"nota");%>
 			</td>
       </tr>
-	</table>
-    <table>
 		<tr>
 			<%
 			bp.getController().writeFormField(out, "findUnitaOperativaOrdDest");

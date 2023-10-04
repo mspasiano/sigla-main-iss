@@ -17,25 +17,6 @@
 
 package it.cnr.contab.doccont00.comp;
 
-import java.io.Serializable;
-import java.math.BigDecimal;
-import java.rmi.RemoteException;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.sql.Types;
-import java.util.Collection;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Vector;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
 import it.cnr.contab.config00.bulk.Parametri_cdsHome;
@@ -46,28 +27,12 @@ import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_ev_evBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewHome;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceHome;
-import it.cnr.contab.config00.pdcfin.bulk.FunzioneBulk;
-import it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk;
-import it.cnr.contab.config00.pdcfin.bulk.NaturaBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Voce_fBulk;
+import it.cnr.contab.config00.pdcfin.bulk.*;
 import it.cnr.contab.config00.pdcfin.cla.bulk.Classificazione_vociBulk;
-import it.cnr.contab.config00.sto.bulk.CdrBulk;
-import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.contab.config00.sto.bulk.CdsHome;
-import it.cnr.contab.config00.sto.bulk.EnteBulk;
-import it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
-import it.cnr.contab.config00.sto.bulk.V_struttura_organizzativaBulk;
-import it.cnr.contab.config00.sto.bulk.V_struttura_organizzativaHome;
+import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Documento_generico_rigaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Documento_generico_rigaHome;
@@ -77,7 +42,6 @@ import it.cnr.contab.doccont00.ejb.SaldoComponentSession;
 import it.cnr.contab.pdg00.bulk.Pdg_preventivo_etr_detBulk;
 import it.cnr.contab.pdg01.bulk.Pdg_modulo_entrate_gestBulk;
 import it.cnr.contab.prevent00.bulk.Pdg_vincoloBulk;
-import it.cnr.contab.prevent00.bulk.Pdg_vincoloHome;
 import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
 import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
 import it.cnr.contab.preventvar00.bulk.Var_bilancioBulk;
@@ -86,37 +50,26 @@ import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
 import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
-import it.cnr.contab.varstanz00.bulk.Ass_var_stanz_res_cdrBulk;
-import it.cnr.contab.varstanz00.bulk.Ass_var_stanz_res_cdrHome;
-import it.cnr.contab.varstanz00.bulk.Ass_var_stanz_res_cdrKey;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_resBulk;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_resHome;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_resKey;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_res_rigaBulk;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_res_rigaHome;
-import it.cnr.contab.varstanz00.bulk.Var_stanz_res_rigaKey;
-import it.cnr.contab.varstanz00.comp.VariazioniStanziamentoResiduoComponent;
+import it.cnr.contab.varstanz00.bulk.*;
 import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.PrimaryKeyHashtable;
-import it.cnr.jada.bulk.ValidationException;
-import it.cnr.jada.comp.ApplicationException;
-import it.cnr.jada.comp.ApplicationRuntimeException;
-import it.cnr.jada.comp.CRUDComponent;
-import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.comp.ICRUDMgr;
-import it.cnr.jada.comp.IPrintMgr;
+import it.cnr.jada.bulk.*;
+import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.LoggableStatement;
-import it.cnr.jada.persistency.sql.PersistentHome;
-import it.cnr.jada.persistency.sql.SQLBuilder;
+import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.ejb.EJBCommonServices;
-import it.perla.accenture.com.anagrafeprestazioni_variazioneincarichi.ComunicazioneType.VariazioneIncarichi;
+
+import javax.ejb.EJBException;
+import java.io.Serializable;
+import java.math.BigDecimal;
+import java.rmi.RemoteException;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /* Gestisce documenti di tipo
 	ACR con fl_pgiro = 'N' - bilancio Ente
@@ -159,7 +112,7 @@ public class AccertamentoComponent  extends CRUDComponent implements IDocumentoC
   *      effettua tale aggiornamento
   *
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param accertamento <code>AccertamentoBulk</code> l'accertamento da salvare
   * @param azione indica l'azione effettuata sull'accertamento e puo' assumere i valori INSERIMENTO, MODIFICA
   *
@@ -253,7 +206,7 @@ public void aggiornaCogeCoanInDifferita(it.cnr.jada.UserContext userContext, it.
  *       accertamento > 0)
  * Post: I saldi dell'accertamento sono stati aggiornati nel metodo 'aggiornaSaldiInModifica'
  *
- * @param	uc	lo UserContext che ha generato la richiesta
+ * @param	userContext	lo UserContext che ha generato la richiesta
  * @param	docContabile	il documento contabile di tipo AccertamentoBulk per cui aggiornare i saldi
  * @param	values	la Map che contiene il "pg_ver_rec" iniziale dell'accertamento
  * @param	param paramtero non utilizzato per gli accertamenti
@@ -664,7 +617,7 @@ public AccertamentoBulk aggiornaScadenzarioSuccessivoAccertamento (UserContext a
  * Post: E' stata richiamata la stored procedure che provvede ad aggiornare gli stati COAN/COGE degli eventuali doc. amministrativi
  *       contabilizzati sull'accertamento
  *
- * @param	uc	lo UserContext che ha generato la richiesta
+ * @param	userContext	lo UserContext che ha generato la richiesta
  * @param	docContabile l' AccertamentoBulk che e' stato modificato/annullato
  *
 */
@@ -895,7 +848,7 @@ public void callRiportaIndietro (UserContext userContext,IDocumentoContabileBulk
  *
  * @param	aUC	lo UserContext che ha generato la richiesta
  * @param	accertamento l' AccertamentoBulk la cui linea di attività e' stata modificata
- * @param	scadenza l'Accertamento_scadenzarioBulk per cui eliminare i dettagli
+ * @param	scadenzario l'Accertamento_scadenzarioBulk per cui eliminare i dettagli
  * @return	l'Accertamento_scadenzarioBulk senza dettagli
 */
 
@@ -960,7 +913,7 @@ public Accertamento_scadenzarioBulk cancellaDettagliScadenze (UserContext aUC,Ac
   *      in Configurazione CNR come LINEA ATTIVITA' ENTE di ENTRATA
   *
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param uc lo <code>UserContext</code> che ha generato la richiesta
   * @param accert_scad <code>Accertamento_scadenzarioBulk</code> la scadenza dell'accertamento di sistema per la quale e' necessario creare un
   *        dettaglio
   * @return <code>Accertamento_scad_voceBulk</code> Il dettaglio della scadenza dell'accertamento di sistema creato
@@ -1006,7 +959,7 @@ private Accertamento_scad_voceBulk creaAccertamento_scad_voce (UserContext uc,Ac
   *      Una scadenza per un accertamento di sistema e' stato creata con data scadenza la data di
   *      registrazione dell'accertamento e importo scadenza uguale all'importo dell'accertamento
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param uc lo <code>UserContext</code> che ha generato la richiesta
   * @param accertamento <code>AccertamentoBulk</code> l'accertamento di sistema per il quale e' necessario creare una
   *        scadenza
   * @return <code>Accertamento_scadenzarioBulk</code> La scadenza dell'accertamento di sistema creata
@@ -1053,7 +1006,7 @@ private Accertamento_scadenzarioBulk creaAccertamento_scadenzario (UserContext u
   *      il debitore e' il CNR. Sono stati inoltre creati una scadenza di accertamento (metodo creaAccertamento_scadenzario)
   *      e un dettaglio di tale scadenza (metodo creaAccertamento_scad_voce)
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param mandatoRiga <code>MandatoAccreditamento_rigaBulk</code> la riga del mandato di accreditamento per la quale e'
   *        necessario creare una riga della reversale di trasferimento associata all'accertamento di sistema da creare
   * @param uo <code>Unita_organizzativaBulk</code> l'unità organizzativa beneficiaria del mandato di accreditamento
@@ -1372,7 +1325,7 @@ private it.cnr.contab.doccont00.ejb.SaldoComponentSession createSaldoComponentSe
   *    PostCondition:
   *      Viene restituito un errore all'utente per segnalare l'assenza di tale associazione
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param mandatoRiga <code>MandatoAccreditamento_rigaBulk</code> la riga del mandato di accreditamento associata all'impegno
   *        da cui ricavare il capitolo di spesa CNRper la quale e'
   * @param uo <code>Unita_organizzativaBulk</code> l'unità organizzativa beneficiaria del mandato di accreditamento da
@@ -1426,7 +1379,7 @@ private Ass_ev_evBulk findAssociazioneCapSpesaCNRCapEntrataCdS (UserContext user
   *    PostCondition:
   *      Viene restituito un errore all'utente per segnalare l'assenza di tale anagrafica
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param cd_unita_organizzativa <code>String</code> il codice della UO da ricercare in anagrafica
   * @return <code>TerzoBulk</code> L'istanza di Terzobulk identificata in anagrafica oppure null se l'istanza non esiste
  */
@@ -1880,7 +1833,7 @@ public OggettoBulk inizializzaBulkPerModifica (UserContext aUC,OggettoBulk bulk)
   *      L'accertamento e' stato inizializzato e il cds e l'uo di origine non vengono valorizzati
   *
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param bulk <code>OggettoBulk</code> l'istanza di AccertamentoBulk da inizializzare
   * @return <code>OggettoBulk</code> l'istanza di AccertamentoBulk inizializzata
   *
@@ -1923,7 +1876,7 @@ public OggettoBulk inizializzaBulkPerRicerca (UserContext userContext,OggettoBul
   *      L'accertamento e' stato inizializzato e il cds e l'uo di origine non vengono valorizzati
   *
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param bulk <code>OggettoBulk</code> l'istanza di AccertamentoBulk da inizializzare
   * @return <code>OggettoBulk</code> l'istanza di AccertamentoBulk inizializzata
   *
@@ -2154,97 +2107,6 @@ private void inizializzaScadenzaConDocumenti(UserContext aUC,OggettoBulk scadenz
 		throw handleException( e );
 	}
 }
-/**
-  *  Inizializzazione linee di attività
-  *    PreCondition:
-  *      La richiesta di inizializzare un accertamento e' stata generata
-  *    PostCondition:
-  *      Le linee di attività eleggibili per l'accertamento sono state caricate (metodo 'listaLineeAttivitaPerCapitolo')
-  *      e la linea di attività che era stata selezionata per l'accertamento e' stata caricata
-  *
-  *  Inizializzazione linee di attività - errore
-  *    PreCondition:
-  *      La richiesta di inizializzare un accertamento e' stata generata e la linea di attività che era stata
-  *      precedentemente selezionata per l'accertamento non e' più valida
-  *    PostCondition:
-  *      Una segnalazione di errore viene ritornata
-  *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
-  * @param accertamento l'istanza di AccertamentoBulk da inizializzare
-  * @param cdLA il codice della linea di attività selezionata per l'accertamento
-  * @param cdCdr il codice del Cdr della la linea di attività selezionata per l'accertamento
-  * @return <code>AccertamentoBulk</code> con le linee di attività caricate
-  *
- */
-
-//
-// Inizializzazione delle lista di tutte le linee di attivita eleggibili.
-// Inizializzazione della Linea di Attivita' selezionata per l'aacertamento (accertamento.setLinea_attivita())
-//
-/* MITODO - per ora remmo il metodo
-private AccertamentoBulk inizializzoLineeAttivita(UserContext aUC, AccertamentoBulk accertamento, String cdLA, String cdCdr ) throws ComponentException
-{
-	try
-	{
-		// Carico le Linee di attivita'
-		accertamento.setLinee_attivitaColl(listaLineeAttivitaPerCapitolo( aUC, accertamento));
-
-		// recupero da configurazione CNR la latt di sistema usata x gli accertamenti residui da SCI
-		Configurazione_cnrBulk config = createConfigurazioneCnrComponentSession().getConfigurazione( aUC, null, null, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.PK_LINEA_ATTIVITA_SPECIALE, it.cnr.contab.config00.bulk.Configurazione_cnrBulk.SK_LINEA_ATTIVITA_ENTRATA_ENTE );
-		if ( config == null  || config.getVal02() == null || config.getVal01() == null	)
-			throw new ApplicationException("Configurazione CNR: manca la definizione del WORKPACKAGE ENTRATA ENTE");
-		it.cnr.contab.config00.latt.bulk.WorkpackageBulk lattSistema = new it.cnr.contab.config00.latt.bulk.WorkpackageBulk( config.getVal01(), config.getVal02());
-		lattSistema = (it.cnr.contab.config00.latt.bulk.WorkpackageBulk ) getHome(  aUC, lattSistema.getClass() ).findByPrimaryKey( lattSistema );
-		if ( lattSistema == null )
-			throw new ApplicationException("Attenzione! Il GAE di sistema Cdr: " + lattSistema.getCd_centro_responsabilita() + " Codice: " + lattSistema.getCd_linea_attivita() + " non e' stato definito");
-
-		if ( cdLA.equals( lattSistema.getCd_linea_attivita() ) &&
-			  cdCdr.equals( lattSistema.getCd_centro_responsabilita()))
-		{
-			accertamento.setLinea_attivita( lattSistema );
-			accertamento.getLinee_attivitaColl().add( lattSistema );
-			return accertamento;
-		}
-
-
-		// Inizializzo la variabile Linea_attivita dell'accertamento
-		WorkpackageBulk lineaAtt;
-		boolean found=true;
-		int c=0;
-		while (found && (c < accertamento.getLinee_attivitaColl().size()))
-		{
-			lineaAtt = (WorkpackageBulk)accertamento.getLinee_attivitaColl().get(c);
-			if(lineaAtt.getCd_linea_attivita().equals(cdLA))
-			{
-				accertamento.setLinea_attivita(lineaAtt);
-				found = false;
-			}
-			c++;
-		}
-
-		if((accertamento.getLinea_attivita() == null) || (accertamento.getLinea_attivita().getCd_linea_attivita() == null))
-			throw handleException( new ApplicationException( "Il GAE '" + cdLA + "' associato all'accertamento non esiste piu'!"));
-
-		return accertamento;
-	}
-	catch ( Exception e )
-	{
-		throw handleException( e );
-	}
-}
-*/
-/* normale
- *		PreCondition :
- *			L'utente ha creato una nuova Linea di attivita' da "Gestione Accertamento"
- *          La nuova linea di attività deve essere validata per l'accertamento in base alla sua natura
- *		PostCondition :
- *			L'applicazione ritorna l'elenco dei codici natura compatibili con il capitolo dell'accertamento
- *
- * @param aUC lo <code>UserContext</code> che ha generato la richiesta
- * @param accertamento l'istanza di AccertamentoBulk per cui selezionare le nature valide
- * @return <code>Vector</code> con i codici natura validi
- *
-*/
 
 public Vector listaCodiciNaturaPerCapitolo (UserContext aUC,AccertamentoBulk accertamento) throws ComponentException
 {
@@ -2299,7 +2161,7 @@ public Vector listaLineeAttivitaPerCapitolo (UserContext aUC,AccertamentoBulk ac
   *  		Il record relativo alla scadenza e' stato messo in lock e non e' pertanto consentito ad altre transazioni
   *         l'accesso a tale scadenza
   *
-  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
+  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
   * @param scadenza l'istanza di Accertamento_scadenzarioBulk per cui mettere un lock
   *
  */
@@ -2340,7 +2202,7 @@ public void lockScadenza( UserContext userContext,IScadenzaDocumentoContabileBul
   *    PostCondition:
   *      Viene generata un'ApplicationException che descrive all'utente l'errore che si e' verificato
   *
-  * @param uc lo <code>UserContext</code> che ha generato la richiesta
+  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
   * @param bulk <code>AccertamentoBulk</code> l'accertamento da modificare
   * @return <code>AccertamentoBulk</code> l'accertamento  modificato
   *
@@ -3591,7 +3453,7 @@ public Vector listaCdrPerCapitoli (UserContext aUC,AccertamentoBulk accertamento
   *    PostCondition:
   *      Il metodo utilizza un Throw Exception per comunicare l'errore all'utente
   *
-  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
   * @param accertamento <code>AccertamentoBulk</code> l'accertamento per cui creare i dettagli scadenza
   * @param scadenzario <code>Accertamento_scadenzarioBulk</code> la scadenza dell'accertamento per cui creare i dettagli oppure
   *        <code>null</code> se e' necessario generare i dettagli per tutte le scadenze
@@ -3737,7 +3599,7 @@ protected AccertamentoBulk generaDettagliScadenzaAccertamento (UserContext aUC,A
   *      impostata come voce del piano dei conti del dettaglio della scadenza il capitolo selezionato
   *      in imputazione finanziaria avente funzione uguale a quello della linea di attività
   *
-  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
   * @param accertamento <code>AccertamentoBulk</code> l'accertamento per cui creare i dettagli scadenza
   * @param scadenzario <code>Accertamento_scadenzarioBulk</code> la scadenza dell'accertamento per cui creare i dettagli
   *
@@ -3839,7 +3701,7 @@ protected void creaDettagliScadenzaPerLineeAttivitaDaPdG(UserContext aUC,Accerta
   *      impostata come voce del piano dei conti del dettaglio della scadenza il capitolo selezionato
   *      in imputazione finanziaria avente funzione uguale a quello della linea di attività
   *
-  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
   * @param accertamento <code>AccertamentoBulk</code> l'accertamento per cui creare i dettagli scadenza
   * @param scadenzario <code>Accertamento_scadenzarioBulk</code> la scadenza dell'accertamento per cui creare i dettagli
   *
@@ -4698,10 +4560,36 @@ public SQLBuilder selectAssestatoRisorseCoperturaByClause (UserContext userConte
 	SQLBuilder sql = getHome(userContext, assestato).createSQLBuilder();
 
 	sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio( userContext ) );
-	sql.addClause(FindClause.AND, "esercizio_res", SQLBuilder.LESS, CNRUserContext.getEsercizio( userContext ) );
 	sql.addClause(FindClause.AND, "ti_appartenenza", sql.EQUALS, Elemento_voceHome.APPARTENENZA_CDS );
 	sql.addClause(FindClause.AND, "ti_gestione", SQLBuilder.EQUALS, Elemento_voceHome.GESTIONE_SPESE);
 	sql.addSQLClause(FindClause.AND, "IMPORTO_DISPONIBILE+IMPORTO_VINCOLI", SQLBuilder.GREATER, BigDecimal.ZERO);
+
+	if (CNRUserContext.getEsercizio( userContext )<2022)
+		sql.addClause(FindClause.AND, "esercizio_res", SQLBuilder.LESS, CNRUserContext.getEsercizio( userContext ) );
+	else {
+		sql.openParenthesis(FindClause.AND);
+			sql.addClause(FindClause.OR, "esercizio_res", SQLBuilder.LESS, CNRUserContext.getEsercizio(userContext));
+			sql.openParenthesis(FindClause.OR);
+				sql.addClause(FindClause.AND, "progetto_dt_inizio", SQLBuilder.LESS, it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+				sql.openParenthesis(FindClause.AND);
+					sql.addClause(FindClause.OR, "progetto_dt_fine", SQLBuilder.ISNOTNULL, null);
+					sql.addClause(FindClause.OR, "progetto_dt_proroga", SQLBuilder.ISNOTNULL, null);
+				sql.closeParenthesis();
+				sql.openParenthesis(FindClause.AND);
+					sql.openParenthesis(FindClause.OR);
+						sql.addClause(FindClause.AND, "progetto_dt_fine", SQLBuilder.ISNOTNULL, null);
+						sql.addClause(FindClause.AND, "progetto_dt_proroga", SQLBuilder.ISNULL, null);
+						sql.addClause(FindClause.AND, "progetto_dt_fine", SQLBuilder.LESS, it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+					sql.closeParenthesis();
+					sql.openParenthesis(FindClause.OR);
+						sql.addClause(FindClause.AND, "progetto_dt_fine", SQLBuilder.ISNOTNULL, null);
+						sql.addClause(FindClause.AND, "progetto_dt_proroga", SQLBuilder.ISNOTNULL, null);
+						sql.addClause(FindClause.AND, "progetto_dt_proroga", SQLBuilder.LESS, it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+					sql.closeParenthesis();
+				sql.closeParenthesis();
+			sql.closeParenthesis();
+		sql.closeParenthesis();
+	}
 
 	V_struttura_organizzativaHome strHome = (V_struttura_organizzativaHome) getHome(userContext, V_struttura_organizzativaBulk.class);
 	sql.openParenthesis(FindClause.AND);
@@ -4722,11 +4610,11 @@ public SQLBuilder selectAssestatoRisorseCoperturaByClause (UserContext userConte
 public void verificaDisponibilitaVincoliSpese(UserContext aUC,AccertamentoResiduoBulk accertamento) throws ComponentException
 {
 	try {
-		if (accertamento.isStatoInesigibile() || accertamento.isStatoParzialmenteInesigibile() || accertamento.isStatoDubbio()) {
+		if (accertamento.isStatoInesigibile() || accertamento.isStatoParzialmenteInesigibile() || accertamento.isStatoDubbio() || accertamento.isStatoGiudizialmenteControverso()) {
 			if (accertamento.isStatoInesigibile() || accertamento.isStatoParzialmenteInesigibile()) { 
 				if (accertamento.getIm_quota_inesigibile_da_ripartire().compareTo(BigDecimal.ZERO)!=0)
 					throw new ApplicationException("Attenzione! Non risulta correttamente coperta con spese vincolate la quota inesigibile dell'accertamento residuo. Operazione non possibile!");
-			} else { //accertamento.isStatoDubbio()
+			} else { //accertamento.isStatoDubbio() || accertamento.isStatoGiudizialmenteControverso()
 				if (Optional.ofNullable(accertamento.getImportoNonIncassato()).orElse(BigDecimal.ZERO).compareTo(
 							Optional.ofNullable(accertamento.getIm_quota_inesigibile_ripartita()).orElse(BigDecimal.ZERO))<0)
 					throw new ApplicationException("Attenzione! Le spese vincolate ("
@@ -4862,6 +4750,356 @@ public SQLBuilder selectVariazioneResiduaByClause (UserContext userContext, Acce
 		}
 		return Boolean.TRUE;
 
+	}
+	public AccertamentoBulk aggiornaAccertamentiTemporanei(UserContext userContext, AccertamentoBulk accertamentoTemporaneo) throws ComponentException {
+		try {
+			Numerazione_doc_contHome numHome = (Numerazione_doc_contHome) getHomeCache(userContext).getHome(Numerazione_doc_contBulk.class);
+			Long pg = null;
+			pg = numHome.getNextPg(userContext,
+					accertamentoTemporaneo.getEsercizio(),
+					accertamentoTemporaneo.getCd_cds(),
+					accertamentoTemporaneo.getCd_tipo_documento_cont(),
+					accertamentoTemporaneo.getUser());
+			AccertamentoHome home = (AccertamentoHome) getHome(userContext, accertamentoTemporaneo);
+			home.confirmAccertamentoTemporaneo(userContext, accertamentoTemporaneo, pg);
+			return (AccertamentoBulk) inizializzaBulkPerModifica(userContext, accertamentoTemporaneo);
+		} catch (it.cnr.jada.persistency.PersistencyException e) {
+			throw handleException(accertamentoTemporaneo, e);
+		} catch (it.cnr.jada.persistency.IntrospectionException e) {
+			throw handleException(accertamentoTemporaneo, e);
+		}
+	}
+
+	/**
+	 * Aggiorna l'accertamento in base alla selezione delle voci effettuate dall'utente.
+	 * L'utente, in fase di selezione voci, può o meno indicare l'importo da imputare per ogni Cdr/Gae/Voce.
+	 * Gli importi indicati dall'utente per CDR/GAE/Voce vengono presi in considerazione solo se
+	 * l'accertamento è formata da un'unica scadenza.
+	 * In caso di più scadenze vengono assegnate solo le combinazioni scelte CDR/Gae/Voce mentre gli importi vengono
+	 * ricalcolati con le modalità abituali (es. percentuale GAE all'interno del Bilancio).
+	 *
+	 * @param userContext
+	 * @param accertamento
+	 * @param vociList
+	 * @return
+	 * @throws it.cnr.jada.comp.ComponentException
+	 */
+	public AccertamentoBulk riportaSelezioneVoci(UserContext userContext, AccertamentoBulk accertamento, java.util.List vociList)  throws it.cnr.jada.comp.ComponentException{
+		AccertamentoHome accertamentoHome = (AccertamentoHome) getHome( userContext, accertamento.getClass());
+		Accertamento_scadenzarioHome asHome = (Accertamento_scadenzarioHome) getHome( userContext, Accertamento_scadenzarioBulk.class );
+
+		// carica i capitoli di spesa del CDS
+		accertamento = listaCapitoliPerCdsVoce( userContext, accertamento );
+		accertamento.refreshCapitoliDiSpesaCdsSelezionatiColl(vociList);
+
+		// carica i cdr
+		accertamento.setCdrColl( listaCdrPerCapitoli( userContext,  accertamento));
+		accertamento.refreshCdrSelezionatiColl(vociList);
+
+		// carica le linee di attività da PDG
+		accertamento.setLineeAttivitaColl( listaLineeAttivitaPerCapitoliCdr( userContext,  accertamento));
+		accertamento.refreshLineeAttivitaSelezionateColl(vociList);
+
+		accertamento.setInternalStatus( ObbligazioneBulk.INT_STATO_LATT_CONFERMATE );
+		accertamento.setIm_iniziale_accertamento( accertamento.getIm_accertamento());
+		accertamento.setCd_iniziale_elemento_voce( accertamento.getCd_elemento_voce());
+		accertamento.setCd_terzo_iniziale( accertamento.getCd_terzo());
+
+		BigDecimal totaleSelVoci = new BigDecimal( 0 ).setScale(2,BigDecimal.ROUND_HALF_UP);
+
+		//Carico la lista delle voci con gli importi da ripartirre
+		PrimaryKeyHashtable hashVociList = new PrimaryKeyHashtable();
+
+		if (!vociList.isEmpty() && vociList.get(0) instanceof V_assestatoBulk) {
+			for ( Iterator s = vociList.iterator(); s.hasNext(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk) s.next();
+				hashVociList.put(voceSel, new BigDecimal(0));
+				if (Utility.nvl(voceSel.getImp_da_assegnare()).compareTo(new BigDecimal(0))!=-1)
+					totaleSelVoci = totaleSelVoci.add( Utility.nvl(voceSel.getImp_da_assegnare()) );
+			}
+		}
+
+		//Valorizzo il campo Percentuale che utilizzerò per individuare gli importi da attribuire ad ogni scadenza
+		if (totaleSelVoci.compareTo(Utility.ZERO)>0)
+		{
+			for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+				voceSel.setPrc_da_assegnare(Utility.nvl(voceSel.getImp_da_assegnare()).divide(totaleSelVoci, 4, java.math.BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)));
+			}
+		}
+
+		if (totaleSelVoci.compareTo(accertamento.getIm_accertamento())>0)
+			accertamento.setIm_accertamento(totaleSelVoci);
+
+		//Crea l'eventuale scadenza mancante
+		creaScadenzaResiduale(userContext, accertamento);
+
+		//Rigenero i dettagli di tutte le scadenze
+		for ( Iterator s = accertamento.getAccertamento_scadenzarioColl().iterator(); s.hasNext(); )
+			generaDettagliScadenzaAccertamento( userContext, accertamento, ((Accertamento_scadenzarioBulk)s.next()), false);
+
+		if (totaleSelVoci.compareTo(new BigDecimal(0))>0) {
+
+			Accertamento_scadenzarioBulk as = null;
+			Accertamento_scad_voceBulk asv;
+
+			BigDecimal impDaAssegnareAcc = totaleSelVoci;
+			BigDecimal impAssegnatoAcc = new BigDecimal( 0 );
+
+			//DEVO PRIMA VERIFICARE CHE L'IMPORTO SELEZIONATO SIA ALMENO SUFFICIENTE A COLMARE LA QUOTA ASSOCIATA A DOC.AMM.
+			BigDecimal impAssociatoDocAmm = new BigDecimal( 0 );
+			for ( Iterator iteratorOs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorOs.hasNext(); )
+				impAssociatoDocAmm = impAssociatoDocAmm.add(((Accertamento_scadenzarioBulk)iteratorOs.next()).getIm_associato_doc_amm());
+
+			if (impAssociatoDocAmm.compareTo(impDaAssegnareAcc)>0)
+				throw new ApplicationException("Non è possibile attribuire all'accertamento un importo " + new it.cnr.contab.util.EuroFormat().format(impDaAssegnareAcc) +
+						" inferiore a quanto risulta associato a documenti amministrativi " + new it.cnr.contab.util.EuroFormat().format(impAssociatoDocAmm) + ".");
+
+			//AGGIORNO PRIMA LE SCADENZE ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+			for ( Iterator iteratorOs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorOs.hasNext(); ) {
+
+				as = (Accertamento_scadenzarioBulk)iteratorOs.next();
+
+				//SELEZIONO QUELLE ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+				if (as.getIm_associato_doc_amm().compareTo(new BigDecimal(0))>0){
+
+					//SE L'IMPORTO DELLA SCADENZA è MAGGIORE DI QUANTO DEVE ESSERE ANCORA RIPARTITO
+					//NE RIDUCO L'IMPORTO CONTROLLANDO DI NON RENDERLO INFERIORE A QUANTO ASSOCIATO A
+					//DOCUMENTI AMMINISTRATIVI
+					if (as.getIm_scadenza().compareTo(impDaAssegnareAcc)>0){
+						if (as.getIm_associato_doc_amm().compareTo(impDaAssegnareAcc)<0){
+							throw new ApplicationException("Non è possibile inserire un importo " +	new it.cnr.contab.util.EuroFormat().format(impDaAssegnareAcc) +
+									"inferiore a quanto risulta associato a documenti amministrativi " + new it.cnr.contab.util.EuroFormat().format(impAssociatoDocAmm) + ".");
+						}
+						as.setIm_scadenza(impDaAssegnareAcc);
+					}
+
+					spalmaImportiSuScadenza(userContext, as, hashVociList);
+					as.setToBeUpdated();
+					impDaAssegnareAcc = impDaAssegnareAcc.subtract(as.getIm_scadenza());
+					impAssegnatoAcc = impAssegnatoAcc.add(as.getIm_scadenza());
+				}
+			}
+
+			BulkList recDaEliminare = new BulkList();
+			//	POI LE SCADENZE NON ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+			for ( Iterator iteratorAs = accertamento.getAccertamento_scadenzarioColl().iterator(); iteratorAs.hasNext(); ) {
+				as = (Accertamento_scadenzarioBulk)iteratorAs.next();
+
+				//SELEZIONO QUELLE NON ASSOCIATE A DOCUMENTI AMMINISTRATIVI
+				if (as.getIm_associato_doc_amm().compareTo(new BigDecimal(0))<=0){
+					if (impDaAssegnareAcc.compareTo(Utility.ZERO)==0) {
+						for ( Iterator iteratorAsv = as.getAccertamento_scad_voceColl().iterator(); iteratorAsv.hasNext(); )
+							((Accertamento_scad_voceBulk)iteratorAsv.next()).setToBeDeleted();
+						as.setToBeDeleted();
+						recDaEliminare.add(as);
+					}
+					else
+					{
+						//SE L'IMPORTO DELLA SCADENZA è MAGGIORE DI QUANTO DEVE ESSERE ANCORA RIPARTITO
+						//NE RIDUCO L'IMPORTO
+						if (as.getIm_scadenza().compareTo(impDaAssegnareAcc)>0)
+							as.setIm_scadenza(impDaAssegnareAcc);
+
+						spalmaImportiSuScadenza(userContext, as, hashVociList);
+						as.setToBeUpdated();
+						impDaAssegnareAcc = impDaAssegnareAcc.subtract(as.getIm_scadenza());
+						impAssegnatoAcc = impAssegnatoAcc.add(as.getIm_scadenza());
+					}
+				}
+			}
+
+			//Elimino dallo scadenzario dell'obbligazione le scadenze segnate come da eliminare
+			for ( Iterator iteratorDel = recDaEliminare.iterator(); iteratorDel.hasNext(); )
+				accertamento.getAccertamento_scadenzarioColl().remove(iteratorDel.next());
+
+			accertamento.setIm_accertamento(impAssegnatoAcc.setScale(2,BigDecimal.ROUND_HALF_UP));
+			accertamento.setFl_calcolo_automatico(Boolean.FALSE);
+		}
+		else
+		{
+			if ( accertamento.getFl_calcolo_automatico().booleanValue() && !accertamento.isAccertamentoResiduo())
+				accertamento = calcolaPercentualeImputazioneAccertamento( userContext, accertamento );
+		}
+		return accertamento;
+	}
+
+	/*
+	 * Crea una scadenza di importo pari alla quota residua dell'impegno ancora da scadenziare.
+	 * Attribuisce come descrizione e data scadenza la descrizione e data di emissione dell'obbligazione
+	 */
+	public AccertamentoBulk creaScadenzaResiduale(UserContext userContext, AccertamentoBulk accertamento)  throws it.cnr.jada.comp.ComponentException{
+		BigDecimal imResiduo = accertamento.getIm_accertamento();
+		Accertamento_scadenzarioBulk os;
+
+		for ( Iterator s = accertamento.getAccertamento_scadenzarioColl().iterator(); s.hasNext(); )
+			imResiduo = imResiduo.subtract(((Accertamento_scadenzarioBulk) s.next()).getIm_scadenza());
+
+		if (imResiduo.compareTo(Utility.ZERO)>0) {
+			Accertamento_scadenzarioBulk scadenza = new Accertamento_scadenzarioBulk();
+			accertamento.addToAccertamento_scadenzarioColl(scadenza);
+			scadenza.setDt_scadenza_incasso(accertamento.getDt_registrazione());
+			scadenza.setDs_scadenza(accertamento.getDs_accertamento());
+			scadenza.setIm_scadenza(imResiduo);
+
+			Accertamento_scadenzarioBulk scadIniziale = new Accertamento_scadenzarioBulk();
+			scadIniziale.setIm_scadenza( scadenza.getIm_scadenza());
+			scadenza.setScadenza_iniziale( scadIniziale);
+			scadenza.setToBeCreated();
+
+			generaDettagliScadenzaAccertamento( userContext, accertamento, scadenza, accertamento.isAccertamentoResiduo()?false:true);
+		}
+		return accertamento;
+	}
+
+	/**
+	 * Metodo che spalma su una scadenza gli importi dei CDR/GAE/Voce secondo le percentuali indicate.
+	 *    PreCondition:
+	 *      E' stato richiesto di assegnare alla scadenza indicata gli importi dei CDR/GAE/Voce tenendo conto
+	 *      della ripartizione percentuale e degli importi da assegnare indicati nella HashList
+	 *    PostCondition:
+	 *      Viene verificato che gli importi da ripartire dei CDR/GAE/Voce siano sufficienti a coprire l'importo
+	 *      della scadenza. Quindi viene caricato lo scadenzario/voce aggiornando l'importo assegnato alla voce
+	 *      della HashList
+	 *
+	 * @param userContext
+	 * @param as <code>Accertamento_scadenzarioBulk</code>lo scadenzario da aggiornare
+	 * @param hashVociList la lista di oggetti V_assestatoBulk da cui prendere le percentuali e gli importi
+	 * 		  da spalmare.
+	 * @return la scadenza <code>Accertamento_scadenzarioBulk</code> aggiornata
+	 * @throws it.cnr.jada.comp.ComponentException
+	 */
+	private Accertamento_scadenzarioBulk spalmaImportiSuScadenza(UserContext userContext,
+																 Accertamento_scadenzarioBulk as,
+																 PrimaryKeyHashtable hashVociList) throws it.cnr.jada.comp.ComponentException
+	{
+		Accertamento_scad_voceBulk asv;
+
+		BigDecimal impDaAssegnareScadenza = as.getIm_scadenza();
+		BigDecimal impAssegnatoScadenza = new BigDecimal(0);
+
+		//AGGIORNO LO SCADENZARIO VOCI IN PERCENTUALE ALLE SELEZIONI EFFETTUATE
+		for ( Iterator iteratorOsv = as.getAccertamento_scad_voceColl().iterator(); iteratorOsv.hasNext(); )
+		{
+			asv = (Accertamento_scad_voceBulk) iteratorOsv.next();
+			asv.setIm_voce( Utility.ZERO );
+			asv.setToBeUpdated();
+
+			for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+			{
+				V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+				BigDecimal impDaAssegnareVoce = Utility.nvl(voceSel.getImp_da_assegnare()).subtract((BigDecimal) hashVociList.get( voceSel ));
+				BigDecimal prcDaAssegnareVoce = as.getIm_scadenza().multiply(voceSel.getPrc_da_assegnare().divide(new BigDecimal(100)));
+
+				if (prcDaAssegnareVoce.compareTo(impDaAssegnareVoce)>0)
+					prcDaAssegnareVoce = impDaAssegnareVoce;
+				if (prcDaAssegnareVoce.compareTo(impDaAssegnareScadenza)>0)
+					prcDaAssegnareVoce = impDaAssegnareScadenza;
+
+				if (prcDaAssegnareVoce.compareTo(Utility.ZERO)>0 &&
+						voceSel.getEsercizio().equals(asv.getEsercizio()) &&
+						voceSel.getCd_centro_responsabilita().equals(asv.getCd_centro_responsabilita()) &&
+						voceSel.getCd_linea_attivita().equals(asv.getCd_linea_attivita()) &&
+						voceSel.getTi_appartenenza().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_appartenenza()) &&
+						voceSel.getTi_gestione().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_gestione()) &&
+						voceSel.getCd_voce().equals(asv.getAccertamento_scadenzario().getAccertamento().getCd_voce()))
+				{
+					//Importo scadenza moltiplicato per la percentuale ottenuto dalla divisione tra
+					//l'importo assegnato al CDR/VOCE/GAE e l'importo totale
+					asv.setIm_voce( prcDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+					//importo assegnato CDR/VOCE/LINEA
+					hashVociList.put(voceSel, ((BigDecimal) hashVociList.get( voceSel )).add(asv.getIm_voce()));
+					break;
+				}
+			}
+
+			impDaAssegnareScadenza = impDaAssegnareScadenza.subtract(asv.getIm_voce());
+			impAssegnatoScadenza = impAssegnatoScadenza.add(asv.getIm_voce());
+		}
+
+		//Se la scadenza non è stata completamente coperta, vado a recuperare sulle combinazioni CDR/VOCE/GAE
+		//gli importi ancora disponibili
+		if (as.getIm_scadenza().compareTo(impAssegnatoScadenza)>0) {
+			for ( Iterator iteratorOsv = as.getAccertamento_scad_voceColl().iterator(); iteratorOsv.hasNext(); )
+			{
+				asv = (Accertamento_scad_voceBulk) iteratorOsv.next();
+				BigDecimal impDaAssegnareVoce = new BigDecimal(0);
+				for ( Enumeration e = hashVociList.keys(); e.hasMoreElements(); )
+				{
+					V_assestatoBulk voceSel = (V_assestatoBulk)e.nextElement();
+					impDaAssegnareVoce = Utility.nvl(voceSel.getImp_da_assegnare()).subtract((BigDecimal) hashVociList.get( voceSel ));
+
+					if (impDaAssegnareVoce.compareTo(impDaAssegnareScadenza)>0)
+						impDaAssegnareVoce = impDaAssegnareScadenza;
+
+					if (impDaAssegnareVoce.compareTo(Utility.ZERO)>0 &&
+							voceSel.getEsercizio().equals(asv.getEsercizio()) &&
+							voceSel.getCd_centro_responsabilita().equals(asv.getCd_centro_responsabilita()) &&
+							voceSel.getCd_linea_attivita().equals(asv.getCd_linea_attivita()) &&
+							voceSel.getTi_appartenenza().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_appartenenza()) &&
+							voceSel.getTi_gestione().equals(asv.getAccertamento_scadenzario().getAccertamento().getTi_gestione()) &&
+							voceSel.getCd_voce().equals(asv.getAccertamento_scadenzario().getAccertamento().getCd_voce()))
+					{
+						//Importo scadenza moltiplicato per la percentuale ottenuto dalla divisione tra
+						//l'importo assegnato al CDR/VOCE/GAE e l'importo totale
+						asv.setIm_voce( asv.getIm_voce().add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP)));
+						asv.setToBeUpdated();
+
+						//importo assegnato CDR/VOCE/LINEA
+						hashVociList.put(voceSel, ((BigDecimal) hashVociList.get( voceSel )).add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP)));
+
+						impDaAssegnareScadenza = impDaAssegnareScadenza.subtract(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+						impAssegnatoScadenza = impAssegnatoScadenza.add(impDaAssegnareVoce.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+						break;
+					}
+				}
+			}
+		}
+
+		as.setIm_scadenza(impAssegnatoScadenza.setScale(2,BigDecimal.ROUND_HALF_UP));
+
+		if (as.getIm_scadenza().compareTo(as.getIm_associato_doc_amm())==-1)
+			throw new ApplicationException("Non è possibile attribuire all'accertamento un importo inferiore a quanto "
+					+ "risulta associato a documenti amministrativi.");
+
+
+		//Aggiusto le percentuali
+		for ( Iterator j = as.getAccertamento_scad_voceColl().iterator(); j.hasNext(); )
+		{
+			asv = (Accertamento_scad_voceBulk) j.next();
+			if ( as.getIm_scadenza().doubleValue() != 0 )
+				asv.setPrc( (asv.getIm_voce().multiply( new BigDecimal(100)).divide( as.getIm_scadenza(), 2, BigDecimal.ROUND_HALF_UP)));
+			else
+				asv.setPrc( new BigDecimal(0));
+		}
+		return as;
+	}
+
+	public SQLBuilder selectAssestatoEntrateByClause (UserContext userContext, AccertamentoBulk accertamento, V_assestatoBulk assestato, CompoundFindClause clause) throws ComponentException, PersistencyException{
+		SQLBuilder sql = getHome(userContext, V_assestatoBulk.class).createSQLBuilder();
+		sql.addClause( clause );
+		sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+		sql.addClause(FindClause.AND, "esercizio_res", SQLBuilder.EQUALS, accertamento.getEsercizio_originale());
+		sql.addClause(FindClause.AND, "ti_gestione", SQLBuilder.EQUALS, CostantiTi_gestione.TI_GESTIONE_ENTRATE);
+		sql.addClause(FindClause.AND, "ti_appartenenza", SQLBuilder.EQUALS, "C");
+		sql.addClause(FindClause.AND, "cd_elemento_voce", SQLBuilder.EQUALS, accertamento.getCd_elemento_voce());
+		if (accertamento.getCd_unita_organizzativa() != null){
+			BulkHome bulkHome = getHome(userContext, V_struttura_organizzativaBulk.class);
+			SQLBuilder sqlStruttura = bulkHome.createSQLBuilder();
+			sqlStruttura.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+			sqlStruttura.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, accertamento.getCd_uo_origine());
+			sqlStruttura.addSQLClause(FindClause.AND, "CD_CENTRO_RESPONSABILITA", SQLBuilder.ISNOTNULL, true);
+			List<V_struttura_organizzativaBulk> strutture = bulkHome.fetchAll(sqlStruttura);
+			sql.openParenthesis(FindClause.AND);
+			for (V_struttura_organizzativaBulk v_struttura_organizzativaBulk : strutture)
+				sql.addClause(FindClause.OR, "cd_centro_responsabilita", SQLBuilder.EQUALS, v_struttura_organizzativaBulk.getCd_centro_responsabilita());
+			sql.closeParenthesis();
+		}
+		return sql;
 	}
 
 }

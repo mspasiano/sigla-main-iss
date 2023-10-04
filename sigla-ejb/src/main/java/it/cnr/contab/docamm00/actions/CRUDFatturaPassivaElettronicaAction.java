@@ -22,16 +22,13 @@ import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
-import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaBP;
-import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaElettronicaBP;
-import it.cnr.contab.docamm00.bp.RifiutaFatturaBP;
+import it.cnr.contab.docamm00.bp.*;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.docamm00.ejb.FatturaElettronicaPassivaComponentSession;
 import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleIvaBulk;
 import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleTestataBulk;
 import it.cnr.contab.docamm00.fatturapa.bulk.RifiutaFatturaBulk;
 import it.cnr.contab.docamm00.fatturapa.bulk.StatoDocumentoEleEnum;
-import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.utenze00.bulk.CNRUserInfo;
 import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.jada.action.*;
@@ -372,7 +369,7 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
                     );
                 }
             }
-            boolean hasAccesso = ((it.cnr.contab.utente00.nav.ejb.GestioneLoginComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRUTENZE00_NAV_EJB_GestioneLoginComponentSession")).controllaAccesso(context.getUserContext(), "AMMFATTURDOCSFATPASA");
+            boolean isBPAmministra = fatturaPassivaElettronicaBP instanceof CRUDFatturaPassivaElettronicaAmministraBP;
             if (bulk.getImportoDocumento() == null) {
                 fatturaPassivaElettronicaBP.setMessage("Prima di procedere verificare il totale del documento!");
                 return context.findDefaultForward();
@@ -386,7 +383,7 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
                             (bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_02.name()) ||
                                     bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_19.name())))) {
                         if (!bulk.isAttivoSplitPaymentProf() && (rigaEle.getImposta() != null && rigaEle.getImposta().compareTo(BigDecimal.ZERO) != 0) &&
-                                rigaEle.getEsigibilitaIva() != null && rigaEle.getEsigibilitaIva().compareTo("I") != 0 && !hasAccesso) {
+                                rigaEle.getEsigibilitaIva() != null && rigaEle.getEsigibilitaIva().compareTo("I") != 0 && !isBPAmministra) {
                             java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                             fatturaPassivaElettronicaBP.setMessage("La tipologia di esigibilità IVA non deve essere di tipo 'Differita' "
                                     + "o 'Split Payment'"
@@ -431,7 +428,7 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
                     if (!bulk.isDocumentoSplitPaymentProf() && !Fattura_passivaBulk.TIPO_NOTA_DI_CREDITO.equals(bulk.getTipoDocumentoSIGLA()) &&
                             !bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_12.name()) &&
                             !bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_04.name())
-                            && !hasAccesso
+                            && !isBPAmministra
                     ) {
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                         fatturaPassivaElettronicaBP.setMessage("La tipologia di esigibilità IVA deve essere di tipo 'Split Payment'"
@@ -448,7 +445,7 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
                     if (!bulk.isDocumentoSplitPayment() && !Fattura_passivaBulk.TIPO_NOTA_DI_CREDITO.equals(bulk.getTipoDocumentoSIGLA()) &&
                             !bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_12.name()) &&
                             !bulk.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_04.name())
-                            && !hasAccesso
+                            && !isBPAmministra
                     ) {
                         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM/yyyy");
                         fatturaPassivaElettronicaBP.setMessage("La tipologia di esigibilità IVA deve essere di tipo 'Split Payment'"
@@ -502,16 +499,16 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
             CRUDFatturaPassivaElettronicaBP fatturaPassivaElettronicaBP = (CRUDFatturaPassivaElettronicaBP) context.getBusinessProcess();
             DocumentoEleTestataBulk bulk = (DocumentoEleTestataBulk) fatturaPassivaElettronicaBP.getModel();
             CRUDFatturaPassivaAction action = new CRUDFatturaPassivaAction();
+            String fatturaPassivaBPName = fatturaPassivaElettronicaBP instanceof CRUDFatturaPassivaElettronicaAmministraBP?"CRUDFatturaPassivaAmministraBP":"CRUDFatturaPassivaBP";
             CRUDFatturaPassivaBP nbp = null;
             try {
-                nbp = (CRUDFatturaPassivaBP) context.createBusinessProcess("CRUDFatturaPassivaBP",
-                        new Object[]{"M"}
+                nbp = (CRUDFatturaPassivaBP) context.createBusinessProcess(fatturaPassivaBPName, new Object[]{"M"}
                 );
                 String mode = it.cnr.contab.utenze00.action.GestioneUtenteAction.getComponentSession().
                         validaBPPerUtente(context.getUserContext(), ((CNRUserInfo) context.getUserInfo()).getUtente(),
                                 ((CNRUserInfo) context.getUserInfo()).getUtente().isUtenteComune() ?
                                         ((CNRUserInfo) context.getUserInfo()).getUnita_organizzativa().getCd_unita_organizzativa() :
-                                        "*", "CRUDFatturaPassivaBP");
+                                        "*", fatturaPassivaBPName);
                 if (mode == null || mode.equals("V"))
                     throw new it.cnr.jada.action.MessageToUser("Accesso non consentito alla mappa di creazione delle fatture. Impossibile continuare.");
                 if (bulk.getTipoDocumentoSIGLA().equalsIgnoreCase(Fattura_passivaBulk.TIPO_NOTA_DI_CREDITO)) {
@@ -534,6 +531,7 @@ public class CRUDFatturaPassivaElettronicaAction extends CRUDAction {
                     notaBp.setModel(context, fatturaPassivaElettronicaBP.completaFatturaPassiva(context, (Fattura_passivaBulk) notaBp.getModel(), notaBp, fatturaPassivaBulk));
                 } else {
                     Fattura_passivaBulk fatturaPassivaBulk = (Fattura_passivaBulk) nbp.getModel();
+                    fatturaPassivaBulk.setFromAmministra(nbp instanceof CRUDFatturaPassivaAmministraBP);
                     nbp.setModel(context, fatturaPassivaElettronicaBP.completaFatturaPassiva(context, fatturaPassivaBulk, nbp, null));
                 }
                 return nbp;

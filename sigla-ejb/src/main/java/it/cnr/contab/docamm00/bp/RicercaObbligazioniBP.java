@@ -21,6 +21,10 @@ import it.cnr.contab.doccont00.bp.IDefferedUpdateSaldiBP;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneResBulk;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneRes_impropriaBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -225,4 +229,17 @@ public void validaObbligazione(ActionContext actionContext, it.cnr.jada.bulk.Ogg
 		bp.validaObbligazionePerDocAmm(actionContext, bulk);
 	}
 }
+
+	public Obbligazione_scadenzarioBulk resyncObbligazione(ActionContext actionContext, Obbligazione_scadenzarioBulk bulk) throws it.cnr.jada.action.BusinessProcessException {
+		try {
+			//Riallineo l'obbligazione principale
+			ObbligazioneBulk obbligazione = bulk.getObbligazione();
+			if ((obbligazione.isObbligazioneResiduo() && !(obbligazione instanceof ObbligazioneResBulk)) ||
+					(obbligazione.isObbligazioneResiduoImproprio() && !(obbligazione instanceof ObbligazioneRes_impropriaBulk)))
+				bulk.setObbligazione(Utility.createObbligazioneComponentSession().findObbligazione(actionContext.getUserContext(), bulk.getObbligazione()));
+			return bulk;
+		} catch(Throwable e) {
+			throw new it.cnr.jada.action.BusinessProcessException(e);
+		}
+	}
 }

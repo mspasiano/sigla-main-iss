@@ -115,7 +115,7 @@
 	<fieldProperty
 		name="ds_riga_fattura"
 		property="ds_riga_fattura"
-		maxLength="200"
+		maxLength="255"
 		inputSize="70"
 		inputType="TEXT"
 		label="Descrizione"
@@ -363,6 +363,30 @@
 		inputSize="48"
 		inputType="ROTEXT"
 		label="Inventore del Trovato"/>
+	<fieldProperty
+		name="fl_attesa_nota"
+		property="fl_attesa_nota"
+		inputType="CHECKBOX"
+		enabledOnSearch="true"
+		label="Riga in attesa di Nota di Credito"/>
+
+	<fieldProperty
+			name="codice_identificativo_ente_pagopa"
+			property="codice_identificativo_ente_pagopa"
+			inputSize="11"
+			maxLength="11"
+			inputType="TEXT"
+			nullable="false"
+			label="Codice Identificativo Ente" />
+	<fieldProperty
+			name="numero_avviso_pagopa"
+			property="numero_avviso_pagopa"
+			inputSize="18"
+			maxLength="18"
+			inputType="TEXT"
+			nullable="false"
+			label="Numero avviso" />
+
 	<formFieldProperty
 		name="voce_iva" />
 	<formFieldProperty
@@ -447,6 +471,13 @@
 		name="titoloTrovato" />
 	<formFieldProperty
 		name="inventoreTrovato" />
+
+	<formFieldProperty
+		name="fl_attesa_nota" />
+
+	<formFieldProperty name="codice_identificativo_ente_pagopa"/>
+	<formFieldProperty name="numero_avviso_pagopa"/>
+
 	<columnFieldProperty
 		name="cd_cds" />
 	<columnFieldProperty

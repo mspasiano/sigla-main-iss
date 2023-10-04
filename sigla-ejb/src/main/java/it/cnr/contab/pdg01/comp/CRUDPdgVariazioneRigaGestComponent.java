@@ -149,27 +149,31 @@ public class CRUDPdgVariazioneRigaGestComponent extends it.cnr.jada.comp.CRUDCom
 		} catch(Exception e) {
 			throw handleException(e);
 		}	
-	}	 
+	}
+
+	public OggettoBulk modificaConBulk(UserContext userContext, OggettoBulk bulk) throws ComponentException {
+		return this.modificaConBulk(userContext, bulk, Boolean.TRUE);
+	}
 
 	/**
-	 * Esegue una operazione di modifica di un Pdg_variazioneBulk. 
+	 * Esegue una operazione di modifica di un Pdg_variazioneBulk.
 	 *
 	 * Pre-post-conditions:
 	 *
 	 * Nome: Modifica di una variazione
 	 * Pre:  La richiesta di modifica di una variazione è stata generata
-	 * Post: Viene loccato il record PDG_VARIAZIONE con l'istruzione findAndLock per evitare che salvataggi 
+	 * Post: Viene loccato il record PDG_VARIAZIONE con l'istruzione findAndLock per evitare che salvataggi
 	 *       simultanei da parte di più utenti possano alterare i controlli.
-	 * 	 Vengono verificati i dettagli della variazione gestionale associati al modulo per controllare che 
+	 * 	 Vengono verificati i dettagli della variazione gestionale associati al modulo per controllare che
 	 *       l'assestato di bilancio per la voce modificata non sia negativa.
-	 * 	 In caso affermativo viene generata una ApplicationException per segnalare all'utente 
+	 * 	 In caso affermativo viene generata una ApplicationException per segnalare all'utente
 	 *       l'impossibilità di effettuare la variazione di Bilancio.
 	 *
 	 * @param	userContext	lo UserContext che ha generato la richiesta
 	 * @param	oggettobulk il Pdg_variazioneBulk che deve essere modificato
 	 * @return	il Pdg_variazioneBulk risultante dopo l'operazione di modifica.
-	 */	
-	public OggettoBulk modificaConBulk(UserContext userContext,	OggettoBulk oggettobulk) throws ComponentException {
+	 */
+	public OggettoBulk modificaConBulk(UserContext userContext,	OggettoBulk oggettobulk, boolean sendMessage) throws ComponentException {
 		try {
 			oggettobulk.setCrudStatus(OggettoBulk.NORMAL);
 			Pdg_variazioneHome pdgHome = (Pdg_variazioneHome)getHome(userContext,Pdg_variazioneBulk.class);
@@ -238,20 +242,17 @@ public class CRUDPdgVariazioneRigaGestComponent extends it.cnr.jada.comp.CRUDCom
 				if (rigaVar.getCrudStatus()==OggettoBulk.TO_BE_CREATED || rigaVar.getCrudStatus()==OggettoBulk.TO_BE_UPDATED)
 					rigaInsModSpe = true;				
 			}
-			
-			if ((rigaInsModEtr && testataClone.getIm_entrata().compareTo(totaleRigheEtr) == 0) ||
-			    (rigaInsModSpe && testataClone.getIm_spesa().compareTo(totaleRigheSpe) == 0)){
-				UtenteHome utenteHome = (UtenteHome)getHome(userContext,UtenteBulk.class);
-				MessaggioBulk messaggio = null;
-				for (java.util.Iterator i= utenteHome.findUtenteByCDRIncludeFirstLevel(pdgClone.getCd_centro_responsabilita()).iterator();i.hasNext();){
-					UtenteBulk utente = (UtenteBulk)i.next();
-					if (rigaInsModEtr)
-						messaggio = generaMessaggioCopertura(userContext,utente,testataClone,Elemento_voceHome.GESTIONE_ENTRATE);
-					else
-						messaggio = generaMessaggioCopertura(userContext,utente,testataClone,Elemento_voceHome.GESTIONE_SPESE);
-					
-					super.creaConBulk(userContext, messaggio);
-				}											
+
+			if (sendMessage) {
+				if ((rigaInsModEtr && testataClone.getIm_entrata().compareTo(totaleRigheEtr) == 0) ||
+					(rigaInsModSpe && testataClone.getIm_spesa().compareTo(totaleRigheSpe) == 0)){
+					UtenteHome utenteHome = (UtenteHome)getHome(userContext,UtenteBulk.class);
+					MessaggioBulk messaggio = null;
+					for (UtenteBulk utente : utenteHome.findUtenteByCDRIncludeFirstLevel(pdgClone.getCd_centro_responsabilita())) {
+						messaggio = generaMessaggioCopertura(userContext,utente,testataClone,rigaInsModEtr?Elemento_voceHome.GESTIONE_ENTRATE:Elemento_voceHome.GESTIONE_SPESE);
+						super.creaConBulk(userContext, messaggio);
+					}
+				}
 			}
 
 			BigDecimal totaleImportoRiga = BigDecimal.ZERO;

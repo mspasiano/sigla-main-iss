@@ -22,10 +22,12 @@
 package it.cnr.contab.config00.contratto.bulk;
 
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
+import it.cnr.contab.config00.comp.ContrattoComponent;
 import it.cnr.contab.config00.consultazioni.bulk.VContrattiTotaliDetBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
@@ -37,11 +39,17 @@ import it.cnr.jada.persistency.PersistentCache;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.persistency.sql.SQLUnion;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ContrattoHome extends BulkHome {
+    private static final Logger logger = LoggerFactory.getLogger(ContrattoHome.class);
+
     public ContrattoHome(java.sql.Connection conn) {
         super(ContrattoBulk.class, conn);
     }
@@ -83,6 +91,25 @@ public class ContrattoHome extends BulkHome {
         sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, testata.getPg_contratto());
         sql.addOrderBy("CD_UNITA_ORGANIZZATIVA");
         return dettHome.fetchAll(sql);
+    }
+
+    /**
+     * @param contratto
+     * @return elenco dei contratti passivi che hanno lo stesso AccordoQuadro padre
+     * @throws PersistencyException
+     * @author Piergiorgio Faraglia
+     */
+    public java.util.Collection findContrattiPassiviConAccordoQuadro(ContrattoBulk contratto) {
+        PersistentHome dettHome = getHomeCache().getHome(ContrattoBulk.class);
+        SQLBuilder sql = dettHome.createSQLBuilder();
+        sql.addSQLClause("AND", "PG_CONTRATTO_PADRE", sql.EQUALS, contratto.getPg_contratto_padre());
+        sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, contratto.getEsercizio());
+        try{
+            return dettHome.fetchAll(sql);
+        } catch (PersistencyException ex) {
+            logger.error(ex.toString());
+            return Collections.EMPTY_LIST;
+        }
     }
 
     /**
@@ -454,13 +481,14 @@ public class ContrattoHome extends BulkHome {
     }
 
     public SQLBuilder calcolaTotOrdini(it.cnr.jada.UserContext userContext, ContrattoBulk contratto) throws IntrospectionException, PersistencyException {
-        PersistentHome dettHome = getHomeCache().getHome(VContrattiTotaliDetBulk.class);
+        PersistentHome dettHome = getHomeCache().getHome(OrdineAcqBulk.class);
         SQLBuilder sql = dettHome.createSQLBuilder();
         sql.resetColumns();
-        sql.addColumn("SUM(TOTALE_ORDINI) TOTALE ");
+        sql.addColumn("SUM(IM_TOTALE_ORDINE) TOTALE ");
         sql.addSQLClause("AND", "ESERCIZIO_CONTRATTO", sql.EQUALS, contratto.getEsercizio());
         sql.addSQLClause("AND", "STATO_CONTRATTO", SQLBuilder.EQUALS, contratto.getStato());
         sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, contratto.getPg_contratto());
+        sql.addSQLClause("AND", "STATO", SQLBuilder.NOT_EQUALS, OrdineAcqBulk.STATO_ANNULLATO);
         return sql;
     }
 
@@ -490,4 +518,16 @@ public class ContrattoHome extends BulkHome {
         getHomeCache().fetchAll(userContext);
         return all;
     }
+    public java.util.Collection findDettaglioContratto(it.cnr.jada.UserContext userContext, ContrattoBulk contratto) throws IntrospectionException, PersistencyException {
+        PersistentHome dettHome = getHomeCache().getHome(Dettaglio_contrattoBulk.class);
+        SQLBuilder sql = dettHome.createSQLBuilder();
+        sql.addSQLClause("AND", "ESERCIZIO_CONTRATTO", sql.EQUALS, contratto.getEsercizio());
+        sql.addSQLClause("AND", "STATO_CONTRATTO", SQLBuilder.EQUALS, contratto.getStato());
+        sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, contratto.getPg_contratto());
+        sql.addSQLClause("AND", "STATO", sql.EQUALS, Dettaglio_contrattoBulk.STATO_VALIDO);
+
+        sql.setOrderBy("ID", it.cnr.jada.util.OrderConstants.ORDER_ASC);
+        return dettHome.fetchAll(sql);
+    }
+
 }

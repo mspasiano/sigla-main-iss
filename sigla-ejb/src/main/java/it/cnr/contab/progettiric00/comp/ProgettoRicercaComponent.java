@@ -18,6 +18,13 @@
 package it.cnr.contab.progettiric00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
+import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
+import it.cnr.contab.config00.bulk.Parametri_cnrHome;
+import it.cnr.contab.config00.bulk.Parametri_enteBulk;
+import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.bulk.*;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
@@ -184,6 +191,7 @@ public ProgettoRicercaComponent() {
 				allineaAbilitazioniTerzoLivello(uc, (ProgettoBulk)bulk);
 
 				validaPianoEconomico(uc, (ProgettoBulk)bulk);
+				validaAnagraficheProgetto(uc, (ProgettoBulk)bulk);
 			}catch(Throwable throwable){
 	            throw handleException(throwable);
 	        }
@@ -233,12 +241,21 @@ public ProgettoRicercaComponent() {
 					  ((ProgettoBulk)bulk).removeFromDettagliPianoEconomicoAltriAnni(((ProgettoBulk)bulk).getDettagliPianoEconomicoAltriAnni().indexOf(e));
 				  });
 
+				  List<OggettoBulk> dettagliAnagraficheProgettoCopy = new BulkList<OggettoBulk>();
+				  dettagliAnagraficheProgettoCopy.addAll(((ProgettoBulk)bulk).getAnagraficheProgetto());
+				  dettagliAnagraficheProgettoCopy.stream().forEach(e->{
+					  e.setToBeDeleted();
+					  ((ProgettoBulk)bulk).removeFromAnagraficheProgetto(((ProgettoBulk)bulk).getAnagraficheProgetto().indexOf(e));
+				  });
+
 				  for(int i = 0; ((ProgettoBulk)bulk).getDettagliFinanziatori().size() > i; i++) {
 					  ((ProgettoBulk)bulk).getDettagliFinanziatori().get(i).setCrudStatus(OggettoBulk.TO_BE_DELETED);
 				  }
 				  for(int i = 0; ((ProgettoBulk)bulk).getDettagliPartner_esterni().size() > i; i++) {
 					  ((ProgettoBulk)bulk).getDettagliPartner_esterni().get(i).setCrudStatus(OggettoBulk.TO_BE_DELETED);
 				  }
+
+
 
 				  ProgettoBulk progettoPrev = (ProgettoBulk)getHome(aUC, ProgettoBulk.class).findByPrimaryKey(new ProgettoBulk(((ProgettoBulk)bulk).getEsercizio(), ((ProgettoBulk)bulk).getPg_progetto(), ProgettoBulk.TIPO_FASE_PREVISIONE));
 				  if (progettoPrev!=null)
@@ -251,8 +268,9 @@ public ProgettoRicercaComponent() {
 				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getDettagli());
 				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getDettagliPianoEconomicoTotale());
 				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getDettagliPianoEconomicoAnnoCorrente());
-				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getDettagliPianoEconomicoAltriAnni());				  
-				  
+				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getDettagliPianoEconomicoAltriAnni());
+				  makeBulkListPersistent(aUC, ((ProgettoBulk)bulk).getAnagraficheProgetto());
+
 				  if (((ProgettoBulk)bulk).getOtherField()!=null)
 					getHome(aUC, Progetto_other_fieldBulk.class).delete(((ProgettoBulk)bulk).getOtherField(), aUC);
 
@@ -515,7 +533,11 @@ public ProgettoRicercaComponent() {
 		   if (!((CNRUserContext) userContext).getCd_unita_organizzativa().equals( ente.getCd_unita_organizzativa())){
 			   try {
 				  sql.addSQLExistsClause("AND",progettohome.abilitazioniCommesse(userContext));
-				} catch (Exception e) {
+				   sql.addTableToHeader("PROGETTO_UO");
+				   sql.addSQLJoin("V_PROGETTO_PADRE.PG_PROGETTO", "PROGETTO_UO.PG_PROGETTO");
+				   sql.addSQLClause("AND","PROGETTO_UO.FL_VISIBILE", sql.EQUALS, "Y");
+				  sql.addSQLClause("AND","PROGETTO_UO.CD_UNITA_ORGANIZZATIVA", sql.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
+				  } catch (Exception e) {
 					throw handleException(e);
 				}
 		   }
@@ -606,6 +628,7 @@ public ProgettoRicercaComponent() {
 				allineaAbilitazioniTerzoLivello(uc, (ProgettoBulk)bulk);
 
 			validaPianoEconomico(uc, (ProgettoBulk)bulk);
+			validaAnagraficheProgetto(uc, (ProgettoBulk)bulk);
 		}catch(Throwable throwable){
 			throw handleException(throwable);
 		}
@@ -2482,13 +2505,9 @@ public SQLBuilder selectModuloForPrintByClause (UserContext userContext,Stampa_e
 			}
 
 			if(progetto_anagraficoBulk.getDataInizio() == null){
-				throw new ApplicationException("Impostare data inizio nel progetto");
-			}
-			if(progetto_anagraficoBulk.getDataFine() == null){
-				throw new ApplicationException("Impostare data fine nel progetto");
+				throw new ApplicationException("Impostare per l'Anagrafica la data inizio nel progetto");
 			}
 		}
-
 	}
 	private boolean isProgettoAnagraficaDuplicato(ProgettoBulk bulk){
 		if (bulk.getAnagraficheProgetto().stream()

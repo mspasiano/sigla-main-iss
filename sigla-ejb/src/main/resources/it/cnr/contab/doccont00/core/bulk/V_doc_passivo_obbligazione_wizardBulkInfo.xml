@@ -25,9 +25,75 @@
 		property="mandatoRiga.pg_mandato"
 		inputType="TEXT"
 		label="Nr. mandato"/>
-		
+	<fieldProperty
+		name="modalitaPagamentoRigaDocumentoWizard"
+		property="modalitaPagamentoRigaDocumentoWizard"
+		maxLength="10"
+		inputSize="10"
+		inputType="SELECT"
+		optionsProperty="modalitaPagamentoOptions"
+		command="doCambiaModalitaPagamento"
+		printProperty="cd_modalita_pag"
+		label="Modalita pag."
+		nullable="false" />
+	<fieldProperty
+		name="bancaRigaDocumentoWizard"
+		property="bancaRigaDocumentoWizard"
+		inputType="SELECT"
+		optionsProperty="bancaOptions"
+		printProperty="ds_estesa"
+		command="doCambiaBanca"
+		label="Coordinate"
+		nullable="false" />
+
+	<fieldProperty
+		name="cdTerzoDelegatoRigaDocumentoWizard"
+		property="bancaRigaDocumentoWizard.cd_terzo_delegato"
+		inputType="ROTEXT"
+		optionsProperty="bancaOptions"
+		label="Cessionario"/>
+
+	<fieldProperty
+		name="imponibileRigaMandatoWizard"
+		property="imponibileRigaMandatoWizard"
+		inputType="TEXT"
+		label="Imponibile"
+		command="doOnChangeImponibileRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+	<fieldProperty
+		name="impostaRigaMandatoWizard"
+		property="impostaRigaMandatoWizard"
+		inputType="TEXT"
+		label="Iva"
+		command="doOnChangeImpostaRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+	<fieldProperty
+		name="importoRigaMandatoWizard"
+		property="importoRigaMandatoWizard"
+		inputType="TEXT"
+		label="Importo Mandato"
+		command="doOnChangeImportoRigaMandato"
+		formatName = "it.cnr.contab.util.EuroFormat"
+		nullable="false"/>
+
 	<formFieldProperty
 		name="pg_mandato" />
+	<formFieldProperty
+		name="modalitaPagamentoRigaDocumentoWizard" />
+	<formFieldProperty
+		name="bancaRigaDocumentoWizard" />
+	<formFieldProperty
+		name="cdTerzoDelegatoRigaDocumentoWizard" />
+	<formFieldProperty
+		name="imponibileRigaMandatoWizard" />
+	<formFieldProperty
+		name="imponibileRigaMandatoWizard" />
+	<formFieldProperty
+		name="impostaRigaMandatoWizard" />
+	<formFieldProperty
+		name="importoRigaMandatoWizard" />
 
     <columnSet name="mandatoAutomatico">
        <columnFieldProperty

@@ -49,10 +49,15 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
     }
 
 	public Forward doBlankSearchFindUnitaOperativaOrd(ActionContext context, EvasioneOrdineBulk evasioneOrdine) {
-		evasioneOrdine.setMagazzinoAbilitato(null);
-		evasioneOrdine.setNumerazioneMag(null);
-		evasioneOrdine.setUnitaOperativaAbilitata(new UnitaOperativaOrdBulk());
-		return context.findDefaultForward();
+		try {
+			fillModel(context);
+			CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)getBusinessProcess(context);
+			bp.initializeMagazzino(context, evasioneOrdine, null);
+			evasioneOrdine.setUnitaOperativaAbilitata(new UnitaOperativaOrdBulk());
+			return context.findDefaultForward();
+		}catch (Exception ex) {
+			return handleException(context, ex);
+		}
 	}
 
 	public Forward doBringBackSearchFindUnitaOperativaOrd(ActionContext context, EvasioneOrdineBulk evasioneOrdine, UnitaOperativaOrdBulk unitaOperativaOrd) {
@@ -60,8 +65,12 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			fillModel(context);
 			if (unitaOperativaOrd!=null) {
 				CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)getBusinessProcess(context);
-				bp.initializeUnitaOperativaOrd(context, evasioneOrdine, unitaOperativaOrd);
-				bp.setDirty(true);
+				evasioneOrdine.setUnitaOperativaAbilitata(unitaOperativaOrd);
+				if (!Optional.ofNullable(bp.getModel()).filter(EvasioneOrdineBulk.class::isInstance).map(EvasioneOrdineBulk.class::cast)
+						.flatMap(el->Optional.ofNullable(el.getUnitaOperativaAbilitata())).filter(el->el.equalsByPrimaryKey(unitaOperativaOrd)).isPresent()) {
+					bp.initializeUnitaOperativaOrd(context, evasioneOrdine, unitaOperativaOrd);
+					bp.setDirty(true);
+				}
 			}
 			return context.findDefaultForward();
 		}catch (Exception ex) {
@@ -70,9 +79,15 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 	}
 
 	public Forward doBlankSearchFindMagazzino(ActionContext context, EvasioneOrdineBulk evasioneOrdine) {
-		evasioneOrdine.setMagazzinoAbilitato(new MagazzinoBulk());
-		evasioneOrdine.setNumerazioneMag(null);
-		return context.findDefaultForward();
+		try {
+			fillModel(context);
+			CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)getBusinessProcess(context);
+			bp.initializeMagazzino(context, evasioneOrdine, null);
+			evasioneOrdine.setMagazzinoAbilitato(new MagazzinoBulk());
+			return context.findDefaultForward();
+		}catch (Exception ex) {
+			return handleException(context, ex);
+		}
 	}
 
 	public Forward doBringBackSearchFindMagazzino(ActionContext context, EvasioneOrdineBulk evasioneOrdine, MagazzinoBulk magazzino) {
@@ -80,8 +95,11 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			fillModel(context);
 			if (magazzino!=null) {
 				CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)getBusinessProcess(context);
-				bp.initializeMagazzino(context, evasioneOrdine, magazzino);
-				bp.setDirty(true);
+				if (!Optional.ofNullable(bp.getModel()).filter(EvasioneOrdineBulk.class::isInstance).map(EvasioneOrdineBulk.class::cast)
+						.flatMap(el->Optional.ofNullable(el.getMagazzinoAbilitato())).filter(el->el.equalsByPrimaryKey(magazzino)).isPresent()) {
+					bp.initializeMagazzino(context, evasioneOrdine, magazzino);
+					bp.setDirty(true);
+				}
 			}
 			return context.findDefaultForward();
 		}catch (Exception ex) {
@@ -109,6 +127,7 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			fillModel(actioncontext);
 			List<BollaScaricoMagBulk> listaBolleScarico = gestioneSalvataggio(actioncontext);
 			CRUDEvasioneOrdineBP bp = (CRUDEvasioneOrdineBP)actioncontext.getBusinessProcess();
+			bp.setModel(actioncontext, bp.initializeModelForInsert(actioncontext, new EvasioneOrdineBulk()));
 			if (!listaBolleScarico.isEmpty()){
 				SelezionatoreListaBP nbp = (SelezionatoreListaBP)actioncontext.createBusinessProcess("BolleScaricoGenerate");
 				nbp.setMultiSelection(false);
@@ -123,8 +142,9 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 				if (columnsetName != null)
 					nbp.setColumns(bulkInfo.getColumnFieldPropertyDictionary(columnsetName));
 				return actioncontext.addBusinessProcess(nbp);
-			} else 
+			} else {
 				bp.setMessage("Operazione Effettuata");
+			}
 			return actioncontext.findDefaultForward();
 		}
 		catch(ValidationException validationexception)
@@ -171,8 +191,8 @@ public class CRUDEvasioneOrdineAction extends it.cnr.jada.util.action.CRUDAction
 			if (!Optional.ofNullable(consegna.getUnitaMisuraEvasa())
 						 .map(UnitaMisuraBulk::getCdUnitaMisura)
 						 .isPresent()) {
-				consegna.setUnitaMisuraEvasa(consegna.getOrdineAcqRiga().getBeneServizio().getUnitaMisura());
-				consegna.setCoefConvEvasa(BigDecimal.ONE);
+				consegna.setUnitaMisuraEvasa(consegna.getOrdineAcqRiga().getUnitaMisura());
+				consegna.setCoefConvEvasa(consegna.getOrdineAcqRiga().getCoefConv());
 				consegna.setQuantitaEvasa(consegna.getQuantita());
 				bp.setDettConsegneCollapse(Boolean.TRUE);
 			}

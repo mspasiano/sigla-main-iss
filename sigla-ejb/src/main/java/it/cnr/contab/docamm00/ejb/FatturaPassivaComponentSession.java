@@ -17,11 +17,14 @@
 
 package it.cnr.contab.docamm00.ejb;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
 import it.cnr.contab.docamm00.docs.bulk.TrovatoBulk;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazioneBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
@@ -30,6 +33,7 @@ import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 
 import javax.ejb.Remote;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -169,8 +173,10 @@ public interface FatturaPassivaComponentSession extends it.cnr.contab.docamm00.c
 
     boolean isAttivoSplitPayment(UserContext userContext, Timestamp dt_registrazione) throws PersistencyException, ComponentException, java.rmi.RemoteException;
 
-    List<EvasioneOrdineRigaBulk> findContabilizzaRigaByClause(UserContext userContext, Fattura_passiva_rigaBulk fatturaPassivaRiga, CompoundFindClause findclause) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
+    List<EvasioneOrdineRigaBulk> findRicercaOrdiniByClause(UserContext userContext, Fattura_passivaBulk fatturaPassiva, CompoundFindClause findclause) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
     
     boolean isAttivoSplitPaymentProf(UserContext userContext, Timestamp dt_registrazione) throws PersistencyException, ComponentException, java.rmi.RemoteException;
-
+    Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura)  throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
+    V_doc_passivo_obbligazioneBulk sdoppiaDettagliInAutomatico(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivo, BigDecimal newImponibile, BigDecimal newImposta) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
+    void aggiornaModalitaPagamento(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, Modalita_pagamentoBulk newModalitaPag, BancaBulk newBanca) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 }

@@ -61,6 +61,8 @@ public class V_cons_scad_accertBulk extends OggettoBulk implements Persistent {
  
 //    debitore VARCHAR(200) NOT NULL
 	private java.lang.String debitore;
+
+	private String acc_desc;
  
 	public V_cons_scad_accertBulk() {
 		super();
@@ -145,5 +147,11 @@ public class V_cons_scad_accertBulk extends OggettoBulk implements Persistent {
 		this.debitore=debitore;
 	}
 
-	
+	public String getAcc_desc() {
+		return acc_desc;
+	}
+
+	public void setAcc_desc(String acc_desc) {
+		this.acc_desc = acc_desc;
+	}
 }

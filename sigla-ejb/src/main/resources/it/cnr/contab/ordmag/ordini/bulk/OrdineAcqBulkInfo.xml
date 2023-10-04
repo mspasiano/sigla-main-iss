@@ -35,19 +35,31 @@
 	<fieldProperty
 		name="findNumerazioneOrd"
 		property="numerazioneOrd"
-		inputType="searchtool"
+		inputType="SEARCHTOOL"
 		formName="searchtool"
-		enabledOnSearch="false"
+		enabledOnSearch="true"
+		nullable="false"
 		label="Numeratore" />
 	<fieldProperty
 		name="findUnitaOperativaOrd"
 		property="unitaOperativaOrd"
-		inputType="searchtool"
+		inputType="SEARCHTOOL"
 		formName="searchtool"
 		enabledOnSearch="true"
+		nullable="false"
 		label="Unità Operativa" />
 	<fieldProperty
 		name="cdUnitaOperativa"
+		property="numerazioneOrd.unitaOperativaOrd.cdUnitaOperativa"
+		inputType="TEXT"
+		inputSize="30"
+		maxLength="30"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Unità Operativa" />
+	<fieldProperty
+		name="cdUnitaOperativaSearch"
 		property="numerazioneOrd.unitaOperativaOrd.cdUnitaOperativa"
 		inputType="TEXT"
 		inputSize="30"
@@ -122,6 +134,7 @@
 		inputType="SELECT"
 		nullable="true"
 		keysProperty="statoKeysForSearch"
+		readonlyPropertyOnSearch="isForFirma"
 		enabledOnInsert="true"
 		enabledOnEdit="true"
 		enabledOnSearch="true"
@@ -145,8 +158,7 @@
 		property="divisa"
 		formName="searchtool"
 		inputType="SEARCHTOOL"
-		inputCssClass="w-50 "
-		label="Valuta"		
+		label="Valuta"
 		/>		
 	<fieldProperty
 		name="cdDivisa"
@@ -168,7 +180,7 @@
 	<fieldProperty
 		name="cambio"
 		property="cambio"
-		inputType="TEXT"
+		inputType="ROTEXT"
 		formatName="it.cnr.contab.util.Importo4CifrePositivoFormat"				
 		label="Cambio"
 		nullable="false"		
@@ -353,7 +365,7 @@
 		enabledOnSearch="true"
 		label="Ragione Sociale"
 		caseSensitiveSearch="false" />
-<!--	<fieldProperty
+	<fieldProperty
 		name="modalitaPagamento"
 		property="modalitaPagamento"
 		printProperty="cd_ds_modalita_pagamento"
@@ -362,7 +374,7 @@
 		inputSize="30"
 		inputType="SELECT"
 		nullable="false"
-		label="Mod. pagamento" /> -->
+		label="Mod. pagamento" />
 	<fieldProperty
 		name="terminiPagamento"
 		property="terminiPagamento"
@@ -422,8 +434,8 @@
 		property="banca"
 		inputType="BUTTON"
 		img="img/find16.gif"
-		iconClass="fa fa-search text-primary"
-		buttonClass="btn-outline-secondary btn-title text-primary"
+		iconClass="fa fa-search"
+		buttonClass="btn-outline-primary btn-title"
 		label="Conto/i..."
 		href="javascript:submitForm('doSearch(main.listabanche)')" />
 
@@ -459,7 +471,6 @@
 		formatName="date_short"
 		enabledOnEdit="false"
 		label="Data Conferma Ordine" />
-		
         <fieldProperty
                 name="findResponsabile"
                 property="responsabileProcPers"
@@ -551,6 +562,8 @@
 		inputSize="131"
 		maxLength="100"
 		nullable="true"
+		enabledOnEdit="false"
+		enabledOnInsert="false"
 		inputCssClass="w-100"
 		label="Referente Esterno" />
 	<fieldProperty
@@ -625,6 +638,7 @@
 		inputType="SEARCHTOOL"
 		formName="searchtool"
 		CRUDBusinessProcessName="CRUDConfigAnagContrattoBP"
+		readonlyProperty="ROContratto"
 		label="Contratto"
 		enabledOnSearch="true" 
 		/>
@@ -706,6 +720,23 @@
 		formatName="date_short"
 		enabledOnEdit="false"
 		label="dtCancellazione" />
+	<fieldProperty
+		name="fl_mepa"
+		property="fl_mepa"
+		inputType="CHECKBOX"
+		nullable="false"
+		enabledOnSearch="false"
+		enabledOnEdit="false"
+		enabledOnInsert="false"
+		label="MEPA" />
+	<fieldProperty
+		name="motivoAssenzaCig"
+		property="motivoAssenzaCig"
+		inputType="SELECT"
+		keysProperty="motivoEsclusioneCigSIOPEKeys"
+		enabledOnSearch="true"
+		label="Motivo assenza CIG"/>
+
 	<form
 		name="searchtool">
 		<formFieldProperty
@@ -728,6 +759,8 @@
 		name="esercizio" />
 	<formFieldProperty
 		name="tiAttivita" />
+	<formFieldProperty
+			name="fl_mepa" />
 	<formFieldProperty
 		name="tiAttivitaSearch" />
 	<formFieldProperty
@@ -844,6 +877,12 @@
 	<formFieldProperty
 		name="visualizza_contratto"
 		/>
+	<formFieldProperty
+			name="motivoAssenzaCig"/>
+	<formFieldProperty
+			name="terminiPagamento" />
+	<formFieldProperty
+			name="modalitaPagamento" />
 
 	<findFieldProperty
 		name="cdCds" />
@@ -898,6 +937,8 @@
 	<findFieldProperty
 		name="referenteEsterno" />
 	<findFieldProperty
+			name="fl_mepa" />
+	<findFieldProperty
 		name="cdTipoOrdine" />
 	<findFieldProperty name="tiAttivitaSearch" />
 	<findFieldProperty
@@ -906,9 +947,12 @@
 		name="cdCig" />
 	<findFieldProperty
 		name="cdCup" />
+
 	<columnFieldProperty
+		label="UO"
 		name="cdUnitaOperativa" />
 	<columnFieldProperty
+		label="Es."
 		name="esercizio" />
 	<columnFieldProperty
 		name="cdNumeratore" />
@@ -939,8 +983,12 @@
 	<columnFieldProperty
 		name="nota" />
 	<columnFieldProperty
+		headerLabel="Contratto"
+		label="Es."
 		name="esercizioContratto" />
 	<columnFieldProperty
+		headerLabel="Contratto"
+		label="Pg."
 		name="pgContratto" />
 	<columnFieldProperty
 		name="statoForSearch" />
@@ -948,6 +996,8 @@
 		name="dataOrdineDef" />
 	<columnFieldProperty
 		name="referenteEsterno" />
+	<columnFieldProperty
+			name="fl_mepa" />
 	<columnFieldProperty
 		name="cdTipoOrdine" />
 	<columnFieldProperty

@@ -367,7 +367,7 @@ public class SelezionatoreAssestatoBP extends ConsultazioniBP{
 		this.bulkCaller = bulkCaller;
 	}
 
-	private String getTipoGestione() {
+	protected String getTipoGestione() {
 		return tipoGestione;
 	}
 	

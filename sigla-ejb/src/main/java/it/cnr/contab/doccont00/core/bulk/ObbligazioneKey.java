@@ -17,10 +17,13 @@
 
 package it.cnr.contab.doccont00.core.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.persistency.beans.*;
-import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.persistency.KeyedPersistent;
+import it.cnr.si.spring.storage.StorageDriver;
+
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ObbligazioneKey extends OggettoBulk implements KeyedPersistent {
 	// CD_CDS VARCHAR(30) NOT NULL (PK)
@@ -110,4 +113,17 @@ public void setEsercizio_originale(java.lang.Integer esercizio_originale) {
 public void setPg_obbligazione(java.lang.Long pg_obbligazione) {
 	this.pg_obbligazione = pg_obbligazione;
 }
+
+	@Override
+	public String toString() {
+		if (!Optional.ofNullable(this.getCd_cds()).isPresent() || !Optional.ofNullable(this.getEsercizio()).isPresent() ||
+			!Optional.ofNullable(this.getEsercizio_originale()).isPresent() || !Optional.ofNullable(this.getPg_obbligazione()).isPresent())
+			return super.toString();
+		return Arrays.asList(
+				Optional.ofNullable(this.getCd_cds()).map(String::valueOf).orElse(""),
+				Optional.ofNullable(this.getEsercizio()).map(String::valueOf).orElse(""),
+				Optional.ofNullable(this.getEsercizio_originale()).map(String::valueOf).orElse(""),
+				Optional.ofNullable(this.getPg_obbligazione()).map(String::valueOf).orElse("")).
+				stream().collect(Collectors.joining(StorageDriver.SUFFIX));
+	}
 }

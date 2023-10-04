@@ -452,7 +452,7 @@ public OggettoBulk initializeForInsert(
 
 public OggettoBulk initializeForSearch(it.cnr.jada.util.action.CRUDBP bp,it.cnr.jada.action.ActionContext context) {
 
-	setTipoDocumento(TIPO_DOC_FP);
+	setTipoDocumento(TIPO_DOC_GP);
 	setFl_documentata(null);
 	setFl_reintegrata(null);
 	setFl_fornitore_saltuario(null);
@@ -603,7 +603,7 @@ public void setClasseDocAmm(java.lang.Class newClasseDocAmm) {
 /**
  * Insert the method's description here.
  * Creation date: (4/23/2002 3:42:42 PM)
- * @param newDocAmm it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoSpesaBulk
+ * @param newDocumento it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoSpesaBulk
  */
 public void setDocumento(it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoSpesaBulk newDocumento) {
 	documento = newDocumento;
@@ -634,7 +634,7 @@ public void setEsercizio_obbligazione(java.lang.Integer esercizio_obbligazione) 
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2002 10:36:39 AM)
- * @param newSezionaliFlag int
+ * @param newFornitoreSaltuario int
  */
 public void setFornitoreSaltuario(String newFornitoreSaltuario) {
 
@@ -694,7 +694,7 @@ public void setPg_obbligazione_scadenzario(java.lang.Long pg_obbligazione_scaden
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2002 10:36:39 AM)
- * @param newSezionaliFlag int
+ * @param newSpesaAssociata int
  */
 public void setSpesaAssociata(String newSpesaAssociata) {
 
@@ -723,7 +723,7 @@ public void setSpesaAssociata(String newSpesaAssociata) {
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2002 10:36:39 AM)
- * @param newSezionaliFlag int
+ * @param newSpesaDocumentata int
  */
 public void setSpesaDocumentata(String newSpesaDocumentata) {
 
@@ -749,7 +749,7 @@ public void setSpesaDocumentata(String newSpesaDocumentata) {
 /**
  * Insert the method's description here.
  * Creation date: (3/13/2002 10:36:39 AM)
- * @param newSezionaliFlag int
+ * @param newSpesaReintegrata int
  */
 public void setSpesaReintegrata(String newSpesaReintegrata) {
 

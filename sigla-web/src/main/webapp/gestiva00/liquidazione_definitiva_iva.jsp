@@ -30,7 +30,7 @@
 
 	<% bp.openFormWindow(pageContext); %>
 
-	<div class="Group" style="width:100%">
+	<div class="Group card p-2" style="width:100%">
 		<table width="100%">
 			<tr>
 				<td>
@@ -41,8 +41,13 @@
 				</td>
 				<% if (bp.isAggiornaIvaDaVersareEnable()) { %>
 						<td><% bp.getController().writeFormLabel(out,"debitoLastLiquidazioneProvvisoria"); %> </td>
-						<td><% bp.getController().writeFormInput(out,"debitoLastLiquidazioneProvvisoria"); %> 
-							<button class="Button" title="Aggiorna Iva da versare" onclick="submitForm('doAggiornaIvaDaVersare')"><img align="middle" class="Button" src="img/refresh16.gif"/></button>
+						<td><% bp.getController().writeFormInput(out,"debitoLastLiquidazioneProvvisoria"); %>
+                        <%JSPUtils.button(out,
+                            bp.getParentRoot().isBootstrap() ? "fa fa-fw fa-refresh" : "img/refresh16.gif",
+                            "Aggiorna Iva da versare",
+                            "if (disableDblClick()) javascript:submitForm('doAggiornaIvaDaVersare')",
+                            "btn-outline-info btn-title",
+                            bp.getParentRoot().isBootstrap());%>
 						</td>
 				 <% } %>
 			</tr>     	
@@ -80,16 +85,22 @@
 				<% bp.getController().writeFormField(out,"pageNumber");%>
 			</tr>
 		</table>
+	</div>
+	<div class="Group card mt-1 p-2" style="width:100%">
 		<table>
 			<tr>
 				<td>
-					<span class="FormLabel">Prospetti stampati</span>
+					<span class="FormLabel h4 text-primary">Prospetti stampati</span>
 				</td>
+			</tr>
+			<tr>
 				<td>
 				   	<%bp.getDettaglio_prospetti().writeHTMLTable(pageContext,"prospetti_stampati",false,false,false,"100%","100px",true);%>
 			   	</td>
 			</tr>
 		</table>
+    </div>
+	<div class="Group card mt-1 p-2" style="width:100%">
 		<% if (!richiamaChiusuraMode) { %>
 			<table>
 			<%JSPUtils.tabbed(

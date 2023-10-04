@@ -20,6 +20,7 @@ package it.cnr.contab.docamm00.ejb;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
 
 import javax.ejb.Remote;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -37,7 +38,7 @@ import it.cnr.jada.persistency.sql.CompoundFindClause;
 
 
 @Remote
-public interface FatturaAttivaSingolaComponentSession extends it.cnr.contab.docamm00.comp.DocumentoAmministrativoComponentSession, it.cnr.jada.ejb.CRUDComponentSession {
+public interface FatturaAttivaSingolaComponentSession extends it.cnr.contab.docamm00.comp.DocumentoAmministrativoComponentSession, it.cnr.jada.ejb.CRUDComponentSession, IDocumentoAmministrativoEntrataComponentSession{
 it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_attivaBulk addebitaDettagli(it.cnr.jada.UserContext param0,it.cnr.contab.docamm00.docs.bulk.Nota_di_debito_attivaBulk param1,java.util.List param2,java.util.Hashtable param3) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 void aggiornaStatoDocumentiAmministrativi(it.cnr.jada.UserContext param0,java.lang.String param1,java.lang.String param2,java.lang.String param3,java.lang.Integer param4,java.lang.Long param5,java.lang.String param6) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 void annullaSelezionePerStampa(it.cnr.jada.UserContext param0,it.cnr.contab.docamm00.docs.bulk.Fattura_attivaBulk param1) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
@@ -144,4 +145,5 @@ BigDecimal getImportoBolloVirtuale(UserContext aUC, Fattura_attivaBulk fattura) 
 void controlliGestioneBolloVirtuale(UserContext aUC, Fattura_attivaBulk fatturaAttiva, BulkList dettaglio) throws ApplicationException, ComponentException,java.rmi.RemoteException;
 String recuperoEmailUtente(UserContext aUC, Fattura_attivaBulk fatturaAttiva) throws ApplicationException, ComponentException,java.rmi.RemoteException;
 void gestioneAvvisoInvioMailFattureAttive(UserContext aUC) throws ApplicationException, ComponentException,java.rmi.RemoteException;
+List<String> sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) throws ComponentException,java.rmi.RemoteException;
 }

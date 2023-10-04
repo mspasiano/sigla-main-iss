@@ -274,8 +274,8 @@
 	<formFieldProperty
 		name="fl_split_payment" />
 	<formFieldProperty
-		name="fl_reg_tardiva" />	
-				
+		name="fl_reg_tardiva" />
+
 	<columnFieldProperty
 		name="cd_tipo_sezionale" />
 	<columnFieldProperty

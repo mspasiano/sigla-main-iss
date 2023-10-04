@@ -89,6 +89,7 @@ public class CRUDObbligazioneBP extends CRUDVirtualObbligazioneBP {
     private boolean flNuovoPdg = false;
     private boolean enableVoceNext = false;
     private boolean variazioneAutomaticaEnabled = false;
+    private boolean attivoOrdini = false;
 
     private byte[] bringBackClone = null;
 
@@ -114,6 +115,7 @@ public class CRUDObbligazioneBP extends CRUDVirtualObbligazioneBP {
     @Override
     protected void init(Config config, ActionContext actioncontext) throws BusinessProcessException {
         try {
+            attivoOrdini = Utility.createConfigurazioneCnrComponentSession().isAttivoOrdini(actioncontext.getUserContext());
             attivaImpegnoPluriennale = Utility.createConfigurazioneCnrComponentSession().isImpegnoPluriennaleAttivo(actioncontext.getUserContext());
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
@@ -1259,4 +1261,9 @@ public class CRUDObbligazioneBP extends CRUDVirtualObbligazioneBP {
             tabs[j] = new String[]{pages.get(j)[0], pages.get(j)[1], pages.get(j)[2]};
         return tabs;
     }
+
+    public boolean isAttivoOrdini() {
+        return attivoOrdini;
+    }
+
 }

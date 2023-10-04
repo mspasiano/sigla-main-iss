@@ -22,7 +22,7 @@
     <parent>
         <groupId>it.cnr.si.sigla</groupId>
         <artifactId>sigla-parent</artifactId>
-        <version>6.4.61-SNAPSHOT</version>
+        <version>6.5.1-SNAPSHOT</version>
     </parent>
     <dependencyManagement>
         <dependencies>
@@ -143,7 +143,11 @@
                                     it.cnr.sigla.configuration,
                                     org.bouncycastle,
                                     javax.activation.api,
-                                    org.apache.httpcomponents
+                                    org.apache.httpcomponents,
+                                    org.keycloak.keycloak-adapter-spi,
+                                    org.keycloak.keycloak-adapter-core,
+                                    org.keycloak.keycloak-common,
+                                    org.keycloak.keycloak-core
                                 </Dependencies>
                                 <Specification-Title>${project.name}</Specification-Title>
                                 <Specification-Version>${project.version}</Specification-Version>
@@ -229,6 +233,10 @@
             <groupId>io.thorntail</groupId>
             <artifactId>management-console</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.thorntail</groupId>
+            <artifactId>keycloak</artifactId>
+        </dependency>
         <!-- SIGLA  dependency-->
         <dependency>
             <groupId>it.cnr.si.sigla</groupId>
@@ -304,7 +312,6 @@
             <artifactId>liquibase-core</artifactId>
             <version>${liquibase.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
@@ -355,6 +362,22 @@
             <groupId>xerces</groupId>
             <artifactId>xercesImpl</artifactId>
             <version>2.12.2</version>
+        </dependency>
+        <!-- Spring Infinispan -->
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-spring5-embedded</artifactId>
+            <version>13.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.infinispan</groupId>
+            <artifactId>infinispan-commons</artifactId>
+            <version>13.0.10.Final</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.9</version>
         </dependency>
 
         <dependency>

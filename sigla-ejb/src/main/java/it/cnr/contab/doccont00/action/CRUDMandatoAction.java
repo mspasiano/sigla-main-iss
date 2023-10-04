@@ -17,25 +17,31 @@
 
 package it.cnr.contab.doccont00.action;
 
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_obbligazioniVBulk;
 import it.cnr.contab.doccont00.bp.CRUDAbstractMandatoBP;
 import it.cnr.contab.doccont00.bp.CRUDMandatoBP;
 import it.cnr.contab.doccont00.bp.DispCassaCapitoloBP;
 import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.pdg00.bp.ContabilizzazioneFlussoStipendialeMensileBP;
+import it.cnr.contab.pdg00.cdip.bulk.MeseTipoFlussoBulk;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
+import it.cnr.contab.util00.bp.ModalBP;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
 import it.cnr.jada.action.HookForward;
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.*;
 
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -431,7 +437,7 @@ public class CRUDMandatoAction extends CRUDAbstractMandatoAction {
      * Gestisce la ricerca delle obbligazioni
      *
      *
-     * @param actionContext	L'ActionContext della richiesta
+     * @param actionContext    L'ActionContext della richiesta
      * @return Il Forward alla pagina di risposta
      */
     public Forward doRicercaObbligazione(ActionContext actionContext) {
@@ -522,4 +528,81 @@ public class CRUDMandatoAction extends CRUDAbstractMandatoAction {
     public Forward doSalvaVariazioneSostituzione (ActionContext context) throws RemoteException {
         return doSalva(context);
     }
+
+    public Forward doCambiaModalitaPagamento(ActionContext actionContext) throws BusinessProcessException {
+        CRUDMandatoBP crudMandatoBP = (CRUDMandatoBP) actionContext.getBusinessProcess();
+        final Optional<MandatoBulk> optionalMandatoBulk = Optional.ofNullable(crudMandatoBP.getModel())
+                .filter(MandatoBulk.class::isInstance)
+                .map(MandatoBulk.class::cast);
+        final List<Mandato_rigaBulk> mandatoRigaBulks = optionalMandatoBulk
+                .map(mandatoBulk -> mandatoBulk.getMandato_rigaColl())
+                .orElse(new BulkList<>())
+                .stream().collect(Collectors.toList());
+        final Optional<BancaBulk> bancaBulk = mandatoRigaBulks.stream()
+                .map(Mandato_rigaBulk::getBanca)
+                .findAny();
+
+        final Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = mandatoRigaBulks.stream()
+                .map(Mandato_rigaBulk::getModalita_pagamento)
+                .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
+                .findAny().orElseThrow(() -> new BusinessProcessException(new ApplicationException("Manca il Terzo su Mandato!")) );
+
+        final TerzoBulk terzo = optionalMandatoBulk
+                .map(MandatoBulk::getMandato_terzo)
+                .map(Mandato_terzoBulk::getTerzo)
+                .orElseThrow(() -> new BusinessProcessException(new ApplicationException("Manca il Terzo su Mandato!")) );
+        try {
+            if (bancaBulk.isPresent()) {
+                final List<Modalita_pagamentoBulk> findModalitaByTerzo = crudMandatoBP.createComponentSession().find(
+                        actionContext.getUserContext(), Modalita_pagamentoBulk.class,
+                        "findModalitaByTerzo",
+                        actionContext.getUserContext(), terzo);
+                final List<Rif_modalita_pagamentoBulk> rifModalitaPagamentoBulks = findModalitaByTerzo.stream()
+                        .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
+                        .collect(Collectors.toList());
+
+                ModalBP modalBP = (ModalBP) actionContext.createBusinessProcess("ModalitaPagamentoModalBP");
+                modalBP.setCssCard("col-md-9");
+                modalBP.setModel(actionContext,
+                        new CambiaModalitaPagamentoBulk(
+                                terzo,
+                                bancaBulk.get(),
+                                rifModalitaPagamentoBulks
+                                        .stream()
+                                        .filter(rifModalitaPagamentoBulk1 -> rifModalitaPagamentoBulk1.equalsByPrimaryKey(rifModalitaPagamentoBulk))
+                                        .findAny()
+                                        .orElseGet(() -> rifModalitaPagamentoBulks.stream().findAny().get()),
+                                rifModalitaPagamentoBulks
+                        )
+                );
+                actionContext.addHookForward("model", this, "doConfirmCambiaModalitaPagamento");
+                return actionContext.addBusinessProcess(modalBP);
+            } else {
+                return actionContext.findDefaultForward();
+            }
+        } catch (ComponentException|RemoteException e) {
+            return handleException(actionContext, e);
+        }
+    }
+
+    public Forward doConfirmCambiaModalitaPagamento(ActionContext actionContext) throws BusinessProcessException {
+        CRUDMandatoBP crudMandatoBP = (CRUDMandatoBP) actionContext.getBusinessProcess();
+        HookForward caller = (HookForward) actionContext.getCaller();
+        CambiaModalitaPagamentoBulk cambiaModalitaPagamentoBulk = (CambiaModalitaPagamentoBulk) caller.getParameter("model");
+        final Optional<MandatoBulk> optionalMandatoBulk = Optional.ofNullable(crudMandatoBP.getModel())
+                .filter(MandatoBulk.class::isInstance)
+                .map(MandatoBulk.class::cast);
+        final List<Mandato_rigaBulk> mandatoRigaBulks = optionalMandatoBulk
+                .map(mandatoBulk -> mandatoBulk.getMandato_rigaColl())
+                .orElse(new BulkList<>())
+                .stream().collect(Collectors.toList());
+        mandatoRigaBulks.stream()
+                .forEach(mandatoRigaBulk -> {
+                    mandatoRigaBulk.setToBeUpdated();
+                    mandatoRigaBulk.setCd_modalita_pag(cambiaModalitaPagamentoBulk.getModalita_pagamento().getCd_modalita_pag());
+                    mandatoRigaBulk.setBanca(cambiaModalitaPagamentoBulk.getBanca());
+                });
+        return actionContext.findDefaultForward();
+    }
+
 }

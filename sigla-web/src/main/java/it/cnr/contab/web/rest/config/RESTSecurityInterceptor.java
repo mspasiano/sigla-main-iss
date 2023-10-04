@@ -21,12 +21,14 @@ import it.cnr.contab.utenze00.bp.RESTUserContext;
 import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.contab.web.rest.exception.RestException;
 import it.cnr.contab.web.rest.exception.UnauthorizedException;
+import it.cnr.contab.web.rest.resource.util.AbstractResource;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
+import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -42,6 +44,7 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.ejb.EJBException;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.container.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
@@ -51,14 +54,21 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
-
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.representations.IDToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Provider
 public class RESTSecurityInterceptor implements ContainerRequestFilter, ContainerResponseFilter , ExceptionMapper<Exception> {
 
+	public static final String ACCOUNT = "/account";
+	public static final String TREE = "/tree";
+	public static final String CONTEXT = "/context";
+	public static final String USERNAME_CNR = "username_cnr";
+	public static final String OPTIONS_METHOD_EXCEPTION = "org.jboss.resteasy.spi.DefaultOptionsMethodException";
 	private Logger LOGGER = LoggerFactory.getLogger(RESTSecurityInterceptor.class);
+
 	@Context
 	private ResourceInfo resourceInfo;
     @Context
@@ -79,6 +89,7 @@ public class RESTSecurityInterceptor implements ContainerRequestFilter, Containe
 		String[] rolesAllowed = null;
 		boolean denyAll;
 		boolean permitAll;
+		boolean allUserAllowedWithoutAbort = declaring.isAnnotationPresent(AllUserAllowedWithoutAbort.class);
 		RolesAllowed allowed = declaring.getAnnotation(RolesAllowed.class),
 			methodAllowed = method.getAnnotation(RolesAllowed.class);
 		if (methodAllowed != null) allowed = methodAllowed;
@@ -100,20 +111,57 @@ public class RESTSecurityInterceptor implements ContainerRequestFilter, Containe
 				&& method.isAnnotationPresent(DenyAll.class) == false) || method.isAnnotationPresent(PermitAll.class);
 		
 		UtenteBulk utenteBulk = null;		
-		if (rolesAllowed != null || accessoAllowed != null) {
+		if (rolesAllowed != null || accessoAllowed != null || allUserAllowedWithoutAbort) {
 			final MultivaluedMap<String, String> headers = requestContext.getHeaders();
 			final List<String> authorization = headers.get(AUTHORIZATION_PROPERTY);
+			if (!Optional.ofNullable(authorization).filter(s -> !s.isEmpty()).isPresent() && allUserAllowedWithoutAbort) {
+				try {
+					AbstractResource.getUserContext(requestContext.getSecurityContext(), httpServletRequest);
+					return;
+				} catch (BadRequestException e) {
+					requestContext.abortWith(Response.status(Status.UNAUTHORIZED).build());
+					return;
+				}
+			}
 			try {
-				utenteBulk = BasicAuthentication.authenticate(httpServletRequest, authorization);
-				if (utenteBulk == null){
-					requestContext.abortWith(
+				final Optional<Principal> principalOptional = Optional.ofNullable(requestContext.getSecurityContext().getUserPrincipal());
+				final Optional<IDToken> idToken = principalOptional
+						.filter(KeycloakPrincipal.class::isInstance)
+						.map(KeycloakPrincipal.class::cast)
+						.map(KeycloakPrincipal::getKeycloakSecurityContext)
+						.map(keycloakSecurityContext -> {
+							return Optional.ofNullable(keycloakSecurityContext.getIdToken())
+									.orElse(keycloakSecurityContext.getToken());
+						});
+				if (idToken.isPresent()) {
+					utenteBulk = BasicAuthentication.findUtenteBulk(
+							idToken
+									.flatMap(idToken1 -> Optional.ofNullable(idToken1.getOtherClaims()))
+									.flatMap(stringObjectMap -> Optional.ofNullable(stringObjectMap.get(USERNAME_CNR)))
+									.filter(String.class::isInstance)
+									.map(String.class::cast)
+									.orElse(idToken.get().getPreferredUsername())
+					);
+				} else {
+					utenteBulk = BasicAuthentication.authenticate(httpServletRequest, authorization);
+				}
+				if (utenteBulk == null && !requestContext.getUriInfo().getPath().startsWith(ACCOUNT)){
+					if (idToken.isPresent())
+						requestContext.abortWith(
+								Response.status(Response.Status.UNAUTHORIZED)
+										.build());
+					else
+						requestContext.abortWith(
 							Response.status(Response.Status.UNAUTHORIZED)
 									.header(HttpHeaders.WWW_AUTHENTICATE,
 											AUTHENTICATION_SCHEME + " realm=\"" + REALM + "\"")
 									.build());
 					return;
 				}
-		    	requestContext.setSecurityContext(new SIGLASecurityContext(requestContext, utenteBulk.getCd_utente()));
+				if (!requestContext.getUriInfo().getPath().startsWith(ACCOUNT) &&
+						!requestContext.getUriInfo().getPath().startsWith(TREE) &&
+						!requestContext.getUriInfo().getPath().startsWith(CONTEXT))
+					requestContext.setSecurityContext(new SIGLASecurityContext(requestContext, utenteBulk.getCd_utente()));
 			} catch (UnauthorizedException e) {
 				LOGGER.error("ERROR for REST SERVICE", e);
 				requestContext.abortWith(Response.status(Status.UNAUTHORIZED).build());
@@ -176,6 +224,8 @@ public class RESTSecurityInterceptor implements ContainerRequestFilter, Containe
 
 	@Override
 	public Response toResponse(Exception exception) {
+		if (exception.getClass().getName().equalsIgnoreCase(OPTIONS_METHOD_EXCEPTION))
+			return Response.ok().build();
 		if (exception.getCause() instanceof RestException)
 			return Response.status(((RestException)exception.getCause()).getStatus()).entity(((RestException)exception.getCause()).getErrorMap()).build();			
 		LOGGER.error("ERROR for REST SERVICE", exception);
@@ -184,10 +234,18 @@ public class RESTSecurityInterceptor implements ContainerRequestFilter, Containe
 
 	@Override
 	public void filter(ContainerRequestContext containerRequestContext, ContainerResponseContext containerResponseContext) throws IOException {
-		containerRequestContext.getHeaders().add("Access-Control-Allow-Origin", "*");
-		containerRequestContext.getHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
-		containerRequestContext.getHeaders().add("Access-Control-Allow-Credentials", "true");
-		containerRequestContext.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-		containerRequestContext.getHeaders().add("Access-Control-Max-Age", "1209600");
+		final List<String> allowOrigins = Optional.ofNullable(System.getProperty(CORSFilter.CORS_ALLOW_ORIGIN))
+				.filter(s -> !s.isEmpty())
+				.map(s -> Arrays.asList(s.split(";")))
+				.orElse(Collections.emptyList());
+		Optional.ofNullable(containerRequestContext.getHeaders())
+				.flatMap(s -> Optional.ofNullable(s.getFirst(CORSFilter.ORIGIN)))
+				.filter(s -> allowOrigins.contains(s))
+				.ifPresent(s -> {
+					containerResponseContext.getHeaders().add(CORSFilter.ACCESS_CONTROL_ALLOW_ORIGIN, s);
+					containerResponseContext.getHeaders().add(CORSFilter.ACCESS_CONTROL_ALLOW_HEADERS, CORSFilter.ORIGIN_CONTENT_TYPE_ACCEPT_AUTHORIZATION);
+					containerResponseContext.getHeaders().add(CORSFilter.ACCESS_CONTROL_ALLOW_METHODS, CORSFilter.GET_POST_OPTIONS_PUT_PATCH_DELETE);
+					containerResponseContext.getHeaders().add(CORSFilter.ACCESS_CONTROL_ALLOW_CREDENTIALS, Boolean.TRUE);
+				});
 	}
 }

@@ -287,6 +287,14 @@
 		property="cd_tipo_unita"
 		label="Tipo Unita"
 		/>
+	<fieldProperty
+			name="sigla_int_ente"
+			property="sigla_int_ente"
+			label="Sigla UO interna all'ente"
+			inputSize="10"
+			inputType="TEXT"
+			enabledOnFreeSearch="true"
+	/>
 
 	<form
 		name="searchtool" >
@@ -355,6 +363,10 @@
 	<columnFieldProperty
 		name="esercizio_fine"
 		/>
+	<columnFieldProperty
+			name="sigla_int_ente"
+	/>
+
 
 	<columnSet name="restService" >
 		<columnFieldProperty name="cd_unita_organizzativa"/>
@@ -364,6 +376,7 @@
 		<columnFieldProperty name="cd_unita_padre"/>
 		<columnFieldProperty name="fl_uo_cds"/>
 		<columnFieldProperty name="esercizio_fine"/>
+		<columnFieldProperty name="sigla_int_ente"/>
 	</columnSet>
 
 	<columnSet
@@ -534,5 +547,8 @@
 		/>
 	<findFieldProperty
 			name="codiceAooIpa" />
+
+	<findFieldProperty
+			name="sigla_int_ente" />
 
 </bulkInfo>

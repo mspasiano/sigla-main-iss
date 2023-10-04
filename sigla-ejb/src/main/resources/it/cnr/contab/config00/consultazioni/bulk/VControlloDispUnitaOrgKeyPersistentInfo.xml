@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SQLPersistentInfo
+	persistentClassName="it.cnr.contab.config00.consultazioni.bulk.VControlloDispUnitaOrgKey">
+	<defaultColumnMap
+		tableName="V_CONTROLLO_DISP_UNITA_ORGANIZZATIVA">
+		<columnMapping
+				columnName="CD_UNITA_ORGANIZZATIVA"
+				propertyName="cdUnitaOrganizzativa"
+				sqlTypeName="VARCHAR"
+				columnSize="30"
+				nullable="true"
+				primary="true" />
+	</defaultColumnMap>
+</SQLPersistentInfo>

@@ -5,6 +5,7 @@
 		java.util.*,
 		it.cnr.jada.util.action.*,
 		it.cnr.contab.ordmag.anag00.*,
+		it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk,
 		it.cnr.contab.ordmag.ordini.*"
 %>
 
@@ -15,7 +16,10 @@
 <% JSPUtils.printBaseUrl(pageContext); %>
 <script language="JavaScript" src="scripts/util.js"></script>
 <script language="javascript" src="scripts/css.js"></script>
-<% CRUDBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request); %>
+<%
+    CRUDBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request);
+    OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel();
+%>
 <script language="JavaScript">
 function doStampaOrdine() {
 	doPrint('<%=JSPUtils.getAppRoot(request)%>genericdownload/stampaOrdineAcq.html?methodName=stampaOrdine&it.cnr.jada.action.BusinessProcess=<%=bp.getPath()%>', 
@@ -25,48 +29,43 @@ function doStampaOrdine() {
 <title>Ordine d'Acquisto</title>
 </head>
 <body class="Form">
-<%  bp.openFormWindow(pageContext); %>
+<%
+    boolean isNumeroPresent = Optional.ofNullable(ordine).map(o -> Optional.ofNullable(o.getDataOrdineDef()).isPresent()).orElse(Boolean.FALSE);
+    String statocss = isNumeroPresent ? "col-md-2" : "col-md-4";
+    bp.openFormWindow(pageContext);
+%>
 	<div class="Group card p-2 mb-2">
-		<table cellpadding="2">
-			<tr>
-				<%
-					bp.getController().writeFormField(out, "esercizio");
-				%>
-				<%
-					bp.getController().writeFormField(out, "cdNumeratore");
-				%>
-				<%
-					bp.getController().writeFormField(out, "numero");
-				%>
-				<%
-					bp.getController().writeFormField(out, "dataOrdine");
-				%>
-				<%
-					bp.getController().writeFormField(out, "percProrata");
-				%>
-			</tr>
-			<tr>
-				<%
-				bp.getController().writeFormField(out, "imImponibile");
-				bp.getController().writeFormField(out, "imIva");
-				bp.getController().writeFormField(out, "imIvaD");
-				bp.getController().writeFormField(out, "imTotaleOrdine");
-				%>
-			</tr>
-			<tr><% 
+        <div class="form-row">
+            <div class="col-md-1"><% bp.getController().writeFormField(out, "esercizio", Boolean.FALSE);%></div>
+            <div class="col-md-1"><% bp.getController().writeFormField(out, "numero", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "dataOrdine", Boolean.FALSE);%></div>
+            <div class="col-md-2"><% bp.getController().writeFormField(out, "percProrata", Boolean.FALSE);%></div>
+            <div class="col-md-2 h-100"><% bp.getController().writeFormField(out, "tiAttivita", Boolean.FALSE);%></div>
+            <div class="<%=statocss%> h-100">
+                <%
 				   if (bp.isInserting()) {
-					 bp.getController().writeFormField(out, "stato");
+					 bp.getController().writeFormField(out, "stato", Boolean.FALSE);
 				   } else if (bp.isSearching()) {
-				     bp.getController().writeFormField(out, "statoForSearch");
+				     bp.getController().writeFormField(out, "statoForSearch", Boolean.FALSE);
 				   } else {
-				     bp.getController().writeFormField(out, "statoForUpdate");
+				     bp.getController().writeFormField(out, "statoForUpdate", Boolean.FALSE);
 				   }
 				%>
-				<%
-					bp.getController().writeFormField(out, "dataOrdineDef");
-				%>
-			</tr>
-		</table>
+            </div>
+            <div class="col-md-2">
+                <%
+                    if (isNumeroPresent) {
+                        bp.getController().writeFormField(out, "dataOrdineDef", Boolean.FALSE);
+                    }
+                %>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="col-md-3"><% bp.getController().writeFormField(out, "imImponibile", Boolean.FALSE);%></div>
+            <div class="col-md-3"><% bp.getController().writeFormField(out, "imIva", Boolean.FALSE);%></div>
+            <div class="col-md-3"><% bp.getController().writeFormField(out, "imIvaD", Boolean.FALSE);%></div>
+            <div class="col-md-3"><% bp.getController().writeFormField(out, "imTotaleOrdine", Boolean.FALSE);%></div>
+        </div>
 	</div>
 	<%
 	JSPUtils.tabbed(

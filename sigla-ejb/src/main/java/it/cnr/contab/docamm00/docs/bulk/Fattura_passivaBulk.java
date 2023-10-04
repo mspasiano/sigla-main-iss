@@ -25,10 +25,7 @@ import it.cnr.contab.anagraf00.tabrif.bulk.Rif_termini_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.NazioneBulk;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
-import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleAcquistoBulk;
-import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleAllegatiBulk;
-import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleTestataBulk;
-import it.cnr.contab.docamm00.fatturapa.bulk.DocumentoEleTrasmissioneBase;
+import it.cnr.contab.docamm00.fatturapa.bulk.*;
 import it.cnr.contab.docamm00.intrastat.bulk.Fattura_passiva_intraBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Bene_servizioBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
@@ -37,8 +34,10 @@ import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.service.SpringUtil;
-import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.spring.service.StorePath;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
@@ -48,11 +47,14 @@ import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.si.spring.storage.StorageDriver;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public abstract class Fattura_passivaBulk
         extends Fattura_passivaBase
@@ -190,15 +192,18 @@ public abstract class Fattura_passivaBulk
     private BulkList fattura_passiva_intrastatColl = new BulkList();
     private BulkList riferimenti_bancari = new BulkList();
     private BulkList<DocumentoEleAcquistoBulk> docEleAcquistoColl = new BulkList<DocumentoEleAcquistoBulk>();
+    private BulkList<DocumentoEleIvaBulk> docEleIvaColl = new BulkList<DocumentoEleIvaBulk>();
     private Collection fattura_passiva_consuntivoColl = new Vector();
     private ObbligazioniTable fattura_passiva_obbligazioniHash = null;
-    private FatturaRigaOrdiniTable fatturaRigaOrdiniHash = null;
+    private BulkList fattura_passiva_ordini = new BulkList();
     private Map fattura_passiva_ass_totaliMap = null;
     private CarichiInventarioTable carichiInventarioHash = null;
     private AssociazioniInventarioTable associazioniInventarioHash = null;
     private char changeOperation = MOLTIPLICA;
     private java.sql.Timestamp inizio_validita_valuta;
     private java.sql.Timestamp fine_validita_valuta;
+    //Variabile utilizzata per sapere se la richiesta di creazione proviene da una mappa di tipo Amministra
+    private boolean fromAmministra = Boolean.FALSE;
     /*
      * Le variabili isDetailDoubled e isDocumentoModificabile servono per gestire il caso in cui l'utente
 	 * non potendo modificare il documento procede solo a sdoppiare la riga di dettaglio. In tal caso la
@@ -226,6 +231,7 @@ public abstract class Fattura_passivaBulk
     private boolean isDeleting = false;
     private AutofatturaBulk autofattura = null;
     ;
+    private java.util.Vector ordiniCancellati = new Vector();
     private java.util.Vector dettagliCancellati = new Vector();
     private java.util.Vector documentiContabiliCancellati = new Vector();
     private Lettera_pagam_esteroBulk lettera_pagamento_estero = null;
@@ -345,6 +351,21 @@ public abstract class Fattura_passivaBulk
             getDocumentiContabiliCancellati().addElement(dettaglio);
     }
 
+    public Vector getOrdiniCancellati() {
+        return ordiniCancellati;
+    }
+
+    public void setOrdiniCancellati(Vector ordiniCancellati) {
+        this.ordiniCancellati = ordiniCancellati;
+    }
+
+    public void addToOrdiniCancellati(FatturaOrdineBulk bulk) {
+
+        if (bulk != null && ((OggettoBulk) bulk).getCrudStatus() == OggettoBulk.NORMAL) {
+            getOrdiniCancellati().addElement(bulk);
+        }
+    }
+
     public void addToFattura_passiva_ass_totaliMap(
             Accertamento_scadenzarioBulk accertamento, java.math.BigDecimal totale) {
 
@@ -409,13 +430,11 @@ public abstract class Fattura_passivaBulk
         nuovoRigo.setCessionario(this.getCessionario());
 
         fattura_passiva_dettColl.add(nuovoRigo);
-        setToBeCreated();
 
         return fattura_passiva_dettColl.size() - 1;
     }
 
-    public int addToFattura_passiva_intrastatColl(Fattura_passiva_intraBulk dettaglio) {
-
+    public int addToFattura_passiva_intrastatColl(Fattura_passiva_intraBulk dettaglio){
         dettaglio.initialize();
         dettaglio.setFattura_passiva(this);
 
@@ -460,6 +479,22 @@ public abstract class Fattura_passivaBulk
         return fattura_passiva_intrastatColl.size() - 1;
     }
 
+    public int addToFattura_passiva_ordini(FatturaOrdineBulk fatturaOrdineBulk) {
+        Fattura_passiva_rigaIBulk fattura_passiva_rigaIBulk = new Fattura_passiva_rigaIBulk();
+        fattura_passiva_rigaIBulk.setFattura_passiva(this);
+        fatturaOrdineBulk.setFatturaPassivaRiga(fattura_passiva_rigaIBulk);
+        fatturaOrdineBulk.setCdCds(getCd_cds());
+        fatturaOrdineBulk.setCdUnitaOrganizzativa(getCd_unita_organizzativa());
+        fatturaOrdineBulk.setEsercizio(getEsercizio());
+        fatturaOrdineBulk.setPgFatturaPassiva(getPg_fattura_passiva());
+        fatturaOrdineBulk.setToBeCreated();
+
+        fattura_passiva_ordini.add(fatturaOrdineBulk);
+        setToBeCreated();
+
+        return fattura_passiva_ordini.size() - 1;
+    }
+
     public void addToFattura_passiva_obbligazioniHash(
             Obbligazione_scadenzarioBulk obbligazione,
             Fattura_passiva_rigaBulk rigaFattura) throws ApplicationException {
@@ -491,16 +526,7 @@ public abstract class Fattura_passivaBulk
             removeFromDocumentiContabiliCancellati(obbligazione);
     }
 
-    public void addToFatturaRigaOrdiniHash(
-            Fattura_passiva_rigaBulk rigaFattura,
-            FatturaOrdineBulk fatturaOrdineBulk) {
-        fatturaRigaOrdiniHash = Optional.ofNullable(fatturaRigaOrdiniHash)
-                                    .orElseGet(() -> new FatturaRigaOrdiniTable());
-        rigaFattura.addToFatturaOrdineColl(fatturaOrdineBulk);
-        fatturaRigaOrdiniHash.put(rigaFattura, rigaFattura.getFatturaOrdineColl());
-    }
-
-    public int addToRiferimenti_bancari(Fattura_passiva_rigaBulk os) {
+      public int addToRiferimenti_bancari(Fattura_passiva_rigaBulk os) {
         riferimenti_bancari.add(os);
         os.setFattura_passiva(this);
 
@@ -522,7 +548,9 @@ public abstract class Fattura_passivaBulk
             for (Iterator i = getFattura_passiva_dettColl().iterator(); i.hasNext(); ) {
                 Fattura_passiva_rigaBulk riga = (Fattura_passiva_rigaBulk) i.next();
                 if (!riga.isAnnullato()) {
-                    riga.calcolaCampiDiRiga();
+                    if (!isDaOrdini()){
+                        riga.calcolaCampiDiRiga();
+                    }
                     totaleImponibileDivisa = totaleImponibileDivisa.add(riga.getIm_totale_divisa());
                     imp = imp.add(riga.getIm_imponibile());
                     iva = iva.add(riga.getIm_iva());
@@ -702,15 +730,27 @@ public abstract class Fattura_passivaBulk
 
 
     public BulkCollection[] getBulkLists() {
-
-        // Metti solo le liste di oggetti che devono essere resi persistenti
-
-        return new it.cnr.jada.bulk.BulkCollection[]{
-                fattura_passiva_dettColl,
-                fattura_passiva_intrastatColl,
-                riferimenti_bancari,
-                docEleAllegatiColl
-        };
+        /**
+         * Metti solo le liste di oggetti che devono essere resi persistenti
+         * In caso di fattura da ordini deve cambiare l'ordinamento delle liste.
+         */
+        if (Optional.ofNullable(getFlDaOrdini()).filter(aBoolean -> !aBoolean).isPresent()) {
+            return new it.cnr.jada.bulk.BulkCollection[]{
+                    fattura_passiva_ordini,
+                    fattura_passiva_dettColl,
+                    fattura_passiva_intrastatColl,
+                    riferimenti_bancari,
+                    docEleAllegatiColl
+            };
+        } else {
+            return new it.cnr.jada.bulk.BulkCollection[]{
+                    fattura_passiva_dettColl,
+                    fattura_passiva_ordini,
+                    fattura_passiva_intrastatColl,
+                    riferimenti_bancari,
+                    docEleAllegatiColl
+            };
+        }
     }
 
     /**
@@ -1161,13 +1201,6 @@ public abstract class Fattura_passivaBulk
         fattura_passiva_obbligazioniHash = newFattura_passiva_obbligazioniHash;
     }
 
-    public FatturaRigaOrdiniTable getFatturaRigaOrdiniHash() {
-        return fatturaRigaOrdiniHash;
-    }
-
-    public void setFatturaRigaOrdiniHash(FatturaRigaOrdiniTable fatturaRigaOrdiniHash) {
-        this.fatturaRigaOrdiniHash = fatturaRigaOrdiniHash;
-    }
 
     /**
      * Insert the method's description here.
@@ -1533,7 +1566,7 @@ public abstract class Fattura_passivaBulk
 
             } else {
                 if (isAutoFatturaNeeded())
-                    setFl_autofattura(isFatturaDiServizi() ? Boolean.TRUE : Boolean.FALSE);
+                    setFl_autofattura(isFatturaCommercialeDiServizi() ? Boolean.TRUE : Boolean.FALSE);
             }
             if (getClass().isAssignableFrom(Fattura_passiva_IBulk.class))
                 ((Fattura_passiva_IBulk) this).setFattura_estera(null);
@@ -1660,8 +1693,8 @@ public abstract class Fattura_passivaBulk
                 if (getClass().isAssignableFrom(Fattura_passiva_IBulk.class))
                     ((Fattura_passiva_IBulk) this).setFattura_estera(null);
                 if (isAutoFatturaNeeded())
-                    setFl_autofattura(isFatturaDiServizi() ? Boolean.TRUE : Boolean.FALSE);
-                setAutoFatturaNeeded(isFatturaDiServizi());
+                    setFl_autofattura(isFatturaCommercialeDiServizi() ? Boolean.TRUE : Boolean.FALSE);
+                setAutoFatturaNeeded(isFatturaCommercialeDiServizi());
                 break;
             }
             case 4: {
@@ -2308,38 +2341,19 @@ public abstract class Fattura_passivaBulk
         return false;
     }
 
-    /**
-     * Insert the method's description here.
-     * Creation date: (2/15/2002 2:28:51 PM)
-     *
-     * @return java.util.Vector
-     */
-    public boolean isFatturaDiBeni() {
-
+    public boolean isFatturaIstituzionaleDiBeni() {
         return isIstituzionale() &&
                 getTi_bene_servizio() != null &&
                 Bene_servizioBulk.BENE.equalsIgnoreCase(getTi_bene_servizio());
     }
 
-    /**
-     * Insert the method's description here.
-     * Creation date: (2/15/2002 2:28:51 PM)
-     *
-     * @return java.util.Vector
-     */
-    public boolean isFatturaDiServizi() {
+    public boolean isFatturaCommercialeDiServizi() {
 
         return isCommerciale() &&
                 getTi_bene_servizio() != null &&
                 Bene_servizioBulk.SERVIZIO.equalsIgnoreCase(getTi_bene_servizio());
     }
 
-    /**
-     * Insert the method's description here.
-     * Creation date: (2/15/2002 2:28:51 PM)
-     *
-     * @return java.util.Vector
-     */
     public boolean isGenerataDaCompenso() {
 
         return getFl_fattura_compenso() != null &&
@@ -2351,7 +2365,6 @@ public abstract class Fattura_passivaBulk
      *
      * @return boolean
      */
-
     public boolean isIstituzionale() {
         return TipoIVA.ISTITUZIONALE.value().equals(getTi_istituz_commerc());
     }
@@ -2451,11 +2464,9 @@ public abstract class Fattura_passivaBulk
      */
     public boolean isRODateCompetenzaCOGE() {
 
-        if ((isElettronica() && getPg_fattura_passiva() != null)
-                ||
-                (!isElettronica() && getFattura_passiva_dettColl() != null &&
-                        !getFattura_passiva_dettColl().isEmpty())
-                )
+        if (!this.isFromAmministra() &&
+            ((isElettronica() && getPg_fattura_passiva() != null) ||
+             (!isElettronica() && getFattura_passiva_dettColl() != null && !getFattura_passiva_dettColl().isEmpty())))
             return true;
 
         return false;
@@ -2723,11 +2734,11 @@ public abstract class Fattura_passivaBulk
         return isCommerciale() && (
                 (getFl_split_payment() != null && getFl_split_payment()) ||
                         ((getFl_intra_ue() != null && getFl_intra_ue().booleanValue() && Bene_servizioBulk.BENE.equalsIgnoreCase(getTi_bene_servizio())) ||
-                                (getFl_intra_ue() != null && getFl_intra_ue().booleanValue() && isFatturaDiServizi() && getFl_autofattura().booleanValue())) ||
-                        (getFl_san_marino_senza_iva() != null && getFl_san_marino_senza_iva().booleanValue() && isFatturaDiServizi() && getFl_autofattura().booleanValue()) ||
+                                (getFl_intra_ue() != null && getFl_intra_ue().booleanValue() && isFatturaCommercialeDiServizi() && getFl_autofattura().booleanValue())) ||
+                        (getFl_san_marino_senza_iva() != null && getFl_san_marino_senza_iva().booleanValue() && isFatturaCommercialeDiServizi() && getFl_autofattura().booleanValue()) ||
                         // quadratura in deroga per commerciali
                         //(getFl_san_marino_senza_iva() != null && getFl_san_marino_senza_iva().booleanValue()) ||
-                        (getFl_extra_ue() != null && getFl_extra_ue().booleanValue() && isFatturaDiServizi() && getFl_autofattura().booleanValue()) ||
+                        (getFl_extra_ue() != null && getFl_extra_ue().booleanValue() && isFatturaCommercialeDiServizi() && getFl_autofattura().booleanValue()) ||
                         (getFl_extra_ue() != null && getFl_extra_ue().booleanValue() && Bene_servizioBulk.BENE.equalsIgnoreCase(getTi_bene_servizio()) && getFl_autofattura().booleanValue()
                                 && getFl_merce_intra_ue() != null && getFl_merce_intra_ue().booleanValue())
         );
@@ -2741,7 +2752,7 @@ public abstract class Fattura_passivaBulk
                 (getFl_intra_ue() != null && getFl_intra_ue().booleanValue()) ||
                         (getFl_san_marino_senza_iva() != null && getFl_san_marino_senza_iva().booleanValue())) &&
                 (getTipo_sezionale() != null && getTipo_sezionale().getTi_bene_servizio().equalsIgnoreCase(getTi_bene_servizio())) &&
-                isFatturaDiBeni()) || (getTipo_sezionale() != null && getTipo_sezionale().getFl_servizi_non_residenti().booleanValue()) ||
+                isFatturaIstituzionaleDiBeni()) || (getTipo_sezionale() != null && getTipo_sezionale().getFl_servizi_non_residenti().booleanValue()) ||
                 (isIstituzionale() && getFl_extra_ue() != null && getFl_extra_ue().booleanValue() && Bene_servizioBulk.BENE.equalsIgnoreCase(getTi_bene_servizio())
                         && getFl_merce_intra_ue() != null && getFl_merce_intra_ue().booleanValue()));
     }
@@ -2825,14 +2836,46 @@ public abstract class Fattura_passivaBulk
         if (element != null && element.getObbligazione_scadenziario() != null)
             removeFromFattura_passiva_obbligazioniHash(element);
 
-        Optional.ofNullable(element)
-                .ifPresent(fattura_passiva_rigaBulk -> removeFromFatturaRigaOrdiniHash(fattura_passiva_rigaBulk));
         return (Fattura_passiva_rigaBulk) fattura_passiva_dettColl.remove(indiceDiLinea);
+    }
+
+    public FatturaOrdineBulk removeFromFattura_passiva_ordini(int indiceDiLinea) {
+        final FatturaOrdineBulk fatturaOrdineBulk = (FatturaOrdineBulk) fattura_passiva_ordini.remove(indiceDiLinea);
+        Optional.ofNullable(fattura_passiva_dettColl.indexOf(fatturaOrdineBulk.getFatturaPassivaRiga()))
+            .filter(i -> i != -1)
+            .ifPresent(i -> {
+                final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
+                fatturaPassivaRigaBulk.setToBeDeleted();
+            });
+        Optional.ofNullable(fatturaOrdineBulk.getObbligazioneScadenzarioNc())
+               .ifPresent(obbligazioneScadenzarioBulk -> {
+                   for (int i = 0; i < fattura_passiva_dettColl.size(); i++){
+                        if (((Fattura_passiva_rigaBulk)fattura_passiva_dettColl.get(i))
+                                .getObbligazione_scadenziario().equalsByPrimaryKey(obbligazioneScadenzarioBulk)) {
+                            final Fattura_passiva_rigaBulk fatturaPassivaRigaBulk = removeFromFattura_passiva_dettColl(i);
+                            fatturaPassivaRigaBulk.setToBeDeleted();
+                        }
+                   }
+               });
+        Optional.ofNullable(fatturaOrdineBulk.getOrdineAcqConsegna())
+                .ifPresent(ordineAcqConsegnaBulk -> {
+                    ordineAcqConsegnaBulk.setStatoFatt(OrdineAcqConsegnaBulk.STATO_FATT_NON_ASSOCIATA);
+                    ordineAcqConsegnaBulk.setToBeUpdated();
+                });
+        return fatturaOrdineBulk;
     }
 
     public Fattura_passiva_intraBulk removeFromFattura_passiva_intrastatColl(int index) {
 
         return (Fattura_passiva_intraBulk) fattura_passiva_intrastatColl.remove(index);
+    }
+
+    public BulkList<FatturaOrdineBulk> getFattura_passiva_ordini() {
+        return fattura_passiva_ordini;
+    }
+
+    public void setFattura_passiva_ordini(BulkList<FatturaOrdineBulk> fattura_passiva_ordini) {
+        this.fattura_passiva_ordini = fattura_passiva_ordini;
     }
 
     public void removeFromFattura_passiva_obbligazioniHash(
@@ -2847,14 +2890,6 @@ public abstract class Fattura_passivaBulk
             }
         } else
             addToDocumentiContabiliCancellati(rigaFattura.getObbligazione_scadenziario());
-    }
-
-    public void removeFromFatturaRigaOrdiniHash(
-            Fattura_passiva_rigaBulk rigaFattura) {
-        Optional.ofNullable(fatturaRigaOrdiniHash)
-                .ifPresent(fatturaRigaOrdiniTable -> fatturaRigaOrdiniTable.remove(rigaFattura));
-        Optional.ofNullable(rigaFattura.getFatturaOrdineColl())
-                .ifPresent(fatturaOrdineBulks -> fatturaOrdineBulks.clear());
     }
 
     /**
@@ -3488,17 +3523,42 @@ public abstract class Fattura_passivaBulk
         this.docEleAcquistoColl = docEleAcquistoColl;
     }
 
+    public BulkList<DocumentoEleIvaBulk> getDocEleIvaColl() {
+        return docEleIvaColl;
+    }
+
+    public void setDocEleIvaColl(BulkList<DocumentoEleIvaBulk> docEleIvaColl) {
+        this.docEleIvaColl = docEleIvaColl;
+    }
+
     public List<String> getStorePath() {
-        return Optional.ofNullable(getDocumentoEleTestata())
-                .map(DocumentoEleTestataBulk::getDocumentoEleTrasmissione)
-                .map(DocumentoEleTrasmissioneBase::getCmisNodeRef)
-                .map(s -> {
-                    return Optional.ofNullable(SpringUtil.getBean("storeService", StoreService.class).getStorageObjectBykey(s))
-                            .map(StorageObject::getPath)
-                            .map(path -> Arrays.asList(path))
-                            .orElse(Collections.emptyList());
-                })
-                .orElse(Collections.emptyList());
+        if ( Optional.ofNullable(getDocumentoEleTestata()).isPresent()) {
+            return Optional.ofNullable(getDocumentoEleTestata())
+                    .map(DocumentoEleTestataBulk::getDocumentoEleTrasmissione)
+                    .map(DocumentoEleTrasmissioneBase::getCmisNodeRef)
+                    .map(s -> {
+                        return Optional.ofNullable(SpringUtil.getBean("storeService", StoreService.class).getStorageObjectBykey(s))
+                                .map(StorageObject::getPath)
+                                .map(path -> Arrays.asList(path))
+                                .orElse(Collections.emptyList());
+                    })
+                    .orElse(Collections.emptyList());
+        }
+        return Collections.singletonList(Arrays.asList(
+                SpringUtil.getBean(StorePath.class).getPathComunicazioniAl(),
+                Optional.ofNullable(this)
+                        .map(s -> getCd_unita_organizzativa())
+                        .orElse(""),
+                "Fatture Passive",
+                Optional.ofNullable(getEsercizio())
+                        .map(esercizio -> String.valueOf(esercizio))
+                        .orElse("0"),
+                "Fattura " + getEsercizio().toString() + Utility.lpad(getPg_fattura_passiva().toString(), 10, '0')
+        ).stream().collect(
+                Collectors.joining(StorageDriver.SUFFIX)
+        ));
+
+
     }
 
     public Scrittura_partita_doppiaBulk getScrittura_partita_doppia() {
@@ -3527,8 +3587,6 @@ public abstract class Fattura_passivaBulk
                 if (this.getTipo_sezionale().getFl_servizi_non_residenti().booleanValue())
                     return true;
             }
-            if (this.getFl_split_payment().booleanValue())
-                return true;
         }
         return false;
     }
@@ -3546,5 +3604,99 @@ public abstract class Fattura_passivaBulk
     @Override
     public Timestamp getDt_contabilizzazione() {
         return this.getDt_registrazione();
+    }
+
+    public BigDecimal getTotaleImponibileFatturaElettronica() {
+        BigDecimal importo = BigDecimal.ZERO;
+        if (isElettronica()){
+            for (Iterator i = getDocumentoEleTestata().getDocEleIVAColl().iterator(); i.hasNext(); ) {
+                DocumentoEleIvaBulk rigaEle = (DocumentoEleIvaBulk) i.next();
+                String key = null;
+                Hashtable<String, BigDecimal> currentMap = null;
+                if (rigaEle.getImponibileImporto() != null) {
+                    importo = importo.add(rigaEle.getImponibileImporto());
+                }
+            }
+        }
+        return importo;
+    }
+
+    public BigDecimal getTotaleIvaFatturaElettronica() {
+        BigDecimal importo = BigDecimal.ZERO;
+        if (isElettronica()){
+            for (Iterator i = getDocumentoEleTestata().getDocEleIVAColl().iterator(); i.hasNext(); ) {
+                DocumentoEleIvaBulk rigaEle = (DocumentoEleIvaBulk) i.next();
+                String key = null;
+                Hashtable<String, BigDecimal> currentMap = null;
+                if (rigaEle.getImposta() != null) {
+                    importo = importo.add(rigaEle.getImposta());
+                }
+            }
+        }
+        return importo;
+    }
+
+    public boolean isDaOrdini(){
+        return  Optional.ofNullable(getFlDaOrdini())
+                .filter(daOrdini -> daOrdini.equals(Boolean.TRUE))
+                .orElse(false);
+    }
+
+    public boolean isRegistratoInFondoEconomale() {
+        return REGISTRATO_IN_FONDO_ECO.equalsIgnoreCase(getStato_pagamento_fondo_eco());
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtInizioLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtFineLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public String getTipoLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Long getReportIdLiquid() {
+        return null;
+    }
+
+    public boolean isFatturaDiBeni() {
+        return Bene_servizioBulk.BENE.equals(this.getTi_bene_servizio());
+    }
+
+    public boolean isFatturaDiServizi() {
+        return Bene_servizioBulk.SERVIZIO.equals(this.getTi_bene_servizio());
+    }
+
+    public void setFromAmministra(boolean fromAmministra) {
+        this.fromAmministra = fromAmministra;
+    }
+
+    public boolean isFromAmministra() {
+        return fromAmministra;
+    }
+
+    public boolean isLiquidabile() {
+        return Optional.ofNullable(getStato_liquidazione())
+                .map(s -> s.equalsIgnoreCase(LIQ))
+                .orElse(Boolean.FALSE);
     }
 }

@@ -377,8 +377,9 @@ public class DocAmmFatturazioneElettronicaComponent extends CRUDComponent{
 		try {
 			utente = (UtenteBulk) getHome(userContext, UtenteBulk.class).findByPrimaryKey(utente);
 			if (utente != null){
+				String dominioMail=Utility.createConfigurazioneCnrComponentSession().getVal02(userContext, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext), null, Configurazione_cnrBulk.PK_FATTURAZIONE_ELETTRONICA, Configurazione_cnrBulk.SK_MAIL_REFERENTE_TECNICO);
 				if (utente.getCd_utente_uid() != null){
-					return utente.getCd_utente_uid()+"@cnr.it";
+					return utente.getCd_utente_uid().concat(Optional.ofNullable(dominioMail).orElse(""));
 				}
 			}
 			String eMailReferente = Utility.createConfigurazioneCnrComponentSession().getVal01(userContext, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext), null, Configurazione_cnrBulk.PK_FATTURAZIONE_ELETTRONICA, Configurazione_cnrBulk.SK_MAIL_REFERENTE_TECNICO);

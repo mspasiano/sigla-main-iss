@@ -107,7 +107,25 @@
 			columnName="PROGRESSIVO"
 			propertyName="documentoEleTestata.progressivo" />
 		
-	</defaultColumnMap>		
+	</defaultColumnMap>
+
+	<columnMap
+			name="LISTA_DOC_AMM"
+			tableName="FATTURA_PASSIVA"
+			extends="default">
+		<columnMapping
+				columnName="TIPO_SEZIONALE.DS_TIPO_SEZIONALE"
+				propertyName="tipo_sezionale.ds_tipo_sezionale"
+				sqlTypeName="VARCHAR"
+				columnSize="50"
+				nullable="true"/>
+		<columnMapping
+				columnName="DIVISA.DS_DIVISA"
+				propertyName="valuta.ds_divisa"
+				sqlTypeName="VARCHAR"
+				columnSize="50"
+				nullable="true"/>
+	</columnMap>
 
 	<persistentProperty
 		name="tipo_sezionale" />

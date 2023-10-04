@@ -22,6 +22,7 @@ import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioHome;
 import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
 import it.cnr.contab.doccont00.bp.DettagliFileCassiereBP;
+import it.cnr.contab.doccont00.consultazioni.bp.ConsFileCassiereBP;
 import it.cnr.contab.doccont00.intcass.bulk.Ext_cassiere00Bulk;
 import it.cnr.contab.doccont00.intcass.bulk.Ext_cassiere00_scartiBulk;
 import it.cnr.contab.doccont00.intcass.bulk.V_ext_cassiere00Bulk;
@@ -35,6 +36,8 @@ import it.cnr.jada.action.HookForward;
 import it.cnr.jada.blobs.bulk.Bframe_blobBulk;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.action.RicercaLiberaBP;
 import it.cnr.jada.util.action.SelezionatoreListaBP;
 import it.cnr.jada.util.upload.UploadedFile;
@@ -175,24 +178,20 @@ public Forward doRiportaFiltraFiles(ActionContext context) {
 public Forward doVisualizzaDettagli(ActionContext context) {	
 
 	CaricaFileCassiereBP bp = (CaricaFileCassiereBP)context.getBusinessProcess();
-	
 	try{
 		V_ext_cassiere00Bulk file = (V_ext_cassiere00Bulk)bp.getModel();
 		if (file == null){
 			throw new it.cnr.jada.comp.ApplicationException("Attenzione: selezionare un File");
 		}
-		
-		it.cnr.jada.util.RemoteIterator ri = bp.createComponentSession().cerca(context.getUserContext(), null,new Ext_cassiere00Bulk(),  file, "DettagliFileCassiere");
-		ri = it.cnr.jada.util.ejb.EJBCommonServices.openRemoteIterator(context,ri);
-		if (ri.countElements() == 0) {
-			it.cnr.jada.util.ejb.EJBCommonServices.closeRemoteIterator(context,ri);
-			throw new it.cnr.jada.comp.ApplicationException("Attenzione: non ci sono dettagli");
-		}
-		DettagliFileCassiereBP nbp = (DettagliFileCassiereBP)context.createBusinessProcess("DettagliFileCassiereBP");
-		nbp.setIterator(context,ri);
-		nbp.setMultiSelection(false);
-		nbp.setBulkInfo(it.cnr.jada.bulk.BulkInfo.getBulkInfo(Ext_cassiere00Bulk.class));
-		return context.addBusinessProcess(nbp);		
+		ConsFileCassiereBP consultazioneBP = (ConsFileCassiereBP)context.createBusinessProcess("ConsFileCassiereBP");
+		consultazioneBP.initVariabili(context, ConsFileCassiereBP.BASE, ConsFileCassiereBP.BASE);
+		CompoundFindClause parzclause = new CompoundFindClause();
+		parzclause.addClause("AND", "esercizio", SQLBuilder.EQUALS, file.getEsercizio());
+		parzclause.addClause("AND", "nome_file", SQLBuilder.EQUALS, file.getNome_file());
+		consultazioneBP.addToBaseclause(parzclause);
+		consultazioneBP.setIterator(context,consultazioneBP.createFileCassiereComponentSession().findConsultazione(context.getUserContext(),
+				"BASE",consultazioneBP.getBaseclause(),null));
+		return context.addBusinessProcess(consultazioneBP);
 	}
 	catch (Throwable e){		
 		return handleException(context,e);

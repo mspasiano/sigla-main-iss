@@ -182,7 +182,14 @@
 			sqlTypeName="DECIMAL"
 			columnSize="15"
 			columnScale="2"
-			nullable="false" />			
+			nullable="false" />
+		<columnMapping
+				columnName="FL_VERSAMENTO"
+				propertyName="fl_versamento"
+				sqlTypeName="CHAR"
+				columnSize="1"
+				nullable="false"
+				converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="aliquota" />
@@ -237,5 +244,7 @@
 	<persistentProperty
 		name="esercizio_obbligazione" />
 	<persistentProperty
-		name="im_cori_sospeso" />		
+		name="im_cori_sospeso" />
+	<persistentProperty
+			name="fl_versamento" />
 </SQLPersistentInfo>

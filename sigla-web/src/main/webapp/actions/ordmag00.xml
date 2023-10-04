@@ -51,6 +51,9 @@
       path="/SelezionaListaMovimentiDaAnnullareAction" actionClass="it.cnr.contab.ordmag.magazzino.action.SelezionaListaMovimentiDaAnnullareAction">
   </action>
   <action
+          path="/SelezionatoreVisualOrdinAcqConsListaAction" actionClass="it.cnr.contab.ordmag.ordini.action.SelezionatoreVisualOrdinAcqConsListaAction">
+  </action>
+  <action
           path="/TipoMovimentoAction" actionClass="it.cnr.contab.ordmag.magazzino.action.TipoMovimentoAction">
   </action>
   <action
@@ -104,11 +107,6 @@
   <businessProcess name="CRUDTipoOperazioneBP" className="it.cnr.jada.util.action.SimpleCRUDBP">
     <forward name="default" path="/ordmag/tipo_operazione.jsp"/>
     <init-param name="bulkClassName" value="it.cnr.contab.ordmag.anag00.TipoOperazioneOrdBulk"/>
-    <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
-  </businessProcess>
-  <businessProcess name="CRUDAbilUtUopOperBP" className="it.cnr.jada.util.action.SimpleCRUDBP">
-    <forward name="default" path="/ordmag/abiluteuopoper.jsp"/>
-    <init-param name="bulkClassName" value="it.cnr.contab.ordmag.anag00.AbilUtenteUopOperBulk"/>
     <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession"/>
   </businessProcess>
   <businessProcess name="CRUDTipoMovimentoMagBP" className="it.cnr.jada.util.action.SimpleCRUDBP">
@@ -259,6 +257,20 @@
     <init-param name="componentSessionName" value="CNRORDMAG00_EJB_OrdineAcqComponentSession"/>
     <init-param name="defaultAction" value="ParametriSelezioneOrdiniAcqAction"/>
     <init-param name="tipoSelezione" value="visOrdiniConsegna"/>
+  </businessProcess>
+
+  <businessProcess name="SelezionatoreVisualOrdinAcqConsListaBP" className="it.cnr.contab.ordmag.ordini.bp.SelezionatoreVisualOrdinAcqConsListaBP">
+    <forward name="default" path="/util/form_lista.jsp" />
+    <init-param name="defaultAction" value="SelezionatoreVisualOrdinAcqConsListaAction" />
+    <init-param name="componentSessionName" value="CNRORDMAG00_EJB_OrdineAcqComponentSession"/>
+    <init-param name="bulkClassName" value="it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk"/>
+  </businessProcess>
+
+  <businessProcess name="SelezionatoreVisualEvasioneListaBP" className="it.cnr.jada.util.action.SelezionatoreListaBP">
+    <forward name="default" path="/util/form_lista.jsp" />
+    <init-param name="defaultAction" value="SelezionaLista" />
+    <init-param name="componentSessionName" value="CNRORDMAG00_EJB_EvasioneOrdineComponentSession"/>
+    <init-param name="bulkClassName" value="it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk"/>
   </businessProcess>
 
   <businessProcess

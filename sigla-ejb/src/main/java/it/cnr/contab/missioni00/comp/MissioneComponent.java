@@ -25,6 +25,8 @@ import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoHome;
 import it.cnr.contab.anagraf00.tabter.bulk.NazioneBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.NazioneHome;
 import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaFromDocumentoComponent;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaHome;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.compensi00.docs.bulk.CompensoHome;
 import it.cnr.contab.compensi00.docs.bulk.V_terzo_per_compensoBulk;
@@ -32,6 +34,8 @@ import it.cnr.contab.compensi00.docs.bulk.V_terzo_per_compensoHome;
 import it.cnr.contab.compensi00.tabrif.bulk.Filtro_trattamentoBulk;
 import it.cnr.contab.compensi00.tabrif.bulk.Tipo_trattamentoBulk;
 import it.cnr.contab.compensi00.tabrif.bulk.Tipo_trattamentoHome;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
@@ -57,9 +61,11 @@ import it.cnr.contab.missioni00.tabrif.bulk.*;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.RemoveAccent;
 import it.cnr.contab.util.Utility;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.CRUDComponent;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.comp.IPrintMgr;
 import it.cnr.jada.persistency.IntrospectionException;
@@ -828,7 +834,7 @@ public class MissioneComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
         sql.addSQLJoin("OBBLIGAZIONE_SCADENZARIO.PG_OBBLIGAZIONE", "OBBLIGAZIONE.PG_OBBLIGAZIONE");
 
         sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
-        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, "D");
+        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, ObbligazioneBulk.STATO_OBB_DEFINITIVO);
         sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL, null);
         sql.addSQLClause("AND", "OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", sql.NOT_EQUALS, new java.math.BigDecimal(0));
         sql.addSQLClause("AND", "OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM = ? OR OBBLIGAZIONE_SCADENZARIO.IM_ASSOCIATO_DOC_AMM IS NULL");
@@ -3174,7 +3180,7 @@ public class MissioneComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 
         sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS, missione.getEsercizio());
         sql.addSQLClause("AND", "OBBLIGAZIONE.CD_CDS", sql.EQUALS, missione.getCd_cds());
-        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, "D");
+        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, ObbligazioneBulk.STATO_OBB_DEFINITIVO);
         sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL, null);
         sql.addSQLClause("AND", "OBBLIGAZIONE.CD_TERZO", sql.EQUALS, missione.getCd_terzo());
         sql.addSQLClause("AND", "OBBLIGAZIONE.RIPORTATO", sql.EQUALS, "N");

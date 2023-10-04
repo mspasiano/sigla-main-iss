@@ -35,6 +35,7 @@ import it.cnr.contab.ordmag.anag00.UnitaMisuraBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopRigaBulk;
 import it.cnr.contab.util.Utility;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -56,6 +57,8 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 	private LuogoConsegnaMagBulk luogoConsegnaMag =  new LuogoConsegnaMagBulk();
 	private UnitaOperativaOrdBulk unitaOperativaOrd =  new UnitaOperativaOrdBulk();
 	private ContoBulk contoBulk =  new ContoBulk();
+
+	private FatturaOrdineBulk fatturaOrdineBulk = null;
 
 	protected BulkList righeRichiestaCollegate= new BulkList();
 	
@@ -96,7 +99,7 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 		STATO.put(STATO_EVASA_FORZATAMENTE,"Evasa Forzatamente");
 	}
 
-	public boolean isConsegnaImporto0(){
+	public boolean isConsegna0(){
 		if (getStato() != null && (getStato().equals(STATO_ANNULLATA) || getStato().equals(STATO_EVASA_FORZATAMENTE))){
 			return true;
 		}
@@ -390,10 +393,10 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 
 	public OggettoBulk initializeForInsert(CRUDBP bp, ActionContext context) 
 	{
-		inizializza();
+		inizializza(context.getUserContext());
 		return this;
 	}
-	public OggettoBulk inizializza() 
+	public OggettoBulk inizializza(UserContext userContext)
 	{
 		setStato(STATO_INSERITA);
 		setStatoFatt(STATO_FATT_NON_ASSOCIATA);
@@ -402,6 +405,7 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 		setImIva(BigDecimal.ZERO);
 		setImIvaDivisa(BigDecimal.ZERO);
 		setImTotaleConsegna(BigDecimal.ZERO);
+		setDtPrevConsegna(recuperoDataDefaultPrevistaConsegna(userContext));
 		return this;
 	}
 	
@@ -416,7 +420,7 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 	}
 	
 	public Boolean isConsegnaMagazzino(){
-		return getTipoConsegna() != null && getTipoConsegna().equals(Bene_servizioBulk.TIPO_CONSEGNA_MAGAZZINO);
+		return Bene_servizioBulk.TIPO_CONSEGNA_MAGAZZINO.equals(this.getTipoConsegna());
 	}
 	
 	public BulkList getRigheRichiestaCollegate() {
@@ -525,8 +529,9 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 	}
 	
 	public java.math.BigDecimal getQtConvertita() {
-		return Utility.round5Decimali(Optional.ofNullable(this.getQuantita()).orElse(BigDecimal.ZERO)
-				.multiply(Optional.ofNullable(this.getOrdineAcqRiga().getCoefConv()).orElse(BigDecimal.ZERO)));
+		return Optional.ofNullable(this.getQuantitaOrig()).orElse(
+				Utility.round5Decimali(Optional.ofNullable(this.getQuantita()).orElse(BigDecimal.ZERO)
+					.multiply(Optional.ofNullable(this.getOrdineAcqRiga().getCoefConv()).orElse(BigDecimal.ZERO))));
 	}
 
 	public java.math.BigDecimal getQtEvasaConvertita() {
@@ -544,4 +549,28 @@ public class OrdineAcqConsegnaBulk extends OrdineAcqConsegnaBase {
 				)
 				.isPresent();
 	}
+	public FatturaOrdineBulk getFatturaOrdineBulk() {
+		return fatturaOrdineBulk;
+	}
+
+	public void setFatturaOrdineBulk(FatturaOrdineBulk fatturaOrdineBulk) {
+		this.fatturaOrdineBulk = fatturaOrdineBulk;
+	}
+
+	public Dictionary getStatoOrdineKeys() {
+		return OrdineAcqBulk.STATO;
+	}
+
+	public Boolean isStatoConsegnaInserita(){
+		return OrdineAcqConsegnaBulk.STATO_INSERITA.equals(this.getStato());
+	}
+
+	public Boolean isStatoConsegnaEvasa(){
+		return OrdineAcqConsegnaBulk.STATO_EVASA.equals(this.getStato());
+	}
+
+	public Boolean isStatoConsegnaEvasaForzatamente(){
+		return OrdineAcqConsegnaBulk.STATO_EVASA_FORZATAMENTE.equals(this.getStato());
+	}
+
 }

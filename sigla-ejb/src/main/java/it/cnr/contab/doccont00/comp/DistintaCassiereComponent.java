@@ -17,10 +17,7 @@
 
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
+import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.anagraf00.ejb.AnagraficoComponentSession;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.NazioneBulk;
@@ -39,44 +36,42 @@ import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.dto.EnumSiopeBilancioGestione;
+import it.cnr.contab.doccont00.dto.SiopeBilancioDTO;
 import it.cnr.contab.doccont00.ejb.DistintaCassiereComponentSession;
 import it.cnr.contab.doccont00.ejb.SospesoRiscontroComponentSession;
 import it.cnr.contab.doccont00.intcass.bulk.*;
 import it.cnr.contab.doccont00.intcass.giornaliera.MovimentoContoEvidenzaBulk;
 import it.cnr.contab.doccont00.intcass.giornaliera.MovimentoContoEvidenzaHome;
 import it.cnr.contab.doccont00.service.DocumentiContabiliService;
-import it.cnr.contab.doccont00.tabrif.bulk.CupBulk;
-import it.cnr.contab.doccont00.tabrif.bulk.CupKey;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
 import it.cnr.contab.logs.ejb.BatchControlComponentSession;
 import it.cnr.contab.messaggio00.bulk.MessaggioBulk;
-import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
-import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaHome;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.RemoveAccent;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
 import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.contab.util.enumeration.TipoDebitoSIOPE;
-import it.cnr.contab.util.Utility;
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.blobs.bulk.Bframe_blobBulk;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ApplicationRuntimeException;
 import it.cnr.jada.comp.CRUDNotDeletableException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.*;
-import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.SendMail;
 import it.cnr.jada.util.ejb.EJBCommonServices;
-import it.cnr.si.service.dto.anagrafica.letture.PersonaEntitaOrganizzativaWebDto;
 import it.cnr.si.spring.storage.MimeTypes;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.bulk.StorageFile;
@@ -127,6 +122,7 @@ public class DistintaCassiereComponent extends
     public static final String FATT_ANALOGICA = "FATT_ANALOGICA";
     public static final String DOC_EQUIVALENTE = "DOC_EQUIVALENTE";
     public static final String REGOLARIZZAZIONE_ACCREDITO_BANCA_D_ITALIA = "REGOLARIZZAZIONE ACCREDITO BANCA D'ITALIA";
+    public static final String ACCREDITO_BANCA_D_ITALIA = "ACCREDITO BANCA D'ITALIA";
     public static final String SCOSTAMENTO = "0.03";
     public static final String VARIAZIONE = "VARIAZIONE";
     public static final String SOSTITUZIONE = "SOSTITUZIONE";
@@ -680,10 +676,20 @@ public class DistintaCassiereComponent extends
                 .orElse(Boolean.TRUE)) {
             for (Iterator i = docContabili.iterator(); i.hasNext(); ) {
                 docContabile = (V_mandato_reversaleBulk) i.next();
-                last_pg_dettaglio = inserisciDettaglioDistinta(userContext,
-                        distinta, docContabile, last_pg_dettaglio);
-                inserisciDettaglioDistinteCollegate(userContext, distinta,
-                        docContabile);
+                if (Optional.ofNullable(docContabile.getEsitoOperazione())
+                        .map(s -> s.equals(EsitoOperazione.NON_ACQUISITO.value()))
+                        .orElse(Boolean.TRUE) ||
+                    Optional.ofNullable(docContabile.getStatoVarSos())
+                            .map(s -> s.equals(StatoVariazioneSostituzione.VARIAZIONE_DEFINITIVA.value()))
+                            .orElse(Boolean.FALSE)||
+                        ( MandatoBulk.STATO_MANDATO_ANNULLATO.equals(docContabile.getStato())
+                                && MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA.equals(docContabile.getStato_trasmissione()))
+                ) {
+                    last_pg_dettaglio = inserisciDettaglioDistinta(userContext,
+                            distinta, docContabile, last_pg_dettaglio);
+                    inserisciDettaglioDistinteCollegate(userContext, distinta,
+                            docContabile);
+                }
             }
         }
         return last_pg_dettaglio;
@@ -1076,44 +1082,6 @@ public class DistintaCassiereComponent extends
      * Processo dei File
      *
      * @param userContext lo <code>UserContext</code> che ha generato la richiesta.
-     * @param distinta    il <code>V_ext_cassiere00Bulk</code> file da processare.
-     **/
-    private void callCheckDocContForDistinta(UserContext userContext,
-                                             Distinta_cassiereBulk distinta)
-            throws ComponentException {
-
-        LoggableStatement cs = null;
-        try {
-            cs = new LoggableStatement(getConnection(userContext), "{ call "
-                    + EJBCommonServices.getDefaultSchema()
-                    + "CNRCTB750.checkDocContForDistCas(?,?,?,?) }", false,
-                    this.getClass());
-
-            cs.setString(1, distinta.getCd_cds());
-            cs.setInt(2, distinta.getEsercizio().intValue());
-            cs.setString(3, distinta.getCd_unita_organizzativa());
-            cs.setLong(4, distinta.getPg_distinta().longValue());
-
-            cs.executeQuery();
-        } catch (Throwable e) {
-            throw handleException(e);
-        } finally {
-            try {
-                if (cs != null)
-                    cs.close();
-            } catch (SQLException e) {
-                throw handleException(e);
-            }
-        }
-    }
-
-    /**
-     * Richiama la procedura che processa il file selezionato dall'utente
-     * PreCondition: E' stata generata la richiesta di processare un file
-     * selezionato dall'utente. PostCondition: Viene richiamata la procedura di
-     * Processo dei File
-     *
-     * @param userContext lo <code>UserContext</code> che ha generato la richiesta.
      * @param file        il <code>V_ext_cassiere00Bulk</code> file da processare.
      **/
 
@@ -1203,8 +1171,16 @@ public class DistintaCassiereComponent extends
                 log_riga.setPg_riga(BigDecimal.valueOf(contaErrori));
                 log_riga.setTi_messaggio("E");
                 log_riga.setMessaggio(cdsEnte.getCd_unita_organizzativa()+"-"+file.getNome_file()+"-Riga-"+riga.getProgressivo());
-                log_riga.setTrace(log_riga.getMessaggio());
-                log_riga.setNote(e.getMessage());
+                log_riga.setTrace(
+                        Optional.ofNullable(log_riga.getMessaggio())
+                                .map(s -> s.substring(0, Math.min(s.length(), 4000)))
+                                .orElse(null)
+                );
+                log_riga.setNote(
+                        Optional.ofNullable(e.getMessage())
+                                .map(s -> s.substring(0, Math.min(s.length(), 4000)))
+                                .orElse(null)
+                );
                 log_riga.setToBeCreated();
                 try {
                     log_riga = (Batch_log_rigaBulk)batchControlComponentSession.creaConBulkRequiresNew(userContext,log_riga);
@@ -1243,7 +1219,11 @@ public class DistintaCassiereComponent extends
                     scarto.setTi_sospeso_riscontro_sr(riga.isTipoOperazioneStornato() ? SospesoBulk.TI_SOSPESO : SospesoBulk.TI_RISCONTRO);
                     scarto.setCd_sr(riga.recuperoNumeroSospeso());
                 }
-                scarto.setAnomalia(e.getMessage());
+                scarto.setAnomalia(
+                        Optional.ofNullable(e.getMessage())
+                                .map(s -> s.substring(0, Math.min(s.length(), 1000)))
+                                .orElse(null)
+                );
                 scarto.setToBeCreated();
                 try {
                     scarto = (Ext_cassiere00_scartiBulk)batchControlComponentSession.creaConBulkRequiresNew(userContext,scarto);
@@ -1415,94 +1395,184 @@ public class DistintaCassiereComponent extends
             throws ComponentException {
         try {
             if (distinta.getFl_flusso()) {
-
-                SQLBuilder sql = getHome(userContext,
-                        V_mandato_reversaleBulk.class,
-                        "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
-                sql.addClause(clausole);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
-                        ((CNRUserContext) userContext).getEsercizio());
-                // Da condizionare 02/12/2015
-                if (!tesoreriaUnica(userContext, distinta)) {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
-                            MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
-                } else {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
-                            MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
-                }
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont", SQLBuilder.NOT_EQUALS,
-                        MandatoBulk.TIPO_REGOLARIZZAZIONE);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
-                        MandatoBulk.STATO_MANDATO_ANNULLATO);
-                sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_var_sos", SQLBuilder.ISNULL, null);
-                if (isInserisciMandatiVersamentoCori(userContext)) {
-                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'N'");
-                }
-                sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
-                sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
-                if (Utility.createParametriCnrComponentSession().getParametriCnr(
-                        userContext, docPassivo.getEsercizio()).getFl_siope()
-                        .booleanValue()) {
-                    Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome(
-                            userContext, Unita_organizzativa_enteBulk.class)
-                            .findAll().get(0);
-                    if (!((CNRUserContext) userContext).getCd_cds().equals(
-                            ente.getUnita_padre().getCd_unita_organizzativa()))
-                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
-                                SQLBuilder.NOT_EQUALS,
-                                MandatoBulk.TIPO_ACCREDITAMENTO);
-                }
-
-                if (docPassivo != null) // (1) clausole sull'esercizio,
-                    // cd_unita_organizzativa + clausole
-                    // dell'utente
-                    sql.addClause(docPassivo.buildFindClauses(null));
-                // sql.addOrderBy(
-                // "cd_tipo_documento_cont, ti_documento_cont, pg_documento_cont" );
-
-                SQLUnion union;
-
-                // MARIO - condizione che aggiunge in ogni caso, a prescindere dalla
-                // selezione effettuata
-                // i mandati di versamento CORI/IVA, ma solo se i parametri sono
-                // impostati in tal senso
-                if (isInserisciMandatiVersamentoCori(userContext)) {
-                    SQLBuilder sql2 = getHome(userContext,
+                if (!Optional.ofNullable(distinta.getCd_tesoreria()).isPresent()) {
+                    SQLBuilder sql = getHome(userContext,
                             V_mandato_reversaleBulk.class,
                             "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
-                    sql2.addClause(clausole);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
+                    sql.addClause(clausole);
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
                             ((CNRUserContext) userContext).getEsercizio());
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_unita_organizzativa",
-                            SQLBuilder.EQUALS, docPassivo
-                                    .getCd_unita_organizzativa());
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_tipo_documento_cont",
-                            SQLBuilder.EQUALS, "MAN");
-
                     // Da condizionare 02/12/2015
                     if (!tesoreriaUnica(userContext, distinta)) {
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
                                 MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
                     } else {
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
-                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                                MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
                     }
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
-                            SQLBuilder.NOT_EQUALS,
-                            MandatoBulk.TIPO_REGOLARIZZAZIONE);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
-                            MandatoBulk.STATO_MANDATO_ANNULLATO);
-                    sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'S'");
-                    sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
-                    sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont", SQLBuilder.NOT_EQUALS, MandatoBulk.TIPO_REGOLARIZZAZIONE);
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS, MandatoBulk.STATO_MANDATO_ANNULLATO);
 
-                    union = sql2.union(sql, true);
-                    return union;
+                    sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_var_sos", SQLBuilder.ISNULL, null);
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'N'");
+                    }
+                    sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
+                    sql.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+                    if (Utility.createParametriCnrComponentSession().getParametriCnr(
+                                    userContext, docPassivo.getEsercizio()).getFl_siope()
+                            .booleanValue()) {
+                        Unita_organizzativa_enteBulk ente = (Unita_organizzativa_enteBulk) getHome(
+                                userContext, Unita_organizzativa_enteBulk.class)
+                                .findAll().get(0);
+                        if (!((CNRUserContext) userContext).getCd_cds().equals(
+                                ente.getUnita_padre().getCd_unita_organizzativa()))
+                            sql.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
+                                    SQLBuilder.NOT_EQUALS,
+                                    MandatoBulk.TIPO_ACCREDITAMENTO);
+                    }
+
+
+                    if (docPassivo != null) // (1) clausole sull'esercizio,
+                        // cd_unita_organizzativa + clausole
+                        // dell'utente
+                        sql.addClause(docPassivo.buildFindClauses(null));
+                    // sql.addOrderBy(
+                    // "cd_tipo_documento_cont, ti_documento_cont, pg_documento_cont" );
+
+                    SQLUnion union;
+
+                    // MARIO - condizione che aggiunge in ogni caso, a prescindere dalla
+                    // selezione effettuata
+                    // i mandati di versamento CORI/IVA, ma solo se i parametri sono
+                    // impostati in tal senso
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        SQLBuilder sql2 = getHome(userContext,
+                                V_mandato_reversaleBulk.class,
+                                "V_MANDATO_REVERSALE_DIST_XML").createSQLBuilder();
+                        sql2.addClause(clausole);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.esercizio", SQLBuilder.EQUALS,
+                                ((CNRUserContext) userContext).getEsercizio());
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_unita_organizzativa",
+                                SQLBuilder.EQUALS, docPassivo
+                                        .getCd_unita_organizzativa());
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_tipo_documento_cont",
+                                SQLBuilder.EQUALS, "MAN");
+
+                        // Da condizionare 02/12/2015
+                        if (!tesoreriaUnica(userContext, distinta)) {
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.cd_cds", SQLBuilder.EQUALS, ((CNRUserContext) userContext).getCd_cds());
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS,
+                                    MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                        } else {
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.dt_firma", SQLBuilder.ISNOTNULL, null);
+                            sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        }
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.ti_documento_cont",
+                                SQLBuilder.NOT_EQUALS,
+                                MandatoBulk.TIPO_REGOLARIZZAZIONE);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.stato", SQLBuilder.NOT_EQUALS,
+                                MandatoBulk.STATO_MANDATO_ANNULLATO);
+                        sql2.addSQLClause("AND", "v_mandato_reversale_dist_xml.versamento_cori = 'S'");
+                        sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.CD_TIPO_DOCUMENTO_CONT");
+                        sql2.addSQLJoin("V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE_DIST_XML.PG_DOCUMENTO_CONT");
+
+                        union = sql2.union(sql, true);
+                        return union;
+                    } else {
+                        return sql;
+                    }
                 } else {
-                    return sql;
+                    SQLBuilder sql = getHome(userContext, V_mandato_reversaleBulk.class).createSQLBuilder();
+                    if (docPassivo != null) // (1) clausole sull'esercizio,
+                        sql.addClause(docPassivo.buildFindClauses(null));
+                    sql.addClause(clausole);
+                    sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.CD_TIPO_DOCUMENTO_CONT");
+                    sql.addSQLJoin("V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT_PADRE", "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
+                    if (!tesoreriaUnica(userContext, distinta)) {
+                        sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
+                        sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                    } else {
+                        sql.addClause(FindClause.AND, "dt_firma", SQLBuilder.ISNOTNULL, null);
+                        sql.openParenthesis(FindClause.AND);
+                            sql.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                            sql.addSQLClause(FindClause.OR, "esito_operazione", SQLBuilder.EQUALS, EsitoOperazione.NON_ACQUISITO.value());
+                        sql.closeParenthesis();
+                    }
+                    sql.openParenthesis(FindClause.AND);
+                    sql.addClause(FindClause.AND, "stato_var_sos", SQLBuilder.ISNULL, null);
+                    sql.addClause(FindClause.OR, "stato_var_sos", SQLBuilder.EQUALS, StatoVariazioneSostituzione.SOSTITUZIONE_DEFINITIVA.value());
+                    sql.closeParenthesis();
+
+                    SQLBuilder sqlRifModalitaPagamentoMandato = getHome(userContext, Mandato_rigaBulk.class).createSQLBuilder();
+                    sqlRifModalitaPagamentoMandato.resetColumns();
+                    sqlRifModalitaPagamentoMandato.addColumn("1");
+                    sqlRifModalitaPagamentoMandato.addTableToHeader("RIF_MODALITA_PAGAMENTO");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.CD_CDS", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.CD_CDS");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.ESERCIZIO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.ESERCIZIO");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.PG_MANDATO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
+                    sqlRifModalitaPagamentoMandato.addSQLJoin("MANDATO_RIGA.CD_MODALITA_PAG", SQLBuilder.EQUALS, "RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG");
+                    sqlRifModalitaPagamentoMandato.addSQLClause(
+                            FindClause.AND,
+                            "RIF_MODALITA_PAGAMENTO.TI_PAGAMENTO",
+                            distinta.isBancaItalia() ? SQLBuilder.EQUALS : SQLBuilder.NOT_EQUALS,
+                            Rif_modalita_pagamentoBulk.BANCA_ITALIA
+                    );
+
+                    SQLBuilder sqlRifModalitaPagamentoReversale = getHome(userContext, Reversale_rigaBulk.class).createSQLBuilder();
+                    sqlRifModalitaPagamentoReversale.resetColumns();
+                    sqlRifModalitaPagamentoReversale.addColumn("1");
+                    sqlRifModalitaPagamentoReversale.addTableToHeader("RIF_MODALITA_PAGAMENTO");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.CD_CDS", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.CD_CDS");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.ESERCIZIO", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.ESERCIZIO");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.PG_REVERSALE", SQLBuilder.EQUALS, "V_MANDATO_REVERSALE.PG_DOCUMENTO_CONT");
+                    sqlRifModalitaPagamentoReversale.addSQLJoin("REVERSALE_RIGA.CD_MODALITA_PAG", SQLBuilder.EQUALS, "RIF_MODALITA_PAGAMENTO.CD_MODALITA_PAG");
+                    sqlRifModalitaPagamentoReversale.addSQLClause(
+                            FindClause.AND,
+                            "RIF_MODALITA_PAGAMENTO.TI_PAGAMENTO",
+                            distinta.isBancaItalia() ? SQLBuilder.EQUALS : SQLBuilder.NOT_EQUALS,
+                            Rif_modalita_pagamentoBulk.BANCA_ITALIA
+                    );
+                    sql.openParenthesis(FindClause.AND);
+                        sql.openParenthesis(FindClause.AND);
+                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_MAN);
+                            sql.addSQLExistsClause(FindClause.AND, sqlRifModalitaPagamentoMandato);
+                        sql.closeParenthesis();
+                        sql.openParenthesis(FindClause.OR);
+                            sql.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_REV);
+                            sql.addSQLExistsClause(FindClause.AND, sqlRifModalitaPagamentoReversale);
+                        sql.closeParenthesis();
+                    sql.closeParenthesis();
+
+                    SQLUnion union;
+                    /*  MARIO - condizione che aggiunge in ogni caso, a prescindere dalla selezione effettuata
+                        i mandati di versamento CORI/IVA, ma solo se i parametri sono impostati in tal senso */
+                    if (isInserisciMandatiVersamentoCori(userContext)) {
+                        SQLBuilder sql2 = getHome(userContext, V_mandato_reversaleBulk.class).createSQLBuilder();
+                        sql2.addClause(clausole);
+                        sql2.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+                        Optional.ofNullable(docPassivo)
+                                .flatMap(v_mandato_reversaleBulk -> Optional.ofNullable(v_mandato_reversaleBulk.getCd_unita_organizzativa()))
+                                .ifPresent(s -> {
+                                    sql2.addClause(FindClause.AND, "cd_unita_organizzativa",SQLBuilder.EQUALS, s);
+                                });
+                        sql2.addClause(FindClause.AND, "cd_tipo_documento_cont", SQLBuilder.EQUALS, Numerazione_doc_contBulk.TIPO_MAN);
+                        if (!tesoreriaUnica(userContext, distinta)) {
+                            sql2.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
+                            sql2.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_NON_INSERITO);
+                        } else {
+                            sql2.addClause(FindClause.AND, "dt_firma", SQLBuilder.ISNOTNULL, null);
+                            sql2.addClause(FindClause.AND, "stato_trasmissione", SQLBuilder.EQUALS, MandatoBulk.STATO_TRASMISSIONE_PRIMA_FIRMA);
+                        }
+                        sql2.addClause(FindClause.AND, "versamento_cori", SQLBuilder.EQUALS, Boolean.TRUE);
+                        union = sql2.union(sql, true);
+                        return union;
+                    } else {
+                        return sql;
+                    }
                 }
             } else if (distinta.getFl_sepa()) {  //no flusso
                 SQLBuilder sql = getHome(userContext,
@@ -2888,6 +2958,8 @@ public class DistintaCassiereComponent extends
             sql.addClause("AND", "fl_sepa", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getFl_sepa().booleanValue());
         if (bulk instanceof Distinta_cassiereBulk && ((Distinta_cassiereBulk) bulk).getFl_annulli() != null)
             sql.addClause("AND", "fl_annulli", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getFl_annulli().booleanValue());
+        if (bulk instanceof Distinta_cassiereBulk && ((Distinta_cassiereBulk) bulk).getCd_tesoreria() != null)
+            sql.addClause("AND", "cd_tesoreria", SQLBuilder.EQUALS, ((Distinta_cassiereBulk) bulk).getCd_tesoreria());
 
         sql.addOrderBy("pg_distinta");
         return sql;
@@ -3213,7 +3285,6 @@ public class DistintaCassiereComponent extends
                 validaDocumentiContabiliAssociati(userContext, distinta);
                 if (distinta.getFl_annulli().booleanValue())
                     callCheckDocContForDistintaAnn(userContext, distinta);
-                callCheckDocContForDistinta(userContext, distinta);
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -4539,6 +4610,126 @@ public class DistintaCassiereComponent extends
         }
     }
 
+
+    protected List<Bilancio> createBilancio(UserContext userContext, List<SiopeBilancioDTO> siopeBilancio) throws ComponentException{
+        if ( Optional.ofNullable(siopeBilancio).isPresent()) {
+            final ObjectFactory objectFactory = new ObjectFactory();
+            List<Bilancio> bilancio= new ArrayList<Bilancio>();
+            try {
+                siopeBilancio.forEach(m -> {
+                    Bilancio b = objectFactory.createBilancio();
+                    b.setGestione(m.getGestione().toString());
+                    b.setImportoBilancio(m.getImporto().setScale(2, BigDecimal.ROUND_HALF_UP));
+
+                    try{
+                        b.setCodificaBilancio(Integer.parseInt(m.getVoceBilancio()));
+                    } catch (NumberFormatException e) {
+                        throw new RuntimeException( "La voce di Bilancio".concat(m.getVoceBilancio()).concat(" non è Numerica!"),e);
+                    }
+                    b.setDescrizioneCodifica(m.getDescrzioneVoceBilancio());
+                    if ( m.getGestione().equals(EnumSiopeBilancioGestione.RESIDUO))
+                        b.setAnnoResiduo(m.getAnnoResiduo());
+                    bilancio.add(b);
+                });
+            }catch( Exception e){
+                if ( e.getCause() instanceof NumberFormatException)
+                    throw new ApplicationException(e.getMessage());
+                throw e;
+            }
+            return bilancio;
+        }
+        return Collections.EMPTY_LIST;
+
+    }
+
+    private String getCodiceA2A(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_A2A
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]");
+    }
+    private String getCodiceEnteBT(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT] per Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]");
+    }
+    private String getCodiceIstatEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]");
+    }
+    private String getCodiceEnte(UserContext userContext,Distinta_cassiereBulk distinta,Configurazione_cnrComponentSession sess) throws ComponentException,
+            RemoteException {
+        if ( distinta.isBancaTesoriere()) {
+            return Optional.ofNullable(
+                    sess.getVal01(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca Tesoriere"));
+        }
+        if ( distinta.isBancaItalia()) {
+            return Optional.ofNullable(
+                    sess.getVal02(
+                            userContext,
+                            CNRUserContext.getEsercizio(userContext),
+                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                            Configurazione_cnrBulk.SK_CODICE_ENTE
+                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE] Banca D'Italia"));
+        }
+        throw new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]");
+    }
     public StorageObject generaFlussoSiopeplus(UserContext userContext, Distinta_cassiereBulk distinta) throws ComponentException,
             RemoteException {
         try {
@@ -4559,29 +4750,10 @@ public class DistintaCassiereComponent extends
                             null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
                             Configurazione_cnrBulk.SK_CODICE_ABI_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ABI_BT]"));
-            String codiceA2A = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_A2A
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_A2A]"));
+            String codiceA2A = getCodiceA2A( userContext,distinta,sess);
 
-            String codiceEnte = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE]"));
-
-            String codiceEnteBT = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ENTE_BT
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ENTE_BT]"));
+            String codiceEnte =  getCodiceEnte(userContext,distinta,sess);
+            String codiceEnteBT = getCodiceEnteBT(userContext,distinta,sess);
 
             String codiceTramiteBT = Optional.ofNullable(
                     sess.getVal01(
@@ -4591,13 +4763,7 @@ public class DistintaCassiereComponent extends
                             Configurazione_cnrBulk.SK_CODICE_TRAMITE_BT
                     )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_TRAMITE_BT]"));
 
-            String codiceIstatEnte = Optional.ofNullable(
-                    sess.getVal01(
-                            userContext,
-                            CNRUserContext.getEsercizio(userContext),
-                            null, Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
-                            Configurazione_cnrBulk.SK_CODICE_ISTAT_ENTE
-                    )).orElseThrow(() -> new ApplicationException("Configurazione mancante per flusso Ordinativo [CODICE_ISTAT_ENTE]"));
+            String codiceIstatEnte = getCodiceIstatEnte(userContext,distinta,sess);
 
             final CtTestataFlusso testataFlusso = objectFactory.createCtTestataFlusso();
             testataFlusso.setCodiceABIBT(codiceAbi);
@@ -4684,7 +4850,7 @@ public class DistintaCassiereComponent extends
         Boolean isVariazioneDefinitiva = Optional.ofNullable(bulk.getStatoVarSos())
                 .map(statoVarSos -> statoVarSos.equals(StatoVariazioneSostituzione.VARIAZIONE_DEFINITIVA.value()))
                 .orElse(Boolean.FALSE);
-        if (bulk.isReversale()) {
+        if (bulk.isReversale() && !isVariazioneDefinitiva) {
             isVariazioneDefinitiva = Optional.ofNullable(getHome(userContext, V_mandato_reversaleBulk.class)
                 .findByPrimaryKey(
                         new V_mandato_reversaleBulk(
@@ -4728,6 +4894,36 @@ public class DistintaCassiereComponent extends
         }
     }
 
+    private Configurazione_cnrBulk getConfigurazioneInviaBilancio(UserContext userContext) throws RemoteException, ComponentException {
+        return ((Configurazione_cnrComponentSession) EJBCommonServices
+                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getConfigurazione(
+                userContext,
+                CNRUserContext.getEsercizio(userContext),
+                null,
+                Configurazione_cnrBulk.PK_FLUSSO_ORDINATIVI,
+                Configurazione_cnrBulk.SK_INVIA_TAG_BILANCIO);
+    }
+
+    private void completeReversale(UserContext userContext, ReversaleBulk reversale) throws ComponentException, PersistencyException {
+        //Se le righe del mandato non sono valorizzate le riempio io
+        if (!Optional.ofNullable(reversale.getReversale_rigaColl()).filter(el -> !el.isEmpty()).isPresent()) {
+            reversale.setReversale_rigaColl(new BulkList(((ReversaleHome) getHome(
+                    userContext, reversale.getClass())).findReversale_riga(userContext, reversale, false)));
+            reversale.getReversale_rigaColl().forEach(el -> {
+                try {
+                    el.setReversale(reversale);
+                    ((Reversale_rigaHome) getHome(userContext, Reversale_rigaBulk.class)).initializeElemento_voce(userContext, el);
+                } catch (ComponentException | PersistencyException e) {
+                    throw new ApplicationRuntimeException(e);
+                }
+            });
+        }
+
+        if (!Optional.ofNullable(reversale.getReversale_terzo()).filter(el -> el.getCrudStatus() != OggettoBulk.UNDEFINED).isPresent())
+            reversale.setReversale_terzo(((ReversaleHome) getHome(userContext, reversale.getClass())).findReversale_terzo(userContext, reversale, false));
+        if (!Optional.ofNullable(reversale.getUnita_organizzativa()).filter(el->el.getCrudStatus()!=OggettoBulk.UNDEFINED).isPresent())
+            reversale.setUnita_organizzativa((Unita_organizzativaBulk)getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(reversale.getUnita_organizzativa()));
+    }
     private Reversale creaReversaleFlussoSiopeplus(UserContext userContext,
                                                                 V_mandato_reversaleBulk bulk) throws ComponentException,
             RemoteException, BusinessProcessException {
@@ -4736,6 +4932,37 @@ public class DistintaCassiereComponent extends
             Reversale reversale = objectFactory.createReversale();
             List list = findDocumentiFlusso(userContext, bulk);
             reversale.setTipoOperazione(getTipoOperazione(userContext, bulk));
+            Configurazione_cnrBulk inviaTagBilanio= null;
+            try {
+                inviaTagBilanio= getConfigurazioneInviaBilancio( userContext);
+            } catch (RemoteException e) {
+                throw new ComponentException(e);
+            }
+            if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
+                Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
+                ReversaleIHome reversaleHome = Optional.ofNullable(getHome(userContext, ReversaleIBulk.class))
+                        .filter(ReversaleIHome.class::isInstance)
+                        .map(ReversaleIHome.class::cast)
+                        .orElseThrow(() -> new ComponentException("Home della Reversale non trovata!"));
+                ReversaleBulk reversaleBulk = Optional.ofNullable(
+                        reversaleHome.findByPrimaryKey(
+                                new ReversaleBulk(bulk.getCd_cds(), bulk.getEsercizio(), bulk.getPg_documento_cont()
+                                )
+                        )).filter(ReversaleBulk.class::isInstance)
+                        .map(ReversaleBulk.class::cast)
+                        .orElseThrow(() -> new ComponentException("Reversale non trovata!"));
+                completeReversale(userContext,reversaleBulk);
+                List<Bilancio> bilancioTag = this.createBilancio(userContext, reversaleHome.getSiopeBilancio(userContext, reversaleBulk));
+                if ( bilancioTag.isEmpty())
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, indicare le voci di bilancio nella reversale cds {0} n. {1}",
+                            reversaleBulk.getCds(),reversaleBulk.getPg_reversale());
+                if ( bilancioTag.size()>numMaxVociBilancio)
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, ci sono più voci di {0} voce/i di bilancio nella reversale cds {1} n. {2}",
+                            numMaxVociBilancio,reversaleBulk.getCds(),reversaleBulk.getPg_reversale());
+
+                reversale.getBilancio().addAll(bilancioTag);
+
+            }
 
             GregorianCalendar gcdi = new GregorianCalendar();
             VDocumentiFlussoBulk docContabile = null;
@@ -4766,7 +4993,11 @@ public class DistintaCassiereComponent extends
                                 .map(Rif_modalita_pagamentoBulk.class::cast)
                                 .orElseThrow(() -> new ApplicationMessageFormatException("Modalità di pagamento non trovata: {0}", modalitaPagamento));
 
-                if (docContabile.getTiDocumento().compareTo(ReversaleBulk.TIPO_REGOLAM_SOSPESO) == 0) {
+                //Gestione banca D'Italia ISS
+                if (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                        (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext)))) {
+                    infover.setTipoRiscossione(ACCREDITO_BANCA_D_ITALIA);
+                }else if (docContabile.getTiDocumento().compareTo(ReversaleBulk.TIPO_REGOLAM_SOSPESO) == 0) {
                     if (Optional.ofNullable(bulk.getTi_cc_bi()).filter(s -> s.equals("B")).isPresent() &&
                             Optional.ofNullable(rif_modalita_pagamentoBulk.getTi_pagamento()).filter(s -> s.equals(Rif_modalita_pagamentoBulk.BANCA_ITALIA)).isPresent() ) {
                         infover.setTipoRiscossione(REGOLARIZZAZIONE_ACCREDITO_BANCA_D_ITALIA);
@@ -4782,6 +5013,7 @@ public class DistintaCassiereComponent extends
                 } else if(!bulk.getPg_documento_cont_padre().equals(bulk.getPg_documento_cont())) {
                     infover.setTipoRiscossione(COMPENSAZIONE);
                 }
+
                 // Classificazioni
                 infover.setTipoEntrata(INFRUTTIFERO);
                 infover.setDestinazione(LIBERA);
@@ -4977,17 +5209,81 @@ public class DistintaCassiereComponent extends
         return any.get();
     }
 
+    private void completeMandato(UserContext userContext, MandatoBulk mandato) throws ComponentException, PersistencyException {
+        //Se le righe del mandato non sono valorizzate le riempio io
+        //CdsBulk cds = (CdsBulk)getHome(userContext,CdsBulk.class).findByPrimaryKey(new CdsBulk(mandato.getCd_cds()));
+        if (!Optional.ofNullable(mandato.getMandato_rigaColl()).filter(el->!el.isEmpty()).isPresent()) {
+            mandato.setMandato_rigaColl(new BulkList(((MandatoHome) getHome(
+                    userContext, mandato.getClass())).findMandato_riga(userContext, mandato, false)));
+            mandato.getMandato_rigaColl().forEach(el->{
+                try {
+                    el.setMandato(mandato);
+                    ((Mandato_rigaHome)getHome(userContext, Mandato_rigaBulk.class)).initializeElemento_voce(userContext, el);
+                } catch (ComponentException|PersistencyException e) {
+                    throw new ApplicationRuntimeException(e);
+                }
+            });
+        }
+
+        if (!Optional.ofNullable(mandato.getMandato_terzo()).filter(el->el.getCrudStatus()!=OggettoBulk.UNDEFINED).isPresent())
+            mandato.setMandato_terzo(((MandatoHome) getHome(userContext, mandato.getClass())).findMandato_terzo(userContext, mandato, false));
+
+        if (!Optional.ofNullable(mandato.getUnita_organizzativa()).filter(el->el.getCrudStatus()!=OggettoBulk.UNDEFINED).isPresent())
+            mandato.setUnita_organizzativa((Unita_organizzativaBulk)getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(mandato.getUnita_organizzativa()));
+    }
+    private TipoRapportoTesoreriaEnum getConfigurazioneTipoRapportoTesoreria(UserContext userContext) throws RemoteException, ComponentException {
+        return ((Configurazione_cnrComponentSession) EJBCommonServices
+                .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession")).getTipoRapportoTesoreria(userContext);
+    }
+
     public Mandato creaMandatoFlussoSiopeplus(UserContext userContext, V_mandato_reversaleBulk bulk) throws ComponentException, RemoteException {
         try {
+
             Configurazione_cnrComponentSession sess = (Configurazione_cnrComponentSession) EJBCommonServices
                     .createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession");
             DateTimeFormatter formatterDate = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
             final ObjectFactory objectFactory = new ObjectFactory();
+
             BancaBulk bancauo = recuperaIbanUo(userContext, bulk.getUo());
             Mandato mandato = objectFactory.createMandato();
             List list = findDocumentiFlusso(userContext, bulk);
             mandato.setTipoOperazione(getTipoOperazione(userContext, bulk));
+
+            Configurazione_cnrBulk inviaTagBilanio= null;
+            try {
+                inviaTagBilanio= getConfigurazioneInviaBilancio( userContext);
+            } catch (RemoteException e) {
+                throw new ComponentException(e);
+            }
+            if ( Optional.ofNullable(inviaTagBilanio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE)) {
+                Integer numMaxVociBilancio =Optional.ofNullable(inviaTagBilanio.getVal02()).map(s->Integer.valueOf(s)).orElse(1);
+
+                MandatoIHome mandatoHome = Optional.ofNullable(getHome(userContext, MandatoIBulk.class))
+                        .filter(MandatoIHome.class::isInstance)
+                        .map(MandatoIHome.class::cast)
+                        .orElseThrow(() -> new ComponentException("Home del mandato non trovata!"));
+                MandatoBulk mandatoBulk = Optional.ofNullable(
+                        mandatoHome.findByPrimaryKey(
+                                new MandatoBulk(bulk.getCd_cds(), bulk.getEsercizio(), bulk.getPg_documento_cont()
+                                )
+                        )).filter(MandatoBulk.class::isInstance)
+                        .map(MandatoBulk.class::cast)
+                        .orElseThrow(() -> new ComponentException("Mandato non trovato!"));
+                //mandatoBulk.setMandato_rigaColl(new BulkList(mandatoHome.findMandato_riga(userContext, mandatoBulk)));
+                completeMandato(userContext,mandatoBulk);
+
+                List<Bilancio> bilancioTag = this.createBilancio(userContext, mandatoHome.getSiopeBilancio(userContext, mandatoBulk));
+                if ( bilancioTag.isEmpty())
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, indicare le voci di bilancio nel mandato cds {0} n. {1}",
+                            mandatoBulk.getCds(),mandatoBulk.getPg_mandato());
+                if ( bilancioTag.size()>numMaxVociBilancio)
+                    throw new ApplicationMessageFormatException("Impossibile generare il flusso, ci sono più voci di {0} voce/i di bilancio nel mandato cds {1} n. {2}",
+                            numMaxVociBilancio,mandatoBulk.getCds(),mandatoBulk.getPg_mandato());
+
+                mandato.getBilancio().addAll(bilancioTag);
+
+            }
             GregorianCalendar gcdi = new GregorianCalendar();
 
             Mandato.InformazioniBeneficiario infoben = objectFactory.createMandatoInformazioniBeneficiario();
@@ -5060,7 +5356,8 @@ public class DistintaCassiereComponent extends
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ASSEGNOCIRCOLARE,
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.CASSA,
                         Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.DISPOSIZIONEDOCUMENTOESTERNO,
-                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE
+                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE,
+                        Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA
                 ).contains(tipoPagamentoSiopePlus) &&
                         //TODO da sostituire
                         !rif_modalita_pagamentoBulk.getCd_modalita_pag().equals(STIPENDI);
@@ -5097,6 +5394,9 @@ public class DistintaCassiereComponent extends
                                 ||rif_modalita_pagamentoBulk.getCd_modalita_pag().equals(STIPENDI)
                                 ||docContabile.getTiDocumento().compareTo(MandatoBulk.TIPO_REGOLAM_SOSPESO) == 0).isPresent();
 
+                //da mettere in configurazione
+                Boolean modalitaBOERifDocEsterno=true;
+
                 if (multibeneficiario) {
                     bollo = objectFactory.createMandatoInformazioniBeneficiarioBollo();
                     benef = objectFactory.createBeneficiario();
@@ -5117,11 +5417,20 @@ public class DistintaCassiereComponent extends
                         } else {
                             infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
                         }
+                    } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)// caso BI
+                            && docContabile.getDtPagamentoRichiesta() == null
+                            && (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                            (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext))))) {
+                        infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value());
+                        infoben.setDestinazione(LIBERA);
+                        infoben.setNumeroContoBancaItaliaEnteRicevente(NUMERO_CONTO_BANCA_ITALIA_ENTE_RICEVENTE);
+                        infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
-                        throw new ApplicationMessageFormatException(
+                            throw new ApplicationMessageFormatException(
                                 "Impossibile generare il flusso, indicare data richiesta pagamento nel mandato cds {0} n. {1}",
                                 docContabile.getCdCds(), docContabile.getPgDocumento());
+
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() != null &&
                             (EJBCommonServices.getServerTimestamp().after(docContabile.getDtPagamentoRichiesta()))) {
@@ -5160,9 +5469,14 @@ public class DistintaCassiereComponent extends
                         );
                         infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     }
-
+                    if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA)) {
+                        Mandato.InformazioniBeneficiario.InformazioniAggiuntive informazioniAggiuntive = objectFactory.createMandatoInformazioniBeneficiarioInformazioniAggiuntive();
+                        informazioniAggiuntive.setAvvisoPagoPA(getAvvisoPagoPA(userContext, objectFactory, bulk));
+                        infoben.setInformazioniAggiuntive(informazioniAggiuntive);
+                    }
                     infoben.setDestinazione(LIBERA);
-                    caricaInformazioniAggiuntive(infoben, bulk, aggiuntive, tipoPagamentoSiopePlus);
+
+                    caricaInformazioniAggiuntive(infoben, bulk, docContabile,aggiuntive, tipoPagamentoSiopePlus,modalitaBOERifDocEsterno);
                     caricaTipoPostalizzazione(infoben, docContabile, tipoPagamentoSiopePlus);
                     if (obb_dati_beneficiario) {
                         benef.setIndirizzoBeneficiario(RemoveAccent
@@ -5198,34 +5512,42 @@ public class DistintaCassiereComponent extends
                         infoben.setPiazzatura(piazzatura);
                     }
                     if (obb_iban && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value())) {
-                        sepa.setIban( Optional.ofNullable(docContabile.getCodiceIban())
-                                .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, manca il codice iban " +
-                                        "sul Mandato {0}/{1}/{2}",
-                                        String.valueOf(bulk.getEsercizio()),
-                                        String.valueOf(bulk.getCd_cds()),
-                                        String.valueOf(bulk.getPg_documento_cont())
-                                )));
-
-                        if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO)) {
-                            sepa.setBic(Optional.ofNullable(docContabile.getBic())
-                                    .filter(s -> Optional.ofNullable(docContabile.getCodiceIban()).isPresent())
-                                    .filter(s -> patternBic.matcher(s).find())
-                                    .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, codice BIC: {0} non valido " +
-                                            "sul Mandato {1}/{2}/{3}",
-                                            docContabile.getBic(),
+                        //gestione invio SEPA da concordare con la banca al momento non gestito
+                        boolean generaSepa=true;
+                        if ( (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO) && modalitaBOERifDocEsterno) )
+                            generaSepa=false;
+                        if ( generaSepa) {
+                            sepa.setIban(Optional.ofNullable(docContabile.getCodiceIban())
+                                    .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, manca il codice iban " +
+                                            "sul Mandato {0}/{1}/{2}",
                                             String.valueOf(bulk.getEsercizio()),
                                             String.valueOf(bulk.getCd_cds()),
                                             String.valueOf(bulk.getPg_documento_cont())
                                     )));
+
+                            if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO)) {
+                                    //gestione invio SEPA da concordare con la banca al momento non gestito
+                                    sepa.setBic(Optional.ofNullable(docContabile.getBic())
+                                            .filter(s -> Optional.ofNullable(docContabile.getCodiceIban()).isPresent())
+                                            .filter(s -> patternBic.matcher(s).find())
+                                            .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, codice BIC: {0} non valido " +
+                                                    "sul Mandato {1}/{2}/{3}",
+                                                    docContabile.getBic(),
+                                                    String.valueOf(bulk.getEsercizio()),
+                                                    String.valueOf(bulk.getCd_cds()),
+                                                    String.valueOf(bulk.getPg_documento_cont())
+                                            )));
+
+                            }
+                            if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.SEPACREDITTRANSFER)
+                                    && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value()))
+                                sepa.setIdentificativoEndToEnd(docContabile.getEsercizio()
+                                        .toString()
+                                        + "-"
+                                        + docContabile.getCdUoOrigine()
+                                        + "-" + docContabile.getPgDocumento().toString());
+                            infoben.setSepaCreditTransfer(sepa);
                         }
-                        if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.SEPACREDITTRANSFER)
-                                && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value()))
-                            sepa.setIdentificativoEndToEnd(docContabile.getEsercizio()
-                                    .toString()
-                                    + "-"
-                                    + docContabile.getCdUoOrigine()
-                                    + "-" + docContabile.getPgDocumento().toString());
-                        infoben.setSepaCreditTransfer(sepa);
                     }
                     List listClass = findDocumentiFlussoClass(userContext, bulk);
                     VDocumentiFlussoBulk oldDoc = null;
@@ -5450,11 +5772,20 @@ public class DistintaCassiereComponent extends
                         infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value());
                     } else if (docContabile.getTiDocumento().compareTo(MandatoBulk.TIPO_REGOLAM_SOSPESO) == 0) {
                         infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value());
+                    } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)// caso BI
+                            && docContabile.getDtPagamentoRichiesta() == null
+                            && (rif_modalita_pagamentoBulk.getTi_pagamento().equalsIgnoreCase(Rif_modalita_pagamentoBulk.BANCA_ITALIA) &&
+                            (!TipoRapportoTesoreriaEnum.TESORERIA_UNICA.equals(getConfigurazioneTipoRapportoTesoreria(userContext))))) {
+                        infoben.setTipoPagamento(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP.value());
+                        infoben.setDestinazione(LIBERA);
+                        infoben.setNumeroContoBancaItaliaEnteRicevente(NUMERO_CONTO_BANCA_ITALIA_ENTE_RICEVENTE);
+                        infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() == null) {
                         throw new ApplicationMessageFormatException(
                                 "Impossibile generare il flusso, indicare data richiesta pagamento nel mandato cds {0} n. {1}",
                                 docContabile.getCdCds(), docContabile.getPgDocumento());
+
                     } else if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.F24EP)
                             && docContabile.getDtPagamentoRichiesta() != null &&
                             (EJBCommonServices.getServerTimestamp().after(docContabile.getDtPagamentoRichiesta()))) {
@@ -5493,7 +5824,12 @@ public class DistintaCassiereComponent extends
                         );
                         infoben.setTipoContabilitaEnteRicevente(TIPO_CONTABILITA_ENTE_RICEVENTE);
                     }
-                    caricaInformazioniAggiuntive(infoben, bulk, aggiuntive, tipoPagamentoSiopePlus);
+                    if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA)) {
+                        Mandato.InformazioniBeneficiario.InformazioniAggiuntive informazioniAggiuntive = objectFactory.createMandatoInformazioniBeneficiarioInformazioniAggiuntive();
+                        informazioniAggiuntive.setAvvisoPagoPA(getAvvisoPagoPA(userContext, objectFactory, bulk));
+                        infoben.setInformazioniAggiuntive(informazioniAggiuntive);
+                    }
+                    caricaInformazioniAggiuntive(infoben, bulk, docContabile, aggiuntive, tipoPagamentoSiopePlus,modalitaBOERifDocEsterno);
                     caricaTipoPostalizzazione(infoben, docContabile, tipoPagamentoSiopePlus);
                     infoben.setDestinazione(LIBERA);
                     List listClass = findDocumentiFlussoClass(userContext, bulk);
@@ -5710,35 +6046,43 @@ public class DistintaCassiereComponent extends
                         infoben.setPiazzatura(piazzatura);
                     }
                     if (obb_iban && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.REGOLARIZZAZIONE.value())) {
-                        sepa.setIban(
-                                Optional.ofNullable(docContabile.getCodiceIban())
-                                        .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, manca il codice iban " +
-                                                "sul Mandato {0}/{1}/{2}",
-                                                String.valueOf(bulk.getEsercizio()),
-                                                String.valueOf(bulk.getCd_cds()),
-                                                String.valueOf(bulk.getPg_documento_cont())
-                                        ))
-                        );
-                        if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO)) {
-                            sepa.setBic(Optional.ofNullable(docContabile.getBic())
-                                    .filter(s -> Optional.ofNullable(docContabile.getCodiceIban()).isPresent())
-                                    .filter(s -> patternBic.matcher(s).find())
-                                    .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, codice BIC: {0} non valido " +
-                                            "sul Mandato {1}/{2}/{3}",
-                                            docContabile.getBic(),
-                                            String.valueOf(bulk.getEsercizio()),
-                                            String.valueOf(bulk.getCd_cds()),
-                                            String.valueOf(bulk.getPg_documento_cont())
-                                    )));
+                        //gestione invio SEPA da concordare con la banca al momento non gestito
+                        boolean generaSepa=true;
+                        if ( (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO) && modalitaBOERifDocEsterno))
+                            generaSepa=false;
+                        if ( generaSepa) {
+                            sepa.setIban(
+                                    Optional.ofNullable(docContabile.getCodiceIban())
+                                            .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, manca il codice iban " +
+                                                    "sul Mandato {0}/{1}/{2}",
+                                                    String.valueOf(bulk.getEsercizio()),
+                                                    String.valueOf(bulk.getCd_cds()),
+                                                    String.valueOf(bulk.getPg_documento_cont())
+                                            ))
+                            );
+
+                            if (tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO)) {
+                                    //gestione invio SEPA da concordare con la banca al momento non gestito
+                                    sepa.setBic(Optional.ofNullable(docContabile.getBic())
+                                            .filter(s -> Optional.ofNullable(docContabile.getCodiceIban()).isPresent())
+                                            .filter(s -> patternBic.matcher(s).find())
+                                            .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, codice BIC: {0} non valido " +
+                                                    "sul Mandato {1}/{2}/{3}",
+                                                    docContabile.getBic(),
+                                                    String.valueOf(bulk.getEsercizio()),
+                                                    String.valueOf(bulk.getCd_cds()),
+                                                    String.valueOf(bulk.getPg_documento_cont())
+                                            )));
+                            }
+                            if ((tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.SEPACREDITTRANSFER))
+                                    && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value()))
+                                sepa.setIdentificativoEndToEnd(docContabile.getEsercizio()
+                                        .toString()
+                                        + "-"
+                                        + docContabile.getCdUoOrigine()
+                                        + "-" + docContabile.getPgDocumento().toString());
+                            infoben.setSepaCreditTransfer(sepa);
                         }
-                        if ((tipoPagamentoSiopePlus.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.SEPACREDITTRANSFER))
-                                && !infoben.getTipoPagamento().equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.COMPENSAZIONE.value()))
-                            sepa.setIdentificativoEndToEnd(docContabile.getEsercizio()
-                                    .toString()
-                                    + "-"
-                                    + docContabile.getCdUoOrigine()
-                                    + "-" + docContabile.getPgDocumento().toString());
-                        infoben.setSepaCreditTransfer(sepa);
                     }
                     infoben.setCausale(Optional.ofNullable(Optional.ofNullable(docContabile.getDsDocumento())
                             .filter(s -> s.length() > MAX_LENGTH_CAUSALE)
@@ -5834,17 +6178,112 @@ public class DistintaCassiereComponent extends
         }
     }
 
+    private String getRiferimentoDocumentoEsternoBOE(V_mandato_reversaleBulk bulk,VDocumentiFlussoBulk  docContabile) throws  ApplicationMessageFormatException{
+        String iban =Optional.ofNullable(docContabile.getCodiceIban())
+                .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, manca il codice iban " +
+                        "sul Mandato {0}/{1}/{2}",
+                        String.valueOf(bulk.getEsercizio()),
+                        String.valueOf(bulk.getCd_cds()),
+                        String.valueOf(bulk.getPg_documento_cont())
+                ));
+        String bic=Optional.ofNullable(docContabile.getBic())
+                .filter(s -> Optional.ofNullable(docContabile.getCodiceIban()).isPresent())
+                .filter(s -> patternBic.matcher(s).find())
+                .orElseThrow(() -> new ApplicationMessageFormatException("Impossibile generare il flusso, codice BIC: {0} non valido " +
+                        "sul Mandato {1}/{2}/{3}",
+                        docContabile.getBic(),
+                        String.valueOf(bulk.getEsercizio()),
+                        String.valueOf(bulk.getCd_cds()),
+                        String.valueOf(bulk.getPg_documento_cont())
+                ));
+
+        return "SWIFT CODE:".concat( bic ) .concat(" ").concat( " IBAN CODE:").concat(iban);
+    }
     private void caricaInformazioniAggiuntive(Mandato.InformazioniBeneficiario infoben,
                                               V_mandato_reversaleBulk bulk,
+                                              VDocumentiFlussoBulk  docContabile,
                                               Mandato.InformazioniBeneficiario.InformazioniAggiuntive aggiuntive,
-                                              Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus tipoPagamentoSiopePlus) {
+                                              Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus tipoPagamentoSiopePlus,
+                                              Boolean modalitaBOERifDocEsterno) throws  ApplicationMessageFormatException {
         if (Arrays.asList(
                 Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.DISPOSIZIONEDOCUMENTOESTERNO,
-                Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOCONTOCORRENTEPOSTALE
+                Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.ACCREDITOCONTOCORRENTEPOSTALE,
+                Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO
         ).contains(tipoPagamentoSiopePlus)) {
-            aggiuntive.setRiferimentoDocumentoEsterno(bulk.getCMISName());
-            infoben.setInformazioniAggiuntive(aggiuntive);
+            if ( Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.BONIFICOESTEROEURO.equals(tipoPagamentoSiopePlus) && modalitaBOERifDocEsterno) {
+                aggiuntive.setRiferimentoDocumentoEsterno(getRiferimentoDocumentoEsternoBOE(bulk,docContabile));
+                infoben.setInformazioniAggiuntive(aggiuntive);
+            }else {
+                aggiuntive.setRiferimentoDocumentoEsterno(bulk.getCMISName());
+                infoben.setInformazioniAggiuntive(aggiuntive);
+            }
         }
+    }
+
+    private CtAvvisoPagoPA getAvvisoPagoPA(UserContext userContext,
+                                           ObjectFactory objectFactory,
+                                           V_mandato_reversaleBulk bulk) throws PersistencyException, ComponentException, SQLException, IntrospectionException {
+        CtAvvisoPagoPA avvisoPagoPA = objectFactory.createCtAvvisoPagoPA();
+        MandatoIHome mandatoHome = Optional.ofNullable(getHome(userContext, MandatoIBulk.class))
+                .filter(MandatoIHome.class::isInstance)
+                .map(MandatoIHome.class::cast)
+                .orElseThrow(() -> new ComponentException("Home del mandato non trovata!"));
+
+        final Map< String , Map<String,List<Fattura_passiva_rigaBulk>> > fatturePassiveRighePagoPa=
+                    Optional.ofNullable(mandatoHome.findFatturaPassivaRiga(userContext, bulk)).
+                    get().stream().filter(s-> s.getNumero_avviso_pagopa()!=null).
+                    filter(s-> !s.getNumero_avviso_pagopa().isEmpty()).
+                    filter(s-> s.getCodice_identificativo_ente_pagopa()!=null).
+                    filter(s-> !s.getCodice_identificativo_ente_pagopa().isEmpty()).
+                            filter(Fattura_passiva_rigaIBulk.class::isInstance)
+                            .map(Fattura_passiva_rigaIBulk.class::cast).
+                            collect(Collectors.groupingBy(Fattura_passiva_rigaBulk::getNumero_avviso_pagopa,
+                                    Collectors.groupingBy(Fattura_passiva_rigaBulk::getCodice_identificativo_ente_pagopa)));
+
+        final Map< String , Map<String,List<Documento_generico_rigaBulk>> >  documentiGenericiRighePagoPa=
+                Optional.ofNullable(mandatoHome.findDocumentoGenericoRiga(userContext, bulk)).
+                        get().
+                        stream().filter(s-> s.getNumero_avviso_pagopa()!=null).
+                        filter(s-> !s.getNumero_avviso_pagopa().isEmpty()).
+                        filter(s-> s.getCodice_identificativo_ente_pagopa()!=null).
+                        filter(s-> !s.getCodice_identificativo_ente_pagopa().isEmpty()).
+                        filter(Documento_generico_rigaBulk.class::isInstance)
+                        .map(Documento_generico_rigaBulk.class::cast).
+                        collect(Collectors.groupingBy(Documento_generico_rigaBulk::getNumero_avviso_pagopa,
+                                Collectors.groupingBy(Documento_generico_rigaBulk::getCodice_identificativo_ente_pagopa)));
+
+        if (documentiGenericiRighePagoPa.isEmpty() && fatturePassiveRighePagoPa.isEmpty()) {
+            new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if ( documentiGenericiRighePagoPa.size()>1 ||fatturePassiveRighePagoPa.size()>1){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if ( ( !documentiGenericiRighePagoPa.isEmpty() && documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().size()>1) ||
+                ( !fatturePassiveRighePagoPa.isEmpty() &&  fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().size()>1)){
+                throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un Codice Identificativo Ente PAGOPA!",bulk.getPg_documento_cont());
+        }
+        if ( documentiGenericiRighePagoPa.size()==1 && fatturePassiveRighePagoPa.size()==1
+            && (!documentiGenericiRighePagoPa.keySet().stream().findFirst().get().equalsIgnoreCase(fatturePassiveRighePagoPa.keySet().stream().findFirst().get()))){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un riferimento PAGOPA!",bulk.getPg_documento_cont());
+        }
+
+        if ( documentiGenericiRighePagoPa.size()==1 && fatturePassiveRighePagoPa.size()==1
+                && (!fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get().
+                    equalsIgnoreCase(documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get()))){
+            throw new ApplicationMessageFormatException("Il mandato n. {0} possiede più di un Codice Identificativo Ente PAGOPA!",bulk.getPg_documento_cont());
+        }
+
+        if (documentiGenericiRighePagoPa.size()>0) {
+            avvisoPagoPA.setNumeroAvviso(documentiGenericiRighePagoPa.keySet().stream().findFirst().get());
+            avvisoPagoPA.setCodiceIdentificativoEnte(documentiGenericiRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get());
+            return avvisoPagoPA;
+        };
+        if (fatturePassiveRighePagoPa.size()>0) {
+            avvisoPagoPA.setNumeroAvviso(fatturePassiveRighePagoPa.keySet().stream().findFirst().get());
+            avvisoPagoPA.setCodiceIdentificativoEnte(fatturePassiveRighePagoPa.values().stream().findFirst().get().keySet().stream().findFirst().get());
+            return avvisoPagoPA;
+        };
+        throw new ApplicationMessageFormatException("Il mandato n. {0} non possiede un riferimento PAGOPA!",bulk.getPg_documento_cont());
     }
 
     private void caricaClassificazione(UserContext userContext,
@@ -5981,7 +6420,7 @@ public class DistintaCassiereComponent extends
 
                     if (codiciCIG.isEmpty() && motiviAssenzaCIG.isEmpty()) {
                         throw new ApplicationMessageFormatException("Generazione flusso interrotta in quanto al mandato {0}/{1}/{2} sono associate fatture " +
-                                "su cui non è posssibile determinare il CIG!",
+                                "su cui non è possibile determinare il CIG!",
                                 String.valueOf(bulk.getEsercizio()),
                                 String.valueOf(bulk.getCd_cds()),
                                 String.valueOf(bulk.getPg_documento_cont())
@@ -6114,7 +6553,7 @@ public class DistintaCassiereComponent extends
                         }
                         if (!cigCompenso.isPresent() && !motivoAssenzaCigCompenso.isPresent()){
                             throw new ApplicationMessageFormatException("Generazione flusso interrotta in quanto al mandato {0}/{1}/{2} è associato un compenso " +
-                                    "su cui non è posssibile determinare il CIG!",
+                                    "su cui non è possibile determinare il CIG!",
                                     String.valueOf(bulk.getEsercizio()),
                                     String.valueOf(bulk.getCd_cds()),
                                     String.valueOf(bulk.getPg_documento_cont())

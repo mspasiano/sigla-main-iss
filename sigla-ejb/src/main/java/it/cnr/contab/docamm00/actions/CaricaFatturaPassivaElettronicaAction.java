@@ -46,6 +46,7 @@ import it.gov.fatturapa.sdi.ws.ricezione.v1_0.types.FileSdIConMetadatiType;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.nio.file.Files;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +54,12 @@ import java.util.Optional;
 
 import javax.activation.DataHandler;
 import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.JAXBElement;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,8 +101,140 @@ public class CaricaFatturaPassivaElettronicaAction extends FormAction {
 			throw new RemoteException("Internal Server Error", e);
 		}		
 		return actioncontext.findDefaultForward();
-	}	
-	
+	}
+
+	@SuppressWarnings("unchecked")
+	public Forward doCaricaFatturaFolder(ActionContext actioncontext) throws java.rmi.RemoteException {
+		CaricaFatturaElettronicaBP caricaPassivaElettronicaBP = (CaricaFatturaElettronicaBP) actioncontext.getBusinessProcess();
+		try {
+			caricaPassivaElettronicaBP.fillModel(actioncontext);
+			FileSdIConMetadatiTypeBulk fileSdIConMetadatiTypeBulk = (FileSdIConMetadatiTypeBulk) caricaPassivaElettronicaBP.getModel();
+
+			final Configurazione_cnrBulk configurazione = Utility.createConfigurazioneCnrComponentSession()
+					.getConfigurazione(
+							actioncontext.getUserContext(),
+							0,
+							"*",
+							"FATTURA_PASSIVA",
+							"PATH_FATTURA_MIGR"
+					);
+			String pathDirectory = configurazione.getVal01();
+
+			if(pathDirectory == null){
+				caricaPassivaElettronicaBP.setMessage("Attenzione! non trovato path directory");
+				return actioncontext.findDefaultForward();
+			}
+			// prendo tutti i file che hanno nel nome "_MT_" (metadati) per ricavare il codice SDI ed il nome file che contiene la fattura
+			File dir = new File(pathDirectory);
+			String fileMetaDataString="";
+			if ( dir.list() == null) {
+				caricaPassivaElettronicaBP.setMessage("Nessun file trovato nella directory");
+				return actioncontext.findDefaultForward();
+			} else {
+				String[] files = dir.list();
+
+				for (int i=0; i < files.length; i++) {
+
+					if( files[i].contains("_MT_")){
+						fileMetaDataString=fileMetaDataString+files[i]+";";
+					}
+				}
+			}
+
+			if(fileMetaDataString.isEmpty()){
+				caricaPassivaElettronicaBP.setMessage("Nessun file Metadata trovato nella directory");
+				return actioncontext.findDefaultForward();
+			}
+			String[] metadataFiles=fileMetaDataString.split(";");
+			int indexFileCaricati=0;
+
+			for (int i=0; i < metadataFiles.length; i++) {
+
+				File fileMetaDati = new File(pathDirectory + metadataFiles[i]);
+
+				if(fileMetaDati != null && fileMetaDati.length()>0) {
+
+
+					FatturazioneElettronicaClient client = SpringUtil.getBean("fatturazioneElettronicaClient",
+							FatturazioneElettronicaClient.class);
+
+					MetadatiInvioFileType metaType = Optional.ofNullable(fileMetaDati)
+							.map(file1 -> new StreamSource(fileMetaDati))
+							.map(streamSource -> {
+								try {
+									return client.getUnmarshaller().unmarshal(streamSource);
+								} catch (IOException e) {
+									throw new RuntimeException("Cannot marshal file");
+								}
+							})
+							.filter(JAXBElement.class::isInstance)
+							.map(JAXBElement.class::cast)
+							.map(JAXBElement::getValue)
+							.filter(MetadatiInvioFileType.class::isInstance)
+							.map(MetadatiInvioFileType.class::cast).get();
+					// SDI
+					fileSdIConMetadatiTypeBulk.setIdentificativoSdI(new BigInteger(metaType.getIdentificativoSdI()));
+					// nome file
+					fileSdIConMetadatiTypeBulk.setNomeFile(metaType.getNomeFile());
+
+					File fileFattura = new File(pathDirectory + fileSdIConMetadatiTypeBulk.getNomeFile());
+
+					if (fileFattura != null && fileFattura.isFile()) {
+						DataSource sourceFattura = new FileDataSource(new File(fileFattura.getPath()));
+						DataSource sourceMetaDati = new FileDataSource(new File(fileMetaDati.getPath()));
+
+						getRicezioneFattureService().
+								riceviFatturaSIGLA(
+										fileSdIConMetadatiTypeBulk.getIdentificativoSdI(),
+										fileFattura.getName(),
+										null,
+										new DataHandler(sourceFattura),
+										fileMetaDati.getName(),
+										new DataHandler(sourceMetaDati));
+
+						indexFileCaricati++;
+
+						File fileMetaLavorato = new File(pathDirectory+"\\lavorate\\" + metadataFiles[i]);
+						FileUtils.copyFile(fileMetaDati, fileMetaLavorato);
+
+						File fileFatturaLavorato = new File(pathDirectory+"\\lavorate\\" + fileSdIConMetadatiTypeBulk.getNomeFile());
+						FileUtils.copyFile(fileFattura, fileFatturaLavorato);
+
+						fileSdIConMetadatiTypeBulk.setIdentificativoSdI(null);
+						fileSdIConMetadatiTypeBulk.setNomeFile(null);
+
+						FileWriter fw = new FileWriter(fileFattura);
+						fw.flush();
+						fw.close();
+						FileUtils.forceDeleteOnExit(fileFattura);
+						FileWriter fw1 = new FileWriter(fileMetaDati);
+						fw1.flush();
+						fw1.close();
+						FileUtils.forceDeleteOnExit(fileMetaDati);
+						//fileFattura.delete();
+						//fileMetaDati.delete();
+					}
+				}
+
+			}
+			if(indexFileCaricati>0) {
+				caricaPassivaElettronicaBP.setMessage("Fatture caricate correttamente: " + indexFileCaricati+ " di "+metadataFiles.length);
+			}else{
+				caricaPassivaElettronicaBP.setMessage("Nessuna fattura caricata.");
+			}
+
+		} catch (FillException e) {
+			return handleException(actioncontext, e);
+		} catch (ComponentException e) {
+			return handleException(actioncontext, e);
+		}catch (IOException e){
+			return handleException(actioncontext, e);
+		}
+
+
+
+		return actioncontext.findDefaultForward();
+	};
 	@SuppressWarnings("unchecked")
 	public Forward doCaricaFattura(ActionContext actioncontext) throws java.rmi.RemoteException {
 		CaricaFatturaElettronicaBP caricaPassivaElettronicaBP = (CaricaFatturaElettronicaBP) actioncontext.getBusinessProcess();

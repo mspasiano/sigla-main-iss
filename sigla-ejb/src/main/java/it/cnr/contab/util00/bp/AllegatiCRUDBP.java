@@ -28,6 +28,7 @@ import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.util.Introspector;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+import it.cnr.si.spring.storage.StorageDriver;
 import it.cnr.si.spring.storage.StorageException;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.StoreService;
@@ -113,10 +114,15 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
     protected void addChildDetail(OggettoBulk oggettobulk) {
     }
 
+    protected StoreService getBeanStoreService(ActionContext actioncontext)
+            throws BusinessProcessException {
+        return SpringUtil.getBean("storeService", StoreService.class);
+    }
     @Override
     protected void initialize(ActionContext actioncontext)
             throws BusinessProcessException {
-        storeService = SpringUtil.getBean("storeService", StoreService.class);
+        //storeService = SpringUtil.getBean("storeService", StoreService.class);
+        storeService=getBeanStoreService( actioncontext);
         super.initialize(actioncontext);
     }
 
@@ -199,8 +205,8 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
                 allegato.setRelativePath(
                         Optional.ofNullable(storageObject.getPath())
                                 .map(s -> s.substring(s.indexOf(primaryPath) + primaryPath.length()))
-                                .map(s -> s.substring(0, s.indexOf(allegato.getNome())))
-                                .orElse(File.separator)
+                                .map(s -> s.substring(0, s.lastIndexOf(StorageDriver.SUFFIX)))
+                                .orElse(StorageDriver.SUFFIX)
                 );
                 completeAllegato(allegato, storageObject);
                 allegato.setCrudStatus(OggettoBulk.NORMAL);
@@ -229,7 +235,7 @@ public abstract class AllegatiCRUDBP<T extends AllegatoGenericoBulk, K extends A
     protected void completeAllegato(T allegato, StorageObject storageObject) throws ApplicationException {
     }
 
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         return false;
     }
 

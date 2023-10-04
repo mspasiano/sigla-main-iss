@@ -210,6 +210,16 @@
                 propertyName="statoVarSos"
                 sqlTypeName="VARCHAR"
                 columnSize="30"/>
+        <columnMapping
+                columnName="ESERCIZIO_STIPENDI_COFI"
+                propertyName="esercizio_stipendi_cofi"
+                sqlTypeName="DECIMAL"
+                columnSize="4" />
+        <columnMapping
+                columnName="MESE_STIPENDI_COFI"
+                propertyName="mese_stipendi_cofi"
+                sqlTypeName="DECIMAL"
+                columnSize="4" />
 
     </defaultColumnMap>
     <persistentProperty
@@ -278,4 +288,8 @@
             name="erroreSiopePlus"/>
     <persistentProperty
             name="statoVarSos"/>
+    <persistentProperty
+            name="esercizio_stipendi_cofi"/>
+    <persistentProperty
+            name="mese_stipendi_cofi"/>
 </SQLPersistentInfo>

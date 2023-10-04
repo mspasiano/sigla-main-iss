@@ -119,9 +119,21 @@ public class OrdineAcqBase extends OrdineAcqKey implements Keyed {
 	private java.lang.String tiAttivita;
 
 	private java.math.BigDecimal imImponibile;
+
+	private String motivoAssenzaCig;
+
+	public Boolean getFl_mepa() {
+		return fl_mepa;
+	}
+
+	public void setFl_mepa(Boolean fl_mepa) {
+		this.fl_mepa = fl_mepa;
+	}
+
 	private java.math.BigDecimal imIva;
 	private java.math.BigDecimal imIvaD;
 	private java.math.BigDecimal imTotaleOrdine;
+	private java.lang.Boolean fl_mepa;
 
 //    DT_CANCELLAZIONE TIMESTAMP(7)
 	private java.sql.Timestamp dtCancellazione;
@@ -589,5 +601,13 @@ public class OrdineAcqBase extends OrdineAcqKey implements Keyed {
 	}
 	public void setCdUopOrdine(java.lang.String cdUopOrdine) {
 		this.cdUopOrdine = cdUopOrdine;
+	}
+
+	public String getMotivoAssenzaCig() {
+		return motivoAssenzaCig;
+	}
+
+	public void setMotivoAssenzaCig(String motivoAssenzaCig) {
+		this.motivoAssenzaCig = motivoAssenzaCig;
 	}
 }

@@ -164,7 +164,28 @@
 		property="fl_totalmente_scaricato"
 		inputType="CHECKBOX"
 		label="Scarico Definitivo" />
-		
+
+	<fieldProperty
+			name="fl_dismesso"
+			property="fl_dismesso"
+			inputType="CHECKBOX"
+			label="Dismesso"
+	/>
+	<fieldProperty
+			name="dt_dismesso"
+			property="dt_dismesso"
+			inputType="TEXT"
+			maxLength="10"
+			inputSize="10"
+			formatName="date_short"
+			label="Data Dismissione"/>
+	<fieldProperty
+			name="causale_dismissione"
+			property="causale_dismissione"
+			inputType="TEXT"
+			inputSize="100"
+			label="Causale Dismissione" />
+
 	/*****************************************************	
 	* Riferimento all'oggetto complesso assegnatario **/
 	<fieldProperty
@@ -636,6 +657,12 @@
 	<formFieldProperty
 		name="fl_totalmente_scaricato" />
 	<formFieldProperty
+			name="fl_dismesso" />
+	<formFieldProperty
+			name="dt_dismesso" />
+	<formFieldProperty
+			name="causale_dismissione" />
+	<formFieldProperty
 		name="valore_alienazione" />
 	<formFieldProperty
 		name="valore_alienazione_apg" 
@@ -748,7 +775,14 @@
 	<findFieldProperty
 		name="seriale" />	
 	<findFieldProperty
-		name="fl_totalmente_scaricato" />	
+		name="fl_totalmente_scaricato" />
+	<findFieldProperty
+			name="fl_dismesso" />
+	<findFieldProperty
+			name="dt_dismesso" />
+	<findFieldProperty
+			name="causale_dismissione" />
+
 	<freeSearchSet name="freeSearchWithoutProgressivoSet">
 		<findFieldProperty
 			name="etichetta" />
@@ -786,7 +820,10 @@
 		name="righeDaScarico">	
 		<columnFieldProperty
 			name="codiceCompleto"
-			style="width:80px" />	
+			style="width:80px" />
+		<columnFieldProperty
+			name="etichetta"
+			style="width:80px" />
 		<columnFieldProperty
 			name="ds_bene"
 			style="width:300px" />

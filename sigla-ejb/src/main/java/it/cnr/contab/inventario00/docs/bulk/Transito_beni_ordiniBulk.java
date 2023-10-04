@@ -17,17 +17,29 @@
 
 package it.cnr.contab.inventario00.docs.bulk;
 
+import it.cnr.contab.config00.sto.bulk.DipartimentoBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
+import it.cnr.contab.inventario00.bp.CRUDTransitoBeniOrdiniBP;
 import it.cnr.contab.inventario00.tabrif.bulk.Condizione_beneBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.Id_inventarioBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.Tipo_ammortamentoBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.Ubicazione_beneBulk;
+import it.cnr.contab.inventario01.bp.CRUDCaricoInventarioBP;
+import it.cnr.contab.ordmag.magazzino.bulk.LottoMagBulk;
 import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqRigaBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
+import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.BulkCollection;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.SimpleBulkList;
 import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.util.action.CRUDBP;
+import org.apache.commons.lang.StringUtils;
 
+import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.Dictionary;
 import java.util.Iterator;
@@ -39,6 +51,7 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 	public final static String STATO_COMPLETO = "COM";
 	public final static String STATO_TRASFERITO = "TRA";
 	private Collection condizioni;
+
 
 	public MovimentiMagBulk getMovimentiMag() {
 		return movimentiMag;
@@ -59,9 +72,96 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 
 	private it.cnr.contab.anagraf00.core.bulk.TerzoBulk assegnatario;
 
+	private Boolean fl_transito_canc = false;
+	private Boolean fl_search_ann = false;
+
 	public final static Dictionary ISTITUZIONALE_COMMERCIALE;
 	public final static String ISTITUZIONALE      = "I";
 	public final static String COMMERCIALE      = "C";
+
+
+
+
+
+	public Integer getNumeroOrdine() {
+		if(getMovimentiMag() != null){
+			MovimentiMagBulk movimento = getMovimentiMag();
+			if(movimento.getLottoMag()!=null){
+				LottoMagBulk lotto = movimento.getLottoMag();
+				if(lotto.getOrdineAcqConsegna()!=null){
+					OrdineAcqConsegnaBulk ordineAcq = lotto.getOrdineAcqConsegna();
+					if(ordineAcq!=null)
+						return ordineAcq.getNumero();
+				}
+			}
+		}
+		return null;
+	}
+
+
+
+
+	public Long getId_movimenti_mag(){
+		MovimentiMagBulk movimentiMag = this.getMovimentiMag();
+		if (movimentiMag == null)
+			return null;
+		return getMovimentiMag().getPgMovimento();
+	}
+	public void setId_movimenti_mag(java.lang.Long pgMovimento)  {
+		this.getMovimentiMag().setPgMovimento(pgMovimento);
+	}
+
+
+	public Timestamp getDtOrdine() {
+		if(getMovimentiMag() != null){
+			if(getMovimentiMag().getLottoMag() !=null){
+				LottoMagBulk lotto = getMovimentiMag().getLottoMag();
+				if(lotto.getOrdineAcqConsegna() != null){
+					OrdineAcqConsegnaBulk ordineAcqCons = lotto.getOrdineAcqConsegna();
+					if(ordineAcqCons != null){
+						OrdineAcqRigaBulk riga = ordineAcqCons.getOrdineAcqRiga();
+						if(riga!=null){
+							OrdineAcqBulk ordine = riga.getOrdineAcq();
+							return ordine.getDataOrdine();
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+
+	public String getNumeratoreOrdine() {
+		if(getMovimentiMag() != null){
+			if(getMovimentiMag().getLottoMag() !=null){
+				LottoMagBulk lotto = getMovimentiMag().getLottoMag();
+				if(lotto.getOrdineAcqConsegna() != null){
+					if(lotto.getOrdineAcqConsegna()!=null){
+						OrdineAcqConsegnaBulk ordineAcq = lotto.getOrdineAcqConsegna();
+						if(ordineAcq!=null)
+							return ordineAcq.getCdNumeratore();
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	public String getNumeroBolla() {
+		if(getMovimentiMag() != null){
+
+			return getMovimentiMag().getNumeroBolla();
+		}
+		return null;
+	}
+	public Timestamp getDataBolla(){
+		if(getMovimentiMag() != null){
+			return getMovimentiMag().getDataBolla();
+		}
+		return null;
+	}
+
 
 
 	static {
@@ -373,6 +473,9 @@ public void setValore_unitario(java.math.BigDecimal newValore_unitario) {
 		if (getFl_ammortamento() != null && getFl_ammortamento() && getTi_ammortamento() == null){
 			throw new ValidationException("Valorizzare il tipo ammortamento.");
 		}
+		if(getCondizioneBene() == null){
+			throw new ValidationException("Valorizzare la condizione del bene.");
+		}
 	}
 
 	public Boolean isTuttiCampiValorizzatiPerInventariazione(){
@@ -380,5 +483,25 @@ public void setValore_unitario(java.math.BigDecimal newValore_unitario) {
 			return true;
 		}
 		return false;
+	}
+
+	public Boolean getFl_transito_canc() {
+		return fl_transito_canc;
+	}
+
+	public void setFl_transito_canc(Boolean fl_transito_canc) {
+		this.fl_transito_canc = fl_transito_canc;
+	}
+	public boolean isCheckCanc()
+	{
+		return !getFl_transito_canc();
+	}
+
+	public Boolean getFl_search_ann() {
+		return fl_search_ann;
+	}
+
+	public void setFl_search_ann(Boolean fl_search_ann) {
+		this.fl_search_ann = fl_search_ann;
 	}
 }

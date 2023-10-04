@@ -163,6 +163,11 @@
 				sqlTypeName="VARCHAR"
 				columnSize="3"
 				nullable="false" />
+		<columnMapping
+				columnName="NOTA_CANC"
+				propertyName="nota_canc"
+				sqlTypeName="VARCHAR"
+				columnSize="1000"/>
 	</defaultColumnMap>
 	<persistentProperty
 		name="pg_ver_rec" />
@@ -214,4 +219,6 @@
 			name="id_movimenti_mag"/>
 	<persistentProperty
 			name="stato"/>
+	<persistentProperty
+			name="nota_canc"/>
 </SQLPersistentInfo>

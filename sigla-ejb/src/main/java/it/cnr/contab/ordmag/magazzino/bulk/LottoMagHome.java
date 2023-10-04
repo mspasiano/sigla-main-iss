@@ -24,20 +24,24 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.List;
 
+import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
 import it.cnr.contab.ordmag.anag00.NumerazioneMagBulk;
 
 import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
 import it.cnr.contab.ordmag.anag00.TipoMovimentoMagHome;
 import it.cnr.contab.ordmag.ejb.NumeratoriOrdMagComponentSession;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
 import it.cnr.jada.persistency.sql.CHARToBooleanConverter;
 import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.Orderable;
@@ -64,6 +68,8 @@ public class LottoMagHome extends BulkHome {
 		}
 	}
 
+
+
 	public LottoMagBulk aggiornaValori(it.cnr.jada.UserContext userContext, LottoMagBulk lotto, MovimentiMagBulk movimentoMag) throws PersistencyException {
 		TipoMovimentoMagBulk tipoMovimento = new TipoMovimentoMagBulk(movimentoMag.getTipoMovimentoMag().getCdCds(), movimentoMag.getTipoMovimentoMag().getCdTipoMovimento());
 		TipoMovimentoMagHome home = (TipoMovimentoMagHome) getHomeCache().getHome(TipoMovimentoMagBulk.class);
@@ -75,39 +81,39 @@ public class LottoMagHome extends BulkHome {
 			switch (tipoMovimento.getModAggQtaMagazzino()) {
 				case TipoMovimentoMagBulk.AZIONE_AZZERA: lotto.setGiacenza(BigDecimal.ZERO);
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).add(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).add(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setGiacenza(Utility.nvl(lotto.getGiacenza()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setGiacenza(movimentoMag.getQuantita());
+				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setGiacenza(movimentoMag.getQuantitaEffettiva());
 					break;
 				default: break;
 			}
 			switch (tipoMovimento.getQtaCaricoLotto()) {
 				case TipoMovimentoMagBulk.AZIONE_AZZERA: lotto.setQuantitaCarico(BigDecimal.ZERO);
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).add(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).add(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setQuantitaCarico(Utility.nvl(lotto.getQuantitaCarico()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaCarico(movimentoMag.getQuantita());
+				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaCarico(movimentoMag.getQuantitaEffettiva());
 					break;
 				default: break;
 			}
 			switch (tipoMovimento.getModAggQtaValMagazzino()) {
 				case TipoMovimentoMagBulk.AZIONE_AZZERA: lotto.setQuantitaValore(BigDecimal.ZERO);
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).add(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).add(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_DECREMENTA: lotto.setQuantitaValore(Utility.nvl(lotto.getQuantitaValore()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaValore(movimentoMag.getQuantita());
+				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaValore(movimentoMag.getQuantitaEffettiva());
 					break;
 				default: break;
 			}
@@ -117,16 +123,16 @@ public class LottoMagHome extends BulkHome {
 					lotto.setCostoUnitario(BigDecimal.ZERO);
 					break;
 				case TipoMovimentoMagBulk.AZIONE_SOMMA:
-					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).add(movimentoMag.getPrezzoUnitario()));
-					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).add(movimentoMag.getPrezzoUnitario()));
+					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).add(movimentoMag.getPrezzoUnitarioEffettivo()));
+					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).add(movimentoMag.getPrezzoUnitarioEffettivo()));
 					break;
 				case TipoMovimentoMagBulk.AZIONE_SOTTRAE:
-					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).subtract(movimentoMag.getPrezzoUnitario()));
-					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).subtract(movimentoMag.getPrezzoUnitario()));
+					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).subtract(movimentoMag.getPrezzoUnitarioEffettivo()));
+					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).subtract(movimentoMag.getPrezzoUnitarioEffettivo()));
 					break;
 				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE:
-					lotto.setValoreUnitario(movimentoMag.getPrezzoUnitario());
-					lotto.setCostoUnitario(movimentoMag.getPrezzoUnitario());
+					lotto.setValoreUnitario(movimentoMag.getPrezzoUnitarioEffettivo());
+					lotto.setCostoUnitario(movimentoMag.getPrezzoUnitarioEffettivo());
 					break;
 				default: break;
 			}
@@ -134,11 +140,11 @@ public class LottoMagHome extends BulkHome {
 			switch (tipoMovimento.getModAggQtaInizioAnno()) {
 				case TipoMovimentoMagBulk.AZIONE_AZZERA: lotto.setQuantitaInizioAnno(BigDecimal.ZERO);
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaInizioAnno(Utility.nvl(lotto.getQuantitaInizioAnno()).add(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOMMA: lotto.setQuantitaInizioAnno(Utility.nvl(lotto.getQuantitaInizioAnno()).add(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaInizioAnno(Utility.nvl(lotto.getQuantitaInizioAnno()).subtract(movimentoMag.getQuantita()));
+				case TipoMovimentoMagBulk.AZIONE_SOTTRAE: lotto.setQuantitaInizioAnno(Utility.nvl(lotto.getQuantitaInizioAnno()).subtract(movimentoMag.getQuantitaEffettiva()));
 					break;
-				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaInizioAnno(movimentoMag.getQuantita());
+				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE: lotto.setQuantitaInizioAnno(movimentoMag.getQuantitaEffettiva());
 					break;
 				default: break;
 			}
@@ -175,5 +181,32 @@ public class LottoMagHome extends BulkHome {
 		List lista =  this.fetchAll(sql);
 		return lista;
 	}
-	
+
+	public LottoMagBulk findCaricoDaOrdine(OrdineAcqConsegnaBulk consegnaBulk) throws IntrospectionException,PersistencyException {
+
+		PersistentHome consHome = getHomeCache().getHome(OrdineAcqConsegnaBulk.class);
+		OrdineAcqConsegnaBulk ordineAcqConsegnaBulk = (OrdineAcqConsegnaBulk) consHome.findByPrimaryKey(consegnaBulk);
+		PersistentHome evHome = getHomeCache().getHome(MagazzinoBulk.class);
+		MagazzinoBulk magazzinoBulk = new MagazzinoBulk(ordineAcqConsegnaBulk.getCdCdsMag(), ordineAcqConsegnaBulk.getCdMagazzino());
+		magazzinoBulk = (MagazzinoBulk)evHome.findByPrimaryKey(magazzinoBulk);
+
+		TipoMovimentoMagBulk tipoMovimentoMagBulk = magazzinoBulk.getTipoMovimentoMag(ordineAcqConsegnaBulk.getTipoConsegna());
+
+		SQLBuilder sql = createSQLBuilder();
+
+		sql.addClause("AND","cdCdsOrdine",SQLBuilder.EQUALS, consegnaBulk.getCdCds());
+		sql.addClause("AND","cdNumeratoreOrdine",SQLBuilder.EQUALS, consegnaBulk.getCdNumeratore());
+		sql.addClause("AND","cdUnitaOperativa",SQLBuilder.EQUALS, consegnaBulk.getCdUnitaOperativa());
+		sql.addClause("AND","esercizioOrdine",SQLBuilder.EQUALS, consegnaBulk.getEsercizio());
+		sql.addClause("AND","numeroOrdine",SQLBuilder.EQUALS, consegnaBulk.getNumero());
+		sql.addClause("AND","rigaOrdine",SQLBuilder.EQUALS, consegnaBulk.getRiga());
+		sql.addClause("AND","consegna",SQLBuilder.EQUALS, consegnaBulk.getConsegna());
+		sql.addClause("AND","quantitaCarico",SQLBuilder.GREATER, BigDecimal.ZERO);
+		List lista = fetchAll(sql);
+		if (lista != null){
+			return (LottoMagBulk)lista.get(0);
+		}
+		return null;
+	}
+
 }

@@ -142,11 +142,10 @@ public class ParametriSelezioneOrdiniAcqAction extends BulkAction {
     		}
 
 			if (bp.VIS_ORDINI_RIGA_CONS.equalsIgnoreCase(bp.getTipoSelezione())) {
-    			SelezionatoreListaBP nbp = (SelezionatoreListaBP)context.createBusinessProcess("Selezionatore");
+    			SelezionatoreListaBP nbp = (SelezionatoreListaBP)context.createBusinessProcess("SelezionatoreVisualOrdinAcqConsListaBP");
 				nbp.setBulkInfo(it.cnr.jada.bulk.BulkInfo.getBulkInfo(OrdineAcqConsegnaBulk.class));
 				nbp.setColumns(nbp.getBulkInfo().getColumnFieldPropertyDictionary("visualOrdinAcqCons"));
     			nbp.setIterator(context,ri);
-
 
     			HookForward hook = (HookForward)context.findForward("seleziona");
     			return context.addBusinessProcess(nbp); 

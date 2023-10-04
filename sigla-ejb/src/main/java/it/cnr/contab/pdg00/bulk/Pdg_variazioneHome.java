@@ -42,6 +42,7 @@ import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 public class Pdg_variazioneHome extends BulkHome {
@@ -158,11 +159,11 @@ public class Pdg_variazioneHome extends BulkHome {
 	 *
 	 * @return java.util.Collection Collezione di oggetti <code>Pdg_variazione_riga_gestBulk</code>
 	 */
-	public java.util.Collection findDettagliVariazioneGestionale(Pdg_variazioneBulk testata) throws PersistencyException {
+	public java.util.Collection<Pdg_variazione_riga_gestBulk> findDettagliVariazioneGestionale(Pdg_variazioneBulk testata) throws PersistencyException {
 		PersistentHome dettHome = getHomeCache().getHome(Pdg_variazione_riga_gestBulk.class);
 		SQLBuilder sql = dettHome.createSQLBuilder();
-		sql.addClause("AND","esercizio",sql.EQUALS,testata.getEsercizio());
-		sql.addClause("AND","pg_variazione_pdg",sql.EQUALS,testata.getPg_variazione_pdg());
+		sql.addClause(FindClause.AND,"esercizio",SQLBuilder.EQUALS,testata.getEsercizio());
+		sql.addClause(FindClause.AND,"pg_variazione_pdg",SQLBuilder.EQUALS,testata.getPg_variazione_pdg());
 
 		return dettHome.fetchAll(sql);
 	}	
@@ -262,6 +263,5 @@ public class Pdg_variazioneHome extends BulkHome {
 		sql.addSQLClause("AND","PDG_VARIAZIONE_RIGA_GEST.TI_GESTIONE",sql.EQUALS,Elemento_voceHome.GESTIONE_ENTRATE);
 
 		return dettHome.fetchAll(sql);
-	}	
-
+	}
 }

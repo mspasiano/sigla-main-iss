@@ -21,35 +21,31 @@
 <%
 	bp.openFormWindow(pageContext);
 %>
-
-	 <table class="Panel">
-    <%--  <table border="0" cellspacing="0" cellpadding="2" align=center> --%>
-      <tr>
+<table class="card p-2 Panel">
+    <tr>
         <td><% bp.getController().writeFormLabel(out,"esercizio");%></td>
         <td colspan="3"><% bp.getController().writeFormInput(out,"esercizio");%></td>
-      </tr>      
-      <tr>
-        <td><% bp.getController().writeFormLabel(out,"mese");%></td>
-        <td><% bp.getController().writeFormInput(out,"mese");%></td>
-      </tr>
-      <tr>
+    </tr>
+    <tr>
+        <td><% bp.getController().writeFormLabel(out,"find_stipendi_cofi");%></td>
+        <td><% bp.getController().writeFormInput(out,"find_stipendi_cofi");%></td>
+    </tr>
+    <tr>
         <td><% bp.getController().writeFormLabel(out,"find_tipo_contributo_ritenuta");%></td>
-        <td>
-        	<% bp.getController().writeFormInput(out,"find_tipo_contributo_ritenuta");%>
-        </td>
-      </tr>
-      <tr>
+        <td><% bp.getController().writeFormInput(out,"find_tipo_contributo_ritenuta");%></td>
+    </tr>
+    <tr>
         <td><% bp.getController().writeFormLabel(out,"ti_ente_percipiente");%></td>
         <td><% bp.getController().writeFormInput(out,"ti_ente_percipiente");%></td>
-      </tr>
-      <tr>
+    </tr>
+    <tr>
         <td><% bp.getController().writeFormLabel(out,"ammontare");%></td>
         <td><% bp.getController().writeFormInput(out,"ammontare");%></td>
-      </tr>      
-      <tr>
+    </tr>
+    <tr>
         <td><% bp.getController().writeFormLabel(out,"dt_da_competenza_coge");%></td>
         <td><% bp.getController().writeFormInput(out,"dt_da_competenza_coge");%></td>
         <td align="right"><% bp.getController().writeFormLabel(out,"dt_a_competenza_coge");%></td>
         <td><% bp.getController().writeFormInput(out,"dt_a_competenza_coge");%></td>
-      </tr>
-      </table>
+    </tr>
+</table>

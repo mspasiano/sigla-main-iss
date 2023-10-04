@@ -10,7 +10,7 @@
 
 <% CRUDRichiestaUopBP bp = (CRUDRichiestaUopBP)BusinessProcess.getBusinessProcess(request);
     RichiestaUopRigaBulk riga = (RichiestaUopRigaBulk)bp.getRighe().getModel();
-	bp.getRighe().writeHTMLTable(pageContext,"righeSet",true,false,true,"100%","200px"); %>
+	bp.getRighe().writeHTMLTable(pageContext,"righeSet",true,false,true,"100%","40vh"); %>
 <tr><td colspan=10>
 	      <%
 	      	String[][] pages = null;

@@ -17,6 +17,7 @@
 
 package it.cnr.contab.config00.ejb;
 
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
@@ -374,6 +375,41 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
         }
     }
 
+    @Override
+    public Boolean hasGestioneImportiFlussiFinanziari(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (java.lang.Boolean) invoke("hasGestioneImportiFlussiFinanziari", new Object[]{
+                    param0});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    public java.lang.Boolean propostaFatturaDaOrdini(it.cnr.jada.UserContext param0) throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (java.lang.Boolean) invoke("propostaFatturaDaOrdini", new Object[]{
+                    param0});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
     public java.lang.String getCdrPersonale(it.cnr.jada.UserContext param0, java.lang.Integer param1) throws RemoteException, it.cnr.jada.comp.ComponentException {
         try {
             return (java.lang.String) invoke("getCdrPersonale", new Object[]{
@@ -451,6 +487,22 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
             return (String) invoke("getCdsSAC", new Object[]{
                     userContext,
                     esercizio});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    public java.lang.Boolean isEconomicaPatrimonialeAttivaImputazioneManuale(it.cnr.jada.UserContext param0) throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (java.lang.Boolean) invoke("isEconomicaPatrimonialeAttivaImputazioneManuale", new Object[]{
+                    param0});
         } catch (java.rmi.RemoteException e) {
             throw e;
         } catch (java.lang.reflect.InvocationTargetException e) {
@@ -573,72 +625,23 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
     }
 
     @Override
-    public Boolean isVariazioneAutomaticaSpesa(UserContext userContext) throws ComponentException, RemoteException {
+    public Boolean isAssPrgAnagraficoAttiva(UserContext param0) throws ComponentException, RemoteException {
         try {
-            return (java.lang.Boolean) invoke("isVariazioneAutomaticaSpesa", new Object[]{
-                    userContext});
-        } catch (java.rmi.RemoteException e) {
+            return (Boolean) invoke("isAssPrgAnagraficoAttiva", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
             throw e;
         } catch (java.lang.reflect.InvocationTargetException e) {
             try {
                 throw e.getTargetException();
-            } catch (it.cnr.jada.comp.ComponentException ex) {
+            } catch (ComponentException ex) {
                 throw ex;
             } catch (Throwable ex) {
-                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+                throw new RemoteException("Uncaugth exception", ex);
             }
         }
     }
-    public Integer getCdTerzoDiversiStipendi(UserContext userContext)  throws RemoteException, it.cnr.jada.comp.ComponentException {
-        try {
-            return (Integer) invoke("getCdTerzoDiversiStipendi", new Object[]{
-                    userContext});
-        } catch (java.rmi.RemoteException e) {
-            throw e;
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            try {
-                throw e.getTargetException();
-            } catch (it.cnr.jada.comp.ComponentException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new java.rmi.RemoteException("Uncaugth exception", ex);
-            }
-        }
-    }
-    public Timestamp getDataFineValiditaCaricoFamiliare(UserContext userContext, String tiPersona)  throws RemoteException, it.cnr.jada.comp.ComponentException {
-        try {
-            return (Timestamp) invoke("getDataFineValiditaCaricoFamiliare", new Object[]{
-                    userContext, tiPersona});
-        } catch (java.rmi.RemoteException e) {
-            throw e;
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            try {
-                throw e.getTargetException();
-            } catch (it.cnr.jada.comp.ComponentException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new java.rmi.RemoteException("Uncaugth exception", ex);
-            }
-        }
-    }
-
-    public String getContoCorrenteEnte(UserContext userContext, Integer esercizio)  throws RemoteException, it.cnr.jada.comp.ComponentException {
-        try {
-            return (String) invoke("getContoCorrenteEnte", new Object[]{
-                    userContext,
-                    esercizio});
-        } catch (java.rmi.RemoteException e) {
-            throw e;
-        } catch (java.lang.reflect.InvocationTargetException e) {
-            try {
-                throw e.getTargetException();
-            } catch (it.cnr.jada.comp.ComponentException ex) {
-                throw ex;
-            } catch (Throwable ex) {
-                throw new java.rmi.RemoteException("Uncaugth exception", ex);
-            }
-        }
-    }
+    
     @Override
     public Boolean isImpegnoPluriennaleAttivo(UserContext param0) throws ComponentException, RemoteException {
         try {
@@ -675,4 +678,228 @@ public class TransactionalConfigurazione_cnrComponentSession extends it.cnr.jada
         }
     }
 
+    @Override
+    public Boolean isVariazioneAutomaticaSpesa(UserContext userContext) throws ComponentException, RemoteException {
+        try {
+            return (java.lang.Boolean) invoke("isVariazioneAutomaticaSpesa", new Object[]{
+                    userContext});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    @Override
+    public Boolean isAttachRestContrStoredFromSigla(UserContext userContext) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isAttachRestContrStoredFromSigla", new Object[]{
+                    userContext});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    public Integer getCdTerzoDiversiStipendi(UserContext userContext)  throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (Integer) invoke("getCdTerzoDiversiStipendi", new Object[]{
+                    userContext});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    public Integer getCdTerzoDiversiCollaboratori(UserContext userContext)  throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (Integer) invoke("getCdTerzoDiversiCollaboratori", new Object[]{
+                    userContext});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    public Timestamp getDataFineValiditaCaricoFamiliare(UserContext userContext, String tiPersona)  throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (Timestamp) invoke("getDataFineValiditaCaricoFamiliare", new Object[]{
+                    userContext, tiPersona});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    @Override
+    public Boolean isGestioneEtichettaInventarioBeneAttivo(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isGestioneEtichettaInventarioBeneAttivo", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    @Override
+    public Boolean isGestioneBeneDismessoInventarioAttivo(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isGestioneBeneDismessoInventarioAttivo", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    @Override
+    public Boolean isPagamentoEsteroISSAttivo(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isPagamentoEsteroISSAttivo", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    public String getContoCorrenteEnte(UserContext userContext, Integer esercizio)  throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (String) invoke("getContoCorrenteEnte", new Object[]{
+                    userContext,
+                    esercizio});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    public String getTipoStanziamentoLiquidazioneIva(UserContext userContext)  throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            return (String) invoke("getTipoStanziamentoLiquidazioneIva", new Object[]{
+                    userContext});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    @Override
+    public TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (TipoRapportoTesoreriaEnum) invoke("getTipoRapportoTesoreria", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    @Override
+    public Boolean isGestioneStatoInizialeSospesiAttivo(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isGestioneStatoInizialeSospesiAttivo", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+
+    @Override
+    public Boolean isAttivoInventariaDocumenti(UserContext param0) throws ComponentException, RemoteException {
+        try {
+            return (Boolean) invoke("isAttivoInventariaDocumenti", new Object[]{
+                    param0});
+        } catch (RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
 }

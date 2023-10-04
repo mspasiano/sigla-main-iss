@@ -2077,5 +2077,26 @@ public class FatturaAttivaSingolaComponentSessionBean extends it.cnr.jada.ejb.CR
 	}
     }
 
+    @Override
+    public List<String> sendMailForNotificationKo(UserContext param0, Fattura_attivaBulk param1) throws ComponentException, java.rmi.RemoteException, javax.ejb.EJBException {
+        pre_component_invocation(param0, componentObj);
+        try {
+            final List<String> strings = ((FatturaAttivaSingolaComponent) componentObj).sendMailForNotificationKo(param0, param1);
+            component_invocation_succes(param0, componentObj);
+            return strings;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(param0, componentObj);
+            throw e;
+        } catch (it.cnr.jada.comp.ComponentException e) {
+            component_invocation_failure(param0, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(param0, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(param0, componentObj, e);
+        }
+
+    }
+
 
 }

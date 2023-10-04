@@ -21,11 +21,11 @@ import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.pdcep.bulk.ContoBulk;
 import it.cnr.contab.config00.pdcep.bulk.Voce_epBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
+import it.cnr.contab.docamm00.docs.bulk.TipoDocumentoEnum;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.util.OrderedHashtable;
-import it.cnr.si.spring.storage.StorageDriver;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -72,6 +72,7 @@ public class Movimento_cogeBulk extends Movimento_cogeBase {
     protected ContoBulk conto = new ContoBulk();
     protected Scrittura_partita_doppiaBulk scrittura = new Scrittura_partita_doppiaBulk();
     protected TerzoBulk terzo;
+    protected IDocumentoCogeBulk documentoCoge;
 
     public Movimento_cogeBulk() {
         super();
@@ -278,13 +279,16 @@ public class Movimento_cogeBulk extends Movimento_cogeBase {
      * @return La rappresentazione a video della partita
      */
     public String getPartita() {
-        return Arrays.asList(
-                getCd_tipo_documento(),
-                Optional.ofNullable(getEsercizio_documento()).map(String::valueOf).orElse(null),
-                Optional.ofNullable(getPg_numero_documento()).map(String::valueOf).orElse(null)
-        ).stream().filter(Objects::nonNull).collect(
-                Collectors.joining("/")
-        );
+        return Optional.ofNullable(getCd_tipo_documento())
+                .map(s -> {
+                    return Arrays.asList(
+                            TipoDocumentoEnum.fromValue(s).getLabel(),
+                            Optional.ofNullable(getEsercizio_documento()).map(String::valueOf).orElse(null),
+                            Optional.ofNullable(getPg_numero_documento()).map(String::valueOf).orElse(null)
+                    ).stream().filter(Objects::nonNull).collect(
+                            Collectors.joining("/")
+                    );
+                }).orElse(null);
     }
     /**
      * Effettua una validazione formale del contenuto dello stato dell'oggetto
@@ -323,6 +327,41 @@ public class Movimento_cogeBulk extends Movimento_cogeBase {
         return TipoRiga.DEBITO.value().equals(this.getTi_riga());
     }
 
+    public boolean isRigaTipoTesoreria() {
+        return TipoRiga.TESORERIA.value().equals(this.getTi_riga());
+    }
+
+    public boolean isRigaTipoIvaAcquisto() {
+        return TipoRiga.IVA_ACQUISTO.value().equals(this.getTi_riga());
+    }
+
+    public boolean isRigaTipoIvaAcquistoSplit() {
+        return TipoRiga.IVA_ACQUISTO_SPLIT.value().equals(this.getTi_riga());
+    }
+
+    public boolean isRigaTipoIvaVendite() {
+        return TipoRiga.IVA_VENDITE.value().equals(this.getTi_riga());
+    }
+
+    public boolean isRigaTipoIvaVenditeSplit() {
+        return TipoRiga.IVA_VENDITE_SPLIT.value().equals(this.getTi_riga());
+    }
+
+    public boolean isRigaTipoIvaOrdinaria() {
+        return this.isRigaTipoIvaAcquisto() ||
+                this.isRigaTipoIvaVendite();
+    }
+
+    public boolean isRigaTipoIvaSplit() {
+        return this.isRigaTipoIvaAcquistoSplit() ||
+                this.isRigaTipoIvaVenditeSplit();
+    }
+
+    public boolean isRigaTipoIva() {
+        return this.isRigaTipoIvaOrdinaria() ||
+                this.isRigaTipoIvaSplit();
+    }
+
     public TerzoBulk getTerzo() {
         return terzo;
     }
@@ -340,6 +379,8 @@ public class Movimento_cogeBulk extends Movimento_cogeBase {
         RICAVO("RIC", "RICAVO"),
         DEBITO("DEB", "DEBITO"),
         CREDITO("CRE", "CREDITO"),
+        ATTIVITA("ATT", "ATTIVITA'"),
+        PASSIVITA("PAS", "PASSIVITA'"),
         CESPITE("CSP", "CESPITE"),
         TESORERIA("BAN", "TESORERIA"),
         GENERICO("GEN", "GENERICO");
@@ -367,5 +408,47 @@ public class Movimento_cogeBulk extends Movimento_cogeBase {
         public String label() {
             return label;
         }
+    }
+
+    public IDocumentoCogeBulk getDocumentoCoge() {
+        return Optional.ofNullable(this.documentoCoge)
+                .orElseGet(() -> {
+                    return Optional.ofNullable(getCd_tipo_documento())
+                            .map(s -> TipoDocumentoEnum.fromValue(s))
+                            .map(tipoDocumentoEnum -> tipoDocumentoEnum.getDocumentoCogeBulk())
+                            .orElse(null);
+                });
+    }
+
+    public void setDocumentoCoge(IDocumentoCogeBulk documentoCoge) {
+        this.documentoCoge = documentoCoge;
+    }
+
+    @Override
+    public String getCd_cds_documento() {
+        return Optional.ofNullable(this.getDocumentoCoge())
+                .flatMap(documentoCogeBulk -> Optional.ofNullable(documentoCogeBulk.getCd_cds()))
+                .orElse(super.getCd_cds_documento());
+    }
+
+    @Override
+    public String getCd_uo_documento() {
+        return Optional.ofNullable(this.getDocumentoCoge())
+                .flatMap(documentoCogeBulk -> Optional.ofNullable(documentoCogeBulk.getCd_uo()))
+                .orElse(super.getCd_uo_documento());
+    }
+
+    @Override
+    public Integer getEsercizio_documento() {
+        return Optional.ofNullable(this.getDocumentoCoge())
+                .flatMap(documentoCogeBulk -> Optional.ofNullable(documentoCogeBulk.getEsercizio()))
+                .orElse(super.getEsercizio_documento());
+    }
+
+    @Override
+    public Long getPg_numero_documento() {
+        return Optional.ofNullable(this.getDocumentoCoge())
+                .flatMap(documentoCogeBulk -> Optional.ofNullable(documentoCogeBulk.getPg_doc()))
+                .orElse(super.getPg_numero_documento());
     }
 }

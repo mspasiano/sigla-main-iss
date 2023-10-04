@@ -60,9 +60,9 @@ public it.cnr.contab.fondecon00.core.bulk.Fondo_economaleBulk getFondoEconomaleC
 	return fondoEconomaleCorrente;
 }
 protected void init(it.cnr.jada.action.Config config,it.cnr.jada.action.ActionContext context) throws it.cnr.jada.action.BusinessProcessException {
-
 	super.init(config,context);
 	setStatus(SEARCH);
+	resetForSearch(context);
 }
 public boolean isDeleteButtonEnabled() {
 

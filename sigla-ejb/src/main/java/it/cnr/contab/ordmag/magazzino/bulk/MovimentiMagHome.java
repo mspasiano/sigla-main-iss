@@ -22,12 +22,17 @@
 package it.cnr.contab.ordmag.magazzino.bulk;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.List;
 
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceHome;
 import it.cnr.contab.config00.pdcfin.bulk.Voce_fBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
+import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
+import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BusyResourceException;
@@ -37,6 +42,7 @@ import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.Persistent;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 public class MovimentiMagHome extends BulkHome {
@@ -69,17 +75,21 @@ public class MovimentiMagHome extends BulkHome {
 		lottoHome.update(lotto, userContext);
 		super.insert(persistent, userContext);
 	}
-	public java.util.List recuperoMovimentiDaLotto(Persistent persistent) throws IntrospectionException,PersistencyException {
+	public java.util.List recuperoMovimentiDaLotto(UserContext userContext,Persistent persistent) throws IntrospectionException,PersistencyException {
 		MovimentiMagBulk movimentoMag = (MovimentiMagBulk)persistent;
+		setFetchPolicy("it.cnr.contab.ordmag.magazzino.comp.MovimentiMagComponent.recuperoMovimentiDaLotto");
 		SQLBuilder sql = createSQLBuilder();
 
-		sql.addClause("AND","cdCds",SQLBuilder.EQUALS, movimentoMag.getCdCdsLotto());
-		sql.addClause("AND","cdMagazzino",SQLBuilder.EQUALS, movimentoMag.getCdMagazzinoLotto());
-		sql.addClause("AND","esercizio",SQLBuilder.EQUALS, movimentoMag.getEsercizioLotto());
-		sql.addClause("AND","cdNumeratoreMag",SQLBuilder.EQUALS, movimentoMag.getCdNumeratoreLotto());
+		sql.addClause("AND","cdCdsLotto",SQLBuilder.EQUALS, movimentoMag.getCdCdsLotto());
+		sql.addClause("AND","cdMagazzinoLotto",SQLBuilder.EQUALS, movimentoMag.getCdMagazzinoLotto());
+		sql.addClause("AND","esercizioLotto",SQLBuilder.EQUALS, movimentoMag.getEsercizioLotto());
+		sql.addClause("AND","cdNumeratoreLotto",SQLBuilder.EQUALS, movimentoMag.getCdNumeratoreLotto());
 		sql.addClause("AND","stato",SQLBuilder.EQUALS, MovimentiMagBulk.STATO_INSERITO);
 		sql.addClause("AND","pgLotto",SQLBuilder.EQUALS, movimentoMag.getPgLotto());
-		return fetchAll(sql);
+
+		final List l = fetchAll(sql);
+		getHomeCache().fetchAll(userContext);
+		return l;
 
 	}
 	public java.util.List findRigheBollaDiScarico( MovimentiMagBulk movimento ) throws IntrospectionException,PersistencyException 
@@ -89,5 +99,13 @@ public class MovimentiMagHome extends BulkHome {
 		sql.addClause("AND","pgMovimento",sql.EQUALS, movimento.getPgMovimento());
 		sql.addClause("AND","stato",sql.EQUALS, MovimentiMagBulk.STATO_INSERITO);
 		return evHome.fetchAll(sql);	
+	}
+	public java.util.List findBeniInTransito( MovimentiMagBulk movimento ) throws IntrospectionException,PersistencyException
+	{
+		PersistentHome evHome = getHomeCache().getHome(Transito_beni_ordiniBulk.class);
+		SQLBuilder sql = evHome.createSQLBuilder();
+		sql.addClause("AND","id_movimenti_mag",sql.EQUALS, movimento.getPgMovimento());
+
+		return evHome.fetchAll(sql);
 	}
 }

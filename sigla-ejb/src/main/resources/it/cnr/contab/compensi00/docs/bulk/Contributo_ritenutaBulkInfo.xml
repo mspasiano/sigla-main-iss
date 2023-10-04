@@ -150,7 +150,15 @@
 		property="im_cori_sospeso"
 		formatName="it.cnr.contab.util.EuroFormat"
 		inputType="TEXT"
-		label="Ammontare Sospeso" />		
+		label="Ammontare Sospeso" />
+	<fieldProperty
+			name="fl_versamento"
+			property="fl_versamento"
+			inputType="CHECKBOX"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnFreeSearch="true"
+			label="Soggetto a versamento" />
 
 	<formFieldProperty name="cd_cds" />
 	<formFieldProperty name="cd_unita_organizzativa" />
@@ -169,7 +177,8 @@
 	<formFieldProperty name="ammontarePercepienteLordo" />
 	<formFieldProperty name="ammontareEnteLordo" />
 	<formFieldProperty name="ammontare_lordo" />
-	<formFieldProperty name="im_cori_sospeso" />	
+	<formFieldProperty name="im_cori_sospeso" />
+	<formFieldProperty name="fl_versamento" />
 
 	<columnFieldProperty name="cd_contributo_ritenuta" />
 	<columnFieldProperty name="ds_contributo_ritenuta" />
@@ -187,6 +196,7 @@
 	<columnFieldProperty name="ammontarePercepienteLordo" />
 	<columnFieldProperty name="im_cori_sospeso" />
 	<columnFieldProperty name="ammontarePercepiente" />
+	<columnFieldProperty name="fl_versamento" />
 
 	<findFieldProperty name="cd_cds" />
 	<findFieldProperty name="cd_unita_organizzativa" />
@@ -201,6 +211,7 @@
 	<findFieldProperty name="aliquotaEnte" />
 	<findFieldProperty name="aliquotaPercepiente" />
 	<findFieldProperty name="dt_ini_validita" />
-	<findFieldProperty name="im_cori_sospeso" />	
+	<findFieldProperty name="im_cori_sospeso" />
+	<findFieldProperty name="fl_versamento" />
 	
 </bulkInfo>

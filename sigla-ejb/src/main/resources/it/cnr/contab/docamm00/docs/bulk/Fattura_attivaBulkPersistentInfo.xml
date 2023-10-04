@@ -41,9 +41,10 @@
 		<columnMapping
 			columnName="CD_TERZO"
 			propertyName="cliente.cd_terzo" />
+<!--
 		<columnMapping
 				columnName="ID_PENDENZA_PAGOPA"
-				propertyName="pendenzaPagopa.id" />
+				propertyName="pendenzaPagopa.id" />-->
 		<columnMapping
 			columnName="CD_TERZO_UO_CDS"
 			propertyName="terzo_uo.cd_terzo"
@@ -67,8 +68,24 @@
 			propertyName="ti_bene_servizio"
 			converterClassName="it.cnr.contab.util.AsteriskToNullConverter"
 			nullable="true" />	
-	</defaultColumnMap>		
-
+	</defaultColumnMap>
+	<columnMap
+			name="LISTA_DOC_AMM"
+			tableName="FATTURA_ATTIVA"
+			extends="default">
+		<columnMapping
+			columnName="TIPO_SEZIONALE.DS_TIPO_SEZIONALE"
+			propertyName="tipo_sezionale.ds_tipo_sezionale"
+			sqlTypeName="VARCHAR"
+			columnSize="50"
+			nullable="true"/>
+		<columnMapping
+				columnName="DIVISA.DS_DIVISA"
+				propertyName="valuta.ds_divisa"
+				sqlTypeName="VARCHAR"
+				columnSize="50"
+				nullable="true"/>
+	</columnMap>
 	<persistentProperty
 		name="tipo_sezionale" />
 	<persistentProperty
@@ -79,8 +96,8 @@
 		name="valuta" />	
 	<persistentProperty
 		name="banca_uo" />
-	<persistentProperty
-			name="pendenzaPagopa" />
+<!--	<persistentProperty
+			name="pendenzaPagopa" />-->
 	<persistentProperty
 		name="modalita_pagamento_uo" />
 	<persistentProperty

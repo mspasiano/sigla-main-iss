@@ -34,7 +34,9 @@ import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario01.bp.CRUDScaricoInventarioBP;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.inventario01.ejb.NumerazioneTempBuonoComponentSession;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
@@ -136,11 +138,16 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
         rigaNC.setFl_iva_forzata(Boolean.FALSE);
         rigaNC.calcolaCampiDiRiga();
         java.math.BigDecimal totaleDiRiga = rigaNC.getIm_imponibile().add(rigaNC.getIm_iva());
-        Fattura_passiva_rigaIBulk rigaFP = rigaNC.getRiga_fattura_origine();
-        java.math.BigDecimal nuovoImportoDisponibile = rigaFP.getIm_diponibile_nc().subtract(totaleDiRiga.subtract(vecchioTotale));
-        if (nuovoImportoDisponibile.signum() < 0)
-            throw new it.cnr.jada.bulk.FillException("Attenzione: l'importo di storno massimo ancora disponibile è di " + rigaFP.getIm_diponibile_nc() + " EUR!");
-        rigaFP.setIm_diponibile_nc(nuovoImportoDisponibile.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+        try {
+            Optional.ofNullable(rigaNC.getRiga_fattura_origine()).ifPresent(rigaFP -> {
+                java.math.BigDecimal nuovoImportoDisponibile = rigaFP.getIm_diponibile_nc().subtract(totaleDiRiga.subtract(vecchioTotale));
+                if (nuovoImportoDisponibile.signum() < 0)
+                    throw new DetailedRuntimeException("Attenzione: l'importo di storno massimo ancora disponibile è di " + rigaFP.getIm_diponibile_nc() + " EUR!");
+                rigaFP.setIm_diponibile_nc(nuovoImportoDisponibile.setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
+            });
+        } catch (DetailedRuntimeException _ex) {
+            throw new it.cnr.jada.bulk.FillException(_ex.getMessage());
+        }
         doSelectObbligazioni(context);
         doSelectAccertamenti(context);
     }
@@ -974,14 +981,17 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
                 bp.setContoEnte(false);
                 if (coll == null || coll.isEmpty())
                     notaDiCredito.setBanca_uo(null);
-                else if (coll.size() == 1)
-                    notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                 else {
-                    if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(notaDiCredito.getModalita_pagamento_uo().getTi_pagamento()))
+                    boolean isCNR = Utility.createParametriEnteComponentSession().getParametriEnte(context.getUserContext()).isEnteCNR();
+                    if (coll.size() == 1 || !isCNR)
                         notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
                     else {
-                        notaDiCredito = fpcs.setContoEnteIn(context.getUserContext(), notaDiCredito, coll);
-                        bp.setContoEnte(true);
+                        if (!Rif_modalita_pagamentoBulk.BANCARIO.equals(notaDiCredito.getModalita_pagamento_uo().getTi_pagamento()))
+                            notaDiCredito.setBanca_uo((BancaBulk) new java.util.Vector(coll).firstElement());
+                        else {
+                            notaDiCredito = fpcs.setContoEnteIn(context.getUserContext(), notaDiCredito, coll);
+                            bp.setContoEnte(true);
+                        }
                     }
                 }
             } else {
@@ -1653,6 +1663,7 @@ public class CRUDNotaDiCreditoAction extends CRUDFatturaPassivaAction {
                         notaDiCredito.addToFattura_passiva_dettColl(rigaNdC);
                         rigaNdC.setUser(context.getUserInfo().getUserid());
                         rigaNdC.copyFrom(dettaglio);
+                        rigaNdC.setToBeCreated();
                         //rigaNdC.setModalita(((FatturaPassivaComponentSession)bp.createComponentSession()).findModalita(context.getUserContext(),rigaNdC));
                         notaDiCredito.setIvaRecuperabile(rigaNdC.getRiga_fattura_origine() != null && rigaNdC.getRiga_fattura_origine().getFattura_passiva().getDt_fattura_fornitore() == null ||
                                 (rigaNdC.getTi_istituz_commerc().compareTo(TipoIVA.ISTITUZIONALE.value()) == 0) ||

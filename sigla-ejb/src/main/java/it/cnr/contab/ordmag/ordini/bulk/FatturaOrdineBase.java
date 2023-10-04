@@ -48,17 +48,81 @@ public class FatturaOrdineBase extends FatturaOrdineKey implements Keyed {
  
 //    IM_IMPONIBILE DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal imImponibile;
- 
+
+	private java.math.BigDecimal imponibileErrato;
 //    IM_IVA DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal imIva;
  
 //    IM_IVA_D DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal imIvaD;
- 
-//    IM_IVA_ND DECIMAL(15,2) NOT NULL
+
+
+	private java.math.BigDecimal imIvaRettificata;
+	private java.math.BigDecimal imImponibileRettificato;
+
+	public String getCdCdsObblNc() {
+		return cdCdsObblNc;
+	}
+
+	public void setCdCdsObblNc(String cdCdsObblNc) {
+		this.cdCdsObblNc = cdCdsObblNc;
+	}
+
+	public Integer getEsercizioObblNc() {
+		return esercizioObblNc;
+	}
+
+	public void setEsercizioObblNc(Integer esercizioObblNc) {
+		this.esercizioObblNc = esercizioObblNc;
+	}
+
+	public Integer getEsercizioOrigObblNc() {
+		return esercizioOrigObblNc;
+	}
+
+	public void setEsercizioOrigObblNc(Integer esercizioOrigObblNc) {
+		this.esercizioOrigObblNc = esercizioOrigObblNc;
+	}
+
+	public Long getPgObbligazioneNc() {
+		return pgObbligazioneNc;
+	}
+
+	public void setPgObbligazioneNc(Long pgObbligazioneNc) {
+		this.pgObbligazioneNc = pgObbligazioneNc;
+	}
+
+	public Long getPgObbligazioneScadNc() {
+		return pgObbligazioneScadNc;
+	}
+
+	public void setPgObbligazioneScadNc(Long pgObbligazioneScadNc) {
+		this.pgObbligazioneScadNc = pgObbligazioneScadNc;
+	}
+
+	//    IM_IVA_ND DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal imIvaNd;
- 
-//    IM_TOTALE_CONSEGNA DECIMAL(15,2) NOT NULL
+
+	private java.lang.String cdCdsObblNc;
+
+	private java.lang.Integer esercizioObblNc;
+
+	private java.lang.Integer esercizioOrigObblNc;
+
+	private java.lang.Long pgObbligazioneNc;
+
+	//    PG_OBBLIGAZIONE_SCAD DECIMAL(10,0)
+	private java.lang.Long pgObbligazioneScadNc;
+
+	public BigDecimal getImponibileErrato() {
+		return imponibileErrato;
+	}
+
+	public void setImponibileErrato(BigDecimal imponibileErrato) {
+		this.imponibileErrato = imponibileErrato;
+	}
+
+	//    IM_TOTALE_CONSEGNA DECIMAL(15,2) NOT NULL
 	private java.math.BigDecimal imTotaleConsegna;
  
 //    STATO_ASS VARCHAR(3) NOT NULL
@@ -257,4 +321,19 @@ public class FatturaOrdineBase extends FatturaOrdineKey implements Keyed {
 		this.statoAss=statoAss;
 	}
 
+	public BigDecimal getImIvaRettificata() {
+		return imIvaRettificata;
+	}
+
+	public void setImIvaRettificata(BigDecimal imIvaRettificata) {
+		this.imIvaRettificata = imIvaRettificata;
+	}
+
+	public BigDecimal getImImponibileRettificato() {
+		return imImponibileRettificato;
+	}
+
+	public void setImImponibileRettificato(BigDecimal imImponibileRettificato) {
+		this.imImponibileRettificato = imImponibileRettificato;
+	}
 }

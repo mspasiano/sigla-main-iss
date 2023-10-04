@@ -24,7 +24,7 @@
 		<columnMapping
 			columnName="PG_PROGETTO"
 			propertyName="progetto.pg_progetto"
-			fetchOnly="false" />
+			fetchOnly="false" />		
 	</defaultColumnMap>
 	<columnMap
 			name="PROGETTO_RIMODULAZIONE_COMPLETO"
@@ -46,6 +46,7 @@
 				sqlTypeName="VARCHAR"
 				columnSize="30"/>
 	</columnMap>
+	
 	<persistentProperty
 		name="progetto" 
 		partOfOid= "true"/>	

@@ -17,11 +17,15 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazioneBulk;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.persistency.*;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.List;
 
 public class Fattura_passivaHome extends BulkHome {
@@ -123,5 +127,25 @@ public class Fattura_passivaHome extends BulkHome {
         sql.addSQLJoin("DIVISA.CD_DIVISA", "CAMBIO.CD_DIVISA");
 
         return sql;
+    }
+
+    public java.util.List<Fattura_passiva_rigaIBulk> findFatturaPassivaRigheList(V_doc_passivo_obbligazioneBulk docPassivo) throws PersistencyException {
+        if (TipoDocumentoEnum.fromValue(docPassivo.getCd_tipo_documento_amm()).isDocumentoAmministrativoPassivo()) {
+            PersistentHome home = getHomeCache().getHome(Fattura_passiva_rigaIBulk.class);
+            it.cnr.jada.persistency.sql.SQLBuilder sql = home.createSQLBuilder();
+            sql.addClause(FindClause.AND, "pg_documento_generico", SQLBuilder.EQUALS, docPassivo.getPg_documento_amm());
+            sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, docPassivo.getCd_cds());
+            sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, docPassivo.getEsercizio());
+            sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, docPassivo.getCd_unita_organizzativa());
+            sql.addClause(FindClause.AND, "cd_tipo_documento_amm", SQLBuilder.EQUALS, docPassivo.getCd_tipo_documento_amm());
+            sql.addClause(FindClause.AND, "cd_cds_obbligazione", SQLBuilder.EQUALS, docPassivo.getCd_cds_obbligazione());
+            sql.addClause(FindClause.AND, "esercizio_obbligazione", SQLBuilder.EQUALS, docPassivo.getEsercizio_obbligazione());
+            sql.addClause(FindClause.AND, "esercizio_ori_obbligazione", SQLBuilder.EQUALS, docPassivo.getEsercizio_ori_obbligazione());
+            sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.EQUALS, docPassivo.getPg_obbligazione());
+            sql.addClause(FindClause.AND, "pg_obbligazione_scadenzario()", SQLBuilder.EQUALS, docPassivo.getPg_obbligazione_scadenzario());
+
+            return home.fetchAll(sql);
+        }
+        return Collections.EMPTY_LIST;
     }
 }

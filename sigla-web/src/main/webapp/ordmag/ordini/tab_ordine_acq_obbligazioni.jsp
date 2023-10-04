@@ -16,13 +16,13 @@ OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel(); %>
 		<table width="100%">
 			<tr>
 			  	<td colspan="3">
-				  	<span class="FormLabel" style="color:black">Impegni</span>
+				  	<span class="FormLabel text-info h4" style="color:black">Impegni</span>
 			  	</td>
 			</tr>
 			<tr>
 			  	<td colspan="3">
 					<%	boolean canAdd = true;
-						bp.getObbligazioniController().writeHTMLTable(pageContext,"default",canAdd,false,true,"100%","100px"); %>
+						bp.getObbligazioniController().writeHTMLTable(pageContext,"obbligazione_ordine_dettaglio",canAdd,false,true,"100%","auto"); %>
 			  	</td>
 			</tr>
 			<tr>
@@ -41,15 +41,15 @@ OrdineAcqBulk ordine = (OrdineAcqBulk)bp.getModel(); %>
 			  	<td>
 		   			<%	Obbligazione_scadenzarioBulk obbl = (Obbligazione_scadenzarioBulk)bp.getObbligazioniController().getModel();
 		   				if (obbl == null) { %>
-						  	<span class="FormLabel" style="color:black">Dettagli ordine</span>
+						  	<span class="FormLabel text-info h4" style="color:black">Dettagli ordine</span>
 		   			<%	} else { %>
-						  	<span class="FormLabel" style="color:black">Dettagli ordine su "<%=obbl.getDs_scadenza()%>"</span>
+						  	<span class="FormLabel text-info h4" style="color:black">Dettagli ordine su "<%=obbl.getDs_scadenza()%>"</span>
 		   			<%	} %>
 			  	</td>
 			</tr>
 			<tr>
 			  	<td>
-					<% bp.getDettaglioObbligazioneController().writeHTMLTable(pageContext,"consegneSet",true,false,true,"100%","200px"); %>
+					<% bp.getDettaglioObbligazioneController().writeHTMLTable(pageContext,"consegneSet",true,false,true,"100%","auto"); %>
 			  	</td>
 			</tr>
    		</table>

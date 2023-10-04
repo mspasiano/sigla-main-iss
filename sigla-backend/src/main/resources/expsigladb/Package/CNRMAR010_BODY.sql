@@ -1821,58 +1821,63 @@ Where  Not Exists
                 V.TI_GESTIONE = TAB_UNION.TI_GESTIONE And
                 V.CD_VOCE = TAB_UNION.CD_VOCE)
                 ) Loop
+BEGIN
+    If nvl(recParametriCnr.fl_nuovo_pdg,'N')='Y' Then
+        Insert INTO VOCE_F_SALDI_CDR_LINEA
+        (ESERCIZIO, ESERCIZIO_RES, CD_CENTRO_RESPONSABILITA, CD_LINEA_ATTIVITA, TI_APPARTENENZA, TI_GESTIONE, CD_VOCE, IM_STANZ_INIZIALE_A1,
+         IM_STANZ_INIZIALE_A2, IM_STANZ_INIZIALE_A3, VARIAZIONI_PIU, VARIAZIONI_MENO, IM_STANZ_INIZIALE_CASSA, VARIAZIONI_PIU_CASSA,
+         VARIAZIONI_MENO_CASSA, IM_OBBL_ACC_COMP,IM_STANZ_RES_IMPROPRIO, VAR_PIU_STANZ_RES_IMP, VAR_MENO_STANZ_RES_IMP, IM_OBBL_RES_IMP,
+         VAR_PIU_OBBL_RES_IMP, VAR_MENO_OBBL_RES_IMP, IM_OBBL_RES_PRO, VAR_PIU_OBBL_RES_PRO, VAR_MENO_OBBL_RES_PRO,
+         IM_MANDATI_REVERSALI_PRO, IM_MANDATI_REVERSALI_IMP, IM_PAGAMENTI_INCASSI, DACR, UTCR, DUVA, UTUV, PG_VER_REC, CD_ELEMENTO_VOCE)
+    Values
+    (saldi_mancanti.ESERCIZIO, saldi_mancanti.ESERCIZIO_RES, saldi_mancanti.CDR, saldi_mancanti.CD_LINEA_ATTIVITA,
+     saldi_mancanti.TI_APPARTENENZA, saldi_mancanti.TI_GESTIONE, saldi_mancanti.CD_VOCE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     Sysdate, 'MARTELLO06', Sysdate, 'MARTELLO06', 1, saldi_mancanti.cd_voce);--dal 2016 uguale a cd_elemento_voce
+    else
+        Insert INTO VOCE_F_SALDI_CDR_LINEA
+    (ESERCIZIO, ESERCIZIO_RES, CD_CENTRO_RESPONSABILITA, CD_LINEA_ATTIVITA, TI_APPARTENENZA, TI_GESTIONE, CD_VOCE, IM_STANZ_INIZIALE_A1,
+     IM_STANZ_INIZIALE_A2, IM_STANZ_INIZIALE_A3, VARIAZIONI_PIU, VARIAZIONI_MENO, IM_STANZ_INIZIALE_CASSA, VARIAZIONI_PIU_CASSA,
+     VARIAZIONI_MENO_CASSA, IM_OBBL_ACC_COMP,IM_STANZ_RES_IMPROPRIO, VAR_PIU_STANZ_RES_IMP, VAR_MENO_STANZ_RES_IMP, IM_OBBL_RES_IMP,
+     VAR_PIU_OBBL_RES_IMP, VAR_MENO_OBBL_RES_IMP, IM_OBBL_RES_PRO, VAR_PIU_OBBL_RES_PRO, VAR_MENO_OBBL_RES_PRO,
+     IM_MANDATI_REVERSALI_PRO, IM_MANDATI_REVERSALI_IMP, IM_PAGAMENTI_INCASSI, DACR, UTCR, DUVA, UTUV, PG_VER_REC, CD_ELEMENTO_VOCE)
+    Values
+    (saldi_mancanti.ESERCIZIO, saldi_mancanti.ESERCIZIO_RES, saldi_mancanti.CDR, saldi_mancanti.CD_LINEA_ATTIVITA,
+     saldi_mancanti.TI_APPARTENENZA, saldi_mancanti.TI_GESTIONE, saldi_mancanti.CD_VOCE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+     Sysdate, 'MARTELLO06', Sysdate, 'MARTELLO06', 1, (Select cd_elemento_voce
+                                                       From   VOCE_F
+                                                       Where  VOCE_F.ESERCIZIO = saldi_mancanti.ESERCIZIO
+                                                          And VOCE_F.ti_appartenenza = saldi_mancanti.ti_appartenenza
+                                                          And VOCE_F.ti_gestione = saldi_mancanti.ti_gestione
+                                                        And VOCE_F.cd_voce = saldi_mancanti.cd_voce));
+    End If;
 
-If nvl(recParametriCnr.fl_nuovo_pdg,'N')='Y' Then
-	Insert INTO VOCE_F_SALDI_CDR_LINEA
-	(ESERCIZIO, ESERCIZIO_RES, CD_CENTRO_RESPONSABILITA, CD_LINEA_ATTIVITA, TI_APPARTENENZA, TI_GESTIONE, CD_VOCE, IM_STANZ_INIZIALE_A1,
-	 IM_STANZ_INIZIALE_A2, IM_STANZ_INIZIALE_A3, VARIAZIONI_PIU, VARIAZIONI_MENO, IM_STANZ_INIZIALE_CASSA, VARIAZIONI_PIU_CASSA,
-	 VARIAZIONI_MENO_CASSA, IM_OBBL_ACC_COMP,IM_STANZ_RES_IMPROPRIO, VAR_PIU_STANZ_RES_IMP, VAR_MENO_STANZ_RES_IMP, IM_OBBL_RES_IMP,
-	 VAR_PIU_OBBL_RES_IMP, VAR_MENO_OBBL_RES_IMP, IM_OBBL_RES_PRO, VAR_PIU_OBBL_RES_PRO, VAR_MENO_OBBL_RES_PRO,
-	 IM_MANDATI_REVERSALI_PRO, IM_MANDATI_REVERSALI_IMP, IM_PAGAMENTI_INCASSI, DACR, UTCR, DUVA, UTUV, PG_VER_REC, CD_ELEMENTO_VOCE)
-Values
-(saldi_mancanti.ESERCIZIO, saldi_mancanti.ESERCIZIO_RES, saldi_mancanti.CDR, saldi_mancanti.CD_LINEA_ATTIVITA,
- saldi_mancanti.TI_APPARTENENZA, saldi_mancanti.TI_GESTIONE, saldi_mancanti.CD_VOCE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- Sysdate, 'MARTELLO06', Sysdate, 'MARTELLO06', 1, saldi_mancanti.cd_voce);--dal 2016 uguale a cd_elemento_voce
-else
-	Insert INTO VOCE_F_SALDI_CDR_LINEA
-(ESERCIZIO, ESERCIZIO_RES, CD_CENTRO_RESPONSABILITA, CD_LINEA_ATTIVITA, TI_APPARTENENZA, TI_GESTIONE, CD_VOCE, IM_STANZ_INIZIALE_A1,
- IM_STANZ_INIZIALE_A2, IM_STANZ_INIZIALE_A3, VARIAZIONI_PIU, VARIAZIONI_MENO, IM_STANZ_INIZIALE_CASSA, VARIAZIONI_PIU_CASSA,
- VARIAZIONI_MENO_CASSA, IM_OBBL_ACC_COMP,IM_STANZ_RES_IMPROPRIO, VAR_PIU_STANZ_RES_IMP, VAR_MENO_STANZ_RES_IMP, IM_OBBL_RES_IMP,
- VAR_PIU_OBBL_RES_IMP, VAR_MENO_OBBL_RES_IMP, IM_OBBL_RES_PRO, VAR_PIU_OBBL_RES_PRO, VAR_MENO_OBBL_RES_PRO,
- IM_MANDATI_REVERSALI_PRO, IM_MANDATI_REVERSALI_IMP, IM_PAGAMENTI_INCASSI, DACR, UTCR, DUVA, UTUV, PG_VER_REC, CD_ELEMENTO_VOCE)
-Values
-(saldi_mancanti.ESERCIZIO, saldi_mancanti.ESERCIZIO_RES, saldi_mancanti.CDR, saldi_mancanti.CD_LINEA_ATTIVITA,
- saldi_mancanti.TI_APPARTENENZA, saldi_mancanti.TI_GESTIONE, saldi_mancanti.CD_VOCE, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
- Sysdate, 'MARTELLO06', Sysdate, 'MARTELLO06', 1, (Select cd_elemento_voce
-                                                   From   VOCE_F
-                                                   Where  VOCE_F.ESERCIZIO = saldi_mancanti.ESERCIZIO
-                                                      And VOCE_F.ti_appartenenza = saldi_mancanti.ti_appartenenza
-                                                      And VOCE_F.ti_gestione = saldi_mancanti.ti_gestione
-                                                    And VOCE_F.cd_voce = saldi_mancanti.cd_voce));
-End If;
+    If saldi_mancanti.tipo = 'GS' Then
+         MOTIVO := 'Gestionale Spese';
+    Elsif saldi_mancanti.tipo = 'GE' Then
+         MOTIVO := 'Gestionale Entrate';
+    Elsif saldi_mancanti.tipo = 'OB' Then
+         MOTIVO := 'Obbligazioni Comp/Res';
+    Elsif saldi_mancanti.tipo = 'AC' Then
+         MOTIVO := 'Accertamenti Comp/Res';
+    Elsif saldi_mancanti.tipo = 'RR' Then
+         MOTIVO := 'Ricostruzione Residui per CDS Ribaltati';
+    Elsif saldi_mancanti.tipo = 'VR' Then
+         MOTIVO := 'Variazioni allo Stanziamento Residuo';
+    Elsif saldi_mancanti.tipo = 'VC' Then
+         MOTIVO := 'Variazioni a Competenza';
+    End If;
 
-If saldi_mancanti.tipo = 'GS' Then
-     MOTIVO := 'Gestionale Spese';
-Elsif saldi_mancanti.tipo = 'GE' Then
-     MOTIVO := 'Gestionale Entrate';
-Elsif saldi_mancanti.tipo = 'OB' Then
-     MOTIVO := 'Obbligazioni Comp/Res';
-Elsif saldi_mancanti.tipo = 'AC' Then
-     MOTIVO := 'Accertamenti Comp/Res';
-Elsif saldi_mancanti.tipo = 'RR' Then
-     MOTIVO := 'Ricostruzione Residui per CDS Ribaltati';
-Elsif saldi_mancanti.tipo = 'VR' Then
-     MOTIVO := 'Variazioni allo Stanziamento Residuo';
-Elsif saldi_mancanti.tipo = 'VC' Then
-     MOTIVO := 'Variazioni a Competenza';
-End If;
-
-IBMUTL200.logInf(apg_exec,'Inserito Saldo Mancante per assenza '||MOTIVO||
-                         ' Es:'||saldi_mancanti.ESERCIZIO||' Es. Res.:'||saldi_mancanti.ESERCIZIO_RES||
-                         ' CDR: '||saldi_mancanti.CDR||' Linea: '||saldi_mancanti.CD_LINEA_ATTIVITA||
-                         ' App: '||saldi_mancanti.TI_APPARTENENZA||' Gest: '||saldi_mancanti.TI_GESTIONE||
-                         ' Voce '||saldi_mancanti.CD_VOCE, ' ','SOC');
-
+    IBMUTL200.logInf(apg_exec,'Inserito Saldo Mancante per assenza '||MOTIVO||
+                             ' Es:'||saldi_mancanti.ESERCIZIO||' Es. Res.:'||saldi_mancanti.ESERCIZIO_RES||
+                             ' CDR: '||saldi_mancanti.CDR||' Linea: '||saldi_mancanti.CD_LINEA_ATTIVITA||
+                             ' App: '||saldi_mancanti.TI_APPARTENENZA||' Gest: '||saldi_mancanti.TI_GESTIONE||
+                             ' Voce '||saldi_mancanti.CD_VOCE, ' ','SOC');
+EXCEPTION
+	WHEN DUP_VAL_ON_INDEX THEN
+		--Questa eccezione può essere sollevata quando la mancanza di una combinazione può dipendere da 2 oggetti contemporaneamente.
+		--Ad esempio una GAE che è presente contemporaneamente su OBB e VAR
+		NULL;
+END;
 End Loop;
 
 End;

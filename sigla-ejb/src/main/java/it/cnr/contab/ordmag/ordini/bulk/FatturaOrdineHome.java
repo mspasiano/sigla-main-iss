@@ -21,13 +21,27 @@
  */
 package it.cnr.contab.ordmag.ordini.bulk;
 import java.sql.Connection;
+import java.util.List;
+
 import it.cnr.jada.bulk.BulkHome;
+import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
+import it.cnr.jada.persistency.sql.SQLBuilder;
+
 public class FatturaOrdineHome extends BulkHome {
 	public FatturaOrdineHome(Connection conn) {
 		super(FatturaOrdineBulk.class, conn);
 	}
 	public FatturaOrdineHome(Connection conn, PersistentCache persistentCache) {
 		super(FatturaOrdineBulk.class, conn, persistentCache);
+	}
+
+	public List<FatturaOrdineBulk> findByRigaConsegna(OrdineAcqConsegnaBulk ordineAcqConsegnaBulk) throws PersistencyException {
+		final PersistentHome persistentHome = getHomeCache().getHome(FatturaOrdineBulk.class, "FATTURA_P");
+		final SQLBuilder sqlBuilder = persistentHome.createSQLBuilder();
+		sqlBuilder.addClause(FindClause.AND, "ordineAcqConsegna", SQLBuilder.EQUALS, ordineAcqConsegnaBulk);
+		return fetchAll(sqlBuilder);
 	}
 }

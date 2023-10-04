@@ -21,7 +21,15 @@
  */
 package it.cnr.contab.ordmag.ordini.bulk;
 import java.sql.Connection;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperBulk;
 import it.cnr.contab.ordmag.anag00.AbilUtenteUopOperHome;
 import it.cnr.contab.ordmag.anag00.NumerazioneOrdBulk;
@@ -31,12 +39,18 @@ import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdHome;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
-import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.Persistent;
-import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.bulk.BulkList;
+import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.CRUDException;
+import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 public class OrdineAcqHome extends BulkHome {
 	public OrdineAcqHome(Connection conn) {
@@ -49,20 +63,24 @@ public class OrdineAcqHome extends BulkHome {
 			UnitaOperativaOrdHome unitaOperativaHome, UnitaOperativaOrdBulk unitaOperativaBulk, 
 			CompoundFindClause compoundfindclause) throws PersistencyException{
 		SQLBuilder sql = unitaOperativaHome.selectByClause(userContext, compoundfindclause);
-		AbilUtenteUopOperHome home = (AbilUtenteUopOperHome) getHomeCache().getHome(AbilUtenteUopOperBulk.class);
-		SQLBuilder sqlExists = home.createSQLBuilder();
-		sqlExists.addSQLJoin("UNITA_OPERATIVA_ORD.CD_UNITA_OPERATIVA", "ABIL_UTENTE_UOP_OPER.CD_UNITA_OPERATIVA");
-		if (ordine.getIsForFirma()){
-			sqlExists.addSQLClause("AND", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_FIRMA_ORDINE);
-		} else {
-			sqlExists.openParenthesis("AND");
-			sqlExists.addSQLClause("OR", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
-			sqlExists.addSQLClause("OR", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_APPROVAZIONE_ORDINE);
-			sqlExists.closeParenthesis();
-		}
-		sqlExists.addSQLClause("AND", "ABIL_UTENTE_UOP_OPER.CD_UTENTE", SQLBuilder.EQUALS, userContext.getUser());
+		UtenteBulk utente = (UtenteBulk) (getHomeCache().getHome(UtenteBulk.class).findByPrimaryKey(new UtenteBulk(CNRUserContext.getUser(userContext))));
 
-		sql.addSQLExistsClause("AND", sqlExists);
+		if (!utente.isSupervisore()) {
+			AbilUtenteUopOperHome home = (AbilUtenteUopOperHome) getHomeCache().getHome(AbilUtenteUopOperBulk.class);
+			SQLBuilder sqlExists = home.createSQLBuilder();
+			sqlExists.addSQLJoin("UNITA_OPERATIVA_ORD.CD_UNITA_OPERATIVA", "ABIL_UTENTE_UOP_OPER.CD_UNITA_OPERATIVA");
+			if (ordine.getIsForFirma()) {
+				sqlExists.addSQLClause("AND", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_FIRMA_ORDINE);
+			} else {
+				sqlExists.openParenthesis("AND");
+				sqlExists.addSQLClause("OR", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
+				sqlExists.addSQLClause("OR", "ABIL_UTENTE_UOP_OPER.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_APPROVAZIONE_ORDINE);
+				sqlExists.closeParenthesis();
+			}
+			sqlExists.addSQLClause("AND", "ABIL_UTENTE_UOP_OPER.CD_UTENTE", SQLBuilder.EQUALS, userContext.getUser());
+
+			sql.addSQLExistsClause("AND", sqlExists);
+		}
 
 		return sql;
 	}
@@ -84,12 +102,25 @@ public class OrdineAcqHome extends BulkHome {
 
 	public SQLBuilder selectNumerazioneOrdByClause(UserContext userContext, OrdineAcqBulk ordine, 
 			NumerazioneOrdHome numerazioneHome, NumerazioneOrdBulk numerazioneBulk, 
-			CompoundFindClause compoundfindclause) throws PersistencyException{
+			CompoundFindClause compoundfindclause) throws PersistencyException,ApplicationException{
 		if (ordine == null || ordine.getCdUopOrdine() == null){
-			throw new PersistencyException("Selezionare prima l'unità operativa");
+			throw new ApplicationException("Selezionare prima l'unità operativa");
 		}
 		SQLBuilder sql = numerazioneHome.selectByClause(userContext, compoundfindclause);
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, ordine.getCdUopOrdine());
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
+		return sql;
+	}
+	public SQLBuilder selectNumerazioneOrdByClause(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametriSelezioneOrdiniAcqBulk,
+												   NumerazioneOrdHome numerazioneHome, NumerazioneOrdBulk numerazioneBulk,
+												   CompoundFindClause compoundfindclause) throws PersistencyException,ApplicationException{
+		SQLBuilder sql = numerazioneHome.selectByClause(userContext, compoundfindclause);
+		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS,
+				Optional.ofNullable(parametriSelezioneOrdiniAcqBulk.getUnitaOperativaOrdine())
+						.map(unitaOperativaOrdBulk -> unitaOperativaOrdBulk.getCdUnitaOperativa())
+						.orElse(null)
+		);
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.ESERCIZIO", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
 		sql.addSQLClause("AND", "NUMERAZIONE_ORD.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, TipoOperazioneOrdBulk.OPERAZIONE_ORDINE);
 		return sql;
@@ -105,5 +136,51 @@ public class OrdineAcqHome extends BulkHome {
 	public void delete(Persistent persistent, UserContext userContext) throws PersistencyException {
 		((OrdineAcqBulk)persistent).setStato(OrdineAcqBulk.STATO_ANNULLATO);
 		 super.update(persistent, userContext);
+	}
+
+	public Collection findModalita(UserContext userContext, OrdineAcqBulk ordineAcqBulk) throws PersistencyException {
+		try {
+			return Optional.ofNullable(ordineAcqBulk)
+					.flatMap(ordineAcqBulk1 -> Optional.ofNullable(ordineAcqBulk1.getFornitore()))
+					.map(terzoBulk -> {
+						try {
+							TerzoHome terzoHome = (TerzoHome) getHomeCache().getHome(TerzoBulk.class);
+							return terzoHome.findRif_modalita_pagamento(terzoBulk);
+						} catch (PersistencyException | IntrospectionException e) {
+							throw new DetailedRuntimeException(e);
+						}
+					}).orElse(Collections.emptyList());
+		} catch (DetailedRuntimeException ex) {
+			throw new PersistencyException(ex);
+		}
+	}
+
+	public List<OrdineAcqRigaBulk> findOrdineRigheList(OrdineAcqBulk ordine) throws PersistencyException {
+		PersistentHome rigaHome = getHomeCache().getHome(OrdineAcqRigaBulk.class);
+		SQLBuilder sql = rigaHome.createSQLBuilder();
+		sql.addClause(FindClause.AND, "numero", SQLBuilder.EQUALS, ordine.getNumero());
+		sql.addClause(FindClause.AND, "cdCds", SQLBuilder.EQUALS, ordine.getCdCds());
+		sql.addClause(FindClause.AND, "cdUnitaOperativa", SQLBuilder.EQUALS, ordine.getCdUnitaOperativa());
+		sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, ordine.getEsercizio());
+		sql.addClause(FindClause.AND, "cdNumeratore", SQLBuilder.EQUALS, ordine.getCdNumeratore());
+		sql.addOrderBy("cd_cds");
+		sql.addOrderBy("cd_unita_operativa");
+		sql.addOrderBy("esercizio");
+		sql.addOrderBy("cd_numeratore");
+		sql.addOrderBy("numero");
+		sql.addOrderBy("riga");
+		return rigaHome.fetchAll(sql);
+	}
+
+	public OrdineAcqBulk initializeBulkForEdit(OrdineAcqBulk ordine) throws PersistencyException {
+		ordine = (OrdineAcqBulk)this.findByPrimaryKey(ordine);
+		if (ordine == null)
+			throw new ObjectNotFoundException("Risorsa non pi\371 valida: \350 stata cancellata dall'ultimo caricamento.", null, ordine);
+
+		ordine.setRigheOrdineColl(new BulkList(this.findOrdineRigheList(ordine)));
+		OrdineAcqRigaHome rigaHome = (OrdineAcqRigaHome) getHomeCache().getHome(OrdineAcqRigaBulk.class);
+		for (OrdineAcqRigaBulk rigaOrdine : ordine.getRigheOrdineColl())
+			rigaOrdine.setRigheConsegnaColl(new BulkList(rigaHome.findOrdineRigheConsegnaList(rigaOrdine)));
+		return ordine;
 	}
 }

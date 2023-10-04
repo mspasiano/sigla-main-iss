@@ -17,11 +17,11 @@ CRUDOrdineAcqBP bp = (CRUDOrdineAcqBP)BusinessProcess.getBusinessProcess(request
 
 <script language="JavaScript">
 function doVisualizzaDocumentiCollegati() {
-  doPrint('genericdownload/DocumentiCollegati/<%=bp.getNomeAllegatoDettaglio()%>?methodName=scaricaDocumentoDettaglioCollegato&it.cnr.jada.action.BusinessProcess=<%=bp.getPath()%>');
+  doPrint('<%=JSPUtils.getAppRoot(request)%>genericdownload/DocumentiCollegati/<%=bp.getNomeAllegatoDettaglio()%>?methodName=scaricaDocumentoDettaglioCollegato&it.cnr.jada.action.BusinessProcess=<%=bp.getPath()%>');
 }
 </script>
 
-<%  bp.getDettaglioAllegatiController().writeHTMLTable(pageContext,"allegatiOrdineRiga",true,false,true,"100%","150px"); %>  
+<%  bp.getDettaglioAllegatiController().writeHTMLTable(pageContext,"default",true,false,true,"100%","30vh"); %>
 <div class="Group">
   <table>
 	<tr>

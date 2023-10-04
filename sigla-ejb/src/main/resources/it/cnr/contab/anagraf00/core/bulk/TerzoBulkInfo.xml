@@ -163,7 +163,6 @@
 	<fieldProperty
 		name="codiceUnivocoUfficioIpa"
 		property="codiceUnivocoUfficioIpa"
-		readonlyPropertyOnEdit="notGestoreIstat"
 		label="Codice Univoco Ufficio IPA"
 		inputType="TEXT" />
 	<fieldProperty
@@ -174,13 +173,11 @@
 	<fieldProperty
 		name="codiceUnivocoPcc"
 		property="codiceUnivocoPcc"
-		readonlyPropertyOnEdit="notGestoreIstat"
 		label="Codice Pcc"
 		inputType="TEXT" />	
 	<fieldProperty
 		name="denominazionePcc"
 		property="denominazionePcc"
-		readonlyPropertyOnEdit="notGestoreIstat"
 		label="Denominazione Pcc"
 		cols="60"
 		rows="2"
@@ -292,6 +289,27 @@
 		enabledOnFreeSearch="true"
 		/>
 	<fieldProperty
+		name="cognome_anagrafico"
+		property="anagrafico.cognome"
+		label="Cognome"
+		inputType="TEXT"
+		enabledOnEdit="false"
+		enabledOnInsert="false"
+		enabledOnSearch="true"
+		enabledOnFreeSearch="true"/>
+	<fieldProperty
+		name="nome_anagrafico"
+		property="anagrafico.nome"
+		label="Nome"
+		inputType="TEXT"
+		enabledOnEdit="false"
+		enabledOnInsert="false"
+		enabledOnSearch="true"
+		enabledOnFreeSearch="true"/>
+
+
+
+	<fieldProperty
 		name="italianoEstero"
 		property="anagrafico.ti_italiano_estero_anag"
 		label="Italiano/Estero"
@@ -304,6 +322,15 @@
 			name="cd_terzo" />
 		<formFieldProperty
 			name="denominazione_sede"
+			inputSize="30" />
+	</form>
+
+	<form
+		name="searchtoolByAnagrafico" >
+		<formFieldProperty
+			name="cd_terzo" />
+		<formFieldProperty
+			name="descrizioneAnagrafica"
 			inputSize="30" />
 	</form>
 
@@ -470,6 +497,12 @@
 	<findFieldProperty
 		name="partita_iva_anagrafico"
 		enabledOnFreeSearch="true" />
+	<findFieldProperty
+			name="cognome_anagrafico"
+			enabledOnFreeSearch="true" />
+	<findFieldProperty
+			name="nome_anagrafico"
+			enabledOnFreeSearch="true" />
 	<freeSearchSet
 		name="default">
 		<findFieldProperty
@@ -481,6 +514,10 @@
 			name="codice_fiscale_anagrafico"/>
 		<findFieldProperty
 			name="partita_iva_anagrafico"/>
+		<findFieldProperty
+			name="cognome_anagrafico"/>
+		<findFieldProperty
+			name="nome_anagrafico"/>
 		<findFieldProperty
 			name="denominazione_sede" />
 		<findFieldProperty
@@ -552,6 +589,48 @@
 		<findFieldProperty
 			name="partita_iva_anagrafico" />
 	</freeSearchSet>
+	<columnSet name="gesVisTerzo">
+		<columnFieldProperty
+				name="cd_terzo"
+				label="Codice" />
+		<columnFieldProperty
+				name="cd_anag"
+				label="Anagrafica" />
+		<columnFieldProperty
+				name="denominazione_sede"/>
+		<columnFieldProperty
+				name="codice_fiscale_anagrafico"/>
+		<columnFieldProperty
+				name="partita_iva_anagrafico"/>
+		<columnFieldProperty
+				name="dt_fine_rapporto"
+				label="Fine rapp." />
+		<columnFieldProperty
+				name="descrizioneAnagrafica" />
+        <columnFieldProperty
+            name="via_sede" />
+        <columnFieldProperty
+            name="comune_sede" />
+		<columnFieldProperty
+				name="codiceUnivocoUfficioIpa"
+				label="Codice IPA" />
+		<columnFieldProperty
+				name="codiceDestinatarioFatt"
+				textTruncate="true"
+				headerStyle="max-width: 13ch"
+				label="Codice Dest. Fatt. Elettr." />
+		<columnFieldProperty
+				name="codiceUnivocoPcc" />
+		<columnFieldProperty
+				name="denominazionePcc"
+				textTruncate="true"
+				headerStyle="max-width: 13ch" />
+		<columnFieldProperty
+				name="cd_precedente"
+				textTruncate="true"
+				headerStyle="max-width: 13ch"/>
+
+	</columnSet>
 
 	<columnFieldProperty
 		name="cd_terzo"
@@ -570,10 +649,12 @@
 		label="Fine rapp." />
 	<columnFieldProperty
 		name="descrizioneAnagrafica" />
+	<!--
 	<columnFieldProperty
 		name="via_sede" />
 	<columnFieldProperty
 		name="comune_sede" />
+	-->
 	<columnFieldProperty
 		name="codiceUnivocoUfficioIpa"
 		label="Codice IPA" />

@@ -17,6 +17,10 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
+
 /**
  * Insert the type's description here.
  * Creation date: (12/13/2001 4:02:04 PM)
@@ -88,7 +92,17 @@ public interface IDocumentoAmministrativoRigaBulk {
 
 	java.lang.Integer getCd_terzo();
 
+	TerzoBulk getTerzo();
+
 	java.sql.Timestamp getDt_da_competenza_coge();
 
 	java.sql.Timestamp getDt_a_competenza_coge();
+
+	BancaBulk getBanca();
+
+	void setBanca(BancaBulk bancaBulk);
+
+	Rif_modalita_pagamentoBulk getModalita_pagamento();
+
+	void setModalita_pagamento(Rif_modalita_pagamentoBulk modalita_pagamento);
 }

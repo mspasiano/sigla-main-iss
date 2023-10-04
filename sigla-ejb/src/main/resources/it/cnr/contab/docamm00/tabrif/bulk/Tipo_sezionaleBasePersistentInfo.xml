@@ -153,7 +153,7 @@
 			sqlTypeName="CHAR"
 			columnSize="1"
 			nullable="false"
-			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />			
+			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="ds_tipo_sezionale" />
@@ -196,5 +196,5 @@
 	<persistentProperty
 		name="fl_split_payment" />
 	<persistentProperty
-		name="fl_reg_tardiva" />	
+		name="fl_reg_tardiva" />
 </SQLPersistentInfo>

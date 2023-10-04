@@ -25,6 +25,7 @@ import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.core.bulk.V_persona_fisicaBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_termini_pagamentoBulk;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.config00.bulk.CigBulk;
@@ -43,6 +44,8 @@ import it.cnr.contab.ordmag.anag00.NotaPrecodificataBulk;
 import it.cnr.contab.ordmag.anag00.NumerazioneOrdBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.richieste.bulk.VRichiestaPerOrdiniBulk;
+import it.cnr.contab.util.ICancellatoLogicamente;
+import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
 import it.cnr.jada.action.ActionContext;
@@ -50,13 +53,21 @@ import it.cnr.jada.bulk.*;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.StrServ;
 import it.cnr.jada.util.action.CRUDBP;
+import it.cnr.jada.util.ejb.EJBCommonServices;
+import it.cnr.si.spring.storage.annotation.StoragePolicy;
+import it.cnr.si.spring.storage.annotation.StorageProperty;
+import it.siopeplus.StMotivoEsclusioneCigSiope;
+import org.apache.commons.lang.StringUtils;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class OrdineAcqBulk extends OrdineAcqBase
         implements IDocumentoAmministrativoBulk,
+        ICancellatoLogicamente,
         Voidable,
         IDefferUpdateSaldi,
         AllegatoParentBulk {
@@ -76,6 +87,14 @@ public class OrdineAcqBulk extends OrdineAcqBase
         STATO.put(STATO_ANNULLATO, "Annullato");
         STATO.put(STATO_DEFINITIVO, "Definitivo");
     }
+    public final static Map<String,String> motivoEsclusioneCigSIOPEKeys = Arrays.asList(StMotivoEsclusioneCigSiope.values())
+            .stream()
+            .collect(Collectors.toMap(
+                    StMotivoEsclusioneCigSiope::name,
+                    StMotivoEsclusioneCigSiope::value,
+                    (oldValue, newValue) -> oldValue,
+                    Hashtable::new
+            ));
 
     protected BulkList<OrdineAcqRigaBulk> righeOrdineColl = new BulkList<OrdineAcqRigaBulk>();
     protected BulkList listaRichiesteTrasformateInOrdine = new BulkList();
@@ -91,7 +110,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     protected BulkList richiesteDaTrasformareInOrdineColl = new BulkList();
     private Boolean aggiornaImpegniInAutomatico = false;
     protected TerzoBulk fornitore;
-    //	private java.util.Collection modalita;
+    private java.util.Collection modalita;
     private java.util.Collection termini;
     private ObbligazioniTable ordineObbligazioniHash = null;
     private PrimaryKeyHashMap deferredSaldi = new PrimaryKeyHashMap();
@@ -112,7 +131,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     /**
      * [NUMERAZIONE_ORD Numeratori Ordini]
      **/
-    private NumerazioneOrdBulk numerazioneOrd = new NumerazioneOrdBulk();
+    private NumerazioneOrdBulk numerazioneOrd;
     /**
      * [UNITA_OPERATIVA_ORD Rappresenta le unità operative utilizzate in gestione ordine e magazzino.]
      **/
@@ -129,7 +148,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     /**
      * [MODALITA_PAGAMENTO Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    private Modalita_pagamentoBulk modalitaPagamento = new Modalita_pagamentoBulk();
+    private Rif_modalita_pagamentoBulk modalitaPagamento = new Rif_modalita_pagamentoBulk();
     /**
      * [TERMINI_PAGAMENTO Descrive i termini di pagamento previsti per un dato terzo.]
      **/
@@ -287,7 +306,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Created by BulkGenerator 2.0 [07/12/2009]
      * Restituisce il valore di: [Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    public Modalita_pagamentoBulk getModalitaPagamento() {
+    public Rif_modalita_pagamentoBulk getModalitaPagamento() {
         return modalitaPagamento;
     }
 
@@ -295,7 +314,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Created by BulkGenerator 2.0 [07/12/2009]
      * Setta il valore di: [Descrive le modalità di pagamento previste per un dato terzo.]
      **/
-    public void setModalitaPagamento(Modalita_pagamentoBulk modalitaPagamento) {
+    public void setModalitaPagamento(Rif_modalita_pagamentoBulk modalitaPagamento) {
         this.modalitaPagamento = modalitaPagamento;
     }
 
@@ -488,10 +507,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [esercizio]
      **/
     public java.lang.Integer getEsercizio() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getEsercizio();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getEsercizio).orElse(null);
     }
 
     /**
@@ -499,7 +515,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [esercizio]
      **/
     public void setEsercizio(java.lang.Integer esercizio) {
-        this.getNumerazioneOrd().setEsercizio(esercizio);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setEsercizio(esercizio));
     }
 
     /**
@@ -507,10 +523,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdNumeratore]
      **/
     public java.lang.String getCdNumeratore() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getCdNumeratore();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getCdNumeratore).orElse(null);
     }
 
     /**
@@ -518,7 +531,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [cdNumeratore]
      **/
     public void setCdNumeratore(java.lang.String cdNumeratore) {
-        this.getNumerazioneOrd().setCdNumeratore(cdNumeratore);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setCdNumeratore(cdNumeratore));
     }
 
     /**
@@ -526,10 +539,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdUnitaOperativa]
      **/
     public java.lang.String getCdUnitaOperativa() {
-        NumerazioneOrdBulk numerazioneOrd = this.getNumerazioneOrd();
-        if (numerazioneOrd == null)
-            return null;
-        return getNumerazioneOrd().getCdUnitaOperativa();
+        return Optional.ofNullable(this.getNumerazioneOrd()).map(NumerazioneOrdBulk::getCdUnitaOperativa).orElse(null);
     }
 
     /**
@@ -537,7 +547,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Setta il valore di: [cdUnitaOperativa]
      **/
     public void setCdUnitaOperativa(java.lang.String cdUnitaOperativa) {
-        this.getNumerazioneOrd().setCdUnitaOperativa(cdUnitaOperativa);
+        Optional.ofNullable(this.getNumerazioneOrd()).ifPresent(el->el.setCdUnitaOperativa(cdUnitaOperativa));
     }
 
     public java.lang.String getCdUopOrdine() {
@@ -599,7 +609,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
      * Restituisce il valore di: [cdModalitaPag]
      **/
     public java.lang.String getCdModalitaPag() {
-        Modalita_pagamentoBulk modalitaPagamento = this.getModalitaPagamento();
+        Rif_modalita_pagamentoBulk modalitaPagamento = this.getModalitaPagamento();
         if (modalitaPagamento == null)
             return null;
         return getModalitaPagamento().getCd_modalita_pag();
@@ -910,8 +920,13 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public int addToArchivioAllegati(AllegatoGenericoBulk allegato) {
-        archivioAllegati.add(allegato);
-        return archivioAllegati.size() - 1;
+            Optional.ofNullable(allegato)
+                    .filter(AllegatoOrdineBulk.class::isInstance)
+                    .map(AllegatoOrdineBulk.class::cast)
+                    .ifPresent(el->el.setOrdine(this));
+            archivioAllegati.add(allegato);
+            return archivioAllegati.size()-1;
+
     }
 
     public String constructCMISNomeFile() {
@@ -928,9 +943,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return getStato() != null && getStato().equals(STATO_INSERITO);
     }
 
-    public Boolean isStatoAnnullato() {
-        return getStato() != null && getStato().equals(STATO_ANNULLATO);
-    }
+    public Boolean isStatoAnnullato() { return isCancellatoLogicamente();   }
 
     public Boolean isStatoDefinitivo() {
         return getStato() != null && getStato().equals(STATO_DEFINITIVO);
@@ -956,16 +969,23 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return clone;
     }
 
+    public boolean isOrdineMepa(){
+        return this.getContratto()!=null && this.getContratto().getFl_mepa()!=null && this.getContratto().getFl_mepa();
+    }
     public Dictionary getStatoKeysForUpdate() {
 
         Dictionary stato = new it.cnr.jada.util.OrderedHashtable();
+
         if (isStatoInserito()) {
             stato.put(STATO_INSERITO, "Inserito");
             stato.put(STATO_IN_APPROVAZIONE, "In Approvazione");
         } else if (isStatoInApprovazione()) {
             stato.put(STATO_INSERITO, "Inserito");
             stato.put(STATO_IN_APPROVAZIONE, "In Approvazione");
-            stato.put(STATO_ALLA_FIRMA, "Alla firma");
+            if ( isOrdineMepa())
+                stato.put(STATO_DEFINITIVO, "Definitivo");
+            else
+                stato.put(STATO_ALLA_FIRMA, "Alla firma");
         } else {
             stato.put(STATO_INSERITO, "Inserito");
             stato.put(STATO_IN_APPROVAZIONE, "In Approvazione");
@@ -977,7 +997,9 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public OggettoBulk initializeForInsert(CRUDBP bp, ActionContext context) {
+        setFl_mepa(false);
         setStato(STATO_INSERITO);
+        setTiAttivita(TipoIVA.ISTITUZIONALE.value());
         java.sql.Timestamp dataReg = null;
         try {
             dataReg = it.cnr.jada.util.ejb.EJBCommonServices.getServerDate();
@@ -998,6 +1020,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     public OggettoBulk initializeForSearch(CRUDBP bp, it.cnr.jada.action.ActionContext context) {
         super.initializeForSearch(bp, context);
         impostazioniIniziali(context);
+        setNumerazioneOrd(new NumerazioneOrdBulk());
         return this;
     }
 
@@ -1019,19 +1042,22 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public void sostituisciConsegnaFromObbligazioniHash(OrdineAcqConsegnaBulk consegnaAggiornata){
-        Vector consAssociate = (Vector)ordineObbligazioniHash.get(consegnaAggiornata.getObbligazioneScadenzario());
-        OrdineAcqConsegnaBulk consegnaBulk = null;
-        for (Iterator i = consAssociate.iterator(); i.hasNext();){
-            OrdineAcqConsegnaBulk cons = (OrdineAcqConsegnaBulk)i.next();
-            if (cons.equalsByPrimaryKey(consegnaAggiornata)){
-                consegnaBulk = cons;
+        if (consegnaAggiornata.getObbligazioneScadenzario() != null && consegnaAggiornata.getObbligazioneScadenzario().getPg_obbligazione() != null){
+            Vector consAssociate = (Vector)ordineObbligazioniHash.get(consegnaAggiornata.getObbligazioneScadenzario());
+            OrdineAcqConsegnaBulk consegnaBulk = null;
+            if (consAssociate != null) {
+                for (Iterator i = consAssociate.iterator(); i.hasNext();){
+                    OrdineAcqConsegnaBulk cons = (OrdineAcqConsegnaBulk)i.next();
+                    if (cons.equalsByPrimaryKey(consegnaAggiornata)){
+                        consegnaBulk = cons;
+                    }
+                }
             }
-        }
-
-        if (consegnaBulk != null) {
-            consAssociate.remove(consegnaBulk);
-            consAssociate.add(consegnaAggiornata);
-            ordineObbligazioniHash.put(consegnaAggiornata.getObbligazioneScadenzario(), consAssociate);
+            if (consegnaBulk != null) {
+                consAssociate.remove(consegnaBulk);
+                consAssociate.add(consegnaAggiornata);
+                ordineObbligazioniHash.put(consegnaAggiornata.getObbligazioneScadenzario(), consAssociate);
+            }
         }
     }
 
@@ -1077,22 +1103,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public int addToRigheOrdineColl(OrdineAcqRigaBulk nuovoRigo) {
-
-
-//		nuovoRigo.setTi_associato_manrev(nuovoRigo.NON_ASSOCIATO_A_MANDATO);
-//		nuovoRigo.setTerzo(new TerzoBulk());
-//		if (getTi_entrate_spese()==ENTRATE){
-//			nuovoRigo.setTerzo_uo_cds(getTerzo_uo_cds());
-//		}
         nuovoRigo.setOrdineAcq(this);
-
-//		try {
-//			java.sql.Timestamp ts = it.cnr.jada.util.ejb.EJBCommonServices.getServerTimestamp();
-//			nuovoRigo.setDt_da_competenza_coge((getDt_da_competenza_coge() == null)?ts : getDt_da_competenza_coge());
-//			nuovoRigo.setDt_a_competenza_coge((getDt_a_competenza_coge() == null)?ts : getDt_a_competenza_coge());
-//		} catch (javax.ejb.EJBException e) {
-//			throw new it.cnr.jada.DetailedRuntimeException(e);
-//		}
         nuovoRigo.setStato(OrdineAcqRigaBulk.STATO_INSERITA);
         int max = 0;
         for (Iterator i = righeOrdineColl.iterator(); i.hasNext(); ) {
@@ -1127,12 +1138,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
                 getFornitore().getCrudStatus() == OggettoBulk.NORMAL;
     }
 
-    //	public java.util.Collection getModalita() {
-//		return modalita;
-//	}
-//	public void setModalita(java.util.Collection modalita) {
-//		this.modalita = modalita;
-//	}
+    public java.util.Collection getModalita() {
+		return modalita;
+	}
+	public void setModalita(java.util.Collection modalita) {
+		this.modalita = modalita;
+	}
     public java.util.Collection getTermini() {
         return termini;
     }
@@ -1183,8 +1194,26 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return NumerazioneOrdBulk.TIPO;
     }
 
+    public boolean isCommerciale() {
+        return Optional.ofNullable(getTiAttivita())
+                .map(s -> s.equals(TipoIVA.COMMERCIALE.value()))
+                .orElse(Boolean.FALSE);
+    }
     public boolean isNotAbledToModifyTipoIstCom() {
-        return (true);
+        return getRigheOrdineColl()
+                        .stream()
+                        .filter(ordineAcqRigaBulk -> Optional.ofNullable(ordineAcqRigaBulk.getDspObbligazioneScadenzario())
+                                .flatMap(obbligazioneScadenzarioBulk -> Optional.ofNullable(obbligazioneScadenzarioBulk.getEsercizio_originale())).isPresent())
+                        .findAny().isPresent()||
+                getRigheOrdineColl()
+                        .stream()
+                        .map(ordineAcqRigaBulk -> ordineAcqRigaBulk.getRigheConsegnaColl())
+                        .collect(Collectors.toList())
+                        .stream()
+                        .flatMap(List::stream)
+                        .filter(ordineAcqConsegnaBulk -> Optional.ofNullable(ordineAcqConsegnaBulk.getObbligazioneScadenzario())
+                                .flatMap(obbligazioneScadenzarioBulk -> Optional.ofNullable(obbligazioneScadenzarioBulk.getEsercizio_originale())).isPresent())
+                        .findAny().isPresent();
     }
 
     @Override
@@ -1233,12 +1262,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
     @Override
     public Timestamp getDt_cancellazione() {
         // TODO Auto-generated method stub
-        return null;
+        return super.getDtCancellazione();
     }
 
     @Override
     public void setDt_cancellazione(Timestamp date) {
-        // TODO Auto-generated method stub
+        super.setDtCancellazione(date);
 
     }
 
@@ -1336,14 +1365,12 @@ public class OrdineAcqBulk extends OrdineAcqBase
 
     @Override
     public String getManagerName() {
-        // TODO Auto-generated method stub
-        return null;
+        return "CRUDOrdineAcqBP";
     }
 
     @Override
     public String getManagerOptions() {
-        // TODO Auto-generated method stub
-        return null;
+        return "VTh";
     }
 
     @Override
@@ -1492,6 +1519,9 @@ public class OrdineAcqBulk extends OrdineAcqBase
         return getStato() != null && getStato().equals(STATO_IN_APPROVAZIONE);
     }
 
+    public Boolean isOrdineAnnullato() {
+        return isStatoAnnullato();
+    }
     public Boolean isOrdineAllaFirma() {
         return getStato() != null && getStato().equals(STATO_ALLA_FIRMA);
     }
@@ -1535,11 +1565,11 @@ public class OrdineAcqBulk extends OrdineAcqBase
     }
 
     public String getOrdineString() {
-        return String.valueOf(this.getEsercizio())
+        return Optional.ofNullable(this.getEsercizio()).map(String::valueOf).orElse("")
                 .concat("/")
-                .concat(this.getCdNumeratore())
+                .concat(Optional.ofNullable(this.getCdNumeratore()).orElse(""))
                 .concat("/")
-                .concat(String.valueOf(this.getNumero()));
+                .concat(Optional.ofNullable(this.getNumero()).map(String::valueOf).orElse(""));
     }
 
     public String getDescrizioneObbligazione() {
@@ -1571,5 +1601,80 @@ public class OrdineAcqBulk extends OrdineAcqBase
     @Override
     public Timestamp getDt_contabilizzazione() {
         return this.getDataOrdine();
+    }
+    public boolean isROContratto(){
+        if (getContratto() != null && getRigheOrdineColl().size() > 0){
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public void validate() throws ValidationException {
+        if ( getNumerazioneOrd() == null || StringUtils.isEmpty(getNumerazioneOrd().getCdNumeratore()) || StringUtils.isEmpty(getNumerazioneOrd().getCdUnitaOperativa()))
+            throw new ValidationException( "Il campo Numeratore è obbligatorio." );
+        if (Optional.ofNullable(getCig()).flatMap(cigBulk -> Optional.ofNullable(cigBulk.getCdCig())).isPresent()
+                && Optional.ofNullable(getMotivoAssenzaCig()).isPresent()) {
+            throw new ValidationException("Non possono essere valorizzati sia il CIG che il Motivo di assenza del CIG!");
+        }
+        if (!Optional.ofNullable(getCig()).flatMap(cigBulk -> Optional.ofNullable(cigBulk.getCdCig())).isPresent()
+                && !Optional.ofNullable(getMotivoAssenzaCig()).isPresent()) {
+            throw new ValidationException("Bisogna valorizzare o il CIG oppure il Motivo di assenza del CIG!");
+        }
+    }
+
+    @Override
+    public void setStato_coge(String stato_coge) {
+        //TODO Da implementare
+    }
+
+    @Override
+    public String getStato_coge() {
+        //TODO Da implementare
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtInizioLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Timestamp getDtFineLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public String getTipoLiquid() {
+        return null;
+    }
+
+    /**
+     * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+     */
+    @Override
+    public Long getReportIdLiquid() {
+        return null;
+    }
+
+    @Override
+    public boolean isCancellatoLogicamente() {
+        return Optional.ofNullable(getStato()).map(x -> x.equals(OrdineAcqBulk.STATO_ANNULLATO)).orElse(false);
+    }
+
+    @Override
+    public void cancellaLogicamente() {
+        setDt_cancellazione(EJBCommonServices.getServerTimestamp());
+        setStato(OrdineAcqBulk.STATO_ANNULLATO);
+
     }
 }

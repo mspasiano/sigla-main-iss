@@ -161,6 +161,11 @@
 			propertyName="codiceAooIpa"
 			sqlTypeName="VARCHAR"
 			columnSize="100" />
+		<columnMapping
+			columnName="SIGLA_INT_ENTE"
+			propertyName="sigla_int_ente"
+			sqlTypeName="VARCHAR"
+			columnSize="10" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="pg_ver_rec" />
@@ -210,4 +215,6 @@
 		name="fl_cds" />
 	<persistentProperty
 		name="codiceAooIpa" />
+	<persistentProperty
+			name="sigla_int_ente" />
 </SQLPersistentInfo>

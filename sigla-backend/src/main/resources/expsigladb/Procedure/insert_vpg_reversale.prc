@@ -47,6 +47,11 @@ CREATE OR REPLACE PROCEDURE INSERT_VPG_REVERSALE
 -- Gestione CUP:
 -- aggiornata la funzione per inserire il riepilogo CUP
 --
+-- Date: 28/08/2023
+-- Version: 1.9
+-- Gestione DS_REVERSALE:
+-- aggiornato campo ds_reversale
+--
 
 -- Body:
 --
@@ -114,7 +119,8 @@ begin
 								CODICE_FISCALE,
 								UTCR,
 								DACR,
-								STATO)
+								STATO,
+                                DS_REVERSALE)
 	select  aId,
 		    'A:testata',
 		    i,
@@ -140,7 +146,8 @@ begin
 			vat.CODICE_FISCALE,
 			aRev.UTCR,
 			aRev.DACR,
-			aRev.STATO
+			aRev.STATO,
+            aRev.ds_reversale
 	from unita_organizzativa uo1
 		,unita_organizzativa uo2
 		,v_anagrafico_terzo vat

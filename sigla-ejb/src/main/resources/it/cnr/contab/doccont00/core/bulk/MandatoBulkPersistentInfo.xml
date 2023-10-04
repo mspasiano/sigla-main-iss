@@ -26,6 +26,13 @@
 		<columnMapping
 			columnName="CD_UNITA_ORGANIZZATIVA"
 			propertyName="unita_organizzativa.cd_unita_organizzativa"/>
+		<columnMapping
+			columnName="ESERCIZIO_STIPENDI_COFI"
+			propertyName="stipendiCofiBulk.esercizio"/>
+		<columnMapping
+			columnName="MESE_STIPENDI_COFI"
+			propertyName="stipendiCofiBulk.mese"/>
+
 	</defaultColumnMap>
 	<columnMap
 			tableName="V_MANDATO_NON_ASSOCIABILE_REV"
@@ -57,5 +64,7 @@
 		name="cds"
 		partOfOid= "true"/>			
 	<persistentProperty
-		name="unita_organizzativa" />	
+		name="unita_organizzativa" />
+	<persistentProperty
+		name="stipendiCofiBulk" />
 </SQLPersistentInfo>

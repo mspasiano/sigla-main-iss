@@ -90,7 +90,7 @@
 			propertyName="quantita"
 			sqlTypeName="DECIMAL"
 			columnSize="15"
-			columnScale="2"
+			columnScale="5"
 			nullable="false" />
 		<columnMapping
 			columnName="CD_VOCE_IVA"
@@ -246,7 +246,7 @@
 			columnName="DS_RIGA_FATTURA"
 			propertyName="ds_riga_fattura"
 			sqlTypeName="VARCHAR"
-			columnSize="200" />
+			columnSize="255" />
 		<columnMapping
 			columnName="ESERCIZIO_OBBLIGAZIONE"
 			propertyName="esercizio_obbligazione"
@@ -291,10 +291,17 @@
 			sqlTypeName="DECIMAL"
 			columnSize="10" />
         <columnMapping
-                columnName="MOTIVO_ASSENZA_CIG"
-                propertyName="motivo_assenza_cig"
-                sqlTypeName="VARCHAR"
-                columnSize="250"/>
+			columnName="MOTIVO_ASSENZA_CIG"
+			propertyName="motivo_assenza_cig"
+			sqlTypeName="VARCHAR"
+			columnSize="250"/>
+		<columnMapping
+			columnName="FL_ATTESA_NOTA"
+			propertyName="fl_attesa_nota"
+			sqlTypeName="CHAR"
+			columnSize="1"
+			nullable="true"
+			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="cd_uo_assncna_eco" />
@@ -393,5 +400,7 @@
 	<persistentProperty
 		name="pg_trovato" />
     <persistentProperty
-            name="motivo_assenza_cig"/>		
+		name="motivo_assenza_cig"/>
+	<persistentProperty
+		name="fl_attesa_nota"/>
 </SQLPersistentInfo>

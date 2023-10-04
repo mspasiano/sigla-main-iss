@@ -27,6 +27,7 @@ import it.cnr.contab.anagraf00.tabter.bulk.ComuneBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.ComuneHome;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.utenze00.bulk.UtenteBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
@@ -97,7 +98,7 @@ public class MagazzinoHome extends BulkHome {
 	public SQLBuilder selectTipoMovimentoMagTraScaByClause(UserContext userContext, MagazzinoBulk magazzinoBulk, TipoMovimentoMagHome  tipoMovimentoMagHome, TipoMovimentoMagBulk tipoMovimentoMagBulk, CompoundFindClause clause)  throws PersistencyException,ComponentException, EJBException, RemoteException {
 		if ( clause==null)
 			clause =  new CompoundFindClause();
-		clause.addClause(FindClause.AND, "tipo", SQLBuilder.EQUALS, TipoMovimentoMagBulk.SCARICO_AUTOMATICO);
+		clause.addClause(FindClause.AND, "tipo", SQLBuilder.EQUALS, TipoMovimentoMagBulk.SCARICO_TRASFERIMENTO);
 		return selectTipoMovimento(userContext,magazzinoBulk,tipoMovimentoMagHome,tipoMovimentoMagBulk,clause);
 	}
 
@@ -162,19 +163,36 @@ public class MagazzinoHome extends BulkHome {
 		sql.addClause(FindClause.AND, "cdCds", SQLBuilder.EQUALS, CNRUserContext.getCd_cds(userContext));
 
 		if (unitaOperativa != null){
-			AbilUtenteUopOperBulk abil = (AbilUtenteUopOperBulk)getHomeCache().getHome(AbilUtenteUopOperBulk.class).findByPrimaryKey(new AbilUtenteUopOperBulk(userContext.getUser(), unitaOperativa.getCdUnitaOperativa(), tipoOperazione));
-			if (abil == null) {
-				sql.addSQLClause(FindClause.AND, "1!=1");
-			} else if (Boolean.FALSE.equals(abil.getTuttiMagazzini())) {
-				sql.addTableToHeader("ABIL_UTENTE_UOP_OPER_MAG", "B");
-				sql.addSQLJoin("MAGAZZINO.CD_CDS", "B.CD_CDS");
-				sql.addSQLJoin("MAGAZZINO.CD_MAGAZZINO", "B.CD_MAGAZZINO");
-				sql.addSQLClause(FindClause.AND, "B.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, abil.getCdTipoOperazione());
-				sql.addSQLClause(FindClause.AND, "B.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, abil.getCdUnitaOperativa());
-				sql.addSQLClause(FindClause.AND, "B.CD_UTENTE", SQLBuilder.EQUALS, abil.getCdUtente());
+			UtenteBulk utente = (UtenteBulk) (getHomeCache().getHome(UtenteBulk.class).findByPrimaryKey(new UtenteBulk(CNRUserContext.getUser(userContext))));
+
+			if (!utente.isSupervisore()) {
+				AbilUtenteUopOperBulk abil = (AbilUtenteUopOperBulk)getHomeCache().getHome(AbilUtenteUopOperBulk.class).findByPrimaryKey(new AbilUtenteUopOperBulk(userContext.getUser(), unitaOperativa.getCdUnitaOperativa(), tipoOperazione));
+				if (abil == null) {
+					sql.addSQLClause(FindClause.AND, "1!=1");
+				} else if (Boolean.FALSE.equals(abil.getTuttiMagazzini())) {
+					sql.addTableToHeader("ABIL_UTENTE_UOP_OPER_MAG", "B");
+					sql.addSQLJoin("MAGAZZINO.CD_CDS", "B.CD_CDS");
+					sql.addSQLJoin("MAGAZZINO.CD_MAGAZZINO", "B.CD_MAGAZZINO");
+					sql.addSQLClause(FindClause.AND, "B.CD_TIPO_OPERAZIONE", SQLBuilder.EQUALS, abil.getCdTipoOperazione());
+					sql.addSQLClause(FindClause.AND, "B.CD_UNITA_OPERATIVA", SQLBuilder.EQUALS, abil.getCdUnitaOperativa());
+					sql.addSQLClause(FindClause.AND, "B.CD_UTENTE", SQLBuilder.EQUALS, abil.getCdUtente());
+				}
 			}
 		}
 
+		return sql;
+	}
+
+	public SQLBuilder selectMagazziniAbilitatiByClause(UserContext userContext, UnitaOperativaOrdBulk unitaOperativa, String tipoOperazione, CompoundFindClause compoundfindclause, String tipoGestione) throws PersistencyException {
+		SQLBuilder sql = selectMagazziniAbilitatiByClause(userContext, unitaOperativa, tipoOperazione, compoundfindclause);
+		if (tipoGestione != null){
+			sql.openParenthesis( "AND");
+			sql.addSQLClause(FindClause.AND, "MAGAZZINO.TIPO_GESTIONE", SQLBuilder.EQUALS, tipoGestione);
+			sql.addSQLClause("OR","MAGAZZINO.TIPO_GESTIONE",SQLBuilder.ISNULL, null );
+			sql.closeParenthesis();
+
+
+		}
 		return sql;
 	}
 

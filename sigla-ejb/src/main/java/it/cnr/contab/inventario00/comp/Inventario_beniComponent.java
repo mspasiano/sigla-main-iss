@@ -527,7 +527,10 @@ public OggettoBulk inizializzaBulkPerInserimento (UserContext aUC, OggettoBulk b
 				
 	if (isEsercizioCOEPChiuso(aUC))
     	return asRO(bene, "Funzione disponibile solo in lettura. L'esercizio COEP per il CdS " + it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(aUC) + " risulta in stato 'C' o 'P'.");
-		
+
+	if (isInventarioChiuso(aUC))
+		return asRO(bene, "Funzione disponibile solo in lettura. L'inventario associato alla UO risulta chiuso o non aperto.");
+
 	return bene;
 }
 
@@ -604,9 +607,9 @@ public OggettoBulk inizializzaBulkPerModifica(
     if (bene.isTotalmenteScaricato())
     	return asRO(bene, "ATTENZIONE: questo bene è stato totalmente scaricato.\nNon sarà possibile fare alcuna operazione su di esso.");
 
-    if (isEsercizioCOEPChiuso(aUC))
+    if (isEsercizioCOEPChiuso(aUC) || isInventarioChiuso(aUC))
     	return asRO(bene, null);
-    	
+
     return bene;
 }
 /** 
@@ -771,79 +774,83 @@ public it.cnr.jada.bulk.OggettoBulk inizializzaBulkPerStampa(it.cnr.jada.UserCon
 		
 	return bulk;
 }
-/**
-  *	Controllo se l'esercizio COEP di scrivania e' aperto
-  *
-  * Nome: Controllo chiusura esercizio COEP
-  * Pre:  E' stata richiesta la modifica di un bene in inventario
-  * Post: Viene chiamata una stored procedure che restituisce 
-  *		  -		'Y' se il campo stato della tabella CHIUSURA_COEP vale C o P
-  *		  -		'N' altrimenti
-  *		  Se l'esercizio e' chiuso e' impossibile proseguire
-  *
-  * @param  userContext <code>UserContext</code>
-  
-  * @return boolean : TRUE se stato = C
-  *					  FALSE altrimenti
-  */
-protected boolean isEsercizioCOEPChiuso(UserContext userContext) throws ComponentException {
-	
-	LoggableStatement cs = null;	
-	String status = null;
+	/**
+	  *	Controllo se l'esercizio COEP di scrivania e' aperto
+	  *
+	  * Nome: Controllo chiusura esercizio COEP
+	  * Pre:  E' stata richiesta la modifica di un bene in inventario
+	  * Post: Viene chiamata una stored procedure che restituisce
+	  *		  -		'Y' se il campo stato della tabella CHIUSURA_COEP vale C o P
+	  *		  -		'N' altrimenti
+	  *		  Se l'esercizio e' chiuso e' impossibile proseguire
+	  *
+	  * @param  userContext <code>UserContext</code>
 
-	
-	try
-	{
-		// Controlla lo Stato 'C'
-		cs = new LoggableStatement(getConnection(userContext),"{ ? = call " + it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema() 
-				+	"CNRCTB200.isChiusuraCoepDef(?,?)}",false,this.getClass());		
+	  * @return boolean : TRUE se stato = C
+	  *					  FALSE altrimenti
+	  */
+	protected boolean isEsercizioCOEPChiuso(UserContext userContext) throws ComponentException {
 
-		cs.registerOutParameter( 1, java.sql.Types.VARCHAR);
-		cs.setObject( 2, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)	);		
-		cs.setObject( 3, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(userContext)		);		
-		
-		cs.executeQuery();
+		LoggableStatement cs = null;
+		String status = null;
 
-		status = new String(cs.getString(1));
 
-	    if(status.compareTo("Y")==0){
-	    	return true;
-	    }
+		try
+		{
+			// Controlla lo Stato 'C'
+			cs = new LoggableStatement(getConnection(userContext),"{ ? = call " + it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema()
+					+	"CNRCTB200.isChiusuraCoepDef(?,?)}",false,this.getClass());
 
-	    // Resetta i parametri
-	    cs.clearParameters();
+			cs.registerOutParameter( 1, java.sql.Types.VARCHAR);
+			cs.setObject( 2, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)	);
+			cs.setObject( 3, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(userContext)		);
 
-	    // Controlla lo Stato 'P'
-		cs = new LoggableStatement(getConnection(userContext), "{ ? = call " + it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema()
-				+	"CNRCTB200.isChiusuraCoepProva(?,?)}",false,this.getClass());		
+			cs.executeQuery();
 
-		cs.registerOutParameter( 1, java.sql.Types.VARCHAR);
-		cs.setObject( 2, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)	);		
-		cs.setObject( 3, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(userContext)		);		
-		
-		cs.executeQuery();
+			status = new String(cs.getString(1));
 
-		status = new String(cs.getString(1));
+			if(status.compareTo("Y")==0){
+				return true;
+			}
 
-	    if(status.compareTo("Y")==0){
-	    	return true;
-	    }
-		//controlla anche se è chiuso l'inventario
-		Id_inventarioHome inventarioHome = (Id_inventarioHome) getHome(userContext, Id_inventarioBulk.class);
-		Id_inventarioBulk inventario = inventarioHome.findInventarioFor(userContext,false);
-		if (!inventarioHome.isAperto(inventario,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)))
-           return true;
-	    	
-	} catch (java.sql.SQLException ex) {
-		throw handleException(ex);
-	} catch (PersistencyException e) {
-		throw handleException(e);
-	} catch (IntrospectionException e) {
-		throw handleException(e);
+			// Resetta i parametri
+			cs.clearParameters();
+
+			// Controlla lo Stato 'P'
+			cs = new LoggableStatement(getConnection(userContext), "{ ? = call " + it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema()
+					+	"CNRCTB200.isChiusuraCoepProva(?,?)}",false,this.getClass());
+
+			cs.registerOutParameter( 1, java.sql.Types.VARCHAR);
+			cs.setObject( 2, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)	);
+			cs.setObject( 3, it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(userContext)		);
+
+			cs.executeQuery();
+
+			status = new String(cs.getString(1));
+
+			if(status.compareTo("Y")==0){
+				return true;
+			}
+		} catch (java.sql.SQLException ex) {
+			throw handleException(ex);
+		}
+
+		return false;
 	}
-	
-    return false;		    	
-}
+
+	protected boolean isInventarioChiuso(UserContext userContext) throws ComponentException {
+		try {
+			//controlla anche se è chiuso l'inventario
+			Id_inventarioHome inventarioHome = (Id_inventarioHome) getHome(userContext, Id_inventarioBulk.class);
+			Id_inventarioBulk inventario = inventarioHome.findInventarioFor(userContext,false);
+			if (!inventarioHome.isAperto(inventario,it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext)))
+				return true;
+		} catch (PersistencyException | IntrospectionException e) {
+			throw handleException(e);
+		}
+		return false;
+	}
+
 public Boolean isContab(it.cnr.jada.UserContext userContext, Inventario_beniBulk bene) throws it.cnr.jada.comp.ComponentException {
 			try {
 				SQLBuilder sql_exists = getHome(userContext,Inventario_beniBulk.class).createSQLBuilder();
@@ -883,7 +890,7 @@ public Boolean isContab(it.cnr.jada.UserContext userContext, Inventario_beniBulk
   *    PostCondition:
   *      Viene consentito il salvataggio.
   *  
-  * @param userContext lo <code>UserContext</code> che ha generato la richiesta
+  * @param aUC lo <code>UserContext</code> che ha generato la richiesta
   * @param bulk <code>OggettoBulk</code> il Bulk da modificare
   *
   * @return l'oggetto <code>OggettoBulk</code> modificato
@@ -1468,12 +1475,35 @@ private void validaBene (UserContext aUC, Inventario_beniBulk bene)
 		if (bene.getImponibile_ammortamento() != null  && bene.getValore_ammortizzato()!=null && bene.getImponibile_ammortamento().compareTo(bene.getValore_ammortizzato())<0){
 			throw new it.cnr.jada.comp.ApplicationException("Attenzione: il valore da ammortizzare non è valido\n Il valore da ammortizzare di un bene non può essere inferiore al valore già ammortizzato.");
 		}
+		if(Utility.createConfigurazioneCnrComponentSession().isGestioneBeneDismessoInventarioAttivo(aUC)){
+			validaDismessioneBene(bene);
+		}
 	
 	}catch(Throwable t){
 		throw handleException(bene, t);		
 	}
 }
 /**
+ * Validazione check dismesso
+ */
+private void  validaDismessioneBene(Inventario_beniBulk bene) throws ApplicationException {
+	if(bene.getFl_dismesso()){
+		if(bene.getDt_dismesso()== null){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: Indicare la data di dismissione");
+		}
+		if(bene.getCausale_dismissione()== null || bene.getCausale_dismissione().isEmpty()){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione: Indicare la causale di dismissione");
+		}
+	}else{
+		if(bene.getDt_dismesso()!= null){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione è stata indicata una data di dismissione senza aver selezionato il flag dismesso");
+		}
+		if(bene.getCausale_dismissione()!= null && !bene.getCausale_dismissione().isEmpty()){
+			throw new it.cnr.jada.comp.ApplicationException("Attenzione è stata indicata una causale di dismissione senza aver selezionato il flag dismesso");
+		}
+	}
+}
+	/**
  * Validazione dell'oggetto in fase di stampa
  *
 */

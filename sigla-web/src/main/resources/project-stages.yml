@@ -2,6 +2,8 @@ logger:
   level: DEBUG
 
 thorntail:
+  app:
+    name: sigla.war
   security:
     security-domains:
       sigla-auth:
@@ -9,19 +11,21 @@ thorntail:
         classic-authentication:
           login-modules:
             Ldap:
-              code: LdapExtended
+              code: 'it.cnr.contab.security.auth.LdapLoginModule'
               flag: sufficient
               module-options:
                 java.naming.provider.url: ldap://virtest1.si.cnr.it:389
                 java.naming.security.authentication: simple
                 bindDN: cn=mastercnrapp1,ou=account,o=cnr,c=it
                 bindCredential: ${cnr.ldap.master.credentials}
+                principalClass: 'it.cnr.contab.security.auth.SIGLALDAPPrincipal'
+                userAttributes: mail;cnrnome;cnrcognome;codicefiscale;emailcertificatoperpuk
                 baseCtxDN: o=cnr, c=it
                 baseFilter: uid={0}
                 rolesCtxDN: ou=groups,o=cnr,c=it
                 roleFilter: member={1}
                 roleAttributeID: cn
-                defaultRole: USER
+                defaultRole: default-roles-cnr
                 password-stacking: useFirstPass
                 storePass: true
             Database:
@@ -29,7 +33,7 @@ thorntail:
               flag: sufficient
               module-options:
                 dsJndiName: java:/jdbc/CIR
-                principalsQuery: SELECT PASSWORD FROM UTENTE WHERE UPPER(cd_utente)=UPPER(?)
+                principalsQuery: SELECT PASSWORD FROM UTENTE WHERE UPPER(cd_utente)=UPPER(?) AND FL_AUTENTICAZIONE_LDAP='N'
                 rolesQuery: SELECT DISTINCT CD_RUOLO, 'Roles' FROM UTENTE_UNITA_RUOLO WHERE UPPER(cd_utente)=UPPER(?)
                 hashAlgorithm: MD5
                 hashEncoding: BASE64
@@ -191,6 +195,8 @@ thorntail:
             file-store:
               passivation: false
               purge: false
+cors:
+  allow-origin: http://localhost:9000;http://localhost:4200
 repository:
   base:
     url: http://as1dock.si.cnr.it:8080/alfresco/
@@ -225,10 +231,20 @@ siopeplus:
   certificate:
     path: file:${user.home}/cert/siope+/cert.p12
     password: changeit
-  codice:
-    a2a: A2A-00000000
-    uni:
-      uo: 000000
+  vAPI: v1
+  base_url: https://certa2a.siopeplus.it/${siopeplus.vAPI}
+  endpoints: BT
+  endpoint:
+    BT:
+      a2a: A2A-31432329
+      uniuo: O5WZO8
+      base_url: ${siopeplus.base_url}/${siopeplus.endpoint.BT.a2a}/PA/${siopeplus.endpoint.BT.uniuo}
+      flusso: ${siopeplus.endpoint.BT.base_url}/flusso/
+      ack: ${siopeplus.endpoint.BT.flusso}ack/
+      esitoflusso: ${siopeplus.endpoint.BT.flusso}esitoflusso/
+      esitoapplicativo: ${siopeplus.endpoint.BT.base_url}/esitoapplicativo/
+      giornaledicassa: ${siopeplus.endpoint.BT.base_url}/giornale/
+
 liquibase:
   bootstrap:
     esercizio: 2019
@@ -256,48 +272,6 @@ pagopa:
 project:
   stage: demo-h2
 thorntail:
-  undertow:
-    filter-configuration:
-      response-headers:
-        access-control-max-age:
-          header-name: Access-Control-Max-Age
-          header-value: 3600
-        access-control-allow-origin:
-          header-name: Access-Control-Allow-Origin
-          header-value: 'http://localhost:8080'
-        access-control-allow-headers:
-          header-name: Access-Control-Allow-Headers
-          header-value: '*'
-        access-control-allow-methods:
-          header-name: Access-Control-Allow-Methods
-          header-value: 'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-        access-control-allow-credentials:
-          header-name: Access-Control-Allow-Credentials
-          header-value: true
-        # other headers configuration
-    servers:
-      default-server:
-        http-listeners:
-          default:
-            rfc6265-cookie-validation: true
-        hosts:
-          default-host:
-            filter-refs:
-              access-control-max-age:
-                priority: 1
-              access-control-allow-origin:
-                priority: 1
-              access-control-allow-headers:
-                priority: 1
-              access-control-allow-methods:
-                priority: 1
-              access-control-allow-credentials:
-                priority: 1
-              # other filter refs
-    servlet-containers:
-      default:
-        session-cookie-setting:
-          comment: ";HttpOnly;Secure;SameSite=None"
   security:
     security-domains:
       sigla-auth:
@@ -334,7 +308,6 @@ thorntail:
         password: sa
         use-java-context: true
         jndi-name: java:/jdbc/CIR
-  deployment:
     timeout: 1200
 
 spring:
@@ -347,48 +320,6 @@ cnr:
 project:
   stage: demo-postgres
 thorntail:
-  undertow:
-    filter-configuration:
-      response-headers:
-        access-control-max-age:
-          header-name: Access-Control-Max-Age
-          header-value: 3600
-        access-control-allow-origin:
-          header-name: Access-Control-Allow-Origin
-          header-value: 'http://localhost:8080'
-        access-control-allow-headers:
-          header-name: Access-Control-Allow-Headers
-          header-value: '*'
-        access-control-allow-methods:
-          header-name: Access-Control-Allow-Methods
-          header-value: 'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-        access-control-allow-credentials:
-          header-name: Access-Control-Allow-Credentials
-          header-value: true
-        # other headers configuration
-    servers:
-      default-server:
-        http-listeners:
-          default:
-            rfc6265-cookie-validation: true
-        hosts:
-          default-host:
-            filter-refs:
-              access-control-max-age:
-                priority: 1
-              access-control-allow-origin:
-                priority: 1
-              access-control-allow-headers:
-                priority: 1
-              access-control-allow-methods:
-                priority: 1
-              access-control-allow-credentials:
-                priority: 1
-              # other filter refs
-    servlet-containers:
-      default:
-        session-cookie-setting:
-          comment: ";HttpOnly;Secure;SameSite=None"
   security:
     security-domains:
       sigla-auth:
@@ -435,48 +366,6 @@ cnr:
 project:
   stage: demo-oracle
 thorntail:
-  undertow:
-    filter-configuration:
-      response-headers:
-        access-control-max-age:
-          header-name: Access-Control-Max-Age
-          header-value: 3600
-        access-control-allow-origin:
-          header-name: Access-Control-Allow-Origin
-          header-value: 'http://localhost:8080'
-        access-control-allow-headers:
-          header-name: Access-Control-Allow-Headers
-          header-value: '*'
-        access-control-allow-methods:
-          header-name: Access-Control-Allow-Methods
-          header-value: 'GET, POST, OPTIONS, PUT, PATCH, DELETE'
-        access-control-allow-credentials:
-          header-name: Access-Control-Allow-Credentials
-          header-value: true
-        # other headers configuration
-    servers:
-      default-server:
-        http-listeners:
-          default:
-            rfc6265-cookie-validation: true
-        hosts:
-          default-host:
-            filter-refs:
-              access-control-max-age:
-                priority: 1
-              access-control-allow-origin:
-                priority: 1
-              access-control-allow-headers:
-                priority: 1
-              access-control-allow-methods:
-                priority: 1
-              access-control-allow-credentials:
-                priority: 1
-              # other filter refs
-    servlet-containers:
-      default:
-        session-cookie-setting:
-          comment: ";HttpOnly;Secure;SameSite=None"
   security:
     security-domains:
       sigla-auth:
@@ -616,3 +505,35 @@ thorntail:
 spring:
   profiles:
     active: liquibase-isin
+---
+project:
+  stage: keycloak
+thorntail:
+  keycloak:
+    secure-deployments:
+      sigla.war:
+        auth-server-url: "http://dockerwebtest02.si.cnr.it:8110/auth"
+        realm: cnr
+        resource: sigla
+        ssl-required: NONE
+        public-client: false
+        enable-basic-auth: true
+        credentials:
+          secret:
+            value: secret
+
+  deployment:
+    sigla.war:
+      web:
+        security-constraints:
+          - url-pattern: /restapi/version
+          - url-pattern: /restapi/login
+          - url-pattern: /restapi/swagger.json
+          - url-pattern: /restapi/*
+            methods:
+              - POST
+              - GET
+              - HEAD
+            roles:
+              - "default-roles-cnr"
+              - "default-roles-cnr.it"

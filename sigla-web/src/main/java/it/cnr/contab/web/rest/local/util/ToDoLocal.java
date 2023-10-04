@@ -37,6 +37,7 @@ public interface ToDoLocal {
         CRUDMissioneBP("AMMMISSIOCOREMISSIOM"),
         SelezionatoreDocAmmFatturazioneElettronica("AMMDOCFATTELETTVM"),
         ConsMandatiNonAcquisitiBP("CONSDOCAMMMANNONAC"),
+        CRUDFirmaOrdineAcqBP("ORDORDACQFIRV"),
         ConsReversaliNonAcquisitiBP("CONSDOCAMMREVNONAC");
 
         private final String cdAccesso;
@@ -61,9 +62,6 @@ public interface ToDoLocal {
 
     @GET
     Response all(@Context HttpServletRequest request) throws Exception;
-
-    @OPTIONS
-    Response options();
 
     @GET
     @Path("/{toDoBP}")

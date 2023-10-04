@@ -28,34 +28,37 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.rmi.RemoteException;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletException;
 
+import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
 import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaComponentSession;
+import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaFromDocumentoComponentSession;
 import it.cnr.contab.compensi00.ejb.CompensoComponentSession;
 import it.cnr.contab.docamm00.ejb.DocumentoGenericoComponentSession;
 import it.cnr.contab.doccont00.ejb.*;
 import it.cnr.contab.incarichi00.ejb.IncarichiEstrazioneFpComponentSession;
 import it.cnr.contab.ordmag.magazzino.ejb.TransitoBeniOrdiniComponentSession;
-import it.cnr.contab.pdg01.comp.CRUDPdgVariazioneGestionaleComponent;
-import it.cnr.contab.pdg01.comp.CRUDPdgVariazioneRigaGestComponent;
 import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneGestionaleComponentSession;
 import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneRigaGestComponentSession;
-import it.cnr.contab.progettiric00.comp.RimodulaProgettoRicercaComponent;
 import it.cnr.contab.progettiric00.ejb.ProgettoRicercaComponentSession;
 import it.cnr.contab.progettiric00.ejb.RimodulaProgettoRicercaComponentSession;
 import it.cnr.contab.utente00.ejb.RuoloComponentSession;
 import it.cnr.contab.utente00.ejb.UtenteComponentSession;
 import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
 
+import it.cnr.jada.ejb.CRUDComponentSession;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -64,10 +67,8 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import it.cnr.contab.anagraf00.ejb.TerzoComponentSession;
 import it.cnr.contab.bollo00.ejb.AttoBolloComponentSession;
-import it.cnr.contab.bollo00.comp.TipoAttoBolloComponent;
 import it.cnr.contab.bollo00.ejb.TipoAttoBolloComponentSession;
 import it.cnr.contab.client.docamm.FatturaAttiva;
-import it.cnr.contab.config00.comp.CRUDConfigAssEvoldEvnewComponent;
 import it.cnr.contab.config00.ejb.CRUDConfigAssEvoldEvnewComponentSession;
 import it.cnr.contab.config00.ejb.Classificazione_vociComponentSession;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
@@ -104,7 +105,9 @@ public final class Utility {
 	public static final String MANIFEST_PATH = "/META-INF/MANIFEST.MF";
 	public static final String APPLICATION_TITLE = "SIGLA - Sistema Informativo per la Gestione delle Linee di Attività";
 	public static final java.math.BigDecimal ZERO = new java.math.BigDecimal(0);
-	public static String TIPO_GESTIONE_SPESA = "S";
+	public static final java.math.BigDecimal SCOSTAMENTO_MAX = new java.math.BigDecimal(0.05);
+    public static final String CSS_CLASS_W_10 = "w-10";
+    public static String TIPO_GESTIONE_SPESA = "S";
 	public static String TIPO_GESTIONE_ENTRATA = "E";
 	public static final BigDecimal CENTO = new BigDecimal(100);
 	/**
@@ -144,6 +147,10 @@ public final class Utility {
 		if (imp != null)
 			return imp;
 		return ZERO;
+	}
+
+	public static <T extends Comparable<T>> boolean isBetween(T value, T start, T end) {
+		return value.compareTo(start) >= 0 && value.compareTo(end) <= 0;
 	}
 
 	public static String getSiglaVersion(){
@@ -278,6 +285,14 @@ public final class Utility {
 		}
 	}
 
+	public static Collection<? extends List<?>> splitListBySize(List<?> intList, int size) {
+		if (!intList.isEmpty() && size > 0) {
+			final AtomicInteger counter = new AtomicInteger(0);
+			return intList.stream().collect(Collectors.groupingBy(it -> counter.getAndIncrement() / size)).values();
+		}
+		return null;
+	}
+
 	public static void main(String[] args) {
 		System.out.println(NumberToText(new BigDecimal("16754")));
 	}
@@ -291,6 +306,17 @@ public final class Utility {
 			return "zero/" + parteDecimale;
 		} else {
 			return NumberToTextRicorsiva(parteIntera) + "/" + parteDecimale;
+		}
+	}
+	public static String NumberToTextPadDecimal(BigDecimal importo) {
+		int parteIntera = importo.intValue();
+		String parteDecimale = importo.remainder(BigDecimal.ONE).abs().toPlainString();
+		if (parteDecimale.length() > 1)
+			parteDecimale = parteDecimale.substring(2);
+		if (parteIntera == 0) {
+			return "zero/" + parteDecimale;
+		} else {
+			return NumberToTextRicorsiva(parteIntera) + "/" + StringUtils.rightPad(parteDecimale, 2, "0");
 		}
 	}
 
@@ -374,6 +400,24 @@ public final class Utility {
 		return t -> map.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
 	}
 
+	public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map ) {
+		Map<K, V> result = new LinkedHashMap<>();
+		Stream<Map.Entry<K, V>> st = map.entrySet().stream();
+
+		st.sorted( Map.Entry.comparingByValue() )
+				.forEachOrdered( e -> result.put(e.getKey(), e.getValue()) );
+
+		return result;
+	}
+
+
+	public static CRUDComponentSession createCRUDComponentSession() throws EJBException, RemoteException {
+		return Optional.ofNullable(EJBCommonServices.createEJB("JADAEJB_CRUDComponentSession"))
+				.filter(CRUDComponentSession.class::isInstance)
+				.map(CRUDComponentSession.class::cast)
+				.orElseThrow(() -> new RemoteException("Cannot find EJB with jndiName: JADAEJB_CRUDComponentSession"));
+	}
+
 	public static Parametri_cnrComponentSession createParametriCnrComponentSession()throws EJBException, RemoteException {
 		return (Parametri_cnrComponentSession)EJBCommonServices.createEJB("CNRCONFIG00_EJB_Parametri_cnrComponentSession", Parametri_cnrComponentSession.class);
 	}
@@ -389,7 +433,8 @@ public final class Utility {
 		return (Configurazione_cnrComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCONFIG00_EJB_Configurazione_cnrComponentSession",Configurazione_cnrComponentSession.class);
 	}
 	/**
-	 * Crea la CRUDComponentSession da usare per effettuare le operazioni di CRUD
+	 * Crea la
+	 * da usare per effettuare le operazioni di CRUD
 	 */
 	public static SaldoComponentSession createSaldoComponentSession() throws EJBException{
 		return (SaldoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_SaldoComponentSession",SaldoComponentSession.class);
@@ -553,5 +598,11 @@ public final class Utility {
 	}
 	public static ObbligazionePGiroComponentSession createObbligazionePGiroComponentSession() throws javax.ejb.EJBException{
 		return (ObbligazionePGiroComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazionePGiroComponentSession", ObbligazionePGiroComponentSession.class);
+	}
+	public static ScritturaPartitaDoppiaFromDocumentoComponentSession createScritturaPartitaDoppiaFromDocumentoComponentSession() throws javax.ejb.EJBException{
+		return (ScritturaPartitaDoppiaFromDocumentoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_ScritturaPartitaDoppiaFromDocumentoComponentSession", ScritturaPartitaDoppiaFromDocumentoComponentSession.class);
+	}
+	public static AsyncScritturaPartitaDoppiaFromDocumentoComponentSession createAsyncScritturaPartitaDoppiaFromDocumentoComponentSession() throws javax.ejb.EJBException{
+		return (AsyncScritturaPartitaDoppiaFromDocumentoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncScritturaPartitaDoppiaFromDocumentoComponentSession", ScritturaPartitaDoppiaFromDocumentoComponentSession.class);
 	}
 }

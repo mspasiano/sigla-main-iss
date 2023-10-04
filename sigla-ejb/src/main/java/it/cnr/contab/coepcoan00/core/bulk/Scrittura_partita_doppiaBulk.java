@@ -31,12 +31,17 @@ import java.math.BigDecimal;
 import java.util.Dictionary;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Scrittura_partita_doppiaBulk extends Scrittura_partita_doppiaBase {
 
     public final static String TIPO_COGE = "COGE";
     public final static String ORIGINE_CAUSALE = "CAUSALE";
+    public final static String ORIGINE_DOCAMM = "DOCAMM";
+    public final static String ORIGINE_DOCCONT = "DOCCONT";
+    public final static String ORIGINE_STIPENDI = "STIPENDI";
+    public final static String ORIGINE_LIQUID_IVA = "LIQUID_IVA";
     public final static String TIPO_PRIMA_SCRITTURA = "P";
     public final static String STATO_DEFINITIVO = "D";
     public final static java.util.Dictionary STATO_ATTIVA;
@@ -160,28 +165,20 @@ public class Scrittura_partita_doppiaBulk extends Scrittura_partita_doppiaBase {
     }
 
     public java.math.BigDecimal getImTotaleAvere() {
-        Movimento_cogeBulk mov;
-        java.math.BigDecimal tot = new java.math.BigDecimal(0);
-        for (java.util.Iterator i = getMovimentiAvereColl().iterator(); i.hasNext(); ) {
-            mov = (Movimento_cogeBulk) i.next();
-            if (mov.getIm_movimento() != null)
-                tot = tot.add(mov.getIm_movimento());
-        }
-        return tot;
+        return getMovimentiAvereColl().stream()
+                        .map(Movimento_cogeBulk::getIm_movimento)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public java.math.BigDecimal getImTotaleDare() {
-        Movimento_cogeBulk mov;
-        java.math.BigDecimal tot = new java.math.BigDecimal(0);
-        for (java.util.Iterator i = getMovimentiDareColl().iterator(); i.hasNext(); ) {
-            mov = (Movimento_cogeBulk) i.next();
-            if (mov.getIm_movimento() != null)
-                tot = tot.add(mov.getIm_movimento());
-        }
-        return tot;
-
+        return getMovimentiDareColl().stream()
+                .map(Movimento_cogeBulk::getIm_movimento)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    public java.math.BigDecimal getDifferenza() {
+        return getImTotaleDare().subtract(getTotaleAvere()).abs();
+    }
     /**
      * @return it.cnr.jada.bulk.BulkList
      */
@@ -346,5 +343,9 @@ public class Scrittura_partita_doppiaBulk extends Scrittura_partita_doppiaBase {
                 .distinct()
                 .findAny()
                 .orElse(null);
+    }
+
+    public boolean isScritturaAttiva() {
+        return ATTIVA_YES.equals(this.getAttiva());
     }
 }

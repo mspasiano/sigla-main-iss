@@ -100,7 +100,13 @@ public class ProgettoHome extends BulkHome {
         return super.select(persistent);
     }
 
-    /**
+	@Override
+	public void initializeBulkForInsert(UserContext usercontext, OggettoBulk oggettobulk) throws PersistencyException, ComponentException {
+		super.initializeBulkForInsert(usercontext, oggettobulk);
+		(( Progetto_uoBulk)oggettobulk).setFl_visibile(Boolean.TRUE);
+	}
+
+	/**
 	 * Recupera tutti i dati nella tabella Progetto_uo relativi alla testata in uso.
 	 *
 	 * @param testata La testata in uso.
@@ -1082,4 +1088,5 @@ public class ProgettoHome extends BulkHome {
 
 		return this.fetchAll(sql);
 	}
+
 }

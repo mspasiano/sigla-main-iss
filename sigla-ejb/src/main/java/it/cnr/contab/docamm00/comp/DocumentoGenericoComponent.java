@@ -28,7 +28,10 @@ import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceHome;
-import it.cnr.contab.config00.sto.bulk.*;
+import it.cnr.contab.config00.sto.bulk.EnteBulk;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativaHome;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteHome;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.ProgressiviAmmComponentSession;
 import it.cnr.contab.docamm00.ejb.RiportoDocAmmComponentSession;
@@ -38,6 +41,7 @@ import it.cnr.contab.docamm00.tabrif.bulk.DivisaBulk;
 import it.cnr.contab.doccont00.comp.DateServices;
 import it.cnr.contab.doccont00.comp.DocumentoContabileComponentSession;
 import it.cnr.contab.doccont00.core.AccertamentoWizard;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
 import it.cnr.contab.doccont00.core.ObbligazioneWizard;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
 import it.cnr.contab.doccont00.core.bulk.*;
@@ -46,6 +50,7 @@ import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario00.docs.bulk.*;
 import it.cnr.contab.inventario01.bulk.*;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.DetailedRuntimeException;
@@ -66,6 +71,7 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DocumentoGenericoComponent
         extends ScritturaPartitaDoppiaFromDocumentoComponent
@@ -121,9 +127,10 @@ public class DocumentoGenericoComponent
                             && !isDettaglioAnnullatoConScadResNulla(scadenza, documento))
                         throw new it.cnr.jada.comp.ApplicationException("Impossibile continuare. L'importo sulla scadenza " + scadenza.getDs_scadenza() + " deve essere coperto interamente.");
 
-                    if (scadenza.getIm_associato_doc_amm().add(calcolaTotaleAccertamentoPer(userContext, scadenza, documento, TIPO_TOTALE_PARZIALE)).compareTo(scadenza.getIm_scadenza()) > 0)
+                    final BigDecimal totaleAccertamentoPer = calcolaTotaleAccertamentoPer(userContext, scadenza, documento, TIPO_TOTALE_PARZIALE);
+                    if (scadenza.getIm_associato_doc_amm().add(totaleAccertamentoPer).compareTo(scadenza.getIm_scadenza()) > 0)
                         throw new it.cnr.jada.comp.ApplicationException("Impossibile continuare. L'importo sulla scadenza " + scadenza.getDs_scadenza() + " è minore del totale associato.");
-                    scadenza.setIm_associato_doc_amm(scadenza.getIm_associato_doc_amm().add(calcolaTotaleAccertamentoPer(userContext, scadenza, documento, TIPO_TOTALE_PARZIALE)));
+                    scadenza.setIm_associato_doc_amm(scadenza.getIm_associato_doc_amm().add(totaleAccertamentoPer));
 
                     updateImportoAssociatoDocAmm(userContext, scadenza);
                 }
@@ -3350,17 +3357,8 @@ public class DocumentoGenericoComponent
             //brokerTD.close();
             //}
             //generico =(Documento_genericoBulk) super.inizializzaBulkPerModifica(userContext, generico);
-            it.cnr.jada.bulk.BulkHome home = getHome(userContext, Documento_generico_rigaBulk.class);
-            it.cnr.jada.persistency.sql.SQLBuilder sql = home.createSQLBuilder();
-            sql.addClause("AND", "pg_documento_generico", SQLBuilder.EQUALS, generico.getPg_documento_generico());
-            sql.addClause("AND", "cd_cds", SQLBuilder.EQUALS, generico.getCd_cds());
-            sql.addClause("AND", "esercizio", SQLBuilder.EQUALS, generico.getEsercizio());
-            sql.addClause("AND", "cd_unita_organizzativa", SQLBuilder.EQUALS, generico.getCd_unita_organizzativa());
-            sql.addClause("AND", "cd_tipo_documento_amm", SQLBuilder.EQUALS, generico.getCd_tipo_documento_amm());
-
-            getHomeCache(userContext).fetchAll(userContext);
-
-            generico.setDocumento_generico_dettColl(new it.cnr.jada.bulk.BulkList(home.fetchAll(sql)));
+            Documento_genericoHome home = (Documento_genericoHome)getHome(userContext, Documento_genericoBulk.class);
+            generico.setDocumento_generico_dettColl(new it.cnr.jada.bulk.BulkList(home.findDocumentoGenericoRigheList(generico)));
 
             //to be chkd
             generico.setTi_entrate_spese(generico.getTipo_documento().getTi_entrata_spesa().charAt(0));
@@ -5058,17 +5056,22 @@ public class DocumentoGenericoComponent
                     throw new it.cnr.jada.comp.ApplicationException(
                             "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
             } else {
-                if (!riga.getTerzo().getCd_terzo().equals(riga.getObbligazione_scadenziario().getObbligazione().getCd_terzo())
-                        && (!riga
-                        .getObbligazione_scadenziario()
-                        .getObbligazione()
-                        .getCreditore()
-                        .getAnagrafico()
-                        .getTi_entita()
-                        .equals(AnagraficoBulk.DIVERSI)
-                        && !(riga.getTerzo().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI))))
-                    throw new it.cnr.jada.comp.ApplicationException(
-                            "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
+                if (!riga.getTerzo().getCd_terzo().equals(riga.getObbligazione_scadenziario().getObbligazione().getCd_terzo())) {
+                    if (riga.getObbligazione_scadenziario().getObbligazione().getCreditore().getAnagrafico()==null) {
+                        try {
+                            TerzoHome terzohome = (TerzoHome) getHome(aUC, TerzoBulk.class);
+                            TerzoBulk creditore = (TerzoBulk)getHome(aUC, TerzoBulk.class).findByPrimaryKey(riga.getObbligazione_scadenziario().getObbligazione().getCreditore());
+                            creditore.setAnagrafico((AnagraficoBulk) getHome(aUC, AnagraficoBulk.class).findByPrimaryKey(creditore.getAnagrafico()));
+                            riga.getObbligazione_scadenziario().getObbligazione().setCreditore(creditore);
+                        } catch (PersistencyException e) {
+                            throw handleException(e);
+                        }
+                    }
+                    if (!riga.getObbligazione_scadenziario().getObbligazione().getCreditore().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI) &&
+                            !(riga.getTerzo().getAnagrafico().getTi_entita().equals(AnagraficoBulk.DIVERSI)))
+                        throw new it.cnr.jada.comp.ApplicationException(
+                                "Attenzione la riga " + riga.getDs_riga() + " ha un terzo incompatibile con il documento contabile associato.");
+                }
             }
         }
 
@@ -5105,6 +5108,12 @@ public class DocumentoGenericoComponent
         if (documentoGenerico.getLettera_pagamento_estero() != null) {
             if (!documentoGenerico.controllaCompatibilitaPer1210() || documentoGenerico.isByFondoEconomale())
                 throw new it.cnr.jada.comp.ApplicationException("E' stata selezionata una lettera di pagamento per un documento in cui o i terzi e le modalità di pagamento sono differenti o il pagamento del fondo economale è stato selezionato");
+            if(documentoGenerico.getLettera_pagamento_estero().getIban().length()>35){
+                throw new it.cnr.jada.comp.ApplicationException("Attenzione la lunghezza del campo IBAN supera i 35 caratteri previsti");
+            }
+            if(documentoGenerico.getLettera_pagamento_estero().getIndirizzo_swift().length()>11){
+                throw new it.cnr.jada.comp.ApplicationException("Attenzione la lunghezza del campo SWIFT/BIC/Routing Number supera gli 11 caratteri previsti");
+            }
         }
 
         if (documentoGenerico.isGenericoAttivo()) {
@@ -6276,14 +6285,19 @@ public class DocumentoGenericoComponent
                 riga.setIm_riga_divisa(impegno.getIm_da_trasferire());
 
                 Obbligazione_scadenzarioBulk scadenza = (Obbligazione_scadenzarioBulk) getHome( userContext, Obbligazione_scadenzarioBulk.class ).findByPrimaryKey( new Obbligazione_scadenzarioBulk( impegno.getCd_cds(), impegno.getEsercizio(), impegno.getEsercizio_originale(), impegno.getPg_obbligazione(), impegno.getPg_obbligazione_scadenzario()));
-                getHomeCache(userContext).fetchAll(userContext);
                 riga.setObbligazione_scadenziario( scadenza );
+
+                scadenza.setObbligazione((ObbligazioneBulk) getHome( userContext, ObbligazioneBulk.class ).findByPrimaryKey( scadenza.getObbligazione()));
+                scadenza.getObbligazione().setElemento_voce((Elemento_voceBulk) getHome( userContext, Elemento_voceBulk.class ).findByPrimaryKey( scadenza.getObbligazione().getElemento_voce()));
 
                 //aggiorno im_assciato_doc_amm della scadenza
                 lockBulk( userContext, scadenza.getObbligazione());
 
-                scadenza.setIm_associato_doc_amm( scadenza.getIm_associato_doc_amm().add(riga.getIm_riga()));
-                updateBulk( userContext, scadenza );
+                //nel caso la richiesta di generazione
+                if (impegnoWizard.isAggiornaDocAmm()) {
+                    scadenza.setIm_associato_doc_amm(scadenza.getIm_associato_doc_amm().add(riga.getIm_riga()));
+                    updateBulk(userContext, scadenza);
+                }
             } else {
                 AccertamentoWizard accertamentoWizard = (AccertamentoWizard) impacc;
 
@@ -6291,7 +6305,6 @@ public class DocumentoGenericoComponent
 
                 Accertamento_scadenzarioBulk accertamentoScadenzarioDB = (Accertamento_scadenzarioBulk)getHome(userContext,Accertamento_scadenzarioBulk.class).findAndLock(accertamentoScadenzario);
                 AccertamentoBulk accertamentoDB = (AccertamentoBulk)getHome(userContext,AccertamentoBulk.class).findAndLock(accertamentoScadenzario.getAccertamento());
-                getHomeCache(userContext).fetchAll(userContext);
                 if (accertamentoScadenzarioDB.getIm_scadenza().compareTo(accertamentoScadenzario.getIm_scadenza())!=0 ||
                         accertamentoScadenzarioDB.getIm_associato_doc_amm().compareTo(accertamentoScadenzario.getIm_associato_doc_amm())!= 0 ||
                         accertamentoScadenzarioDB.getIm_associato_doc_contabile().compareTo(accertamentoScadenzario.getIm_associato_doc_contabile()) !=0 )
@@ -6333,6 +6346,171 @@ public class DocumentoGenericoComponent
         catch ( Exception e )
         {
             throw handleException( e )	;
+        }
+    }
+
+    @Override
+    protected void validaCreaModificaConBulk(UserContext usercontext, OggettoBulk oggettobulk) throws ComponentException {
+        super.validaCreaModificaConBulk(usercontext, oggettobulk);
+        final List<Documento_generico_rigaBulk> documentoGenericoRighePAGOPA = Optional.ofNullable(oggettobulk)
+                .filter(Documento_genericoBulk.class::isInstance)
+                .map(Documento_genericoBulk.class::cast)
+                .map(Documento_genericoBulk::getDocumento_generico_dettColl)
+                .orElse(new BulkList<Documento_generico_rigaBulk>())
+                .stream()
+                .filter(documentoGenericoRigaBulk -> documentoGenericoRigaBulk.getModalita_pagamento()!=null && documentoGenericoRigaBulk.getModalita_pagamento().isPAGOPA()).
+                collect(Collectors.toList());
+                if (!documentoGenericoRighePAGOPA.isEmpty()) {
+                    for ( Documento_generico_rigaBulk riga:documentoGenericoRighePAGOPA){
+                        if (!Optional.ofNullable(riga.getCodice_identificativo_ente_pagopa()).isPresent()) {
+                            throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Codice Identificato Ente!", riga.getDs_riga());
+                        }
+                        if (!Optional.ofNullable(riga.getNumero_avviso_pagopa()).isPresent()) {
+                            throw new ApplicationMessageFormatException("Sulla riga {0}, con modalità di pagamento PAGOPA, bisogna valorizzare il Numero dell''avviso!", riga.getDs_riga());
+                    }
+                }
+        }
+    }
+
+    /**
+     * Modifica le righe di dettaglio associate a <code>docPassivo</code> in modo che la somma delle stesse sia pari al nuovo importo <code>newImporto</code> indicato.
+     * Le righe in eccesso vengono spostate su una nuova scadenza appositamente creata
+     *
+     * @param userContext il contesto
+     * @param docPassivo la riga per individuare i dettagli da aggiornare
+     * @param newImporto l'importo nuovo che sarà la somma delle righe di dettaglio associate a <code>docPassivo</code>
+     * @return l'oggetto <code>docPassivo</code> aggiornato
+     */
+    public V_doc_passivo_obbligazioneBulk sdoppiaDettagliInAutomatico(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivo, BigDecimal newImporto) throws ComponentException {
+        try {
+            //sdoppio riga
+            if (docPassivo.isDocumentoGenericoPassivo()) {
+                List<Documento_generico_rigaBulk> listRighe = ((Documento_genericoHome) getHome(userContext, Documento_genericoBulk.class)).findDocumentoGenericoRigheList(docPassivo)
+                        .stream()
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio().equals(docPassivo.getEsercizio_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio_originale().equals(docPassivo.getEsercizio_ori_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getCd_cds().equals(docPassivo.getCd_cds_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione().equals(docPassivo.getPg_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione_scadenzario().equals(docPassivo.getPg_obbligazione_scadenzario()))
+                        .sorted(Comparator.comparing(Documento_generico_rigaBulk::getIm_riga))
+                        .collect(Collectors.toList());
+
+                //individuo le righe da lasciare sull'obbligazione selezionata
+                List<Documento_generico_rigaBulk> listRigheScadOld = new ArrayList<>();
+                List<Documento_generico_rigaBulk> listRigheScadNew = new ArrayList<>();
+                BigDecimal importoResiduo = newImporto;
+                for (Documento_generico_rigaBulk rigaOld : listRighe) {
+                    if (importoResiduo.compareTo(BigDecimal.ZERO) == 0)
+                        listRigheScadNew.add(rigaOld);
+                    else if (rigaOld.getIm_riga().compareTo(importoResiduo) <= 0) {
+                        listRigheScadOld.add(rigaOld);
+                        importoResiduo = importoResiduo.subtract(rigaOld.getIm_riga());
+                    } else {
+                        //sdoppio riga
+                        Documento_generico_rigaBulk rigaNew = Documento_generico_rigaBulk.copyByRigaDocumento(rigaOld);
+
+                        //associo la riga creata al documento
+                        rigaNew.setDocumento_generico(rigaOld.getDocumento_generico());
+                        //ed assegno gli importi previsti
+                        rigaNew.setIm_riga(rigaOld.getIm_riga().subtract(importoResiduo));
+                        rigaNew.setIm_riga_divisa(rigaNew.getIm_riga());
+                        makeBulkPersistent(userContext, rigaNew);
+
+                        //la aggiungo alla lista delle righe da spostare
+                        listRigheScadNew.add(rigaNew);
+
+                        //riduco l'importo alla riga vecchia
+                        rigaOld.setIm_riga(importoResiduo);
+                        rigaOld.setIm_riga_divisa(importoResiduo);
+                        rigaOld.setToBeUpdated();
+                        makeBulkPersistent(userContext, rigaOld);
+
+                        //la aggiungo alla lista delle righe da rimanere
+                        listRigheScadOld.add(rigaOld);
+                    }
+                }
+
+                //Obbligazioni - devo sdoppiare le scadenze se necessario
+                BigDecimal importoNuovoVecchiaScadenza = listRigheScadOld.stream().map(Documento_generico_rigaBulk::getIm_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
+                BigDecimal importoNuovaScadenza = listRigheScadNew.stream().map(Documento_generico_rigaBulk::getIm_riga).reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                if (importoNuovaScadenza.compareTo(BigDecimal.ZERO) > 0) {
+                    Obbligazione_scadenzarioBulk scadenzaVecchia = (Obbligazione_scadenzarioBulk) getHome(userContext, Obbligazione_scadenzarioBulk.class).findAndLock(listRigheScadOld.get(0).getObbligazione_scadenziario());
+
+                    DatiFinanziariScadenzeDTO dati = new DatiFinanziariScadenzeDTO();
+                    dati.setNuovoImportoScadenzaVecchia(importoNuovoVecchiaScadenza);
+                    Obbligazione_scadenzarioBulk scadenzaNuova = (Obbligazione_scadenzarioBulk) Utility.createObbligazioneComponentSession().sdoppiaScadenzaInAutomaticoLight(userContext,
+                            scadenzaVecchia, dati);
+                    //Ricarico la scadenza vecchia dal DB che nel frattempo potrebbe essere cambiata a seguito di sdoppiamneto
+                    scadenzaVecchia = (Obbligazione_scadenzarioBulk) findByPrimaryKey(userContext, scadenzaVecchia);
+
+                    //sposto le scadenza da non pagare su questa nuova obbligazione
+                    for (Documento_generico_rigaBulk riga : listRigheScadNew) {
+                        riga.setObbligazione_scadenziario(scadenzaNuova);
+                        riga.setToBeUpdated();
+                        makeBulkPersistent(userContext, riga);
+
+                        //aumento importo associato a scadenza nuova e lo riduco su scadenza vecchia
+                        scadenzaNuova.setIm_associato_doc_amm(scadenzaNuova.getIm_associato_doc_amm().add(riga.getIm_riga()));
+                        scadenzaNuova.setToBeUpdated();
+                        //e lo riduco su scadenza vecchia
+                        scadenzaVecchia.setIm_associato_doc_amm(scadenzaVecchia.getIm_associato_doc_amm().subtract(riga.getIm_riga()));
+                        scadenzaVecchia.setToBeUpdated();
+                    }
+                    makeBulkPersistent(userContext, scadenzaNuova);
+                    makeBulkPersistent(userContext, scadenzaVecchia);
+                    docPassivo.setIm_scadenza(scadenzaVecchia.getIm_scadenza());
+                    docPassivo.setIm_totale_doc_amm(scadenzaVecchia.getIm_associato_doc_amm());
+                }
+            }
+            return docPassivo;
+        } catch (Exception e) {
+           throw handleException(e);
+        }
+    }
+
+    /**
+     * Aggiorna la modalità di pagamento su tutte le righe della fattura alla quale fa riferimento l'oggetto V_doc_passivo_obbligazioneBulk
+     *
+     * @param userContext
+     * @param docPassivoObb l'oggetto V_doc_passivo_obbligazioneBulk di cui aggiornare le righe di riferimento
+     * @param newModalitaPag la nuova modalità di paamento da assegnare
+     * @param newBanca la nuova banca da assegnare
+     * @throws ComponentException non aggiorna se almeno una riga risulta pagata
+     */
+    public void aggiornaModalitaPagamento(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, Modalita_pagamentoBulk newModalitaPag, BancaBulk newBanca) throws ComponentException {
+        try {
+            if (docPassivoObb.isDocumentoGenericoPassivo()) {
+                List<Documento_generico_rigaBulk> listRighe = ((Documento_genericoHome) getHome(userContext, Documento_genericoBulk.class)).findDocumentoGenericoRigheList(docPassivoObb)
+                        .stream()
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio().equals(docPassivoObb.getEsercizio_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getEsercizio_originale().equals(docPassivoObb.getEsercizio_ori_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getCd_cds().equals(docPassivoObb.getCd_cds_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione().equals(docPassivoObb.getPg_obbligazione()))
+                        .filter(el -> el.getObbligazione_scadenziario().getPg_obbligazione_scadenzario().equals(docPassivoObb.getPg_obbligazione_scadenzario()))
+                        .collect(Collectors.toList());
+
+                Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = (Rif_modalita_pagamentoBulk)super.findByPrimaryKey(userContext, newModalitaPag.getRif_modalita_pagamento());
+                BancaBulk bancaBulk = (BancaBulk) super.findByPrimaryKey(userContext, newBanca);
+
+                for (Documento_generico_rigaBulk riga:listRighe) {
+                    if (!riga.getCd_modalita_pag().equals(newModalitaPag.getCd_modalita_pag()) || !riga.getPg_banca().equals(newBanca.getPg_banca())) {
+                        if (riga.isPagata())
+                            throw new ApplicationException("Operazione non possibile! Il documento " +
+                                    docPassivoObb.getEsercizio() + "/" + docPassivoObb.getCd_cds() + "/" + docPassivoObb.getCd_tipo_documento_amm() + "/" + docPassivoObb.getPg_documento_amm() +
+                                    " presenta righe associate alla scadenza "+docPassivoObb.getPg_obbligazione_scadenzario()+" dell'obbligazione "+
+                                    docPassivoObb.getEsercizio_obbligazione()+"/"+docPassivoObb.getEsercizio_ori_obbligazione()+"/"+
+                                    docPassivoObb.getCd_cds_obbligazione()+"/"+docPassivoObb.getPg_obbligazione()+" che risultano già pagate. Non è possibile modificare la modalità di pagamento.");
+                        riga.setModalita_pagamento(rifModalitaPagamentoBulk);
+                        riga.setBanca(bancaBulk);
+                        riga.setCd_terzo_cessionario(Optional.ofNullable(bancaBulk).flatMap(el->Optional.ofNullable(el.getCd_terzo_delegato())).orElse(null));
+                        riga.setToBeUpdated();
+                        makeBulkPersistent(userContext, riga);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw handleException(e);
         }
     }
 }

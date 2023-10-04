@@ -23,6 +23,7 @@ import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
 import it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
+import it.cnr.contab.docamm00.bp.IDocAmmEconomicaBP;
 import it.cnr.contab.docamm00.bp.IDocumentoAmministrativoBP;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.IDocumentoAmministrativoSpesaComponentSession;
@@ -260,13 +261,15 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
 
     protected it.cnr.jada.util.jsp.Button[] createToolbar() {
         final Properties properties = Config.getHandler().getProperties(getClass());
-        return Stream.concat(Arrays.asList(super.createToolbar()).stream(),
+        Button[] buttons = Stream.concat(Arrays.asList(super.createToolbar()).stream(),
                 Arrays.asList(
                         new Button(properties, "CRUDToolbar.printpdf"),
                         new Button(properties, "CRUDToolbar.contabile"),
                         new Button(properties, "CRUDToolbar.davariare"),
                         new Button(properties, "CRUDToolbar.save.variazione.sostituzione")
                 ).stream()).toArray(Button[]::new);
+        buttons = IDocAmmEconomicaBP.addPartitario(buttons, attivaEconomicaParallela, isEditing(), getModel());
+        return  buttons;
     }
 
     public boolean isDaVariareButtonHidden() {
@@ -315,15 +318,15 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                 .filter(MandatoBulk.class::isInstance)
                 .map(MandatoBulk.class::cast)
                 .orElseThrow(() -> new BusinessProcessException("Mandato non trovato!"));
-        CRUDMandatoVariazioneBP crudMandatoVariazioneBP =
-                Optional.ofNullable(actionContext.createBusinessProcess("CRUDMandatoVariazioneBP"))
-                        .filter(CRUDMandatoVariazioneBP.class::isInstance)
-                        .map(CRUDMandatoVariazioneBP.class::cast)
-                        .orElseThrow(() -> new BusinessProcessException("Non è possibile procedere alla variazione del Manadato"));
-        crudMandatoVariazioneBP.setModel(actionContext, mandatoBulk);
-        crudMandatoVariazioneBP.setDaVariare(actionContext);
-        actionContext.closeBusinessProcess();
-        actionContext.addBusinessProcess(crudMandatoVariazioneBP);
+        mandatoBulk.setStatoVarSos(StatoVariazioneSostituzione.DA_VARIARE.value());
+        mandatoBulk.setToBeUpdated();
+        try {
+            final OggettoBulk oggettoBulk = createComponentSession().modificaConBulk(actionContext.getUserContext(), mandatoBulk);
+            commitUserTransaction();
+            basicEdit(actionContext, oggettoBulk, true);
+        } catch (ComponentException | RemoteException e) {
+            throw handleException(e);
+        }
     }
 
 
@@ -516,7 +519,6 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
             setCup_attivo(Utility.createParametriCnrComponentSession().getParametriCnr(actioncontext.getUserContext(), CNRUserContext.getEsercizio(actioncontext.getUserContext())).getFl_cup().booleanValue());
             setSiope_cup_attivo(Utility.createParametriCnrComponentSession().getParametriCnr(actioncontext.getUserContext(), CNRUserContext.getEsercizio(actioncontext.getUserContext())).getFl_siope_cup().booleanValue());
             setTesoreria_unica(Utility.createParametriCnrComponentSession().getParametriCnr(actioncontext.getUserContext(), CNRUserContext.getEsercizio(actioncontext.getUserContext())).getFl_tesoreria_unica().booleanValue());
-            setSupervisore(Utility.createUtenteComponentSession().isSupervisore(actioncontext.getUserContext()));
             final CNRUserInfo cnrUserInfo = Optional.ofNullable(actioncontext)
                     .flatMap(actionContext -> Optional.ofNullable(actionContext.getUserInfo()))
                     .filter(CNRUserInfo.class::isInstance)
@@ -797,7 +799,8 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                 return getDocumentoAmministrativoSpesaComponentSession("CNRMISSIONI00_EJB_AnticipoComponentSession")
                         .cercaObbligazioni(context, filtro);
             }
-            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S: {
+            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S:
+            case "GEN_STIP_S": {
                 return getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession")
                         .cercaObbligazioni(context, filtro);
             }
@@ -886,7 +889,8 @@ public class CRUDMandatoBP extends CRUDAbstractMandatoBP implements IDocumentoAm
                         .map(Fattura_passiva_rigaBulk::getObbligazione_scadenziario)
                         .orElseThrow(() -> new BusinessProcessException("Impegno sulla riga non trovato!"));
             }
-            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S: {
+            case Numerazione_doc_ammBulk.TIPO_DOC_GENERICO_S:
+            case "GEN_STIP_S": {
                 final IDocumentoAmministrativoSpesaComponentSession documentoGenericoComponentSession =
                         getDocumentoAmministrativoSpesaComponentSession("CNRDOCAMM00_EJB_DocumentoGenericoComponentSession");
                 Documento_genericoBulk documentoGenericoPassivoBulk = Optional.ofNullable(

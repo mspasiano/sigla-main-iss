@@ -17,14 +17,29 @@
 
 package it.cnr.contab.doccont00.action;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.CambiaModalitaPagamentoBulk;
+import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.actions.EconomicaAction;
+import it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_accertamentiVBulk;
+import it.cnr.contab.docamm00.docs.bulk.Filtro_ricerca_obbligazioniVBulk;
+import it.cnr.contab.doccont00.bp.CRUDMandatoBP;
 import it.cnr.contab.doccont00.bp.CRUDReversaleBP;
 import it.cnr.contab.doccont00.bp.ListaSospesiBP;
 import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.util00.bp.ModalBP;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Forward;
+import it.cnr.jada.action.HookForward;
 import it.cnr.jada.bulk.BulkInfo;
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.RemoteIterator;
@@ -32,7 +47,8 @@ import it.cnr.jada.util.action.*;
 import it.cnr.jada.util.ejb.EJBCommonServices;
 
 import java.rmi.RemoteException;
-import java.util.Iterator;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Azione che gestisce le richieste relative alla Gestione Documenti Contabili
@@ -536,5 +552,187 @@ public class CRUDReversaleAction extends EconomicaAction {
         } catch (Throwable e) {
             return handleException(actioncontext, e);
         }
+    }
+
+    public Forward doCambiaStatoDaVariare(ActionContext actioncontext) {
+        try {
+            fillModel(actioncontext);
+            CRUDReversaleBP bp = (CRUDReversaleBP) actioncontext.getBusinessProcess();
+            bp.impostaReversaleDaVariare(actioncontext);
+            return actioncontext.findDefaultForward();
+        } catch (Exception exception) {
+            return handleException(actioncontext, exception);
+        }
+    }
+
+    public Forward doSalvaVariazioneSostituzione(ActionContext actioncontext) throws RemoteException {
+        try {
+            CRUDReversaleBP bp = Optional.ofNullable(getBusinessProcess(actioncontext))
+                    .filter(CRUDReversaleBP.class::isInstance)
+                    .map(CRUDReversaleBP.class::cast)
+                    .orElseThrow(() -> new DetailedRuntimeException("CRUDReversaleBP non trovato!"));
+            return doSalva(actioncontext);
+        } catch (Exception exception) {
+            return handleException(actioncontext, exception);
+        }
+    }
+
+
+    /**
+     * Gestisce la ricerca degli Accertamenti
+     *
+     *
+     * @param actionContext	L'ActionContext della richiesta
+     * @return Il Forward alla pagina di risposta
+     */
+    public Forward doRicercaAccertamento(ActionContext actionContext) {
+        CRUDReversaleBP bp = Optional.ofNullable(getBusinessProcess(actionContext))
+                .filter(CRUDReversaleBP.class::isInstance)
+                .map(CRUDReversaleBP.class::cast)
+                .orElseThrow(() -> new DetailedRuntimeException("CRUDReversaleBP non trovato!"));
+        try {
+            fillModel(actionContext);
+            List<Reversale_rigaBulk> models = bp.getDocumentiAttiviSelezionati().getSelectedModels(actionContext);
+            Reversale_rigaBulk reversaleRigaBulk =
+                    Optional.ofNullable(models)
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .reduce((a, b) -> {
+                                throw new IllegalStateException();
+                            })
+                            .get();
+            return basicDoRicercaAccertamento(actionContext, reversaleRigaBulk);
+        } catch (IllegalStateException | NoSuchElementException _ex) {
+            bp.setErrorMessage("Per procedere, selezionare un unico dettaglio su cui cambiare l'accertamento!");
+            return actionContext.findDefaultForward();
+        } catch (Throwable e) {
+            return handleException(actionContext, e);
+        }
+    }
+
+    private Forward basicDoRicercaAccertamento(ActionContext actionContext, Reversale_rigaBulk reversaleRigaBulk) {
+        try {
+            //imposta il filtro per la ricerca
+            Filtro_ricerca_accertamentiVBulk filtro = new Filtro_ricerca_accertamentiVBulk();
+            filtro.setCliente(reversaleRigaBulk.getReversale().getTerzo());
+            filtro.setIm_importo(reversaleRigaBulk.getIm_reversale_riga());
+            filtro.setCd_unita_organizzativa(reversaleRigaBulk.getCd_uo_doc_amm());
+            filtro.setCd_uo_origine(reversaleRigaBulk.getReversale().getCd_uo_origine());
+            filtro.setFl_importo(Boolean.TRUE);
+            filtro.setData_scadenziario(null);
+            filtro.setFl_data_scadenziario(Boolean.FALSE);
+
+            //richiama il filtro RicercaAccertamentiBP
+            it.cnr.jada.util.action.BulkBP robp= (it.cnr.jada.util.action.BulkBP) actionContext.getUserInfo()
+                    .createBusinessProcess(actionContext, "RicercaAccertamentiBP", new Object[]{"MRSWTh"});
+            robp.setModel(actionContext, filtro);
+            //imposta il bringback su doContabilizzaAccertamenti
+            actionContext.addHookForward("bringback", this, "doContabilizzaAccertamenti");
+            return actionContext.addBusinessProcess(robp);
+        } catch (Throwable e) {
+            return handleException(actionContext, e);
+        }
+    }
+
+    public Forward doContabilizzaAccertamenti(ActionContext context) throws BusinessProcessException, ApplicationException {
+        HookForward caller = (HookForward) context.getCaller();
+        CRUDReversaleBP bp = Optional.ofNullable(getBusinessProcess(context))
+                .filter(CRUDReversaleBP.class::isInstance)
+                .map(CRUDReversaleBP.class::cast)
+                .orElseThrow(() -> new DetailedRuntimeException("CRUDReversaleBP non trovato!"));
+        Accertamento_scadenzarioBulk scadenza = Optional.ofNullable(caller.getParameter("accertamentoSelezionato"))
+                .filter(Accertamento_scadenzarioBulk.class::isInstance)
+                .map(Accertamento_scadenzarioBulk.class::cast)
+                .orElseThrow(() -> new ApplicationException("Selezionare un accertamento da associare!"));
+        try {
+            List<Reversale_rigaBulk> models = bp.getDocumentiAttiviSelezionati().getSelectedModels(context);
+            Reversale_rigaBulk reversaleRigaBulk =
+                    Optional.ofNullable(models)
+                            .orElse(Collections.emptyList())
+                            .stream()
+                            .reduce((a, b) -> {
+                                throw new IllegalStateException();
+                            })
+                            .get();
+            bp.cambiaAccertamentoScadenzario(context, reversaleRigaBulk, scadenza);
+        } catch (Throwable e) {
+            return handleException(context, e);
+        }
+        return context.findDefaultForward();
+    }
+
+    public Forward doCambiaModalitaPagamento(ActionContext actionContext) throws BusinessProcessException {
+        CRUDReversaleBP crudReversaleBP = (CRUDReversaleBP) actionContext.getBusinessProcess();
+        final Optional<ReversaleBulk> optionalReversaleBulk = Optional.ofNullable(crudReversaleBP.getModel())
+                .filter(ReversaleBulk.class::isInstance)
+                .map(ReversaleBulk.class::cast);
+        final List<Reversale_rigaBulk> reversaleRigaBulks = optionalReversaleBulk
+                .map(reversaleBulk -> reversaleBulk.getReversale_rigaColl())
+                .orElse(new BulkList<>())
+                .stream().collect(Collectors.toList());
+        final Optional<BancaBulk> bancaBulk = reversaleRigaBulks.stream()
+                .map(Reversale_rigaBulk::getBanca)
+                .findAny();
+
+        final Rif_modalita_pagamentoBulk rifModalitaPagamentoBulk = reversaleRigaBulks.stream()
+                .map(Reversale_rigaBulk::getModalita_pagamento)
+                .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
+                .findAny().orElseThrow(() -> new BusinessProcessException(new ApplicationException("Manca il Terzo sulla Reversale!")) );
+
+        final TerzoBulk terzo = bancaBulk
+                .map(BancaBulk::getTerzo)
+                .orElseThrow(() -> new BusinessProcessException(new ApplicationException("Manca il Terzo sulla Reversale!")) );
+        try {
+            if (bancaBulk.isPresent()) {
+                final List<Modalita_pagamentoBulk> findModalitaByTerzo = crudReversaleBP.createComponentSession().find(
+                        actionContext.getUserContext(), Modalita_pagamentoBulk.class,
+                        "findModalitaByTerzo",
+                        actionContext.getUserContext(), terzo);
+                final List<Rif_modalita_pagamentoBulk> rifModalitaPagamentoBulks = findModalitaByTerzo.stream()
+                        .map(Modalita_pagamentoBulk::getRif_modalita_pagamento)
+                        .collect(Collectors.toList());
+
+                ModalBP modalBP = (ModalBP) actionContext.createBusinessProcess("ModalitaPagamentoModalBP");
+                modalBP.setCssCard("col-md-9");
+                modalBP.setModel(actionContext,
+                        new CambiaModalitaPagamentoBulk(
+                                terzo,
+                                bancaBulk.get(),
+                                rifModalitaPagamentoBulks
+                                        .stream()
+                                        .filter(rifModalitaPagamentoBulk1 -> rifModalitaPagamentoBulk1.equalsByPrimaryKey(rifModalitaPagamentoBulk))
+                                        .findAny()
+                                        .orElseGet(() -> rifModalitaPagamentoBulks.stream().findAny().get()),
+                                rifModalitaPagamentoBulks
+                        )
+                );
+                actionContext.addHookForward("model", this, "doConfirmCambiaModalitaPagamento");
+                return actionContext.addBusinessProcess(modalBP);
+            } else {
+                return actionContext.findDefaultForward();
+            }
+        } catch (ComponentException | RemoteException e) {
+            return handleException(actionContext, e);
+        }
+    }
+
+    public Forward doConfirmCambiaModalitaPagamento(ActionContext actionContext) throws BusinessProcessException {
+        CRUDReversaleBP crudReversaleBP = (CRUDReversaleBP) actionContext.getBusinessProcess();
+        HookForward caller = (HookForward) actionContext.getCaller();
+        CambiaModalitaPagamentoBulk cambiaModalitaPagamentoBulk = (CambiaModalitaPagamentoBulk) caller.getParameter("model");
+        final Optional<ReversaleBulk> optionalReversaleBulk = Optional.ofNullable(crudReversaleBP.getModel())
+                .filter(ReversaleBulk.class::isInstance)
+                .map(ReversaleBulk.class::cast);
+        final List<Reversale_rigaBulk> reversaleRigaBulks = optionalReversaleBulk
+                .map(reversaleBulk -> reversaleBulk.getReversale_rigaColl())
+                .orElse(new BulkList<>())
+                .stream().collect(Collectors.toList());
+        reversaleRigaBulks.stream()
+                .forEach(reversaleRigaBulk -> {
+                    reversaleRigaBulk.setToBeUpdated();
+                    reversaleRigaBulk.setCd_modalita_pag(cambiaModalitaPagamentoBulk.getModalita_pagamento().getCd_modalita_pag());
+                    reversaleRigaBulk.setBanca(cambiaModalitaPagamentoBulk.getBanca());
+                });
+        return actionContext.findDefaultForward();
     }
 }

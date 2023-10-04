@@ -19,6 +19,7 @@ package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.docamm00.docs.bulk.Numerazione_doc_ammBulk;
 import it.cnr.contab.docamm00.docs.bulk.Tipo_documento_ammBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BusyResourceException;
@@ -27,6 +28,7 @@ import it.cnr.jada.bulk.OutdatedResourceException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.PersistentHome;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
@@ -113,12 +115,37 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         sql.addSQLClause("AND", "ESERCIZIO_ORI_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio_originale());
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getPg_obbligazione());
         sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
+        sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.NOT_EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
         sql.addOrderBy("FL_SELEZIONE DESC");
-        List<V_doc_passivo_obbligazioneBulk> l = docHome.fetchAll(sql);
-        return Optional.ofNullable(l.stream()
-                .filter(e -> e.getCd_tipo_documento_amm().equals(Numerazione_doc_ammBulk.TIPO_ORDINE))
-                .findFirst().orElse(null))
-                .orElse(l.stream().findFirst().orElse(null));
+        sql.addOrderBy("DT_FATTURA_FORNITORE ASC");
+        List l =  docHome.fetchAll(sql);
+        if ( l.size() > 0 )
+            return (V_doc_passivo_obbligazioneBulk) l.get(0);
+        else
+            return null;
+    }
+
+    public List<V_doc_passivo_obbligazioneBulk> findDocs_ordine(Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        PersistentHome docHome = getHomeCache().getHome(V_doc_passivo_obbligazioneBulk.class);
+        SQLBuilder sql = docHome.createSQLBuilder();
+        sql.addSQLClause("AND", "CD_CDS_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getCd_cds());
+        sql.addSQLClause("AND", "ESERCIZIO_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio());
+        sql.addSQLClause("AND", "ESERCIZIO_ORI_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getEsercizio_originale());
+        sql.addSQLClause("AND", "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getPg_obbligazione());
+        sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
+        sql.addSQLClause("AND", "CD_TIPO_DOCUMENTO_AMM", SQLBuilder.EQUALS, Numerazione_doc_ammBulk.TIPO_ORDINE);
+        sql.addOrderBy("FL_SELEZIONE DESC");
+        return docHome.fetchAll(sql);
+    }
+    public V_doc_passivo_obbligazioneBulk findDoc_ordine(Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        return findDocs_ordine(os).stream().findFirst().orElse(null);
+    }
+
+    public List<OrdineAcqConsegnaBulk> findConsegne(Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        PersistentHome docHome = getHomeCache().getHome(OrdineAcqConsegnaBulk.class);
+        SQLBuilder sql = docHome.createSQLBuilder();
+        sql.addClause(FindClause.AND, "obbligazioneScadenzario", SQLBuilder.EQUALS, os);
+        return docHome.fetchAll(sql);
     }
 
     /**
@@ -144,26 +171,23 @@ public class Obbligazione_scadenzarioHome extends BulkHome implements IScadenzaD
         return null;
     }
 
-    /**
-     * <!-- @TODO: da completare -->
-     *
-     * @param os
-     * @return
-     * @throws IntrospectionException
-     * @throws PersistencyException
-     */
     public java.util.List findObbligazione_scad_voceList(it.cnr.jada.UserContext userContext, Obbligazione_scadenzarioBulk os) throws PersistencyException {
+        return findObbligazione_scad_voceList(userContext, os, Boolean.TRUE);
+    }
+
+    public java.util.List findObbligazione_scad_voceList(it.cnr.jada.UserContext userContext, Obbligazione_scadenzarioBulk os, boolean fetchAll) throws PersistencyException {
 //	PersistentHome osvHome = getHomeCache().getHome(Obbligazione_scad_voceBulk.class, "default", "it.cnr.contab.doccont00.comp.ObbligazioneComponent.edit" );
         PersistentHome osvHome = getHomeCache().getHome(Obbligazione_scad_voceBulk.class);
         SQLBuilder sql = osvHome.createSQLBuilder();
-        sql.addSQLClause("AND", "CD_CDS", SQLBuilder.EQUALS, os.getObbligazione().getCds().getCd_unita_organizzativa());
-        sql.addSQLClause("AND", "ESERCIZIO", SQLBuilder.EQUALS, os.getObbligazione().getEsercizio());
-        sql.addSQLClause("AND", "ESERCIZIO_ORIGINALE", SQLBuilder.EQUALS, os.getObbligazione().getEsercizio_originale());
-        sql.addSQLClause("AND", "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getObbligazione().getPg_obbligazione());
-        sql.addSQLClause("AND", "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
+        sql.addSQLClause(FindClause.AND, "CD_CDS", SQLBuilder.EQUALS, os.getObbligazione().getCds().getCd_unita_organizzativa());
+        sql.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, os.getObbligazione().getEsercizio());
+        sql.addSQLClause(FindClause.AND, "ESERCIZIO_ORIGINALE", SQLBuilder.EQUALS, os.getObbligazione().getEsercizio_originale());
+        sql.addSQLClause(FindClause.AND, "PG_OBBLIGAZIONE", SQLBuilder.EQUALS, os.getObbligazione().getPg_obbligazione());
+        sql.addSQLClause(FindClause.AND, "PG_OBBLIGAZIONE_SCADENZARIO", SQLBuilder.EQUALS, os.getPg_obbligazione_scadenzario());
         sql.addOrderBy("CD_LINEA_ATTIVITA");
         List l = osvHome.fetchAll(sql);
-        getHomeCache().fetchAll(userContext);
+        if (fetchAll)
+            getHomeCache().fetchAll(userContext);
         return l;
     }
 

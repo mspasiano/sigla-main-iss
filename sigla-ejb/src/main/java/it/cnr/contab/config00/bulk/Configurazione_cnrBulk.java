@@ -69,6 +69,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_CDS_SAC = "CDS_SAC";
     public final static String PK_ELEMENTO_VOCE_SPECIALE = "ELEMENTO_VOCE_SPECIALE";
     public final static String SK_VOCE_IVA_FATTURA_ESTERA = "VOCE_IVA_FATTURA_ESTERA";
+    public final static String SK_NETTO_DA_TRATTENERE = "NETTO_DA_TRATTENERE";
     public final static String SK_TEMPO_IND_SU_PROGETTI_FINANZIATI = "TEMPO_IND_SU_PROGETTI_FINANZIATI";
 
     public final static String PK_BENE_SERVIZIO_SPECIALE = "BENE_SERVIZIO_SPECIALE";
@@ -82,6 +83,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_UO_ACCREDITAMENTO_SAC = "UO_ACCREDITAMENTO_SAC";
     public final static String SK_UO_DISTINTA_TUTTA_SAC = "UO_DISTINTA_TUTTA_SAC";
     public final static String SK_UO_RAGIONERIA = "UO_RAGIONERIA";
+    public final static String SK_UO_VERSAMENTO_IVA = "UO_VERSAMENTO_IVA";
 
     public final static String PK_PDG_VARIAZIONE = "PDG_VARIAZIONE";
     public final static String SK_TIPO_VAR_APPROVA_CDS = "TIPO_VAR_APPROVA_CDS";
@@ -94,6 +96,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_CDR_SERVIZIO_ENTE = "CDR_SERVIZIO_ENTE";
 
     public final static String PK_FATTURAZIONE_ELETTRONICA = "FATTURAZIONE_ELETTRONICA";
+    public final static String SK_DOMINIO_EMAIL = "DOMINIO_EMAIL";
 
     public final static String SK_MAIL_REFERENTE_TECNICO = "MAIL_REFERENTE_TECNICO";
     public final static String SK_TELEFONO_REFERENTE_TECNICO = "TELEFONO_REFERENTE_TECNICO";
@@ -110,6 +113,8 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
 
     public final static String PK_COSTANTI = "COSTANTI";
     public final static String SK_TOTALE_GIORNI_LAVORATIVI_COSTI_PERSONALE = "TOTALE_GIORNI_LAVORATIVI_COSTI_PERSONALE";
+
+    public final static String SK_CODICE_ANAG_ENTE = "CODICE_ANAG_ENTE";
 
     public final static String PK_ANNI_RESIDUI_VAR_ST_RES = "ANNI_RESIDUI_VAR_ST_RES";
     public final static String PK_ANNI_RESIDUI_IM_RES_IMP = "ANNI_RESIDUI_IM_RES_IMP";
@@ -133,6 +138,8 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_GESTIONE_ORDINI = "GESTIONE";
     public final static String PK_ORDINI = "ORDINI";
 
+    public final static String SK_CIG_IMP_SENZA_FLUSSI_FINANZ = "CIG_IMP_SENZA_FLUSSI_FINANZ";
+
     public final static String SK_ORDINE_AUT_ROTTURA_UO_DESTINAZIONE = "ORDINI_AUT_ROTTURA_UO_DEST";
     public final static String SK_ORDINE_IMPEGNO_UO_DESTINAZIONE = "IMPEGNO_ORDINI_UO_DEST";
     public final static String PK_FATTURA_PASSIVA = "FATTURA_PASSIVA";
@@ -141,6 +148,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String PK_GESTIONE_PROGETTI = "PROGETTI";
     public final static String SK_PROGETTO_PIANO_ECONOMICO = "PIANO_ECONOMICO";
     public final static String SK_NATURA_REIMPIEGO = "NATURA_REIMPIEGO";
+    public final static String SK_ASS_PROGETTI_ANGAGRAFICO = "ASS_PROGETTI_ANGAGRAFICO";
 
     public final static String PK_FLUSSO_ORDINATIVI = "FLUSSO_ORDINATIVI";
     public final static String SK_CODICE_ABI_BT = "CODICE_ABI_BT";
@@ -150,6 +158,9 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String SK_CODICE_TRAMITE_BT = "CODICE_TRAMITE_BT";
     public final static String SK_CODICE_ISTAT_ENTE = "CODICE_ISTAT_ENTE";
     public final static String SK_ATTIVO_SIOPEPLUS = "ATTIVO_SIOPEPLUS";
+    public final static String SK_INVIA_TAG_BILANCIO = "INVIA_TAG_BILANCIO";
+    public final static String SK_TIPO_RAPPORTO_TESORERIA = "TIPO_RAPPORTO_TESORERIA";
+
     public final static String SK_ANNULLA_MANDATI = "ANNULLA_MANDATI";
     public final static String SK_ANNULLA_REVERSALI = "ANNULLA_REVERSALI";
     public final static String SK_RIPORTA_MANDATO_DAFIRMARE = "RIPORTA_MANDATO_DAFIRMARE";
@@ -161,13 +172,27 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String PK_BLOCCO_RESIDUI = "BLOCCO_RESIDUI";
     public final static String SK_NATURA_FINANZIAMENTO = "NATURA_FINANZIAMENTO";
 
-    public final static String PK_CORI_SPECIALE = "CORI_SPECIALE";
-    public final static String SK_IVA = "IVA";
+	public final static String PK_CORI_SPECIALE = "CORI_SPECIALE";
+	public final static String SK_IVA = "IVA";
     public final static String SK_CORI_STIPENDI_EXTRA = "CORI_STIPENDI_EXTRA";
 
     public final static String PK_VOCEEP_SPECIALE = "VOCEEP_SPECIALE";
     public final static String SK_IVA_CREDITO = "IVA_CREDITO";
     public final static String SK_IVA_DEBITO = "IVA_DEBITO";
+    public final static String SK_ERARIO_C_IVA = "ERARIO_C_IVA";
+    public final static String SK_CREDITO_DEBITO_ANTICIPO = "CREDITO_DEBITO_ANTICIPO";
+    public final static String SK_CREDITO_DEBITO_ECONOMO = "CREDITO_DEBITO_ECONOMO";
+    public final static String SK_CREDITO_DEBITO_DEFAULT = "CREDITO_DEBITO_DEFAULT";
+    public final static String SK_CREDITO_RIMBORSO_ANTICIPO = "CREDITO_RIMBORSO_ANTICIPO";
+    public final static String SK_COSTO_IVA_NON_DETRAIBILE = "COSTO_IVA_NON_DETRAIBILE";
+    public final static String SK_UTILE_PERDITE_CAMBI = "UTILE_PERDITE_CAMBI";
+    public final static String SK_COMMISSIONI_BANCARIE = "COMMISSIONI_BANCARIE";
+    public final static String SK_CONTI_LIQUIDAZIONE_ESTERNA_IVA = "CONTI_LIQUIDAZIONE_ESTERNA_IVA";
+    public final static String SK_CREDITO_RITENUTE_SPLIT_PAYMENT = "CREDITO_RITENUTE_SPLIT_PAYMENT";
+    public final static String SK_FATTURE_DA_RICEVERE = "FATTURE_DA_RICEVERE";
+    public final static String SK_FATTURE_DA_EMETTERE = "FATTURE_DA_EMETTERE";
+    public final static String SK_RATEI_PASSIVI = "RATEI_PASSIVI";
+    public final static String SK_RATEI_ATTIVI = "RATEI_ATTIVI";
     public final static String SK_BANCA = "BANCA";
 
     public final static String PK_VARIAZIONE_AUTOMATICA = "VARIAZIONE_AUTOMATICA";
@@ -176,17 +201,46 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String PK_STIPENDI = "STIPENDI";
     public final static String SK_CODICE_BOLLO = "CODICE_BOLLO";
 
-    public final static String PK_IMPEGNI = "IMPEGNI";
-    public final static String SK_IMPEGNI_PLURIENNALI = "IMPEGNI_PLURIENNALI";
+	public final static String PK_IMPEGNI = "IMPEGNI";
+	public final static String SK_IMPEGNI_PLURIENNALI = "IMPEGNI_PLURIENNALI";
 
-    public final static String PK_ACCERTAMENTI = "ACCERTAMENTI";
-    public final static String SK_ACCERTAMENTI_PLURIENNALI = "ACCERTAMENTI_PLURIENNALI";
+	public final static String PK_ACCERTAMENTI = "ACCERTAMENTI";
+	public final static String SK_ACCERTAMENTI_PLURIENNALI = "ACCERTAMENTI_PLURIENNALI";
+
+    public final static String PK_INVENTARIO = "INVENTARIO";
+    public final static String SK_GESTIONE_ETICHETTA_BENE = "GESTIONE_ETICHETTA_BENE";
+    public final static String SK_GESTIONE_BENE_DISMESSO_INVENTARIO = "GESTIONE_BENE_DISMESSO";
+
+    public final static String SK_GESTIONE_INVENTARIA_DA_DOCUMENTI = "GESTIONE_INVENTARIA_DA_DOCUMENTI";
+
+    public final static String PK_PAGAMENTO_ESTERO = "PAGAMENTO_ESTERO";
+    public final static String SK_PAGAMENTO_ESTERO_ISS = "MODULO_PAGAMENTO_ISS";
 
     public Configurazione_cnrBulk() {
         super();
     }
+    public final static String PK_GESTIONE_CONTRATTI = "CONTRATTI";
+    public final static String SK_ATT_REST_STORED_FROM_SIGLA = "ATT_REST_CONTR_STORED_FROM_SIGLA";
+
+    public final static String PK_ESERCIZIO_SPECIALE = "ESERCIZIO_SPECIALE";
+    public final static String SK_ESERCIZIO_PARTENZA = "ESERCIZIO_PARTENZA";
+
+    public final static String PK_SOSPESI = "SOSPESI";
+    public final static String SK_GESTIONE_STATO_INIZIALE = "GESTIONE_STATO_INIZIALE";
 
     public Configurazione_cnrBulk(java.lang.String cd_chiave_primaria, java.lang.String cd_chiave_secondaria, java.lang.String cd_unita_funzionale, java.lang.Integer esercizio) {
         super(cd_chiave_primaria, cd_chiave_secondaria, cd_unita_funzionale, esercizio);
+    }
+
+    public String getVal(int fieldNumber) {
+        if (fieldNumber==1)
+            return this.getVal01();
+        else if (fieldNumber==2)
+            return this.getVal02();
+        else if (fieldNumber==3)
+            return this.getVal03();
+        else if (fieldNumber==4)
+            return this.getVal04();
+        return null;
     }
 }

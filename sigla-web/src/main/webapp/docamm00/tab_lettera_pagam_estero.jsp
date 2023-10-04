@@ -98,20 +98,8 @@
 		<tr>
 			<td colspan="4">
 				<div class="GroupLabel h3 text-primary">Sospeso</div>
-				<div class="Group card" style="width:100%">
-					<table width="100%">
-						<tr>
-							<% bp.writeFormFieldDoc1210(out,"cd_sospeso"); %>
-							<td colspan="2">
-								<% bp.writeFormInput(out,null, "sospeso",(fatturaPassiva.getLettera_pagamento_estero()!=null && fatturaPassiva.getLettera_pagamento_estero().getStato_trasmissione().compareTo(MandatoBulk.STATO_TRASMISSIONE_TRASMESSO)!=0),null,""); %>
-							</td>
-
-						</tr>
-						<tr>
-							<% bp.writeFormFieldDoc1210(out,"esercizio_sospeso"); %>
-							<% bp.writeFormFieldDoc1210(out,"cd_cds_sospeso"); %>
-						</tr>
-					</table>
+				<div class="Group" style="width:100%">
+                    <% bp.writeFormInput(out,null, "sospeso",(fatturaPassiva.getLettera_pagamento_estero()!=null && fatturaPassiva.getLettera_pagamento_estero().getStato_trasmissione().compareTo(MandatoBulk.STATO_TRASMISSIONE_TRASMESSO)!=0),null,""); %>
 				</div>
 			</td>
 		</tr>

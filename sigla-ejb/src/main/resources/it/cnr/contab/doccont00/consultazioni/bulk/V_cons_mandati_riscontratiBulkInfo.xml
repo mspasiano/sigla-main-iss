@@ -32,7 +32,13 @@
 		property="dt_registrazione"
 		inputType="TEXT"
 		formatName="date_short"
-		label="Data Registrazione" />
+		label="Data Emissione Mandato" />
+	<fieldProperty
+		name="dt_pagamento"
+		property="dt_pagamento"
+		inputType="TEXT"
+		formatName="date_short"
+		label="Data Pagamento Mandato" />
 	<fieldProperty
 		name="cd_sospeso"
 		property="cd_sospeso"
@@ -54,6 +60,12 @@
 		inputSize="10"
 		maxLength="10"
 		label="Prog. Mandato" />
+	<fieldProperty
+		name="ti_mandato"
+		property="ti_mandato"
+		inputType="SELECT"
+		label="Tipo"
+		keysProperty="tipoMandatoKeys" />
 	<fieldProperty
 		name="cd_cds"
 		property="cd_cds"
@@ -87,6 +99,10 @@
 	<formFieldProperty
 		name="dt_registrazione" />
 	<formFieldProperty
+		name="dt_pagamento" />
+	<formFieldProperty
+		name="ti_mandato" />
+	<formFieldProperty
 		name="im_sospeso" />
 	<formFieldProperty
 		name="im_associato" />
@@ -96,11 +112,15 @@
 	<findFieldProperty
 		name="cd_unita_organizzativa" />
 	<findFieldProperty
-		name="pg_mandato" />	
+		name="pg_mandato" />
+	<findFieldProperty
+		name="ti_mandato" />
 	<findFieldProperty
 		name="cd_sospeso" />	
 	<findFieldProperty
 		name="dt_registrazione" />
+	<findFieldProperty
+		name="dt_pagamento" />
 	<findFieldProperty
 		name="im_sospeso" />
 	<findFieldProperty
@@ -113,11 +133,15 @@
 	<columnFieldProperty
 		name="cd_unita_organizzativa" />
 	<columnFieldProperty
-		name="pg_mandato" />	
+		name="pg_mandato" />
+	<columnFieldProperty
+		name="ti_mandato" />
 	<columnFieldProperty
 		name="cd_sospeso" />	
 	<columnFieldProperty
 		name="dt_registrazione" />
+	<columnFieldProperty
+		name="dt_pagamento" />
 	<columnFieldProperty
 		name="im_sospeso" />
 	<columnFieldProperty

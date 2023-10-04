@@ -21,13 +21,50 @@
  */
 package it.cnr.contab.ordmag.ordini.bulk;
 import java.sql.Connection;
+import java.util.Optional;
+
+import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
+import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdHome;
+import it.cnr.contab.pdg00.bulk.Pdg_residuo_detBulk;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
+
 public class OrdineAcqConsegnaHome extends BulkHome {
 	public OrdineAcqConsegnaHome(Connection conn) {
 		super(OrdineAcqConsegnaBulk.class, conn);
 	}
 	public OrdineAcqConsegnaHome(Connection conn, PersistentCache persistentCache) {
 		super(OrdineAcqConsegnaBulk.class, conn, persistentCache);
+	}
+	public SQLBuilder selectUnitaOperativaOrdByClause(UserContext userContext, OrdineAcqConsegnaBulk cons,
+											   UnitaOperativaOrdHome unitaOperativaHome, UnitaOperativaOrdBulk unitaOperativaBulk,
+											   CompoundFindClause compoundfindclause) throws PersistencyException {
+		SQLBuilder sql = unitaOperativaHome.selectByClause(userContext, compoundfindclause);
+
+		sql.addSQLClause("AND","UNITA_OPERATIVA_ORD.CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, CNRUserContext.getCd_unita_organizzativa(userContext));
+
+		return sql;
+	}
+
+	/**
+	 * Questo metodo fa in modo di gestire l'inizializzazione della chiave primaria
+	 * in automatico, ma si limita ad inizializzare il campo "consegna" in quanto il resto
+	 * della chiave è stato già valorizzato dal trasporto di chiave dal padre
+	 */
+	public void initializePrimaryKeyForInsert(it.cnr.jada.UserContext userContext, OggettoBulk bulk) throws PersistencyException, ComponentException {
+		if (bulk instanceof OrdineAcqConsegnaBulk) {
+			OrdineAcqConsegnaBulk ordineAcqConsegnaBulk = (OrdineAcqConsegnaBulk)bulk;
+			if (ordineAcqConsegnaBulk.getConsegna()==null) {
+				Integer max = (Integer)findMax(bulk, "consegna", null);
+				ordineAcqConsegnaBulk.setConsegna(Optional.ofNullable(max).orElse(0)+1);
+			}
+		}
 	}
 }

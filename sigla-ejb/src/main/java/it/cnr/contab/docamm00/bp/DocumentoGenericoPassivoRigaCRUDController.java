@@ -53,6 +53,7 @@ public class DocumentoGenericoPassivoRigaCRUDController extends it.cnr.jada.util
 	}
 
 	public void validate(ActionContext context,OggettoBulk model) throws ValidationException {
+		super.validate(context, model);
 		if (context.getCurrentCommand().equals("doContabilizzaObbligazioni"))
 			return;
 		try {
@@ -64,6 +65,7 @@ public class DocumentoGenericoPassivoRigaCRUDController extends it.cnr.jada.util
 				throw new ValidationException("Inserire un importo positivo");
 			if ((Documento_generico_rigaBulk)model!=null && ((Documento_generico_rigaBulk)model).getBanca()==null)
 				throw new ValidationException("Inserire dei riferimenti bancari corretti");
+
 			((DocumentoGenericoComponentSession)(((SimpleCRUDBP)getParentController()).createComponentSession())).validaRiga(context.getUserContext(), (Documento_generico_rigaBulk)model);
 		} catch (ValidationException e) {
 			throw e;

@@ -49,7 +49,19 @@
 			propertyName="progettoRimodulazione.progetto.pg_progetto" />
 		<columnMapping
 			columnName="PG_RIMODULAZIONE"
-			propertyName="progettoRimodulazione.pg_rimodulazione" />			
+			propertyName="progettoRimodulazione.pg_rimodulazione" />
+		<columnMapping
+			columnName="CD_CDS_OBBLIGAZIONE"
+			propertyName="obbligazione.cds.cd_unita_organizzativa" />
+		<columnMapping
+			columnName="ESERCIZIO_OBBLIGAZIONE"
+			propertyName="obbligazione.esercizio" />
+		<columnMapping
+			columnName="ESERCIZIO_ORI_OBBLIGAZIONE"
+			propertyName="obbligazione.esercizio_originale" />
+		<columnMapping
+			columnName="PG_OBBLIGAZIONE"
+			propertyName="obbligazione.pg_obbligazione" />
 	</defaultColumnMap>
 	
 	<persistentProperty
@@ -59,8 +71,10 @@
 	<persistentProperty
 		name="tipo_variazione" />	
 	<persistentProperty
-		name="progettoRimodulazione"/>				
-	
+		name="progettoRimodulazione"/>
+	<persistentProperty
+		name="obbligazione" />
+
 	<columnMap
 		name="VP_PDG_VARIAZIONE"
 		extends="default"

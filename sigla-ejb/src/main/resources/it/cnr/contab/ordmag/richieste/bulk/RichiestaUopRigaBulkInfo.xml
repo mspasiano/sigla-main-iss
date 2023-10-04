@@ -457,6 +457,7 @@
 	<formFieldProperty
 		name="dsBeneServizio" />
 	<formFieldProperty
+		inputCssClass="w-100 "
 		name="notaRiga" />
 	<formFieldProperty
 		name="stato" />

@@ -118,6 +118,24 @@
 			propertyName="cd_uo_comp"
 			sqlTypeName="VARCHAR"
 			columnSize="30" />
+		<columnMapping
+			columnName="MESE_REALE"
+			propertyName="mese_reale"
+			sqlTypeName="DECIMAL"
+			columnSize="2"
+			nullable="false" />
+		<columnMapping
+			columnName="PROG_FLUSSO"
+			propertyName="prog_flusso"
+			sqlTypeName="DECIMAL"
+			columnSize="5"
+			nullable="false" />
+		<columnMapping
+			columnName="TIPO_FLUSSO"
+			propertyName="tipo_flusso"
+			sqlTypeName="CHAR"
+			columnSize="1"
+			nullable="false" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="pg_comp" />
@@ -155,4 +173,10 @@
 		name="cd_tipo_doc_gen" />
 	<persistentProperty
 		name="cd_uo_comp" />
+	<persistentProperty
+		name="mese_reale" />
+	<persistentProperty
+		name="prog_flusso" />
+	<persistentProperty
+		name="tipo_flusso" />
 </SQLPersistentInfo>

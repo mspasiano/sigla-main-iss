@@ -35,6 +35,12 @@
 			columnSize="7"
 			nullable="false" />
 		<columnMapping
+			columnName="DT_PAGAMENTO"
+			propertyName="dt_pagamento"
+			sqlTypeName="TIMESTAMP"
+			columnSize="7"
+			nullable="false" />
+		<columnMapping
 			columnName="CD_SOSPESO"
 			propertyName="cd_sospeso"
 			sqlTypeName="VARCHAR"
@@ -51,6 +57,12 @@
 			propertyName="pg_mandato"
 			sqlTypeName="DECIMAL"
 			columnSize="10"
+			nullable="false" />
+		<columnMapping
+			columnName="TI_MANDATO"
+			propertyName="ti_mandato"
+			sqlTypeName="VARCHAR"
+			columnSize="1"
 			nullable="false" />
 		<columnMapping
 			columnName="CD_CDS"
@@ -78,11 +90,15 @@
 	<persistentProperty
 		name="dt_registrazione" />
 	<persistentProperty
+		name="dt_pagamento" />
+	<persistentProperty
 		name="cd_sospeso" />
 	<persistentProperty
 		name="cd_unita_organizzativa" />
 	<persistentProperty
 		name="pg_mandato" />
+	<persistentProperty
+		name="ti_mandato" />
 	<persistentProperty
 		name="cd_cds" />
 	<persistentProperty

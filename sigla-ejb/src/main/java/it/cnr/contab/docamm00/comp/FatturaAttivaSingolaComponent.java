@@ -26,7 +26,10 @@ import it.cnr.contab.anagraf00.tabter.bulk.ProvinciaBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.ProvinciaHome;
 import it.cnr.contab.bollo00.tabrif.bulk.Tipo_atto_bolloBulk;
 import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaFromDocumentoComponent;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaHome;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.ejb.Parametri_cnrComponentSession;
@@ -54,8 +57,6 @@ import it.cnr.contab.doccont00.ejb.AccertamentoAbstractComponentSession;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.inventario00.docs.bulk.*;
 import it.cnr.contab.inventario01.bulk.*;
-import it.cnr.contab.pagopa.bulk.PendenzaPagopaBulk;
-import it.cnr.contab.pagopa.bulk.PendenzaPagopaHome;
 import it.cnr.contab.reports.bulk.Print_spoolerBulk;
 import it.cnr.contab.reports.bulk.Report;
 import it.cnr.contab.reports.service.PrintService;
@@ -95,6 +96,8 @@ import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class FatturaAttivaSingolaComponent
         extends ScritturaPartitaDoppiaFromDocumentoComponent
@@ -2500,7 +2503,12 @@ public class FatturaAttivaSingolaComponent
 //^^@@
     public OggettoBulk creaConBulk(UserContext userContext, OggettoBulk bulk)
             throws ComponentException {
+        final Optional<Scrittura_partita_doppiaBulk> optionalScritturaPartitaDoppiaBulk = Optional.ofNullable(bulk)
+                .filter(Scrittura_partita_doppiaBulk.class::isInstance)
+                .map(Scrittura_partita_doppiaBulk.class::cast);
 
+        if (optionalScritturaPartitaDoppiaBulk.isPresent())
+            return super.creaConBulk(userContext, bulk);
         return creaConBulk(userContext, bulk, null);
     }
 
@@ -2621,8 +2629,6 @@ public class FatturaAttivaSingolaComponent
         prepareScarichiInventario(userContext, fattura);
 
         fattura = (Fattura_attivaBulk) super.creaConBulk(userContext, fattura);
-
-//        gestionePagopa(userContext, fattura);
 
         aggiornaScarichiInventario(userContext, fattura);
         String messaggio = aggiornaAssociazioniInventario(userContext, fattura);
@@ -2857,7 +2863,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         }
 
         super.eliminaConBulk(aUC, fattura_attiva);
-//        gestionePagopa(aUC, fattura_attiva);
+
         try {
             if (fattura_attiva instanceof Fattura_attiva_IBulk)
                 aggiornaAccertamentiSuCancellazione(
@@ -3533,7 +3539,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
     }
 
     /**
-     * Gestisce un cambiamento di pagina su un controllo tabbed {@link it.cnr.jada.util.jsp.JSPUtils.tabbed}
+     * Gestisce un cambiamento di pagina su un controllo tabbed
      */
     private DivisaBulk getEuro(UserContext userContext) throws ComponentException {
 
@@ -3561,7 +3567,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
     }
 
     /**
-     * Gestisce un cambiamento di pagina su un controllo tabbed {@link it.cnr.jada.util.jsp.JSPUtils.tabbed}
+     * Gestisce un cambiamento di pagina su un controllo tabbed
      */
     private Consuntivo_rigaVBulk getRigaConsuntivoFor(Fattura_attiva_rigaBulk rigaFatturaAttiva) {
 
@@ -4426,7 +4432,6 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         }
         fattura = (Fattura_attivaBulk) super.modificaConBulk(userContext, fattura);
 
-//        gestionePagopa(userContext, fattura);
         aggiornaScarichiInventario(userContext, fattura);
         String messaggio = aggiornaAssociazioniInventario(userContext, fattura);
 
@@ -4781,7 +4786,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
      * Post: Tutte le modifiche effettuate sul compenso vengono annullate, mentre rimangono valide le
      * modifiche apportate al doc. amministrativo che ha aperto il compenso
      *
-     * @param    uc    lo UserContext che ha generato la richiesta
+     * @param    userContext    lo UserContext che ha generato la richiesta
      */
     public void rollbackToSavePoint(UserContext userContext, String savePointName) throws ComponentException {
 
@@ -4824,9 +4829,15 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
             CompoundFindClause clauses,
             OggettoBulk bulk)
             throws ComponentException, it.cnr.jada.persistency.PersistencyException {
-
-        it.cnr.jada.persistency.sql.SQLBuilder sql =
-                (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
+        it.cnr.jada.persistency.sql.SQLBuilder sql;
+        if (Optional.ofNullable(bulk).filter(Documento_amministrativo_attivoBulk.class::isInstance).isPresent()) {
+            final BulkHome home = getHome(userContext, bulk, "LISTA_DOC_AMM");
+            sql = home.selectByClause(userContext, clauses);
+            sql.generateJoin("tipo_sezionale", "TIPO_SEZIONALE");
+            sql.generateJoin("valuta", "DIVISA");
+        } else {
+            sql = (it.cnr.jada.persistency.sql.SQLBuilder) super.select(userContext, clauses, bulk);
+        }
         TerzoBulk cliente = ((Fattura_attivaBulk) bulk).getCliente();
         sql.addSQLClause("AND", "FATTURA_ATTIVA.ESERCIZIO", sql.EQUALS, ((Fattura_attivaBulk) bulk).getEsercizio());
         if (cliente != null) {
@@ -4937,21 +4948,6 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
                 fatturaAttiva.getFl_liquidazione_differita().booleanValue())
             sql.addSQLClause("AND", "ANAGRAFICO.FL_FATTURAZIONE_DIFFERITA", sql.EQUALS, "Y");
 
-        sql.addClause(clauses);
-        return sql;
-    }
-    public it.cnr.jada.persistency.sql.SQLBuilder selectPendenzaPagopaByClause(
-            UserContext aUC,
-            Fattura_attivaBulk fatturaAttiva,
-            PendenzaPagopaBulk pendenza,
-            CompoundFindClause clauses)
-            throws ComponentException {
-        it.cnr.jada.persistency.sql.SQLBuilder sql = getHome(aUC, pendenza).createSQLBuilder();
-        sql.addSQLClause("AND", "CD_UNITA_ORGANIZZATIVA", sql.EQUALS, CNRUserContext.getCd_unita_organizzativa(aUC));
-        if (fatturaAttiva.getCliente() != null && fatturaAttiva.getCliente().getCd_terzo() != null){
-            sql.addSQLClause("AND", "CD_TERZO", sql.EQUALS, fatturaAttiva.getCliente().getCd_terzo());
-        }
-        sql.addSQLClause("AND", "STATO", sql.EQUALS, PendenzaPagopaBulk.STATO_APERTA);
         sql.addClause(clauses);
         return sql;
     }
@@ -5263,7 +5259,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
      * Pre:  Una richiesta di impostare un savepoint e' stata generata
      * Post: Un savepoint e' stato impostato in modo che le modifiche apportate al doc. amministrativo vengono consolidate
      *
-     * @param    uc    lo UserContext che ha generato la richiesta
+     * @param    userContext    lo UserContext che ha generato la richiesta
      */
     public void setSavePoint(UserContext userContext, String savePointName) throws ComponentException {
 
@@ -5569,57 +5565,9 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         controllaContabilizzazioneDiTutteLeRighe(aUC, fatturaAttiva);
         controllaQuadraturaAccertamenti(aUC, fatturaAttiva);
         controllaQuadraturaIntrastat(aUC, fatturaAttiva);
-//        controlliCongruenzaPagopa(aUC, fatturaAttiva);
     }
+//^^@@
 
-    private void controlliCongruenzaPagopa(UserContext aUC, Fattura_attivaBulk fatturaAttiva) throws ComponentException {
-        try {
-            if (fatturaAttiva.getPendenzaPagopa() != null){
-                PendenzaPagopaHome homePendenza = (PendenzaPagopaHome) getHome(aUC, PendenzaPagopaBulk.class);
-                PendenzaPagopaBulk pendenzaPagopaBulk = (PendenzaPagopaBulk) homePendenza.findByPrimaryKey(fatturaAttiva.getPendenzaPagopa());
-                if (fatturaAttiva.getCliente().getCd_terzo().compareTo(pendenzaPagopaBulk.getCd_terzo()) != 0){
-                    throw new it.cnr.jada.comp.ApplicationException("Il codice cliente della fattura non coincide con il codice cliente dell'avviso PagoPA.");
-                }
-                if (fatturaAttiva.getIm_totale_fattura().compareTo(pendenzaPagopaBulk.getImportoPendenza()) != 0){
-                    throw new it.cnr.jada.comp.ApplicationException("L'importo totale della fattura non coincide con l'importo totale dell'avviso PagoPA.");
-                }
-            }
-        } catch (PersistencyException e) {
-            throw handleException(e);
-        }
-    }
-
-    private void gestionePagopa(UserContext aUC, Fattura_attivaBulk fatturaAttiva) throws ComponentException {
-/*        try {
-            if (fatturaAttiva.isToBeUpdated() || fatturaAttiva.isToBeDeleted()) {
-                    Fattura_attivaBulk fatturaDB = (Fattura_attivaBulk) getTempHome(aUC, fatturaAttiva.getClass())
-                            .findByPrimaryKey(fatturaAttiva);
-                    if (fatturaDB.getPendenzaPagopa() != null){
-                        if (fatturaAttiva.isToBeDeleted() || fatturaAttiva.getPendenzaPagopa() == null){
-                            cambiaStatoPendenza(aUC, fatturaDB, PendenzaPagopaBulk.STATO_APERTA);
-                        } else if (!fatturaAttiva.getPendenzaPagopa().equals(fatturaDB.getPendenzaPagopa()))
-                            cambiaStatoPendenza(aUC, fatturaDB, PendenzaPagopaBulk.STATO_APERTA);
-                            cambiaStatoPendenza(aUC, fatturaAttiva, PendenzaPagopaBulk.STATO_ASSOCIATO);
-                    } else if (fatturaAttiva.getPendenzaPagopa() != null && fatturaAttiva.isToBeUpdated()){
-                        cambiaStatoPendenza(aUC, fatturaAttiva, PendenzaPagopaBulk.STATO_ASSOCIATO);
-                    }
-            } else if (fatturaAttiva.getPendenzaPagopa() != null){
-                cambiaStatoPendenza(aUC, fatturaAttiva, PendenzaPagopaBulk.STATO_ASSOCIATO);
-            }
-        } catch (PersistencyException e) {
-            throw handleException(e);
-        }*/
-    }
-
-    private void cambiaStatoPendenza(UserContext aUC, Fattura_attivaBulk fattura, String statoValido) throws ComponentException, PersistencyException {
-        PendenzaPagopaHome homePendenza = (PendenzaPagopaHome) getHome(aUC, PendenzaPagopaBulk.class);
-        PendenzaPagopaBulk pendenzaPagopaBulk = (PendenzaPagopaBulk) homePendenza.findByPrimaryKey(fattura.getPendenzaPagopa());
-        pendenzaPagopaBulk.setStato(statoValido);
-        pendenzaPagopaBulk.setToBeUpdated();
-        homePendenza.update(pendenzaPagopaBulk, aUC);
-    }
-
-    //^^@@
     public void controlliQuadraturaTotaleFattura(UserContext aUC, Fattura_attivaBulk fatturaAttiva, BulkList dettaglio, Boolean totaleAliquotaIva)
             throws ApplicationException, ComponentException {
     	HashMap<BigDecimal, BigDecimal> mappaAliquote = new HashMap<>();
@@ -6405,7 +6353,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         sql.addSQLJoin("OBBLIGAZIONE.ESERCIZIO", "ELEMENTO_VOCE.ESERCIZIO");
 
         sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS, it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
-        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, "D");
+        sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS, ObbligazioneBulk.STATO_OBB_DEFINITIVO);
         sql.addSQLClause("AND", "OBBLIGAZIONE.RIPORTATO", sql.EQUALS, "N");
         sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL, null);
         sql.addSQLClause("AND", "OBBLIGAZIONE_SCADENZARIO.IM_SCADENZA", sql.NOT_EQUALS, new java.math.BigDecimal(0));
@@ -7326,6 +7274,8 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         Bene_servizioHome beneServizioHome = (Bene_servizioHome) getHome(userContext, Bene_servizioBulk.class);
         it.cnr.jada.persistency.sql.SQLBuilder sql = beneServizioHome.createSQLBuilder();
         sql.addClause("AND", "ti_bene_servizio", sql.EQUALS, dettaglio.getFattura_attiva().getTi_bene_servizio());
+        sql.addClause("AND", "fl_gestione_magazzino", SQLBuilder.EQUALS, false);
+
         sql.addClause(clauses);
         return sql;
     }
@@ -7696,7 +7646,7 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
         }
     }
 
-    private void sendMailForNotificationOk(UserContext userContext, Fattura_attivaBulk fattura) {
+    public void sendMailForNotificationOk(UserContext userContext, Fattura_attivaBulk fattura) {
         /**
          * Invio mail di notifica Ricezione
          */
@@ -7712,41 +7662,63 @@ private void deleteAssociazioniInventarioWith(UserContext userContext,Fattura_at
             Collection utenti = utente_indirizzi_mailHome.findUtenteNotificaOkInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
             sendMailForNotificationFatturaElettronica(subject, text, utenti);
         } catch (Exception e) {
-            logger.info("Errore durante l'invio della mail di notifica ok. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
+            logger.warn("Errore durante l'invio della mail di notifica ok. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
         }
     }
 
-    private void sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) {
+    public List<String> sendMailForNotificationKo(UserContext userContext, Fattura_attivaBulk fattura) throws ComponentException{
         try {
+            final Optional<String> dominio = Optional.ofNullable(Utility.createConfigurazioneCnrComponentSession().getVal01(
+                    userContext,
+                    CNRUserContext.getEsercizio(userContext),
+                    null,
+                    Configurazione_cnrBulk.PK_COSTANTI,
+                    Configurazione_cnrBulk.SK_DOMINIO_EMAIL
+            ));
             String subject = "";
             String text = "";
-            String estremoFattura = fattura.getEsercizio() + "-" + fattura.getPg_fattura_attiva();
+            String estremoFattura = fattura.getEsercizio() + "/" + fattura.getCd_uo_origine() + "/" + fattura.getPg_fattura_attiva();
             subject = "[SIGLA] Notifica errore invio fattura attiva " + estremoFattura;
-            subject += " UO: " + fattura.getCd_unita_organizzativa();
             text = "Errore durante l'invio della fattura attiva elettronica: <b>" + estremoFattura + "</b>" +
                     ". Motivo: " + fattura.getNoteInvioSdi();
             Utente_indirizzi_mailHome utente_indirizzi_mailHome = (Utente_indirizzi_mailHome) getHome(userContext, Utente_indirizzi_mailBulk.class);
-            Collection utenti = utente_indirizzi_mailHome.findUtenteNotificaOkInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
-            sendMailForNotificationFatturaElettronica(subject, text, utenti);
+            Collection<Utente_indirizzi_mailBulk> utenti = utente_indirizzi_mailHome.findUtenteNotificaKoInvioFatturaElettronicaAttiva(fattura.getCd_uo_origine());
+            final Optional<String> email = Optional.ofNullable(findByPrimaryKey(userContext, new UtenteBulk(fattura.getUtcr())))
+                    .filter(UtenteBulk.class::isInstance)
+                    .map(UtenteBulk.class::cast)
+                    .filter(utenteBulk -> Optional.ofNullable(utenteBulk.getCd_utente_uid()).isPresent())
+                    .map(utenteBulk -> {
+                        if (dominio.isPresent())
+                            return utenteBulk.getCd_utente_uid().concat(dominio.get());
+                        return utenteBulk.getCd_utente_uid();
+                    });
+            final List<String> emails = Stream.concat(
+                    utenti.stream().map(Utente_indirizzi_mailBulk::getIndirizzo_mail),
+                    email.isPresent() ? Collections.singletonList(email.get()).stream() : Stream.empty()
+            ).distinct().collect(Collectors.toList());
+
+            sendMailForNotificationFatturaElettronica(
+                    subject,
+                    text,
+                    emails
+            );
+            return emails;
         } catch (Exception e) {
-            logger.info("Errore durante l'invio della mail di notifica ko. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
+            logger.warn("Errore durante l'invio della mail di notifica ko. Errore: " + e.getMessage() == null ? (e.getCause() == null ? "Errore Generico" : e.getCause().toString()) : e.getMessage());
         }
+        return Collections.emptyList();
     }
 
-    private void sendMailForNotificationFatturaElettronica(String subject,
-                                                           String text, Collection utenti) throws AddressException {
-        String addressTO = null;
-        for (java.util.Iterator<Utente_indirizzi_mailBulk> i = utenti.iterator(); i.hasNext(); ) {
-            Utente_indirizzi_mailBulk utente_indirizzi = (Utente_indirizzi_mailBulk) i.next();
-            if (addressTO == null)
-                addressTO = new String();
-            else
-                addressTO = addressTO + ",";
-            addressTO = addressTO + utente_indirizzi.getIndirizzo_mail();
-        }
-        if (addressTO != null) {
-            SendMail.sendMail(subject, text, InternetAddress.parse(addressTO));
-        }
+    private void sendMailForNotificationFatturaElettronica(String subject, String text, List<String> address) throws AddressException {
+        SendMail.sendMail(subject, text, InternetAddress.parse(address.stream().collect(Collectors.joining(","))));
+    }
+
+    private void sendMailForNotificationFatturaElettronica(String subject, String text, Collection<Utente_indirizzi_mailBulk> utenti) throws AddressException {
+        sendMailForNotificationFatturaElettronica(
+                subject,
+                text,
+                utenti.stream().map(Utente_indirizzi_mailBulk::getIndirizzo_mail).collect(Collectors.toList())
+        );
     }
 
     public Fattura_attivaBulk aggiornaFatturaRifiutataDestinatarioSDI(UserContext userContext, Fattura_attivaBulk fattura, String noteSdi) throws PersistencyException, ComponentException, java.rmi.RemoteException {

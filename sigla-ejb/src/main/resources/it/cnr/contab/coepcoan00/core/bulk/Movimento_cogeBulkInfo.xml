@@ -59,7 +59,7 @@
 		inputType="TEXT"
 		formatName="date_short"
 		enabledOnSearch="true"				
-		label="Periodo competenza da"
+		label="Competenza da"
 		nullable="false"/>
 	<fieldProperty
 		name="stato"
@@ -199,7 +199,7 @@
 		inputType="TEXT"
 		formatName="date_short"
 		enabledOnSearch="true"						
-		label=" A" 
+		label=" A"
 		nullable="false"/>
 	<fieldProperty
 		name="ti_istituz_commerc"
@@ -224,8 +224,12 @@
 		name="partita"
 		property="partita"
 		inputType="ROTEXT"
-		label="Partita"
-	/>
+		label="Partita"	/>
+	<fieldProperty
+		name="cd_contributo_ritenuta"
+		property="cd_contributo_ritenuta"
+		inputType="ROTEXT"
+		label="Codice CO/RI" />
 	<fieldProperty
 		name="terzo_movimento"
 		property="terzo"
@@ -286,6 +290,8 @@
 		name="partita" />
 	<formFieldProperty
 		name="terzo_movimento" />
+	<formFieldProperty
+		name="cd_contributo_ritenuta" />
 
 
 	<columnFieldProperty
@@ -318,18 +324,44 @@
 		<columnFieldProperty
 			name="ds_voce_ep" />
 		<columnFieldProperty
-			name="ti_riga" />
-		<columnFieldProperty
-			name="dt_da_competenza_coge" />
-		<columnFieldProperty
-			name="dt_a_competenza_coge" />
+			name="ti_riga"
+			textTruncate="true"/>
 		<columnFieldProperty
 			name="stato" />
 		<columnFieldProperty
 			name="im_movimento" />
 	</columnSet>
-	
-		
+
+	<columnSet
+			name="partitario">
+		<columnFieldProperty
+				name="pg_scrittura" />
+		<columnFieldProperty
+				name="sezione" />
+		<columnFieldProperty
+				name="cd_voce_ep" />
+		<columnFieldProperty
+				name="ds_voce_ep" />
+		<columnFieldProperty
+				name="cd_terzo"
+				property="terzo.cd_terzo"/>
+		<columnFieldProperty
+				name="ti_riga" />
+
+		<columnFieldProperty
+				headerLabel="Competenza"
+				name="dt_da_competenza_coge"
+				label="Da"/>
+		<columnFieldProperty
+				headerLabel="Competenza"
+				name="dt_a_competenza_coge"
+				label="A"/>
+
+		<columnFieldProperty
+				name="cd_contributo_ritenuta" />
+		<columnFieldProperty
+				name="im_movimento" />
+	</columnSet>
 
 	<findFieldProperty
 		name="cd_cds" />

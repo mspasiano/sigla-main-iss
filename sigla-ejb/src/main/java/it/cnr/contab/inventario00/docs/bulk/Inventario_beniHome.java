@@ -23,6 +23,9 @@ import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scarico_dettBulk;
 import it.cnr.contab.inventario01.bulk.Inventario_beni_apgBulk;
 import it.cnr.contab.inventario01.bulk.Inventario_beni_apgHome;
+import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
+import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
+import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
@@ -274,5 +277,16 @@ public java.util.Collection findDettagliBuono(Buono_carico_scaricoBulk buono)thr
 		java.util.Collection result = fetchAll( sql);
 		return result;
 }
+	public List findByTransito(Transito_beni_ordiniBulk transito_beni_ordiniBulk) throws PersistencyException {
+		SQLBuilder sqlBuilder = createSQLBuilder();
+		sqlBuilder.addSQLClause(FindClause.AND, "ID_TRANSITO_BENI_ORDINI", SQLBuilder.EQUALS, transito_beni_ordiniBulk.getId());
+		return fetchAll(sqlBuilder);
+	}
+	public boolean IsEtichettaBeneAlreadyExist(Buono_carico_scarico_dettBulk dett) throws java.sql.SQLException{
 
+		SQLBuilder sql = createSQLBuilder();
+		sql.addSQLClause("AND","INVENTARIO_BENI.ETICHETTA",sql.EQUALS,dett.getEtichetta());
+
+		return sql.executeExistsQuery(getConnection());
+	}
 }

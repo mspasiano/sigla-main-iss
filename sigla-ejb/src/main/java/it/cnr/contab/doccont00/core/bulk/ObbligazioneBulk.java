@@ -2017,13 +2017,6 @@ public void validateTerzo( it.cnr.contab.anagraf00.core.bulk.TerzoBulk terzo ) t
 		return this.getObbligazione_scadenzarioColl().stream().map(e->e.getImportoNonPagato()).reduce((x, y)->x.add(y)).orElse(BigDecimal.ZERO);
 	}
 
-	public WorkpackageBulk getGaeDestinazioneFinale() {
-		return gaeDestinazioneFinale;
-	}
-
-	public void setGaeDestinazioneFinale(WorkpackageBulk gaeDestinazioneFinale) {
-		this.gaeDestinazioneFinale = gaeDestinazioneFinale;
-	}
 	public boolean isROFlagPluriennale(){
 
 		return Boolean.FALSE;
@@ -2051,4 +2044,12 @@ public void validateTerzo( it.cnr.contab.anagraf00.core.bulk.TerzoBulk terzo ) t
 
 
 
+
+	public WorkpackageBulk getGaeDestinazioneFinale() {
+		return gaeDestinazioneFinale;
+	}
+
+	public void setGaeDestinazioneFinale(WorkpackageBulk gaeDestinazioneFinale) {
+		this.gaeDestinazioneFinale = gaeDestinazioneFinale;
+	}
 }

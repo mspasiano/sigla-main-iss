@@ -139,7 +139,7 @@ public class CRUDFatturaAttivaIBP extends CRUDFatturaAttivaBP {
 		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()),"CRUDToolbar.downloadXml");
 		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()),"CRUDToolbar.downloadFatturaFirmata");
 		toolbar[i++] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()),"CRUDToolbar.ristampa");
-
+		toolbar = IDocAmmEconomicaBP.addPartitario(toolbar, attivaEconomicaParallela, isEditing(), getModel());
 		return toolbar;
 	}
 	/**
@@ -236,13 +236,16 @@ public class CRUDFatturaAttivaIBP extends CRUDFatturaAttivaBP {
 		return isSearching() || isDeleting();
 	}
 	public boolean isInventariaButtonEnabled() {
+		if ( !attivaInventaria)
+			return Boolean.FALSE;
 
 		return	 	(isEditing()||isInserting())  &&  getModel() != null &&
 				!getDettaglio().getDetails().isEmpty() &&
 				Fattura_attivaBulk.BENEDUREVOLE.equalsIgnoreCase(((Fattura_attivaBulk)getModel()).getTi_causale_emissione());
 	}
 	public boolean isInventariaButtonHidden() {
-
+		if ( !attivaInventaria)
+			return Boolean.TRUE;
 		return isSearching() || isDeleting();
 	}
 	public void writeFPInventarioToolbar(javax.servlet.jsp.JspWriter writer) throws java.io.IOException,javax.servlet.ServletException {

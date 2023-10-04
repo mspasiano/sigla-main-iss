@@ -48,4 +48,67 @@
             <where>ESERCIZIO=0 AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='VARIAZIONE_AUTOMATICA' AND CD_CHIAVE_SECONDARIA='SPESA'</where>
         </update>
     </changeSet>
+    <changeSet author="ciro.salvio" id="attivazione-impegni_pluriennali">
+        <update tableName="configurazione_cnr">
+            <column name="val01" type="STRING" value="Y"/>
+            <where>ESERCIZIO=0 AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='IMPEGNI' AND CD_CHIAVE_SECONDARIA='IMPEGNI_PLURIENNALI'</where>
+        </update>
+    </changeSet>
+    <changeSet author="ciro.salvio" id="attivazione-accertamente_pluriennali">
+        <update tableName="configurazione_cnr">
+            <column name="val01" type="STRING" value="Y"/>
+            <where>ESERCIZIO=0 AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='ACCERTAMENTI' AND CD_CHIAVE_SECONDARIA='ACCERTAMENTI_PLURIENNALI'</where>
+        </update>
+    </changeSet>
+    <changeSet author="ciro.salvio" id="attivazione-progetti_ass_anagrafico">
+        <update tableName="configurazione_cnr">
+            <column name="val01" type="STRING" value="Y"/>
+            <where>ESERCIZIO=0 AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='PROGETTI' AND CD_CHIAVE_SECONDARIA='ASS_PROGETTI_ANGAGRAFICO'</where>
+        </update>
+    </changeSet>
+    <changeSet author="ciro.salvio" id="attivazione-att_managed_attachments_restContr">
+        <update tableName="configurazione_cnr">
+            <column name="val01" type="STRING" value="Y"/>
+            <where>ESERCIZIO=0 AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='VARIAZIONE_AUTOMATICA' AND CD_CHIAVE_SECONDARIA='SPESA'</where>
+        </update>
+    </changeSet>
+    <changeSet author="marco.spasiano" id="attivazione-proposta-ordini-da-fattura">
+        <update tableName="configurazione_cnr">
+            <column name="val02" type="STRING" value="Y"/>
+            <where>CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='ORDINI' AND CD_CHIAVE_SECONDARIA='GESTIONE'</where>
+        </update>
+    </changeSet>
+    <!-- Autore : VALENTINA TOMADA-Configurazione gestione etichetta inventario bene -->
+    <include file="iss/update_conf_gestione_etichetta_inventario.xml"/>
+    <!-- Autore : RAFFAELE PAGANO-Configurazione liquidazione iva -->
+    <include file="iss/update_conf_liquidazione_iva.xml"/>
+    <!--Configurazione per abilitare l'invio del tag bilancio negli opi e il numero massimo di elementi
+    ( per definizione del flussi OPI al massimo 10)-->
+    <include file="iss/update_configurazioneCnr_invia_tag_bilancio.xml"/>
+    <!-- Autore : RAFFAELE PAGANO-Configurazione liquidazione iva -->
+    <include file="iss/update_conf_liquidazione_iva.xml"/>
+    <!-- Autore : VALENTINA TOMADA-Configurazione gestione bene dismesso inventario -->
+    <include file="iss/update_conf_bene_dismesso_inventario_iss.xml"/>
+    <!-- Autore : VALENTINA TOMADA - Configurazione modulo pagamento estero -->
+    <include file="iss/update_conf_pagamento_estero_iss.xml"/>
+    <!-- Autore : CIRO SALVIO-Configurazione Banca D'Italia per invio Siope+ -->
+    <include file="iss/update_configurazioneCnr_FlussiSiope_BI.xml"/>
+    <!-- Autore : CIRO SALVIO-Configurazione TIPO_RAPPORTO_TESORERIA+ -->
+    <include file="iss/update_configurazioneCnr_tipo_rapporto_tesoriera.xml"/>
+    <include file="iss/update_albero_main_ordine_distinteBI_BT.xml"/>
+    <!-- Autore : VALENTINA TOMADA-update stampa ordine -->
+    <include file="iss/update_print_priority_stampa_ordine.xml"/>
+    <!-- Autore : CIRO SALVIO-TI_ACCESSO=D CFGPROGERCOREPROGAMM -->
+    <include file="iss/update_ti_accesso_amministra_progetti.xml"></include>
+
+    <!-- Autore: PIERGIORGIO FARAGLIA -
+        Configurazione del flag di gestione degli importi sui contratti di natura contabile del tipo FLUSSI_FINANZIARI
+     -->
+    <include file="iss/update_gestione_importi_flussi_finanziari.xml"/>
+    <!-- Autore : CIRO SALVIO-STATO SOSPESO DEFAULT ASSEGNATO A CDS 000 -->
+    <include file="iss/update_configurazione_cnr_stato_sospesi.xml"></include>
+    <!-- Autore : CIRO SALVIO-GESTIONE INVENTARIA DA DOCUMENTI -->
+    <include file="iss/update_gestione_inventaria_documenti.xml"></include>
+
+
 </databaseChangeLog>

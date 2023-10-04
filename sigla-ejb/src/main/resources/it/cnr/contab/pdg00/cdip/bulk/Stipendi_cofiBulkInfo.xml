@@ -40,10 +40,25 @@
 		inputType="TEXT"
 		label="Mese" />
 	<fieldProperty
-		name="meseLettere"
-		property="meseLettere"		
-		keysProperty="meseKeys" />
-		
+		name="mese_reale"
+		property="mese_reale"
+		inputType="TEXT"
+		keysProperty="meseKeys"
+		label="Mese" />
+	<fieldProperty
+		name="prog_flusso"
+		property="prog_flusso"
+		inputType="TEXT"
+		label="Progr. Flusso" />
+	<fieldProperty
+		name="tipo_flusso"
+		property="tipo_flusso"
+		inputType="SELECT"
+		inputCssClass="w-100 "
+		keysProperty="tipoFlussoKeys"
+		nullable="false"
+		label="Tipo Flusso" />
+
 	<fieldProperty
 		name="cd_uo_doc_gen"
 		property="cd_uo_doc_gen"
@@ -75,10 +90,28 @@
 		inputType="TEXT"
 		label="Nr. mandato" />
 
+	<form
+		name="searchtool" >
+		<formFieldProperty
+			name="mese"
+			inputSize="10"
+			enabledOnSearch="true" />
+		<formFieldProperty
+			name="mese_reale"
+			enabledOnSearch="true"
+			inputSize="10"
+			inputCssClass="w-20" />
+		<formFieldProperty
+			name="stato" />
+	</form>
+
 	<columnFieldProperty
 		name="esercizio" />
 	<columnFieldProperty
-		name="mese" />
+		name="mese"
+		label="Progr."/>
+	<columnFieldProperty
+		name="mese_reale" />
 	<columnFieldProperty
 		name="stato" />
 	<columnFieldProperty
@@ -90,8 +123,5 @@
 	<columnFieldProperty
 		name="pg_comp" />
 	<columnFieldProperty
-		name="cd_cds_mandato" />
-	<columnFieldProperty
-		name="pg_mandato" />
-
+		name="tipo_flusso" />
 </bulkInfo>

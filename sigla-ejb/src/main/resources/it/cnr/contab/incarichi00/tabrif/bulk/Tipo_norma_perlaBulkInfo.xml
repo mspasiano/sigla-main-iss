@@ -24,16 +24,18 @@
 		name="cd_tipo_norma"
 		property="cd_tipo_norma"
 		inputType="TEXT"
-		inputSize="5"
-		maxLength="5"
+		inputSize="3"
+		maxLength="3"
 		enabledOnSearch="true"
 		nullable="false"
 		label="Codice" />
 	<fieldProperty
 		name="ds_tipo_norma"
 		property="ds_tipo_norma"
-		inputType="TEXT"
-		maxLength="50"
+		inputType="TEXTAREA"
+		cols="80"
+		rows="2"
+		maxLength="150"
 		enabledOnSearch="true"
 		nullable="false"
 		label="Descrizione" />
@@ -44,13 +46,80 @@
 		enabledOnInsert = "true"
 		enabledOnEdit = "true"
 		enabledOnSearch = "true"
+		nullable="false"
 		keysProperty="tipiAssociazioneKeys"
 		label="Tipo Associazione" />
+	<fieldProperty
+		name="numero_tipo_norma"
+		property="numero_tipo_norma"
+		inputType="TEXT"
+		inputSize="30"
+		maxLength="30"
+		nullable="false"
+		enabledOnInsert = "true"
+		enabledOnEdit = "true"
+		enabledOnSearch = "false"
+		label="Numero della Norma" />
+	<fieldProperty
+		name="cd_tipo_norma_perla"
+		property="cd_tipo_norma_perla"
+		inputType="TEXT"
+		inputSize="3"
+		maxLength="3"
+		nullable="false"
+		enabledOnInsert = "true"
+		enabledOnEdit = "true"
+		enabledOnSearch = "false"
+		label="Tipo Norma Perla" />
+	<fieldProperty
+		name="dt_tipo_norma"
+		property="dt_tipo_norma"
+		inputType="TEXT"
+		inputSize="10"
+		nullable="false"
+		formatName="date_short"
+		enabledOnInsert = "true"
+		enabledOnEdit = "true"
+		enabledOnSearch = "false"
+		label="Data della Norma" />
+	<fieldProperty
+		name="articolo_tipo_norma"
+		property="articolo_tipo_norma"
+		inputType="TEXT"
+		maxLength="30"
+		inputSize="30"
+		nullable="false"
+		enabledOnInsert = "true"
+		enabledOnEdit = "true"
+		enabledOnSearch = "false"
+		label="Articolo" />
+	<fieldProperty
+		name="comma_tipo_norma"
+		property="comma_tipo_norma"
+		inputType="TEXT"
+		maxLength="30"
+		inputSize="30"
+		nullable="false"
+		enabledOnInsert = "true"
+		enabledOnEdit = "true"
+		enabledOnSearch = "false"
+		label="Comma" />
+
 
 	<formFieldProperty
 		name="cd_tipo_norma" />
 	<formFieldProperty
 		name="ds_tipo_norma" />
+	<formFieldProperty
+		name="cd_tipo_norma_perla" />
+	<formFieldProperty
+		name="numero_tipo_norma" />
+	<formFieldProperty
+		name="articolo_tipo_norma" />
+	<formFieldProperty
+		name="comma_tipo_norma" />
+	<formFieldProperty
+		name="dt_tipo_norma" />
 	<formFieldProperty
 		name="tipo_associazione" />
 

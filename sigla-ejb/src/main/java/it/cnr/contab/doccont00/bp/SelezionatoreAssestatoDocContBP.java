@@ -24,8 +24,12 @@ import java.util.Iterator;
 
 import javax.ejb.EJBException;
 
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
+import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_scad_voceBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_scad_voceBulk;
+import it.cnr.contab.doccont00.ejb.AccertamentoComponentSession;
 import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
 import it.cnr.contab.pdg01.bp.SelezionatoreAssestatoBP;
 import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
@@ -36,6 +40,7 @@ import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.PrimaryKeyHashtable;
 import it.cnr.jada.ejb.CRUDComponentSession;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.Config;
 import it.cnr.jada.util.RemoteIterator;
@@ -68,7 +73,10 @@ public class SelezionatoreAssestatoDocContBP extends SelezionatoreAssestatoBP{
 	 * Crea la CRUDComponentSession da usare per effettuare le operazioni di CRUD
 	 */
 	public CRUDComponentSession createComponentSession() throws javax.ejb.EJBException,java.rmi.RemoteException {
-		return (ObbligazioneComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession",ObbligazioneComponentSession.class);
+		if (CostantiTi_gestione.TI_GESTIONE_ENTRATE.equals(this.getTipoGestione()))
+			return EJBCommonServices.createEJB("CNRDOCCONT00_EJB_AccertamentoComponentSession", AccertamentoComponentSession.class);
+		else
+			return EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession",ObbligazioneComponentSession.class);
 	}
 
 	/** 
@@ -161,20 +169,80 @@ public class SelezionatoreAssestatoDocContBP extends SelezionatoreAssestatoBP{
 			}
 			setSelection(models);
 			allineaPercentualiSuImporti(actioncontext);
-		} catch (EJBException e) {
-			throw handleException(e);
-		} catch (RemoteException e) {
+		} catch (EJBException | RemoteException e) {
 			throw handleException(e);
 		} catch(Throwable e) {
 			throw new BusinessProcessException(e);
 		}
 	}
-   
+
+	public void caricaSelezioniEffettuate(ActionContext actioncontext, AccertamentoBulk accertamento) throws it.cnr.jada.action.BusinessProcessException{
+		try{
+			PrimaryKeyHashtable hashRipartizione = accertamento.getRipartizioneCdrVoceLinea();
+			Accertamento_scad_voceBulk key, oldKey;
+
+			// recupero le percentuali di imputazione finanziaria per le linee di attivita da pdg
+			// 100 - percentuali specificate x linee att non da PDG
+			AccertamentoComponentSession session = EJBCommonServices.createEJB("CNRDOCCONT00_EJB_AccertamentoComponentSession",AccertamentoComponentSession.class);
+			PrimaryKeyHashtable oldHashRipartizione = session.getOldRipartizioneCdrVoceLinea(actioncontext.getUserContext(), accertamento);
+
+			for ( Enumeration e = hashRipartizione.keys(); e.hasMoreElements(); ) {
+				key = (Accertamento_scad_voceBulk)e.nextElement();
+				V_assestatoBulk assestato=null;
+
+				CompoundFindClause clause = new CompoundFindClause();
+				clause.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, key.getEsercizio());
+				clause.addClause(FindClause.AND, "esercizio_res", SQLBuilder.EQUALS, key.getAccertamento_scadenzario().getAccertamento().getEsercizio_originale());
+				clause.addClause(FindClause.AND, "cd_centro_responsabilita", SQLBuilder.EQUALS, key.getCd_centro_responsabilita());
+				clause.addClause(FindClause.AND, "cd_linea_attivita", SQLBuilder.EQUALS, key.getCd_linea_attivita());
+				clause.addClause(FindClause.AND, "ti_gestione", SQLBuilder.EQUALS, key.getAccertamento_scadenzario().getAccertamento().getTi_gestione());
+				clause.addClause(FindClause.AND, "ti_appartenenza", SQLBuilder.EQUALS, key.getAccertamento_scadenzario().getAccertamento().getTi_appartenenza());
+				clause.addClause(FindClause.AND, "cd_elemento_voce", SQLBuilder.EQUALS, key.getAccertamento_scadenzario().getAccertamento().getCd_elemento_voce());
+
+				RemoteIterator ri = find(actioncontext,clause,new V_assestatoBulk());
+				if (ri.countElements()==1)
+					assestato = (V_assestatoBulk)ri.nextElement();
+				EJBCommonServices.closeRemoteIterator(actioncontext, ri);
+				if (assestato != null) {
+					assestato.setImp_da_assegnare((BigDecimal) hashRipartizione.get( key ));
+					for ( Enumeration old = oldHashRipartizione.keys(); old.hasMoreElements(); ) {
+						oldKey = (Accertamento_scad_voceBulk)old.nextElement();
+						if (oldKey.getCd_centro_responsabilita().equals( key.getCd_centro_responsabilita() ) &&
+							oldKey.getCd_linea_attivita().equals( key.getCd_linea_attivita() ) &&
+							oldKey.getCd_voce().equals( key.getCd_voce() )) {
+							assestato.setDb_imp_utilizzato( (BigDecimal)oldHashRipartizione.get( oldKey ) );
+							break;
+						}
+					}
+					getAssestatoReplacer().put(assestato,assestato);
+				}
+			}
+			refreshList( actioncontext );
+
+			// individuo e seleziono automaticamente le combinazioni CDR/VOCE/LINEA già utilizzati
+			// nell'obbligazione
+			it.cnr.jada.util.action.Selection models = getSelection();
+			V_assestatoBulk assestato;
+			for (int i=0;i<getElementsCount();i++) {
+				assestato = (V_assestatoBulk) getElementAt(actioncontext,i);
+				if (Utility.nvl(assestato.getImp_da_assegnare()).compareTo(new BigDecimal(0))>0) {
+					models.setSelected(i);
+				}
+			}
+			setSelection(models);
+			allineaPercentualiSuImporti(actioncontext);
+		} catch (EJBException | RemoteException e) {
+			throw handleException(e);
+		} catch(Throwable e) {
+			throw new BusinessProcessException(e);
+		}
+	}
+
 	public void impostaModalitaMappa(ActionContext actioncontext, String modalitaMappa) throws it.cnr.jada.action.BusinessProcessException {
 		if (modalitaMappa.equals(this.MODALITA_INSERIMENTO_PERCENTUALI))
 		{
 			BigDecimal totaleSelVoci = new BigDecimal(0);
-			for (Iterator s = getSelectedElements(actioncontext).iterator();s.hasNext();) 
+			for (Iterator s = getSelectedElements(actioncontext).iterator();s.hasNext();)
 			{
 				V_assestatoBulk voceSel = (V_assestatoBulk) s.next();
 				if (Utility.nvl(voceSel.getImp_da_assegnare()).compareTo(new BigDecimal(0))>0)
@@ -197,7 +265,7 @@ public class SelezionatoreAssestatoDocContBP extends SelezionatoreAssestatoBP{
 		//trovo il totale assestato di tutte le selezioni effettuate
 		BigDecimal totAssestato = new BigDecimal(0), totalePrcVoci = new BigDecimal(0);
 		for (Iterator s = getSelectedElements(actioncontext).iterator();s.hasNext();)
-			totAssestato = totAssestato.add(Utility.nvl(((V_assestatoBulk) s.next()).getAssestato_iniziale())); 
+			totAssestato = totAssestato.add(Utility.nvl(((V_assestatoBulk) s.next()).getAssestato_iniziale()));
 		
 		for (Iterator s = getSelectedElements(actioncontext).iterator();s.hasNext();) { 
 			V_assestatoBulk voceSel = (V_assestatoBulk) s.next();

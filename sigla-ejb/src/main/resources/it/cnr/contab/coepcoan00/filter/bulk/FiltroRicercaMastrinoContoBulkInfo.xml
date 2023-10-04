@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<bulkInfo
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns="https://contab.cnr.it/schema/SIGLA" 
+		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+
+	<!-- ************************** CONTO **************************** -->
+	<fieldProperty
+		name="conto"
+		property="conto"
+		inputType="SEARCHTOOL"
+		label="Conto"
+		formName="searchtool"
+		enabledOnSearch="true" />	
+
+	<fieldProperty
+		name="filtraUnitaOrganizzativa"
+		property="filtraUnitaOrganizzativa"
+		inputType="CHECKBOX"
+		command="doOnFiltraUnitaOrganizzativa"
+		label="Seleziona Unita Organizzativa"
+		enabledOnSearch="true" />
+
+	<fieldProperty
+		name="findUoForPrint"
+		property="unitaOrganizzativa"
+		inputType="SEARCHTOOL"
+		formName="searchtoolUO"
+		readonlyProperty="ROUnitaOrganizzativa"
+		label="Unita Organizzativa" />
+
+	<fieldProperty
+		name="fromDataMovimento"
+		property="fromDataMovimento"
+		inputType="TEXT"
+		formatName="date_short"
+		enabledOnEdit="true"
+		enabledOnInsert="true"
+		label="Da Data Movimento" />
+	<fieldProperty
+		name="toDataMovimento"
+		property="toDataMovimento"
+		inputType="TEXT"
+		formatName="date_short"
+		enabledOnEdit="true"
+		enabledOnInsert="true"
+		label="A Data Movimento" />
+
+	<formFieldProperty
+		name="conto"/>
+	<formFieldProperty
+		name="filtraUnitaOrganizzativa" />
+	<formFieldProperty
+		name="findUoForPrint" />
+	<formFieldProperty
+		name="fromDataMovimento" />
+	<formFieldProperty
+		name="toDataMovimento" />
+</bulkInfo>

@@ -873,7 +873,7 @@ begin
 		aProcedure,
 		aUser);
 	IBMUTL001.DEFERRED_COMMIT;
-	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverא un messaggio di notifica dello stato dell''operazione');
+	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverà un messaggio di notifica dello stato dell''operazione');
 end;
 
 
@@ -895,7 +895,7 @@ select IBMSEQ00_BATCH_LOG.nextval into pg_Exec from dual;
 		aProcedure,
 		aUser);
 	IBMUTL001.DEFERRED_COMMIT;
-	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverא un messaggio di notifica con l''esito dell''operazione, CDS '||aCDS||'. '||
+	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverà un messaggio di notifica con l''esito dell''operazione, CDS '||aCDS||'. '||
 ' L''operazione di ribaltamento andrא a buon fine solo se tutti i documenti saranno ribaltati. '||
 ' In caso contrario verificare le cause del mancato ribaltamento nella funzione: '||
 ' "Funzionalitא di servizio/Logs Applicativi/Gestione" per il Progressivo Esecuzione '||To_Char(pg_exec+1)||
@@ -911,7 +911,7 @@ begin
 		aProcedure,
 		aUser);
 	IBMUTL001.DEFERRED_COMMIT;
-	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverא un messaggio di notifica dello stato dell''operazione');
+	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverà un messaggio di notifica dello stato dell''operazione');
 end;
 
 procedure riportoNextEsDocContVoce(aPgCall number, aUser varchar2) is
@@ -923,7 +923,7 @@ begin
 		aProcedure,
 		aUser);
 	IBMUTL001.DEFERRED_COMMIT;
-	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverא un messaggio di notifica dello stato dell''operazione');
+	IBMERR001.RAISE_ERR_GENERICO('Operazione sottomessa per esecuzione. Al completamento l''utente riceverà un messaggio di notifica dello stato dell''operazione');
 end;
 
 procedure ribaltamentoMassivo(aEs number) is

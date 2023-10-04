@@ -17,6 +17,51 @@
 
 package it.cnr.contab.doccont00.comp;
 
+import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaComponent;
+import it.cnr.contab.config00.bulk.*;
+import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
+import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
+import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
+import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
+import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseBulk;
+import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseHome;
+import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
+import it.cnr.contab.config00.pdcfin.bulk.*;
+import it.cnr.contab.config00.pdcfin.cla.bulk.Classificazione_vociBulk;
+import it.cnr.contab.config00.sto.bulk.*;
+import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
+import it.cnr.contab.doccont00.core.bulk.*;
+import it.cnr.contab.doccont00.ejb.SaldoComponentSession;
+import it.cnr.contab.incarichi00.bulk.Ass_incarico_uoBulk;
+import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioBulk;
+import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioHome;
+import it.cnr.contab.pdg00.bulk.Pdg_preventivo_spe_detBulk;
+import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
+import it.cnr.contab.pdg01.bulk.Pdg_modulo_spese_gestBulk;
+import it.cnr.contab.prevent00.bulk.V_assestatoBulk;
+import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
+import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cmpBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.utenze00.bulk.UtenteBulk;
+import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.Utility;
+import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.*;
+import it.cnr.jada.comp.*;
+import it.cnr.jada.persistency.IntrospectionException;
+import it.cnr.jada.persistency.ObjectNotFoundException;
+import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.sql.*;
+import it.cnr.jada.util.DateUtils;
+import it.cnr.jada.util.ejb.EJBCommonServices;
+
+import javax.ejb.EJBException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
@@ -28,90 +73,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoHome;
-import it.cnr.contab.anagraf00.core.bulk.Anagrafico_terzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
-import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
-import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
-import it.cnr.contab.config00.bulk.Parametri_cdsHome;
-import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
-import it.cnr.contab.config00.bulk.Parametri_cnrHome;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
-import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
-import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
-import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseBulk;
-import it.cnr.contab.config00.esercizio.bulk.Esercizio_baseHome;
-import it.cnr.contab.config00.latt.bulk.CostantiTi_gestione;
-import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
-import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Ass_evold_evnewHome;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceHome;
-import it.cnr.contab.config00.pdcfin.bulk.FunzioneBulk;
-import it.cnr.contab.config00.pdcfin.bulk.IVoceBilancioBulk;
-import it.cnr.contab.config00.pdcfin.bulk.NaturaBulk;
-import it.cnr.contab.config00.pdcfin.bulk.Voce_fBulk;
-import it.cnr.contab.config00.pdcfin.cla.bulk.Classificazione_vociBulk;
-import it.cnr.contab.config00.sto.bulk.CdrBulk;
-import it.cnr.contab.config00.sto.bulk.CdsBulk;
-import it.cnr.contab.config00.sto.bulk.CdsHome;
-import it.cnr.contab.config00.sto.bulk.EnteBulk;
-import it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativaHome;
-import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
-import it.cnr.contab.config00.sto.bulk.V_struttura_organizzativaBulk;
-import it.cnr.contab.doccont00.bp.CRUDObbligazioneBP;
-import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
-import it.cnr.contab.doccont00.core.bulk.*;
-import it.cnr.contab.doccont00.ejb.SaldoComponentSession;
-import it.cnr.contab.incarichi00.bulk.Ass_incarico_uoBulk;
-import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioBulk;
-import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioHome;
-import it.cnr.contab.pdg00.bulk.Pdg_preventivo_spe_detBulk;
-import it.cnr.contab.pdg01.bulk.Pdg_modulo_spese_gestBulk;
-import it.cnr.contab.prevent00.bulk.*;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
-import it.cnr.contab.progettiric00.core.bulk.Progetto_anagraficoBulk;
-import it.cnr.contab.utenze00.bp.CNRUserContext;
-import it.cnr.contab.utenze00.bulk.UtenteBulk;
-import it.cnr.contab.util.ApplicationMessageFormatException;
-import it.cnr.contab.util.Utility;
-import it.cnr.jada.UserContext;
-import it.cnr.jada.action.ActionContext;
-import it.cnr.jada.action.Forward;
-import it.cnr.jada.bulk.BulkHome;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.PrimaryKeyHashMap;
-import it.cnr.jada.bulk.PrimaryKeyHashtable;
-import it.cnr.jada.bulk.ValidationException;
-import it.cnr.jada.comp.ApplicationException;
-import it.cnr.jada.comp.ApplicationRuntimeException;
-import it.cnr.jada.comp.ComponentException;
-import it.cnr.jada.comp.ICRUDMgr;
-import it.cnr.jada.comp.IPrintMgr;
-import it.cnr.jada.persistency.IntrospectionException;
-import it.cnr.jada.persistency.ObjectNotFoundException;
-import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.LoggableStatement;
-import it.cnr.jada.persistency.sql.PersistentHome;
-import it.cnr.jada.persistency.sql.Query;
-import it.cnr.jada.persistency.sql.SQLBroker;
-import it.cnr.jada.persistency.sql.SQLBuilder;
-import it.cnr.jada.util.DateUtils;
-import it.cnr.jada.util.ejb.EJBCommonServices;
 
 /* Gestisce documenti di tipo
 	OBB - bilancio Cds
@@ -264,7 +225,7 @@ public void aggiornaCogeCoanInDifferita(it.cnr.jada.UserContext userContext, it.
 			Long pg_ver_rec = (Long) values.get("pg_ver_rec");
 			if ( pg_ver_rec == null )
 				throw new ApplicationException( "Aggiornamento in differita dello stato coge/coan dei documenti contabili impossibile (pg_ver_rec nullo)");
-			if ( obbligazione.getPg_obbligazione().longValue() >= 0 ) //accertamento non temporaneo
+			if (obbligazione.getPg_obbligazione() >= 0 ) //accertamento non temporaneo
 				callDoRiprocObb(userContext, obbligazione, pg_ver_rec );			
 		}
 	}
@@ -640,25 +601,34 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 			scadSuccessivaIndex = index + 1;
 		index++;
 	}
-	//non esiste scadenza successiva
-	//se residuo proprio e il delta è positivo (è stata diminuito l'importo della scadenza precedente)
-	//inserisco una nuova scadenza		
-	if ( scadSuccessivaIndex == obbligazione.getObbligazione_scadenzarioColl().size() ) {
-		//Lello - Sdoppiamento scadenza anche su obbligazione 
-		//if (!obbligazione.isObbligazioneResiduo() || delta.doubleValue() < 0)
-		if (delta.doubleValue() < 0)
-			throw handleException( new ApplicationException( "Non esiste una scadenza successiva da aggiornare" ));
-		else {
-			scadSuccessivaNew = new Obbligazione_scadenzarioBulk();
-			scadSuccessivaNew.setDt_scadenza(scadenzario.getDt_scadenza());
-			scadSuccessivaNew.setDs_scadenza(scadenzario.getDs_scadenza());
-			scadSuccessivaNew.setIm_scadenza(Utility.ZERO);
-			scadSuccessivaIndex = obbligazione.addToObbligazione_scadenzarioColl(scadSuccessivaNew);
-			generaDettagliScadenzaObbligazione( aUC, obbligazione, scadSuccessivaNew, false);
+
+	do {
+		/**
+		**	non esiste scadenza successiva se residuo proprio e il delta è positivo (è stata diminuito l'importo della scadenza precedente)
+		**	inserisco una nuova scadenza
+		**/
+		if ( scadSuccessivaIndex == obbligazione.getObbligazione_scadenzarioColl().size() ) {
+			//Lello - Sdoppiamento scadenza anche su obbligazione
+			//if (!obbligazione.isObbligazioneResiduo() || delta.doubleValue() < 0)
+			if (delta.doubleValue() < 0)
+				throw handleException( new ApplicationException( "Non esiste una scadenza successiva da aggiornare" ));
+			else {
+				scadSuccessivaNew = new Obbligazione_scadenzarioBulk();
+				scadSuccessivaNew.setDt_scadenza(scadenzario.getDt_scadenza());
+				scadSuccessivaNew.setDs_scadenza(scadenzario.getDs_scadenza());
+				scadSuccessivaNew.setIm_scadenza(Utility.ZERO);
+				scadSuccessivaIndex = obbligazione.addToObbligazione_scadenzarioColl(scadSuccessivaNew);
+				generaDettagliScadenzaObbligazione( aUC, obbligazione, scadSuccessivaNew, false);
+			}
 		}
-	}
-		
-	scadSuccessiva = (Obbligazione_scadenzarioBulk) obbligazione.getObbligazione_scadenzarioColl().get( scadSuccessivaIndex );
+		scadSuccessiva = (Obbligazione_scadenzarioBulk) obbligazione.getObbligazione_scadenzarioColl().get( scadSuccessivaIndex );
+		scadSuccessivaIndex++;
+	} while (
+			(scadSuccessiva.getPg_doc_passivo() != null ||
+					scadSuccessiva.getPg_ordine() != null ||
+					(delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0))) &&
+					scadSuccessivaIndex <= obbligazione.getObbligazione_scadenzarioColl().size()
+	);
 
 	//scadenza successiva ha importo inferiore a delta		
 	if ( delta.doubleValue() < 0 && (scadSuccessiva.getIm_scadenza().add(delta).doubleValue() < 0 ))
@@ -667,6 +637,10 @@ public Obbligazione_scadenzarioBulk aggiornaScadenzaSuccessivaObbligazione (User
 	//segnalo impossibilità di modificare importo se ci sono doc amministrativi associati
 	if ( scadSuccessiva.getPg_doc_passivo() != null )		
 		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata a doc. amministrativi");
+
+	//segnalo impossibilità di modificare importo se ci sono ordini associati
+	if ( scadSuccessiva.getPg_ordine() != null )
+		throw new ApplicationException( "Modifica impossibile: la scadenza successiva e' associata ad un ordine");
 
 	//aggiorno importo scadenza successiva
 	scadSuccessivaIniziale = new Obbligazione_scadenzarioBulk();
@@ -1196,14 +1170,28 @@ public void cancellaObbligazioneProvvisoria (UserContext aUC,ObbligazioneBulk ob
 		//imposto a TO_BE_DELETED l'obbligazione e tutte le sue scadenze e tutte le sue scad_voce
 		obbligazione.setToBeDeleted();
 
-
 		obbligazione.getObbligazioniPluriennali().stream().forEach(e->{
 			e.setToBeDeleted();
 		});
 
-		//		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione );
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
+
+		//Creo la variazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
+
 		makeBulkPersistent( aUC, obbligazione );
-		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione, CANCELLAZIONE );		
+		aggiornaCapitoloSaldoObbligazione( aUC, obbligazione, CANCELLAZIONE );
+
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
 	}
 	catch ( ObjectNotFoundException e )
 	{
@@ -1769,23 +1757,18 @@ private void validaCdrLineaVoce(UserContext userContext, ObbligazioneBulk obblig
 public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws ComponentException
 {
 	ObbligazioneBulk obbligazione = (ObbligazioneBulk) bulk;
-	try {
-	verificaStatoEsercizio( 
-							uc, 
-							((CNRUserContext)uc).getEsercizio(), 
-							obbligazione.getCd_cds());
-	} catch (Exception e) {
-		throw handleException(e);
-	}
-	
+
 	validaCampi(uc, obbligazione);
 	validaObbligazionePluriennale(uc, obbligazione);
 
+	Pdg_variazioneBulk pdgVariazioneObbl = null;
+
 	try {
-		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(uc) && obbligazione.getGaeDestinazioneFinale()!=null &&
-				obbligazione.getGaeDestinazioneFinale().getCd_linea_attivita()!=null) {
-			Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(uc, obbligazione);
-			//Essendo stata effettuata la variazione possiamo cambiare sull'impegno lìimputazione della GAE emttendo quella di destinazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(uc) &&
+				obbligazione.getGaeDestinazioneFinale()!=null && obbligazione.getGaeDestinazioneFinale().getCd_linea_attivita()!=null) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(uc, obbligazione);
+
+			//Siccome sto creando l'obbligazione cambio l'imputazione della GAE mettendo quella di destinazione
 			final WorkpackageBulk gaeFinale = obbligazione.getGaeDestinazioneFinale();
 			obbligazione.getObbligazione_scadenzarioColl().stream().flatMap(el -> el.getObbligazione_scad_voceColl().stream())
 					.forEach(osv -> {
@@ -1793,6 +1776,7 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 					});
 
 			if (obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_organizzativa()!=obbligazione.getCd_unita_organizzativa()) {
+				obbligazione.setCd_cds(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_padre());
 				obbligazione.setUnita_organizzativa(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre());
 				obbligazione.setCd_cds_origine(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_padre());
 				obbligazione.setCd_uo_origine(obbligazione.getGaeDestinazioneFinale().getCentro_responsabilita().getUnita_padre().getCd_unita_organizzativa());
@@ -1810,6 +1794,12 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 		throw handleException(e);
 	}
 
+	try {
+		verificaStatoEsercizio(uc, ((CNRUserContext)uc).getEsercizio(), obbligazione.getCd_cds());
+	} catch (Exception e) {
+		throw handleException(e);
+	}
+
 	/* simona 23.10.2002 : invertito l'ordine della verifica e della generzione dettagli x problema 344 */
 	generaDettagliScadenzaObbligazione( uc, obbligazione, null );	
 	verificaObbligazione( uc, obbligazione );
@@ -1818,7 +1808,6 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 	validaImputazioneFinanziaria( uc, obbligazione );
 
 	obbligazione = (ObbligazioneBulk) super.creaConBulk( uc, bulk );
-
 
 	//esegue il check di disponibilita di cassa
 	controllaDisponibilitaCassaPerVoce( uc, obbligazione, INSERIMENTO );
@@ -1833,18 +1822,29 @@ public OggettoBulk creaConBulk (UserContext uc,OggettoBulk bulk) throws Componen
 	obbligazione.setIm_iniziale_obbligazione( obbligazione.getIm_obbligazione());
 	obbligazione.setCd_iniziale_elemento_voce( obbligazione.getCd_elemento_voce());
 
-	
 	if (obbligazione.isCompetenza()) 
 	  controllaAssunzioneImpegni(uc);
 	
 	if (obbligazione.isObbligazioneResiduoImproprio()) 
 	  controllaAssunzioneImpResImpro(uc);
+
 	validaCreaModificaOrigineFonti(uc, obbligazione);	
+
 	try {
 		obbligazione = validaCreaModificaElementoVoceNext(uc, obbligazione);
+
+		//Aggiorno la descrizione ed il legame con l'obbligazione della variazione
+		if (Optional.ofNullable(pdgVariazioneObbl).isPresent()) {
+			pdgVariazioneObbl.setDs_variazione("Variazione automatica generata in fase di creazione obbligazione "+obbligazione.toString()+".");
+			pdgVariazioneObbl.setRiferimenti("Variazione automatica generata in fase di creazione obbligazione "+obbligazione.toString()+".");
+			pdgVariazioneObbl.setObbligazione(obbligazione);
+			pdgVariazioneObbl.setToBeUpdated();
+			this.updateBulk(uc, pdgVariazioneObbl);
+		}
 	} catch ( Exception e ) {
 		throw handleException( e )	;
-	}			
+	}
+
 	return obbligazione;
 }
 /** 
@@ -2110,10 +2110,6 @@ public void eliminaConBulk (UserContext aUC,OggettoBulk bulk) throws ComponentEx
 		}		
 
 		ObbligazioneBulk obbligazione = (ObbligazioneBulk) bulk;
-
-
-
-
 		if ( obbligazione.getStato_obbligazione().equals( obbligazione.STATO_OBB_PROVVISORIO ))
 			cancellaObbligazioneProvvisoria( aUC, obbligazione );
 		else if ( obbligazione.getStato_obbligazione().equals( obbligazione.STATO_OBB_DEFINITIVO ))
@@ -2660,7 +2656,15 @@ public OggettoBulk inizializzaBulkPerModifica (UserContext aUC,OggettoBulk obbli
 				os.setEsercizio_doc_passivo( docPassivo.getEsercizio());
 				os.setPg_doc_passivo( docPassivo.getPg_documento_amm());
 				os.setCd_tipo_documento_amm(docPassivo.getCd_tipo_documento_amm());
-			}	
+				os.setDsp_tipo_documento_amm(docPassivo.getDsp_tipo_documento_amm());
+			}
+			V_doc_passivo_obbligazioneBulk docOrdine = osHome.findDoc_ordine( os );
+			if ( docOrdine != null)
+			{
+				os.setEsercizio_ordine( docOrdine.getEsercizio());
+				os.setCd_numeratore_ordine( docOrdine.getCd_numeratore());
+				os.setPg_ordine( docOrdine.getPg_documento_amm());
+			}
 
 			//per ogni scadenza carico l'eventuale mandato
 			Mandato_rigaBulk mandato = osHome.findMandato( os );
@@ -3256,6 +3260,17 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		//verifica la correttezza dell'obbligazione
 		verificaObbligazione( aUC, obbligazione );
 
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
+
+		//Aggiorno la variazione se legata
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
+
 		//verifica la correttezza dell'imputazione finanziaria
 		validaImputazioneFinanziaria( aUC, obbligazione );
 
@@ -3288,7 +3303,9 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		obbligazione.setIm_iniziale_obbligazione( obbligazione.getIm_obbligazione());
 		obbligazione.setCd_iniziale_elemento_voce( obbligazione.getCd_elemento_voce());	
 
-		if (obbligazione.isObbligazioneResiduo()) {
+		if (Optional.ofNullable(obbligazione)
+				.filter(ObbligazioneBulk::isObbligazioneResiduo)
+				.filter(ObbligazioneResBulk.class::isInstance).isPresent()) {
 			if (((ObbligazioneResBulk)obbligazione).isSaldiDaAggiornare()) {
 				// aggiorniamo i saldi legati alle modifiche agli impegni residui
 				aggiornaSaldiImpegniResiduiPropri(aUC,obbligazione);
@@ -3308,7 +3325,12 @@ public OggettoBulk modificaConBulk (UserContext aUC,OggettoBulk bulk) throws Com
 		validaCreaModificaOrigineFonti(aUC, obbligazione);
 		
 		obbligazione = validaCreaModificaElementoVoceNext(aUC, obbligazione);
-		
+
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
+
 		return obbligazione;
 	}
 	catch ( Exception e )
@@ -4026,21 +4048,25 @@ public ObbligazioneBulk stornaObbligazioneDefinitiva(
         obbligazione.storna();
         obbligazione.setDt_cancellazione( DateServices.getDt_valida(aUC));
 
+		Pdg_variazioneBulk pdgVariazioneObbl = null;
 
-/*        //e' necessario aggiornare prima i dettagli e poi la testata per consentire lo storico delle modifiche
-        makeBulkListPersistent(aUC, obbligazione.getObbligazione_scadenzarioColl());
+		//Creo la variazione
+		if (Utility.createConfigurazioneCnrComponentSession().isVariazioneAutomaticaSpesa(aUC)) {
+			try {
+				pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().generaVariazioneAutomaticaDaObbligazione(aUC, obbligazione);
+			} catch (Exception e) {
+				throw handleException(e);
+			}
+		}
 
-        obbligazione.setUser(aUC.getUser());
-        updateBulk(aUC, obbligazione);
+		makeBulkPersistent( aUC, obbligazione);
+        aggiornaCapitoloSaldoObbligazione(aUC, obbligazione, MODIFICA);
 
+		if (Optional.ofNullable(pdgVariazioneObbl).filter(Pdg_variazioneBulk::isPropostaProvvisoria).isPresent()) {
+			pdgVariazioneObbl = Utility.createCRUDPdgVariazioneGestionaleComponentSession().salvaDefinitivo(aUC, pdgVariazioneObbl, Boolean.FALSE);
+			Utility.createCRUDPdgVariazioneGestionaleComponentSession().approva(aUC, pdgVariazioneObbl, Boolean.FALSE);
+		}
 
- */
-      makeBulkPersistent( aUC, obbligazione);
-      /*
-	  if ( !aUC.isTransactional() )	
-		 aggiornaStatoCOAN_COGEDocAmm( aUC, obbligazione );
-		*/
-        aggiornaCapitoloSaldoObbligazione(aUC, obbligazione, MODIFICA);		
         return obbligazione;
     } catch (Exception e) {
         throw handleException(e);
@@ -4435,8 +4461,16 @@ public void verificaObbligazione (UserContext aUC,ObbligazioneBulk obbligazione)
 	if ( totalObbligazione.compareTo( obbligazione.getIm_obbligazione()) < 0 )
 		throw handleException( new it.cnr.jada.comp.ApplicationException( "La somma degli importi delle singole scadenze e' inferiore all'importo complessivo dell'impegno"))	;
 	if((obbligazione.getContratto() != null && obbligazione.getContratto().getFigura_giuridica_esterna()!= null && 
-	   !(obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getContratto().getFigura_giuridica_esterna())||verificaAssociato(aUC, obbligazione.getContratto().getFigura_giuridica_esterna(),obbligazione))))
-	     throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+"non è congruente con quello del contratto (Codice Terzo:"+obbligazione.getContratto().getFigura_giuridica_esterna().getCd_terzo()+")");
+	   !(
+			   obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getContratto().getFigura_giuridica_esterna())||
+			   verificaAssociato(aUC, obbligazione.getContratto().getFigura_giuridica_esterna(),obbligazione))
+		)
+	) {
+		throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+
+				"non è congruente con quello del contratto " +
+				"(Codice Terzo:"+obbligazione.getContratto().getFigura_giuridica_esterna().getCd_terzo()+")");
+	}
+
 	if ((obbligazione.getIncarico_repertorio() != null && obbligazione.getIncarico_repertorio().getTerzo()!= null &&
 			!(obbligazione.getCreditore().equalsByPrimaryKey(obbligazione.getIncarico_repertorio().getTerzo())||verificaAssociato(aUC, obbligazione.getIncarico_repertorio().getTerzo(),obbligazione))))
 		     throw new it.cnr.jada.comp.ApplicationException( "Il Creditore (Codice Terzo:"+obbligazione.getCreditore().getCd_terzo()+") \n"+"non è congruente con quello dell'incarico (Codice Terzo:"+obbligazione.getIncarico_repertorio().getTerzo().getCd_terzo()+")");
@@ -4751,11 +4785,11 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 
 	//segnalo impossibilità di modificare importo se ci sono doc amministrativi associati
 	if ( //!scadenzario.getObbligazione().isFromDocAmm() &&
-		!scadenzario.isFromDocAmm() && !scadenzario.getFlAssociataOrdine() &&
+		!scadenzario.isFromDocAmm() &&
 		scadenzario.getScadenza_iniziale() != null && 
 		scadenzario.getIm_scadenza().compareTo(scadenzario.getScadenza_iniziale().getIm_scadenza()) != 0 &&
 //		scadenzario.getIm_associato_doc_amm().compareTo( new BigDecimal(0)) > 0 &&
-		scadenzario.getPg_doc_passivo() != null
+		(scadenzario.getPg_doc_passivo() != null || scadenzario.getPg_ordine()!=null)
 	)
 		throw new ApplicationException( "Impossibile variare importo di una scadenza con doc. amministrativi associati");
 
@@ -4767,14 +4801,14 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 		scadenzario.getPg_mandato() != null
 	)
 		throw new ApplicationException( "Impossibile variare importo di una scadenza con mandati associati");
-		
-		
+
+
 	// riordino lo scadenzario
 	/* simona 13.2.2002 */
 	/* commentato l'ordinamento delle scadenze perche' può generare problemi quando l'accertamento e' richiamato dai documenti
-	   amministrativi con una scadenza selezionata */	
-//	obbligazione.setObbligazione_scadenzarioColl( scadenzario.ordinaPerDataScadenza( obbligazione.getObbligazione_scadenzarioColl()));	
-	
+	   amministrativi con una scadenza selezionata */
+//	obbligazione.setObbligazione_scadenzarioColl( scadenzario.ordinaPerDataScadenza( obbligazione.getObbligazione_scadenzarioColl()));
+
 	/*
 	// segnala errore se scadenze duplicate o se importo <= 0
 	for ( Iterator i = obbligazione.getObbligazione_scadenzarioColl().iterator(); i.hasNext(); )
@@ -4789,10 +4823,10 @@ public ObbligazioneBulk verificaScadenzarioObbligazione (UserContext aUC,Obbliga
 
 	/* rimosso questo controllo per consentire comunque l'inserimento/modifica dell'importo a 0 -
 	   questo è utile quando è già stato creato il mandato e pertanto non è possibile effettuare la cancellazione
-	   fisica della scadenza (per i vincoli di integrità referenziale con le righe del mandato, pertanto 
+	   fisica della scadenza (per i vincoli di integrità referenziale con le righe del mandato, pertanto
 	   l'unica alternativa è quella di impostare a 0 la scadenza */
-	   /*	
-/*			
+	   /*
+/*
 	if ( scadenzario.getIm_scadenza().doubleValue() == 0  && scadenzario.getPg_doc_passivo() == null)
 			throw handleException( new it.cnr.jada.comp.ApplicationException( "L'importo della scadenza deve essere maggiore a 0 "));
 
@@ -5388,9 +5422,14 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 
 			BigDecimal newImportoOsv = Utility.ZERO, totImporto = Utility.ZERO;
 			ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome( userContext, ObbligazioneBulk.class );
-			ObbligazioneBulk obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+			ObbligazioneBulk obbligazione = null;
+			if ( scadenzaVecchia.getObbligazione().isObbligazioneResiduo())
+				obbligazione = (ObbligazioneResBulk)obbligazioneHome.findObbligazioneRes(scadenzaVecchia.getObbligazione());
+			else
+				obbligazione = (ObbligazioneBulk)obbligazioneHome.findByPrimaryKey(scadenzaVecchia.getObbligazione());
+
 			obbligazione = (ObbligazioneBulk)inizializzaBulkPerModifica(userContext, (OggettoBulk)obbligazione);
-			
+
 			//cerco nell'obbligazione riletto la scadenza indicata
 			for (Iterator s = obbligazione.getObbligazione_scadenzarioColl().iterator(); s.hasNext(); ) {
 				Obbligazione_scadenzarioBulk os = (Obbligazione_scadenzarioBulk)s.next();
@@ -5403,8 +5442,8 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 				}
 			}
 
-			if (scadenzaVecchia == null) 
-				throw new ApplicationException("Scadenza da sdoppiare non trovata nell'impegno indicato!");	
+			if (scadenzaVecchia == null)
+				throw new ApplicationException("Scadenza da sdoppiare non trovata nell'impegno indicato!");
 
 			Obbligazione_scadenzarioBulk scadenzaNuova = new Obbligazione_scadenzarioBulk();
 			scadenzaNuova.setDt_scadenza(nuovaScadenza!=null ? nuovaScadenza : scadenzaVecchia.getDt_scadenza());
@@ -5412,8 +5451,8 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 			obbligazione.addToObbligazione_scadenzarioColl(scadenzaNuova);
 		
 			// Rigenero i relativi dettagli	
-			generaDettagliScadenzaObbligazione(userContext, obbligazione, scadenzaNuova, false);	
-		
+			generaDettagliScadenzaObbligazione(userContext, obbligazione, scadenzaNuova, false);
+
 			for (Iterator s = scadenzaVecchia.getObbligazione_scad_voceColl().iterator(); s.hasNext(); ) {
 				Obbligazione_scad_voceBulk osvOld = (Obbligazione_scad_voceBulk)s.next();
 				if (nuovaGae != null && cdr != null){
@@ -5424,15 +5463,15 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 						osvOld.setToBeUpdated();
 					}
 				} else {
-					newImportoOsv = nuovoImportoScadenzaVecchia.multiply(osvOld.getIm_voce()).divide(vecchioImportoScadenzaVecchia, 2, BigDecimal.ROUND_HALF_UP); 
+					newImportoOsv = nuovoImportoScadenzaVecchia.multiply(osvOld.getIm_voce()).divide(vecchioImportoScadenzaVecchia, 2, BigDecimal.ROUND_HALF_UP);
 					
 					aggiornaImportoScadVoceScadenzaNuova(newImportoOsv, scadenzaNuova, osvOld);
 						
 					osvOld.setIm_voce(newImportoOsv);
 					osvOld.setToBeUpdated();
 				}
-			}		
-		
+			}
+
 			//Quadro la sommatoria sulla vecchia scadenza
 			for (Iterator s = scadenzaVecchia.getObbligazione_scad_voceColl().iterator(); s.hasNext(); )
 				totImporto = totImporto.add(((Obbligazione_scad_voceBulk)s.next()).getIm_voce()); 
@@ -5464,7 +5503,15 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 					}
 				}
 			}
-		
+
+			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
+				associato a documenti amministrativi e contabili
+		 	*/
+			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
+				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
+				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+			}
+
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
 			scadenzaNuova.setIm_scadenza(importoScadenzaNuova);
@@ -5509,7 +5556,7 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 					.orElseThrow(()->new ApplicationException("Scadenza da sdoppiare non trovata nell'impegno indicato!"));
 
 			Obbligazione_scadenzarioHome osHome = (Obbligazione_scadenzarioHome)getHome(userContext, Obbligazione_scadenzarioBulk.class);
-			scadenzaVecchia.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadenzaVecchia)));
+			scadenzaVecchia.setObbligazione_scad_voceColl(new BulkList(osHome.findObbligazione_scad_voceList(userContext, scadenzaVecchia, Boolean.FALSE)));
 
 			Obbligazione_scadenzarioBulk scadenzaNuova = new Obbligazione_scadenzarioBulk();
 			obbligazione.addToObbligazione_scadenzarioColl(scadenzaNuova);
@@ -5518,11 +5565,10 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 			scadenzaNuova.setIm_scadenza(importoScadenzaNuova);
 			if (dati.getNuovoPgObbligazioneScadenzario()!=null)
 				scadenzaNuova.setPg_obbligazione_scadenzario(dati.getNuovoPgObbligazioneScadenzario());
-			else
-				scadenzaNuova.setPg_obbligazione_scadenzario(obbligazione.getObbligazione_scadenzarioColl().stream().mapToLong(Obbligazione_scadenzarioBulk::getPg_obbligazione).max().getAsLong()+1);
 
 			scadenzaNuova.setToBeCreated();
 			makeBulkPersistent(userContext, scadenzaNuova);
+			scadenzaNuova = (Obbligazione_scadenzarioBulk)findByPrimaryKey(userContext, scadenzaNuova);
 
 			BigDecimal impDaRipartire = nuovoImportoScadenzaVecchia;
 			for (Iterator s = scadenzaVecchia.getObbligazione_scad_voceColl().iterator(); s.hasNext(); ) {
@@ -5553,26 +5599,37 @@ public void verificaTestataObbligazione (UserContext aUC,ObbligazioneBulk obblig
 				makeBulkPersistent(userContext, osvNew);
 			};
 
+			/* Se la vecchia scadenza viene riportata a ZERO, azzero anche l'importo
+				associato a documenti amministrativi e contabili
+		 	*/
+			if (nuovoImportoScadenzaVecchia.compareTo(BigDecimal.ZERO) == 0) {
+				scadenzaVecchia.setIm_associato_doc_amm(BigDecimal.ZERO);
+				scadenzaVecchia.setIm_associato_doc_contabile(BigDecimal.ZERO);
+			}
+
 			scadenzaVecchia.setIm_scadenza(nuovoImportoScadenzaVecchia);
 			scadenzaVecchia.setToBeUpdated();
+
 			makeBulkPersistent(userContext, scadenzaVecchia);
+			makeBulkPersistent(userContext, scadenzaNuova);
 
 			return scadenzaNuova;
 		} catch (PersistencyException e) {
 			throw handleException( e );
 		}
 	}
-private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbligazione_scadenzarioBulk scadenzaNuova,
-		Obbligazione_scad_voceBulk osvOld) {
-	for (Iterator n = scadenzaNuova.getObbligazione_scad_voceColl().iterator(); n.hasNext(); ) {
-		Obbligazione_scad_voceBulk osvNew = (Obbligazione_scad_voceBulk)n.next();
-		if (osvNew.getCd_centro_responsabilita().equals(osvOld.getCd_centro_responsabilita()) &&
-		    osvNew.getCd_linea_attivita().equals(osvOld.getCd_linea_attivita()) 
-//		    && osvNew.getCd_voce().equals(osvOld.getCd_voce())
-		    )
-			osvNew.setIm_voce(osvOld.getIm_voce().subtract(newImportoOsv));
+
+	private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbligazione_scadenzarioBulk scadenzaNuova,
+			Obbligazione_scad_voceBulk osvOld) {
+		for (Iterator n = scadenzaNuova.getObbligazione_scad_voceColl().iterator(); n.hasNext(); ) {
+			Obbligazione_scad_voceBulk osvNew = (Obbligazione_scad_voceBulk)n.next();
+			if (osvNew.getCd_centro_responsabilita().equals(osvOld.getCd_centro_responsabilita()) &&
+				osvNew.getCd_linea_attivita().equals(osvOld.getCd_linea_attivita())
+	//		    && osvNew.getCd_voce().equals(osvOld.getCd_voce())
+				)
+				osvNew.setIm_voce(osvOld.getIm_voce().subtract(newImportoOsv));
+		}
 	}
-}
 	private void aggiornaObbligazioneModificaTemporanea(UserContext userContext,Obbligazione_modificaBulk obbligazioneModTemporanea) throws ComponentException {
 
 		try {
@@ -5913,9 +5970,9 @@ private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbl
 	private Boolean verificaAssociato(UserContext usercontext, TerzoBulk terzo, ObbligazioneBulk obbligazione)throws ComponentException {
 		try {
 			AnagraficoHome anagraficoHome = (AnagraficoHome) getHome(usercontext, AnagraficoBulk.class);
-			for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(obbligazione.getCreditore().getAnagrafico()).iterator(); i.hasNext();) {
+			for (Iterator<Anagrafico_terzoBulk> i = anagraficoHome.findAssociatiStudio(terzo.getAnagrafico()).iterator(); i.hasNext();) {
 				Anagrafico_terzoBulk associato = i.next();
-				if( associato.getCd_terzo().compareTo(terzo.getCd_terzo())==0)
+				if( associato.getCd_terzo().compareTo(obbligazione.getCd_terzo())==0)
 					return true;
 			}
 		} catch (IntrospectionException e) {
@@ -6029,20 +6086,6 @@ private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbl
 		return obbligazione;
 	}
 
-	public SQLBuilder selectGaeDestinazioneFinaleByClause(UserContext userContext, ObbligazioneBulk obbligazione, WorkpackageBulk lineaAttivita, CompoundFindClause clauses) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
-		WorkpackageHome home = (WorkpackageHome)getHome(userContext, lineaAttivita,"V_LINEA_ATTIVITA_VALIDA");
-		SQLBuilder sql = home.createSQLBuilder();
-
-		sql.addSQLClause(FindClause.AND, "V_LINEA_ATTIVITA_VALIDA.ESERCIZIO", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
-		sql.openParenthesis(FindClause.AND);
-		sql.addSQLClause("OR", "V_LINEA_ATTIVITA_VALIDA.TI_GESTIONE", SQLBuilder.EQUALS, WorkpackageBulk.TI_GESTIONE_SPESE);
-		sql.addSQLClause("OR", "V_LINEA_ATTIVITA_VALIDA.TI_GESTIONE", SQLBuilder.EQUALS, WorkpackageBulk.TI_GESTIONE_ENTRAMBE);
-		sql.closeParenthesis();
-
-		sql.addClause(clauses);
-		return sql;
-	}
-
 	private void validaObbligazionePluriennale(UserContext uc, ObbligazioneBulk bulk) throws ComponentException{
 
 
@@ -6079,5 +6122,30 @@ private void aggiornaImportoScadVoceScadenzaNuova(BigDecimal newImportoOsv, Obbl
 		}
 		return Boolean.TRUE;
 
+	}
+
+
+	public SQLBuilder selectGaeDestinazioneFinaleByClause(UserContext userContext, ObbligazioneBulk obbligazione, WorkpackageBulk lineaAttivita, CompoundFindClause clauses) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
+		WorkpackageHome home = (WorkpackageHome)getHome(userContext, lineaAttivita,"V_LINEA_ATTIVITA_VALIDA");
+		SQLBuilder sql = home.createSQLBuilder();
+
+		sql.addSQLClause(FindClause.AND, "V_LINEA_ATTIVITA_VALIDA.ESERCIZIO", SQLBuilder.EQUALS,CNRUserContext.getEsercizio(userContext));
+		sql.openParenthesis(FindClause.AND);
+		sql.addSQLClause("OR", "V_LINEA_ATTIVITA_VALIDA.TI_GESTIONE", SQLBuilder.EQUALS, WorkpackageBulk.TI_GESTIONE_SPESE);
+		sql.addSQLClause("OR", "V_LINEA_ATTIVITA_VALIDA.TI_GESTIONE", SQLBuilder.EQUALS, WorkpackageBulk.TI_GESTIONE_ENTRAMBE);
+		sql.closeParenthesis();
+
+		sql.addClause(clauses);
+		return sql;
+	}
+
+	public ObbligazioneBulk findObbligazione(UserContext uc,ObbligazioneBulk obbligazione) throws ComponentException {
+		try {
+			ObbligazioneBulk obbl = ((ObbligazioneHome) getHome(uc, ObbligazioneBulk.class)).findObbligazione(obbligazione);
+			getHomeCache(uc).fetchAll(uc);
+			return obbl;
+		} catch (it.cnr.jada.persistency.PersistencyException e) {
+			throw handleException(e);
+		}
 	}
 }

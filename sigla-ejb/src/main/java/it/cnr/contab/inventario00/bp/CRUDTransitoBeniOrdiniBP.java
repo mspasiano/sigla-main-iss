@@ -27,17 +27,22 @@ package it.cnr.contab.inventario00.bp;
  *	CRUDCaricoInventarioBP, per il Carico e CRUDScaricoInventarioBP, per lo Scarico.
 **/
 
+import it.cnr.contab.compensi00.docs.bulk.StampaCertificazioneVBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_beniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Inventario_utilizzatori_laBulk;
 import it.cnr.contab.inventario00.docs.bulk.Transito_beni_ordiniBulk;
 import it.cnr.contab.inventario00.docs.bulk.Utilizzatore_CdrVBulk;
 import it.cnr.contab.inventario01.ejb.BuonoCaricoScaricoComponentSession;
 import it.cnr.contab.inventario01.ejb.TransactionalBuonoCaricoScaricoComponentSession;
+import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
+import it.cnr.contab.ordmag.magazzino.bulk.BollaScaricoMagBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Config;
+import it.cnr.jada.action.Forward;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.action.SelezionatoreListaBP;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
@@ -56,9 +61,22 @@ public class CRUDTransitoBeniOrdiniBP extends SimpleCRUDBP {
 
 
 
-		Button[] toolbar = super.createToolbar();
-		return toolbar;
+		Button[] abutton = new Button[9];
+		int i = 0;
+		int var3 = i + 1;
+		abutton[i] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.search");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.startSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.freeSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.startLastSearch");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.new");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.save");
+		//abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.delete");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.bringBack");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.print");
+		abutton[var3++] = new Button(it.cnr.jada.util.Config.getHandler().getProperties(this.getClass()), "CRUDToolbar.undoBringBack");
+		return abutton;
 	}
+
 
 
 public CRUDTransitoBeniOrdiniBP() {
@@ -337,4 +355,48 @@ public void setVisualizzazione(boolean b) {
 public boolean isEditable() {
 		return !isVisualizzazione()&&super.isEditable();
 }
+
+	public void update(ActionContext actioncontext) throws BusinessProcessException {
+		super.update(actioncontext);
+		Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk)this.getModel();
+		if(transito.getStato().equals(Transito_beni_ordiniBulk.STATO_ANNULLATO)){
+
+			this.setVisualizzazione(true);
+			try {
+				fillModel(actioncontext);
+			} catch (FillException e) {
+				this.setMessage(e.getMessage());
+			}
+		}
+	}
+
+
+	@Override
+	public it.cnr.jada.util.RemoteIterator find(ActionContext context,it.cnr.jada.persistency.sql.CompoundFindClause clauses,OggettoBulk model) throws it.cnr.jada.action.BusinessProcessException {
+		try {
+			Config config = this.getMapping().getConfig();
+			if(config.getInitParameter("RICERCA_ANNULLATI") != null){
+				Transito_beni_ordiniBulk transito = (Transito_beni_ordiniBulk) model;
+				transito.setFl_search_ann(true);
+			}
+
+			return super.find(context,clauses,model);
+		} catch(Exception e) {
+			throw handleException(e);
+		}
+	}
+
+
+	public  String getSearchResultColumnSet(){
+		Config config = this.getMapping().getConfig();
+		if (config.getInitParameter("RICERCA_ANNULLATI") != null) {
+
+			getModel().getBulkInfo().setShortDescription("Beni Annullati dal Transito");
+			getModel().getBulkInfo().setLongDescription("Beni Annullati dal Transito");
+
+			return"beni_cancellati";
+		}
+		return null;
+	}
 }
+

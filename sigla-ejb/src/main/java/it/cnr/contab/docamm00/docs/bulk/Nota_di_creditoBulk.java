@@ -198,7 +198,7 @@ public void copyFrom(
 	setModalita_incassoColl(fattura_passiva.getModalita_incassoColl());
 	setModalita_erogazioneColl(fattura_passiva.getModalita_erogazioneColl());
 	setDt_termine_creazione_docamm(fattura_passiva.getDt_termine_creazione_docamm());
-	setFlDaOrdini(fattura_passiva.getFlDaOrdini());
+	setFlDaOrdini(Boolean.FALSE);
 }
 /**
  * Insert the method's description here.

@@ -27,13 +27,10 @@
 		<columnMapping
 			columnName="SEZIONALE_VEN_LIQUIDAZIONE"
 			propertyName="tipo_sezionale_vendita.cd_tipo_sezionale" />
-			sqlTypeName="VARCHAR"
-			columnSize="10" />	
-
 	</defaultColumnMap>
-		<persistentProperty
+
+	<persistentProperty
 		name="attivita_commerciale" />
-		<persistentProperty
+	<persistentProperty
 		name="tipo_sezionale_vendita" />
-			
 </SQLPersistentInfo>

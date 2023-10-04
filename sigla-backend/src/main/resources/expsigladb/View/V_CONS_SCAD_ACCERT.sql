@@ -2,7 +2,7 @@
 --  DDL for View V_CONS_SCAD_ACCERT
 --------------------------------------------------------
 
-  CREATE OR REPLACE FORCE VIEW "V_CONS_SCAD_ACCERT" ("CDS", "UO", "ESERCIZIO", "ESERCIZIO_ORIGINALE", "PG_ACC", "PG_ACC_SCAD", "VOCE_BILANCIO", "DATA_SCAD", "DS_SCAD", "IM_SCAD", "IM_ASS_DOC_AMM", "IMP_ASS_DOC_CONT", "DEBITORE") AS 
+  CREATE OR REPLACE FORCE VIEW "V_CONS_SCAD_ACCERT" ("CDS", "UO", "ESERCIZIO", "ESERCIZIO_ORIGINALE", "PG_ACC", "PG_ACC_SCAD", "VOCE_BILANCIO", "DATA_SCAD","ACC_DESC", "DS_SCAD", "IM_SCAD", "IM_ASS_DOC_AMM", "IMP_ASS_DOC_CONT", "DEBITORE") AS
   SELECT DISTINCT
 --
 -- Version: 1.0
@@ -20,6 +20,7 @@
                    accertamento_scadenzario.pg_accertamento_scadenzario,
                    accertamento.cd_elemento_voce,
                    accertamento_scadenzario.dt_scadenza_incasso,
+                   accertamento.ds_accertamento,
                    accertamento_scadenzario.ds_scadenza,
                    accertamento_scadenzario.im_scadenza,
                    accertamento_scadenzario.im_associato_doc_amm,

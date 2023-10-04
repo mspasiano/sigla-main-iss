@@ -39,6 +39,9 @@ import it.cnr.contab.anagraf00.tabter.bulk.NazioneHome;
 import it.cnr.contab.anagraf00.tabter.bulk.RegioneBulk;
 import it.cnr.contab.anagraf00.tabter.bulk.RegioneHome;
 import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaFromDocumentoComponent;
+import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
+import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaHome;
 import it.cnr.contab.compensi00.docs.bulk.BonusBulk;
 import it.cnr.contab.compensi00.docs.bulk.BonusHome;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
@@ -78,6 +81,7 @@ import it.cnr.contab.compensi00.tabrif.bulk.V_tipo_trattamento_tipo_coriBulk;
 import it.cnr.contab.compensi00.tabrif.bulk.V_tipo_trattamento_tipo_coriHome;
 import it.cnr.contab.config00.bulk.CigBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
@@ -101,6 +105,7 @@ import it.cnr.contab.docamm00.docs.bulk.TrovatoBulk;
 import it.cnr.contab.docamm00.ejb.NumerazioneTempDocAmmComponentSession;
 import it.cnr.contab.docamm00.ejb.ProgressiviAmmComponentSession;
 import it.cnr.contab.docamm00.ejb.RiportoDocAmmComponentSession;
+import it.cnr.contab.docamm00.tabrif.bulk.Tipo_sezionaleBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaHome;
 import it.cnr.contab.doccont00.comp.DocumentoContabileComponentSession;
@@ -127,6 +132,8 @@ import it.cnr.contab.incarichi00.bulk.Incarichi_repertorioBulk;
 import it.cnr.contab.incarichi00.bulk.Incarichi_repertorio_annoBulk;
 import it.cnr.contab.incarichi00.bulk.Incarichi_repertorio_varBulk;
 import it.cnr.contab.incarichi00.ejb.IncarichiRepertorioComponentSession;
+import it.cnr.contab.missioni00.docs.bulk.MissioneBulk;
+import it.cnr.contab.missioni00.docs.bulk.MissioneHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.RemoveAccent;
 import it.cnr.contab.util.Utility;
@@ -836,7 +843,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 		sql.addSQLClause("AND", "OBBLIGAZIONE.ESERCIZIO", sql.EQUALS,
 				it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context));
 		sql.addSQLClause("AND", "OBBLIGAZIONE.STATO_OBBLIGAZIONE", sql.EQUALS,
-				"D");
+				ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 		sql.addSQLClause("AND", "OBBLIGAZIONE.RIPORTATO", sql.EQUALS, "N");
 		sql.addSQLClause("AND", "OBBLIGAZIONE.DT_CANCELLAZIONE", sql.ISNULL,
 				null);
@@ -1351,6 +1358,26 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 			validaContratto(userContext, compenso);
 			
 			controlliCig(compenso);
+
+			//LANCIO DA QUI IL CARICAMENTO DELLA PRIMA NOTA IN QUANTO SOVRASCRITTO IL METODO SUPERIORE eseguiCreaConBulk
+			final CompensoBulk finalCompenso = compenso;
+			CompensoBulk compensoDB = Optional.ofNullable(finalCompenso).filter(el->el.getCrudStatus()!=OggettoBulk.UNDEFINED).orElseGet(()-> {
+				try {
+					CompensoHome home = (CompensoHome) getHome(userContext, CompensoBulk.class);
+					return (CompensoBulk)home.findByPrimaryKey(finalCompenso);
+				} catch (ComponentException | PersistencyException e) {
+					throw new DetailedRuntimeException(e);
+				}
+			});
+
+			Optional.ofNullable(compensoDB).ifPresent(el->{
+				try {
+					this.createScrittura(userContext, el);
+				} catch (ComponentException e) {
+					throw new DetailedRuntimeException(e);
+				}
+			});
+
 			return compenso;
 		} catch (it.cnr.jada.persistency.PersistencyException ex) {
 			throw handleException(bulk, ex);
@@ -1374,8 +1401,8 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
-	 * @param conguaglio
-	 *            il conguaglio da abilitare
+	 * @param compenso
+	 *            il compenso di conguaglio da abilitare
 	 * @return il conguaglio aggiornato dopo l'esecuzione della procedura oracle
 	 * 
 	 *         Metodo di validazione compenso per contabilizzazione
@@ -1630,7 +1657,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * richiesta la cancellazione della copia del compenso originale Post: Viene
 	 * eliminata fisicamente la copia del compenso creata precedentemente
 	 * 
-	 * @param userContex
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 * @param compenso
 	 *            Oggetto buulk da cancellare
@@ -2316,7 +2343,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * Pre: L'esercizio di scrivania NON è antecedente a quello corrente Post:
 	 * La data restituita viene inizializzata alla data odierna
 	 * 
-	 * @param aUC
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 * @param bulk
 	 *            Il CompensoBulk la cui data deve essere inizializzata.
@@ -2555,7 +2582,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * scrivania) uguale a quello corrente Post: Le date vengono inizializzate
 	 * alla data odierna
 	 * 
-	 * @param uc
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 * @param bulk
 	 *            l'OggettoBulk da inizializzare per l'inserimento
@@ -2616,7 +2643,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * una FetchPolicy il cui nome è ottenuto concatenando il nome della
 	 * component con la stringa ".edit"
 	 * 
-	 * @param uc
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 * @param bulk
 	 *            l'OggettoBulk da preparare
@@ -3134,13 +3161,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 		compenso.setFl_documento_ele(fp.isElettronica());
 		compenso.setFl_split_payment(fp.getFl_split_payment());
 		compenso.setTi_istituz_commerc(fp.getTi_istituz_commerc());
-		if(compenso.isElettronica())
-		try {
-			compenso.setUserAbilitatoSenzaCalcolo(((it.cnr.contab.utente00.nav.ejb.GestioneLoginComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRUTENZE00_NAV_EJB_GestioneLoginComponentSession")).controllaAccesso(userContext, "AMMFATTURDOCSFATPASA"));
-		} catch (RemoteException e) {
-			throw handleException(compenso, e);
-		}
-		
+
 		// Settaggio Terzo
 		completaTerzo(userContext, compenso);
 		
@@ -3568,7 +3589,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
-	 * @param bulk
+	 * @param compenso
 	 *            il compenso di cui si vuole caricare i Documenti Contabili
 	 * @return La lista dei Documenti Contabili associati al compenso
 	 * 
@@ -4035,7 +4056,6 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 		aggiornaModalitaPagamentoMandatoAssociato(userContext, compenso);
 
 		return compenso;
-
 	}
 
 	private void aggiornaModalitaPagamentoMandatoAssociato(UserContext userContext, CompensoBulk compenso) throws ComponentException {
@@ -4315,7 +4335,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * rimangono valide le modifiche apportate al doc. amministrativo che ha
 	 * aperto il compenso
 	 * 
-	 * @param uc
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 */
 	public void rollbackToSavePoint(UserContext userContext,
@@ -4439,9 +4459,9 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo userContext che ha generato la richiesta
-	 * @param compenso
+	 * @param cud
 	 *            l'OggettoBulk che rappresenta il contesto della ricerca.
-	 * @param tipologia
+	 * @param anagrafico
 	 *            l'OggettoBulk da usare come prototipo della ricerca; sul
 	 *            prototipo vengono costruite delle clausole aggiuntive che
 	 *            vengono aggiunte in AND alle clausole specificate.
@@ -4475,9 +4495,9 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo userContext che ha generato la richiesta
-	 * @param compenso
+	 * @param stampa
 	 *            l'OggettoBulk che rappresenta il contesto della ricerca.
-	 * @param tipologia
+	 * @param anagrafico
 	 *            l'OggettoBulk da usare come prototipo della ricerca; sul
 	 *            prototipo vengono costruite delle clausole aggiuntive che
 	 *            vengono aggiunte in AND alle clausole specificate.
@@ -4511,9 +4531,9 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo userContext che ha generato la richiesta
-	 * @param compenso
+	 * @param stampa
 	 *            l'OggettoBulk che rappresenta il contesto della ricerca.
-	 * @param tipologia
+	 * @param anagrafico
 	 *            l'OggettoBulk da usare come prototipo della ricerca; sul
 	 *            prototipo vengono costruite delle clausole aggiuntive che
 	 *            vengono aggiunte in AND alle clausole specificate.
@@ -4624,9 +4644,9 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * 
 	 * @param userContext
 	 *            lo userContext che ha generato la richiesta
-	 * @param compenso
+	 * @param stampa
 	 *            l'OggettoBulk che rappresenta il contesto della ricerca.
-	 * @param tipologia
+	 * @param terzo
 	 *            l'OggettoBulk da usare come prototipo della ricerca; sul
 	 *            prototipo vengono costruite delle clausole aggiuntive che
 	 *            vengono aggiunte in AND alle clausole specificate.
@@ -4769,7 +4789,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 *            lo userContext che ha generato la richiesta
 	 * @param compenso
 	 *            l'OggettoBulk che rappresenta il contesto della ricerca.
-	 * @param tipologia
+	 * @param voceIva
 	 *            l'OggettoBulk da usare come prototipo della ricerca; sul
 	 *            prototipo vengono costruite delle clausole aggiuntive che
 	 *            vengono aggiunte in AND alle clausole specificate.
@@ -4896,7 +4916,7 @@ public class CompensoComponent extends ScritturaPartitaDoppiaFromDocumentoCompon
 	 * stata generata Post: Un savepoint e' stato impostato in modo che le
 	 * modifiche apportate al doc. amministrativo vengono consolidate
 	 * 
-	 * @param uc
+	 * @param userContext
 	 *            lo UserContext che ha generato la richiesta
 	 */
 	public void setSavePoint(UserContext userContext, String savePointName)

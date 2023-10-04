@@ -20,6 +20,8 @@ package it.cnr.contab.anagraf00.tabrif.bulk;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
+import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.util.OrderedHashtable;
 import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.ModalitaPagamentoType;
 
@@ -185,6 +187,13 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
                 .orElse(Rif_modalita_pagamentoBulk.ALTRO);
     }
 
+    public boolean isPAGOPA() {
+        return Optional.ofNullable(getTipo_pagamento_siope())
+                .map(s -> s.equals(Rif_modalita_pagamentoBulk.TipoPagamentoSiopePlus.AVVISOPAGOPA.value()))
+                .orElse(Boolean.FALSE);
+    }
+
+
     public static Dictionary getTipoPagamentoSiopePlusKeys() {
         return tipoPagamentoSiopePlusKeys;
     }
@@ -207,7 +216,8 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
         DISPOSIZIONEDOCUMENTOESTERNO("DISPOSIZIONE DOCUMENTO ESTERNO"),
         COMPENSAZIONE("COMPENSAZIONE"),
         BONIFICOESTEROEURO("BONIFICO ESTERO EURO"),
-        SOSTITUZIONE("SOSTITUZIONE");
+        SOSTITUZIONE("SOSTITUZIONE"),
+        AVVISOPAGOPA("AVVISO PAGOPA");
 
         private final String value;
 
@@ -224,7 +234,9 @@ public class Rif_modalita_pagamentoBulk extends Rif_modalita_pagamentoBase {
                 if (tipoPagamentoSiopPlus.value.equals(value))
                     return tipoPagamentoSiopPlus;
             }
-            throw new IllegalArgumentException("Tipo Pagamento no found for value: " + value);
+            throw new DetailedRuntimeException(
+                    new ApplicationMessageFormatException("Tipo Pagamento non trovato {0}!", value)
+            );
         }
     }
 }

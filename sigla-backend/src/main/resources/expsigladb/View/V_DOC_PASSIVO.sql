@@ -2,7 +2,45 @@
 --  DDL for View V_DOC_PASSIVO
 --------------------------------------------------------
 
-  CREATE OR REPLACE FORCE VIEW "V_DOC_PASSIVO" ("CD_CDS", "CD_UNITA_ORGANIZZATIVA", "ESERCIZIO", "CD_TIPO_DOCUMENTO_AMM", "PG_DOCUMENTO_AMM", "CD_NUMERATORE", "PG_VER_REC", "CD_CDS_ORIGINE", "CD_UO_ORIGINE", "TI_FATTURA", "STATO_COFI", "STATO_PAGAMENTO_FONDO_ECO", "DT_PAGAMENTO_FONDO_ECO", "CD_CDS_OBBLIGAZIONE", "ESERCIZIO_OBBLIGAZIONE", "ESERCIZIO_ORI_OBBLIGAZIONE", "PG_OBBLIGAZIONE", "PG_OBBLIGAZIONE_SCADENZARIO", "DT_FATTURA_FORNITORE", "NR_FATTURA_FORNITORE", "CD_TERZO", "CD_TERZO_CESSIONARIO", "COGNOME", "NOME", "RAGIONE_SOCIALE", "PG_BANCA", "CD_MODALITA_PAG", "IM_IMPONIBILE_DOC_AMM", "IM_IVA_DOC_AMM", "IM_TOTALE_DOC_AMM", "PG_LETTERA", "TI_ENTRATA_SPESA", "TI_SOSPESO_RISCONTRO", "CD_SOSPESO", "FL_DA_ORDINI", "FL_SELEZIONE", "FL_FAI_REVERSALE") AS 
+  CREATE OR REPLACE FORCE VIEW "V_DOC_PASSIVO" (
+    "CD_CDS",
+    "CD_UNITA_ORGANIZZATIVA",
+    "ESERCIZIO",
+    "CD_TIPO_DOCUMENTO_AMM",
+    "DSP_TIPO_DOCUMENTO_AMM",
+    "PG_DOCUMENTO_AMM",
+    "CD_NUMERATORE",
+    "PG_VER_REC",
+    "CD_CDS_ORIGINE",
+    "CD_UO_ORIGINE",
+    "TI_FATTURA",
+    "STATO_COFI",
+    "STATO_PAGAMENTO_FONDO_ECO",
+    "DT_PAGAMENTO_FONDO_ECO",
+    "CD_CDS_OBBLIGAZIONE",
+    "ESERCIZIO_OBBLIGAZIONE",
+    "ESERCIZIO_ORI_OBBLIGAZIONE",
+    "PG_OBBLIGAZIONE",
+    "PG_OBBLIGAZIONE_SCADENZARIO",
+    "DT_FATTURA_FORNITORE",
+    "NR_FATTURA_FORNITORE",
+    "CD_TERZO",
+    "CD_TERZO_CESSIONARIO",
+    "COGNOME",
+    "NOME",
+    "RAGIONE_SOCIALE",
+    "PG_BANCA",
+    "CD_MODALITA_PAG",
+    "IM_IMPONIBILE_DOC_AMM",
+    "IM_IVA_DOC_AMM",
+    "IM_TOTALE_DOC_AMM",
+    "PG_LETTERA",
+    "TI_ENTRATA_SPESA",
+    "TI_SOSPESO_RISCONTRO",
+    "CD_SOSPESO",
+    "FL_DA_ORDINI",
+    "FL_SELEZIONE",
+    "FL_FAI_REVERSALE") AS
   SELECT /*+ optimizer_features_enable('10.1.0') */
 --==================================================================================================
 --
@@ -120,7 +158,7 @@
 -- Body:
 --
 --==================================================================================================
-          a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_P',
+          a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_P', 'FATTURA_P',
           a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
           a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
           a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,
@@ -160,7 +198,7 @@
                                   0,
                                   0,
                                   0,
-                                  a.fl_congelata,
+                                  nvl(b.fl_attesa_nota, a.fl_congelata),
                                   a.stato_liquidazione
                                  ),
                   1,
@@ -194,7 +232,14 @@
       AND b.esercizio = a.esercizio
       AND b.pg_fattura_passiva = a.pg_fattura_passiva
       AND b.dt_cancellazione IS NULL
-      AND nvl(a.fl_da_ordini,'N')= 'N'
+      AND NOT EXISTS (
+      	SELECT 1 FROM fattura_ordine fo
+      	WHERE  fo.cd_cds = b.cd_cds
+        AND fo.cd_unita_organizzativa = b.cd_unita_organizzativa
+        AND fo.esercizio = b.esercizio
+        AND fo.pg_fattura_passiva = b.pg_fattura_passiva
+        AND fo.progressivo_riga = b.progressivo_riga
+      )
       AND c.cd_cds(+) = a.cd_cds
       AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
       AND c.esercizio(+) = a.esercizio_lettera
@@ -202,103 +247,7 @@
       AND d.cd_terzo = b.cd_terzo
       AND d.pg_banca = b.pg_banca
    UNION ALL
-   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_P',
-          a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
-          a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
-          a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,
-          oc.cd_cds_obbl, oc.esercizio_obbl,
-          oc.esercizio_orig_obbl, oc.pg_obbligazione,
-          oc.pg_obbligazione_scad, a.dt_fattura_fornitore,
-          a.nr_fattura_fornitore, a.cd_terzo, b.cd_terzo_cessionario,
-          a.cognome, a.nome, a.ragione_sociale,
-          DECODE (b.cd_terzo_cessionario,
-                  NULL, b.pg_banca,
-                  d.pg_banca_delegato
-                 ),
-          DECODE (b.cd_terzo_cessionario,
-                  NULL, b.cd_modalita_pag,
-                  SUBSTR (getmodpagcessionario (b.cd_terzo_cessionario,
-                                                d.ti_pagamento
-                                               ),
-                          1,
-                          10
-                         )
-                 ),
-          DECODE (a.ti_fattura, 'C', (b.im_imponibile * -1), b.im_imponibile),
-          DECODE (a.ti_fattura, 'C', (b.im_iva * -1), b.im_iva),
-          DECODE (a.ti_fattura,
-                  'C', ((b.im_imponibile + b.im_iva) * -1),
-                  (b.im_imponibile + b.im_iva
-                  )
-                 ),
-          a.pg_lettera, c.ti_entrata_spesa, c.ti_sospeso_riscontro,
-          c.cd_sospeso, nvl(a.fl_da_ordini,'N'),
-          SUBSTR (getflselezione ('FATTURA_P',
-                                  a.stato_pagamento_fondo_eco,
-                                  a.ti_fattura,
-                                  a.pg_lettera,
-                                  c.cd_sospeso,
-                                  NULL,
-                                  0,
-                                  0,
-                                  0,
-                                  a.fl_congelata,
-                                  a.stato_liquidazione
-                                 ),
-                  1,
-                  1
-                 ),
-          SUBSTR (getflfaireversale (a.ti_fattura,
-                                     a.ti_istituz_commerc,
-                                     a.ti_bene_servizio,
-                                     a.fl_san_marino_senza_iva,
-                                     DECODE (a.fl_merce_intra_ue,
-                                             'Y', 'Y',
-                                             a.fl_intra_ue
-                                            ),
-                                     a.fl_split_payment,
-                                     DECODE (a.ti_bene_servizio,
-                                             'B', t.ti_bene_servizio,
-                                             t.fl_servizi_non_residenti
-                                            )
-                                    ),
-                  1,
-                  1
-                 )
-     FROM fattura_passiva a,
-          fattura_passiva_riga b,
-          lettera_pagam_estero c,
-          banca d,
-          fattura_ordine fo,
-          ordine_acq_consegna oc,
-          tipo_sezionale t
-    WHERE a.cd_tipo_sezionale = t.cd_tipo_sezionale
-      AND b.cd_cds = a.cd_cds
-      AND b.cd_unita_organizzativa = a.cd_unita_organizzativa
-      AND b.esercizio = a.esercizio
-      AND b.pg_fattura_passiva = a.pg_fattura_passiva
-      AND b.dt_cancellazione IS NULL
-      AND nvl(a.fl_da_ordini,'N') = 'Y'
-      AND c.cd_cds(+) = a.cd_cds
-      AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
-      AND c.esercizio(+) = a.esercizio_lettera
-      AND c.pg_lettera(+) = a.pg_lettera
-      AND d.cd_terzo = b.cd_terzo
-      AND d.pg_banca = b.pg_banca
-      AND fo.cd_cds = b.cd_cds
-      AND fo.cd_unita_organizzativa = b.cd_unita_organizzativa
-      AND fo.esercizio = b.esercizio
-      AND fo.pg_fattura_passiva = b.pg_fattura_passiva
-      AND fo.progressivo_riga = b.progressivo_riga
-      AND fo.cd_cds_ordine = oc.cd_cds
-      AND fo.cd_unita_operativa = oc.cd_unita_operativa
-      AND fo.esercizio_ordine = oc.esercizio
-      AND fo.cd_numeratore = oc.cd_numeratore
-      AND fo.numero = oc.numero
-      AND fo.riga = oc.riga
-      AND fo.consegna = oc.consegna
-   UNION ALL
-   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_A',
+   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'FATTURA_A', 'FATTURA_A',
           a.pg_fattura_attiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
           a.cd_uo_origine, a.ti_fattura, b.stato_cofi, 'N', TO_DATE (NULL),
           b.cd_cds_obbligazione, b.esercizio_obbligazione,
@@ -322,7 +271,7 @@
       AND b.dt_cancellazione IS NULL
    UNION ALL
    SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio,
-          a.cd_tipo_documento_amm, a.pg_documento_generico, 'GEN' cd_numeratore,
+          a.cd_tipo_documento_amm, a.cd_tipo_documento_amm, a.pg_documento_generico, 'GEN' cd_numeratore,
           b.pg_ver_rec,
           b.cd_cds_origine, b.cd_uo_origine, NULL, a.stato_cofi,
           b.stato_pagamento_fondo_eco, b.dt_pagamento_fondo_eco,
@@ -383,7 +332,7 @@
       AND d.cd_terzo = a.cd_terzo
       AND d.pg_banca = a.pg_banca
    UNION ALL
-   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'ANTICIPO',
+   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'ANTICIPO', 'ANTICIPO',
           a.pg_anticipo, 'GEN' cd_numeratore, a.pg_ver_rec,
           a.cd_cds_origine, a.cd_uo_origine,
           NULL, a.stato_cofi, a.stato_pagamento_fondo_eco,
@@ -420,7 +369,7 @@
       AND b.esercizio_anticipo(+) = a.esercizio
       AND b.pg_anticipo(+) = a.pg_anticipo
    UNION ALL
-   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'COMPENSO',
+   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'COMPENSO', 'COMPENSO',
           a.pg_compenso, 'GEN' cd_numeratore, a.pg_ver_rec,
           a.cd_cds_origine, a.cd_uo_origine,
           NULL, a.stato_cofi, a.stato_pagamento_fondo_eco,
@@ -440,7 +389,7 @@
       AND a.dt_cancellazione IS NULL
       AND a.pg_compenso > 0
    UNION ALL
-   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'MISSIONE',
+   SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio, 'MISSIONE', 'MISSIONE',
           a.pg_missione, 'GEN' cd_numeratore, a.pg_ver_rec,
           a.cd_cds, a.cd_unita_organizzativa,
           NULL, a.stato_cofi, a.stato_pagamento_fondo_eco,
@@ -479,7 +428,7 @@
       AND b.cd_unita_organizzativa(+) = a.cd_uo_anticipo
       AND b.pg_anticipo(+) = a.pg_anticipo
    UNION ALL
-   SELECT a.cd_cds, c.cd_unita_organizzativa, a.esercizio, 'ORDINE',
+   SELECT a.cd_cds, c.cd_unita_organizzativa, a.esercizio, 'ORDINE', 'ORDINE',
           a.numero, a.cd_numeratore, a.pg_ver_rec,
           a.cd_cds, c.cd_unita_organizzativa,
           NULL, 'C' stato_cofi, 'N' stato_pagamento_fondo_eco,
@@ -502,10 +451,109 @@
       and a.esercizio = b.esercizio
       and a.cd_numeratore = b.cd_numeratore
       and a.numero = b.numero
-      and a.cd_unita_operativa = c.cd_unita_operativa;
+      and a.cd_unita_operativa = c.cd_unita_operativa
+   UNION ALL
+     SELECT a.cd_cds, a.cd_unita_organizzativa, a.esercizio,'FATTURA_P',
+          (
+             select decode(count(1), 1, 'FAT_ORDINE', 'FATTURA_P')
+                 from FATTURA_ORDINE
+                 where CD_CDS = b.CD_CDS
+                   and CD_UNITA_ORGANIZZATIVA = b.CD_UNITA_ORGANIZZATIVA
+                   and ESERCIZIO = b.ESERCIZIO
+                   and PG_FATTURA_PASSIVA = b.PG_FATTURA_PASSIVA
+                   and PROGRESSIVO_RIGA = b.PROGRESSIVO_RIGA
+          ),
+          a.pg_fattura_passiva, 'GEN' cd_numeratore, a.pg_ver_rec, a.cd_cds_origine,
+          a.cd_uo_origine, a.ti_fattura, b.stato_cofi,
+          a.stato_pagamento_fondo_eco, a.dt_pagamento_fondo_eco,
+          b.cd_cds_obbligazione, b.esercizio_obbligazione,
+          b.esercizio_ori_obbligazione, b.pg_obbligazione,
+          b.pg_obbligazione_scadenzario, a.dt_fattura_fornitore,
+          a.nr_fattura_fornitore, a.cd_terzo, b.cd_terzo_cessionario,
+          a.cognome, a.nome, a.ragione_sociale,
+          DECODE (b.cd_terzo_cessionario,
+                  NULL, b.pg_banca,
+                  d.pg_banca_delegato
+                 ),
+          DECODE (b.cd_terzo_cessionario,
+                  NULL, b.cd_modalita_pag,
+                  SUBSTR (getmodpagcessionario (b.cd_terzo_cessionario,
+                                                d.ti_pagamento
+                                               ),
+                          1,
+                          10
+                         )
+                 ),
+          DECODE (a.ti_fattura, 'C', (b.im_imponibile * -1), b.im_imponibile),
+          DECODE (a.ti_fattura, 'C', (b.im_iva * -1), b.im_iva),
+          DECODE (a.ti_fattura,
+                  'C', ((b.im_imponibile + b.im_iva) * -1),
+                  (b.im_imponibile + b.im_iva
+                  )
+                 ),
+          a.pg_lettera, c.ti_entrata_spesa, c.ti_sospeso_riscontro,
+          c.cd_sospeso, nvl(a.fl_da_ordini,'N'),
+          SUBSTR (getflselezione ('FATTURA_P',
+                                  a.stato_pagamento_fondo_eco,
+                                  a.ti_fattura,
+                                  a.pg_lettera,
+                                  c.cd_sospeso,
+                                  NULL,
+                                  0,
+                                  0,
+                                  0,
+                                  nvl(b.fl_attesa_nota, a.fl_congelata),
+                                  a.stato_liquidazione
+                                 ),
+                  1,
+                  1
+                 ),
+          SUBSTR (getflfaireversale (a.ti_fattura,
+                                     a.ti_istituz_commerc,
+                                     a.ti_bene_servizio,
+                                     a.fl_san_marino_senza_iva,
+                                     DECODE (a.fl_merce_intra_ue,
+                                             'Y', 'Y',
+                                             a.fl_intra_ue
+                                            ),
+                                     a.fl_split_payment,
+                                     DECODE (a.ti_bene_servizio,
+                                             'B', t.ti_bene_servizio,
+                                             t.fl_servizi_non_residenti
+                                            )
+                                    ),
+                  1,
+                  1
+                 )
+     FROM fattura_passiva a,
+          fattura_passiva_riga b,
+          lettera_pagam_estero c,
+          fattura_ordine fa,
+          banca d,
+          tipo_sezionale t
+    WHERE a.cd_tipo_sezionale = t.cd_tipo_sezionale
+      AND b.cd_cds = a.cd_cds
+      AND b.cd_unita_organizzativa = a.cd_unita_organizzativa
+      AND b.esercizio = a.esercizio
+      AND b.pg_fattura_passiva = a.pg_fattura_passiva
+      AND b.cd_cds = fa.cd_cds
+      AND b.cd_unita_organizzativa = fa.cd_unita_organizzativa
+      AND b.esercizio = fa.esercizio
+      AND b.pg_fattura_passiva = fa.pg_fattura_passiva
+      AND b.progressivo_riga = fa.progressivo_riga
+      AND b.dt_cancellazione IS NULL
+      AND c.cd_cds(+) = a.cd_cds
+      AND c.cd_unita_organizzativa(+) = a.cd_unita_organizzativa
+      AND c.esercizio(+) = a.esercizio_lettera
+      AND c.pg_lettera(+) = a.pg_lettera
+      AND d.cd_terzo = b.cd_terzo
+      AND d.pg_banca = b.pg_banca;
 
    COMMENT ON TABLE "V_DOC_PASSIVO"  IS 'Pre view di estrazione delle righe di fatture passive, attive e documenti passivi necessari
 alla selezione nella costruzione di un mandato. La vista è stata scorporata da
 V_DOC_PASSIVO_OBBLIGAZIONE.
 I record con FL_SELEZIONE = ''Y'' sono quelli, se non pagati, che possono essere oggetto di
 associazione ad un nuovo mandato';
+
+
+

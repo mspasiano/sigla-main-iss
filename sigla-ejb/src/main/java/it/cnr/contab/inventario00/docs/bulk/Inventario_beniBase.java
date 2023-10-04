@@ -22,6 +22,8 @@ import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
 
+import java.sql.Timestamp;
+
 public class Inventario_beniBase extends Inventario_beniKey implements Keyed {
 	// CD_ASSEGNATARIO DECIMAL(8,0)
 	private java.lang.Integer cd_assegnatario;
@@ -89,6 +91,10 @@ public class Inventario_beniBase extends Inventario_beniKey implements Keyed {
 
 	// VALORE_INIZIALE DECIMAL(20,6) NOT NULL
 	private java.math.BigDecimal valore_iniziale;
+
+	private java.lang.Boolean fl_dismesso=false;
+	private java.sql.Timestamp dt_dismesso;
+	private java.lang.String causale_dismissione;
 
 	public Long getId_transito_beni_ordini() {
 		return id_transito_beni_ordini;
@@ -416,4 +422,29 @@ public java.lang.String getSeriale() {
 public void setSeriale(java.lang.String seriale) {
 	this.seriale = seriale;
 }
+
+
+	public Boolean getFl_dismesso() {
+		return fl_dismesso;
+	}
+
+	public void setFl_dismesso(Boolean fl_dismesso) {
+		this.fl_dismesso = fl_dismesso;
+	}
+
+	public Timestamp getDt_dismesso() {
+		return dt_dismesso;
+	}
+
+	public void setDt_dismesso(Timestamp dt_dismesso) {
+		this.dt_dismesso = dt_dismesso;
+	}
+
+	public String getCausale_dismissione() {
+		return causale_dismissione;
+	}
+
+	public void setCausale_dismissione(String causale_dismissione) {
+		this.causale_dismissione = causale_dismissione;
+	}
 }

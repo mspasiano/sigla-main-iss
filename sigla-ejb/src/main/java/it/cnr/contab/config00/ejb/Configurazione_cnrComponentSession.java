@@ -17,6 +17,7 @@
 
 package it.cnr.contab.config00.ejb;
 
+import it.cnr.contab.util.enumeration.TipoRapportoTesoreriaEnum;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
@@ -73,6 +74,10 @@ public interface Configurazione_cnrComponentSession extends it.cnr.jada.ejb.Gene
 
     java.lang.Boolean isAttivoOrdini(it.cnr.jada.UserContext param0) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
 
+    java.lang.Boolean hasGestioneImportiFlussiFinanziari(it.cnr.jada.UserContext param0) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
+
+    java.lang.Boolean propostaFatturaDaOrdini(it.cnr.jada.UserContext param0) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
+
     java.lang.String getCdrPersonale(it.cnr.jada.UserContext param0, java.lang.Integer param1) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
 
     java.lang.String getUoRagioneria(it.cnr.jada.UserContext param0, java.lang.Integer param1) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
@@ -82,6 +87,8 @@ public interface Configurazione_cnrComponentSession extends it.cnr.jada.ejb.Gene
     java.lang.Boolean isUOSpecialeDistintaTuttaSAC(it.cnr.jada.UserContext param0, java.lang.Integer param1, java.lang.String param2) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
 
     String getCdsSAC(UserContext userContext, Integer esercizio) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
+
+    Boolean isEconomicaPatrimonialeAttivaImputazioneManuale(UserContext userContext) throws ComponentException, java.rmi.RemoteException;
 
     Boolean getGestioneImpegnoChiusuraForzataCompetenza(UserContext userContext) throws ComponentException, java.rmi.RemoteException;
 
@@ -95,16 +102,35 @@ public interface Configurazione_cnrComponentSession extends it.cnr.jada.ejb.Gene
 
     Boolean isBloccoScrittureProposte(UserContext userContext) throws ComponentException, RemoteException;
 
-    Boolean isVariazioneAutomaticaSpesa(UserContext userContext) throws ComponentException, RemoteException;
-
-    java.lang.Integer getCdTerzoDiversiStipendi(UserContext userContext) throws ComponentException, RemoteException;
-
-    String getContoCorrenteEnte(UserContext userContext, Integer esercizio) throws ComponentException, java.rmi.RemoteException;
-    Timestamp getDataFineValiditaCaricoFamiliare(UserContext userContext, String tiPersona) throws ComponentException, RemoteException;
+    Boolean isAssPrgAnagraficoAttiva(UserContext param0) throws ComponentException, RemoteException;
 
     Boolean isImpegnoPluriennaleAttivo(UserContext param0) throws ComponentException, RemoteException;
 
     Boolean isAccertamentoPluriennaleAttivo(UserContext param0) throws ComponentException, RemoteException;
 
 
+    Boolean isAttachRestContrStoredFromSigla(UserContext userContext)throws ComponentException, RemoteException;
+
+    Boolean isVariazioneAutomaticaSpesa(UserContext userContext) throws ComponentException, RemoteException;
+
+    java.lang.Integer getCdTerzoDiversiStipendi(UserContext userContext) throws ComponentException, RemoteException;
+
+    java.lang.Integer getCdTerzoDiversiCollaboratori(UserContext userContext) throws ComponentException, RemoteException;
+
+    String getContoCorrenteEnte(UserContext userContext, Integer esercizio) throws ComponentException, java.rmi.RemoteException;
+
+    Timestamp getDataFineValiditaCaricoFamiliare(UserContext userContext, String tiPersona) throws ComponentException, RemoteException;
+
+    Boolean isGestioneEtichettaInventarioBeneAttivo(UserContext param0) throws ComponentException, RemoteException;
+
+    String getTipoStanziamentoLiquidazioneIva(UserContext param0) throws ComponentException, RemoteException;
+    Boolean isGestioneBeneDismessoInventarioAttivo(UserContext param0) throws ComponentException, RemoteException;
+
+    Boolean isPagamentoEsteroISSAttivo(UserContext param0) throws ComponentException, RemoteException;
+
+    TipoRapportoTesoreriaEnum getTipoRapportoTesoreria(UserContext param0) throws ComponentException, RemoteException;
+
+    Boolean isGestioneStatoInizialeSospesiAttivo(UserContext param0) throws ComponentException, RemoteException;
+
+    Boolean isAttivoInventariaDocumenti(it.cnr.jada.UserContext param0) throws it.cnr.jada.comp.ComponentException, java.rmi.RemoteException;
 }

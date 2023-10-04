@@ -127,6 +127,7 @@
                 name="responsabile"
                 property="responsabile"
                 inputType="SEARCHTOOL"
+                formName="searchtool"
                 enabledOnSearch="true"
                 label="Responsabile procedimento/RUP" />
         <fieldProperty
@@ -599,6 +600,12 @@
                 nullable="true"
                 enabledOnSearch="true"
                 label="Norma o Titolo a base dell'attribuzione" />
+
+        <fieldProperty
+                name="crea_norma_perla"
+                property="tipoNormaPerla"
+                inputType="CRUDTOOL"
+                CRUDBusinessProcessName="CRUDConfigTipoNormaPerlaBP"/>
         <fieldProperty
                 name="direttore"
                 property="direttore"
@@ -668,7 +675,16 @@
 				enabledOnFreeSearch="true"
 				columnSet="filtro_ricerca_prog2"
 				freeSearchSet="filtro_ricerca_prog2" />
-               	
+        <fieldProperty
+                name="tipo_dettaglio_contratto"
+                property="tipo_dettaglio_contratto"
+                inputType="SELECT"
+                keysProperty="tipoDettaglioContrattoKeys"
+                nullable="true"
+                enabledOnSearch="true"
+                command="doDefault"
+                readonlyProperty="ROTipoContratto"
+                label="Tipo Dettaglio Contratto" />
 	    <form name="searchtool">
 	          <formFieldProperty
 	                name="esercizio"
@@ -679,7 +695,8 @@
 	          <formFieldProperty
 	                name="oggetto"
 	                inputType="TEXT"
-	                inputSize="40" />
+	                inputSize="40"
+                    inputCssClass="w-60" />
 	    </form>
 	    <form name="searchtool_large">
 	          <formFieldProperty
@@ -834,7 +851,9 @@
         <formFieldProperty
                 name="procedura_amministrativa"/>
         <formFieldProperty
-                name="crea_procedura_amministrativa"/>                
+                name="crea_procedura_amministrativa"/>
+        <formFieldProperty
+                name="crea_norma_perla"/>
         <formFieldProperty
                 name="cd_proc_amm"/>
         <formFieldProperty
@@ -858,7 +877,8 @@
                 name="crea_cup" />
 		<formFieldProperty
 				name="findProgetto"/>
-
+        <formFieldProperty
+                name="tipo_dettaglio_contratto"/>
         <findFieldProperty
                 name="stato"/>
         <findFieldProperty
@@ -943,6 +963,8 @@
                 name="cdCup" />
    		<findFieldProperty
                 name="cdCig" />
+        <findFieldProperty
+                name="tipo_dettaglio_contratto"/>
         <columnFieldProperty
                 name="stato"/>
         <columnFieldProperty
@@ -992,7 +1014,8 @@
         <columnFieldProperty
                 name="cdCup" />
         <columnFieldProperty
-                name="cdCig" />                
+                name="cdCig" />
+
         <columnFieldProperty
                 name="cdCigFatturaAttiva"
                 textTruncate="true"
@@ -1029,5 +1052,7 @@
                 name="dt_fine_validita"/>
         <columnFieldProperty
                 name="dt_proroga"/>
+        <columnFieldProperty
+                name="tipo_dettaglio_contratto"/>
 	</columnSet>
 </bulkInfo>

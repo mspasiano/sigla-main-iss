@@ -17,8 +17,11 @@
 
 package it.cnr.contab.docamm00.ejb;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazioneBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
@@ -27,6 +30,7 @@ import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.CompoundFindClause;
 
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -1297,14 +1301,14 @@ public class TransactionalFatturaPassivaComponentSession extends it.cnr.jada.ejb
         }
     }
 
-    public List<EvasioneOrdineRigaBulk> findContabilizzaRigaByClause(UserContext userContext,
-                                                                     Fattura_passiva_rigaBulk fatturaPassivaRiga,
+    public List<EvasioneOrdineRigaBulk> findRicercaOrdiniByClause(UserContext userContext,
+                                                                     Fattura_passivaBulk fatturaPassiva,
                                                                      CompoundFindClause findclause)
             throws RemoteException, it.cnr.jada.comp.ComponentException {
         try {
-            return ((List<EvasioneOrdineRigaBulk>) invoke("findContabilizzaRigaByClause", new Object[]{
+            return ((List<EvasioneOrdineRigaBulk>) invoke("findRicercaOrdiniByClause", new Object[]{
                     userContext,
-                    fatturaPassivaRiga,
+                    fatturaPassiva,
                     findclause}));
         } catch (java.rmi.RemoteException e) {
             throw e;
@@ -1339,4 +1343,62 @@ public class TransactionalFatturaPassivaComponentSession extends it.cnr.jada.ejb
 	            }
 	        }
 	}
+    public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext param0,
+                                              Fattura_passivaBulk param1)
+            throws ComponentException, RemoteException {
+        try {
+            return (Fattura_passivaBulk) invoke("valorizzaDatiDaOrdini", new Object[]{
+                    param0,
+                    param1});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
+    public V_doc_passivo_obbligazioneBulk sdoppiaDettagliInAutomatico(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivo, BigDecimal newImponibile, BigDecimal newImposta) throws RemoteException,it.cnr.jada.comp.ComponentException {
+        try {
+            return (V_doc_passivo_obbligazioneBulk)invoke("sdoppiaDettagliInAutomatico",new Object[] {
+                    userContext,
+                    docPassivo,
+                    newImponibile,
+                    newImposta});
+        } catch(java.rmi.RemoteException e) {
+            throw e;
+        } catch(java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch(it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch(Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception",ex);
+            }
+        }
+    }
+
+    public void aggiornaModalitaPagamento(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, Modalita_pagamentoBulk newModalitaPag, BancaBulk newBanca) throws RemoteException, it.cnr.jada.comp.ComponentException {
+        try {
+            invoke("aggiornaModalitaPagamento", new Object[]{
+                    userContext,
+                    docPassivoObb,
+                    newModalitaPag,
+                    newBanca});
+        } catch (java.rmi.RemoteException e) {
+            throw e;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch (it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch (Throwable ex) {
+                throw new java.rmi.RemoteException("Uncaugth exception", ex);
+            }
+        }
+    }
 }

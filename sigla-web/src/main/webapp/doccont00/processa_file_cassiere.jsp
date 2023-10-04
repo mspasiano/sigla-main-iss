@@ -18,7 +18,7 @@
     <% bp.openFormWindow(pageContext); %>
     <span class="FormLabel h1 text-primary" style="color:blue">Files</span>
     <div class="card p-2 mb-1">
-        <% bp.writeHTMLTable(pageContext,"100%","300px"); %>
+        <% bp.writeHTMLTable(pageContext,"100%","40vh"); %>
         <% if (bp.getParentRoot().isBootstrap()) { %>
         <br>
         <% } %>
@@ -26,7 +26,7 @@
 	</div>
     <span class="FormLabel h1 text-primary" style="color:blue">Logs</span>
     <div class="card p-2 mt-2">
-        <% bp.getLogs().writeHTMLTable(pageContext,"default",false,false,false,"100%","200px"); %>
+        <% bp.getLogs().writeHTMLTable(pageContext,"default",false,false,false,"100%","20vh"); %>
     </div>
     <%bp.closeFormWindow(pageContext); %>
 </body>

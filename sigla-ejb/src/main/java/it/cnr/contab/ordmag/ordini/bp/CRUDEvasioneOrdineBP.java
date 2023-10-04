@@ -37,6 +37,7 @@ import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
@@ -245,6 +246,11 @@ public class CRUDEvasioneOrdineBP extends SimpleCRUDBP {
 
 	public EvasioneOrdineBulk initializeMagazzino(ActionContext actioncontext, EvasioneOrdineBulk evasioneOrdine, MagazzinoBulk magazzino) throws BusinessProcessException {
 		try {
+			evasioneOrdine.setMagazzinoAbilitato(null);
+			evasioneOrdine.setNumerazioneMag(null);
+			evasioneOrdine.setRigheConsegnaDaEvadereColl(new BulkList<>());
+			evasioneOrdine.setRigheConsegnaSelezionate(new BulkList<>());
+			this.getConsegne().reset(actioncontext);
 			if (magazzino!=null) {
 				evasioneOrdine.setMagazzinoAbilitato(magazzino);
 
@@ -264,6 +270,8 @@ public class CRUDEvasioneOrdineBP extends SimpleCRUDBP {
 		Optional.ofNullable(consegna).ifPresent(cns->{
 			Optional.ofNullable(unitaMisura).ifPresent(um->{
 				cns.setUnitaMisuraEvasa(um);
+				cns.setCoefConvEvasa(BigDecimal.ZERO);
+				cns.setQuantitaEvasa(BigDecimal.ZERO);
 				Optional.ofNullable(cns.getOrdineAcqRiga().getBeneServizio())
 					.filter(bene->bene.getUnitaMisura().equalsByPrimaryKey(unitaMisura)).ifPresent(bs->{
 					cns.setCoefConvEvasa(BigDecimal.ONE);

@@ -24,49 +24,27 @@
 package it.cnr.contab.config00.bp;
 
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.math.BigInteger;
-import java.rmi.RemoteException;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-import javax.ejb.RemoveException;
-import javax.servlet.ServletException;
-
-import it.cnr.contab.util.SIGLAGroups;
-import org.apache.poi.hssf.usermodel.HSSFCell;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.CellType;
-
-import it.cnr.contab.config00.contratto.bulk.AllegatoContrattoDocumentBulk;
-import it.cnr.contab.config00.contratto.bulk.AllegatoContrattoFlussoDocumentBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_ditteBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.contratto.bulk.*;
 import it.cnr.contab.config00.ejb.ContrattoComponentSession;
 import it.cnr.contab.config00.service.ContrattoService;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.doccont00.core.bulk.ReversaleBulk;
+import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
+import it.cnr.contab.pdg00.cdip.bulk.Ass_cdp_laBulk;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.SIGLAGroups;
 import it.cnr.contab.util.Utility;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.action.Config;
 import it.cnr.jada.action.HttpActionContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
@@ -75,7 +53,26 @@ import it.cnr.jada.util.upload.UploadedFile;
 import it.cnr.si.spring.storage.StorageException;
 import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.si.spring.storage.config.StoragePropertyNames;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.util.RecordFormatException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.ejb.EJBException;
+import javax.ejb.RemoveException;
+import javax.servlet.ServletException;
+import java.io.*;
+import java.math.BigInteger;
+import java.rmi.RemoteException;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * @author mspasiano
@@ -85,13 +82,53 @@ import org.apache.poi.util.RecordFormatException;
  */
 public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 
+	private static final Logger logger = LoggerFactory.getLogger(CRUDConfigAnagContrattoBP.class);
+
+
 	private static final long serialVersionUID = 1L;
+
+
 
 	private ContrattoBulk contratto;
 	private String tipoAccesso;
 	protected ContrattoService contrattoService;
 	protected Date dataStipulaParametri;
-	protected Boolean flagPubblicaContratto; 
+	protected Boolean flagPubblicaContratto;
+	private boolean attivoOrdini = false;
+
+	private boolean gestioneImportiFlussiFinanziari = false;
+	private boolean attachRestContrStoredFromSigla = false;
+	private final SimpleDetailCRUDController crudDettaglio_contratto = new SimpleDetailCRUDController("Dettaglio_contratto", Dettaglio_contrattoBulk.class, "dettaglio_contratto", this){
+		public void validateForDelete(ActionContext context, OggettoBulk detail) throws ValidationException {
+			ContrattoBulk contratto = ( ContrattoBulk) this.getParentModel();
+			if (((Dettaglio_contrattoBulk) detail).isNonCancellabile())
+				throw new ValidationException("Non è possibile cancellare dettaglio già utilizzato in un ordine.");
+
+		}
+	};
+
+	public boolean isAttivoOrdini() {
+		return attivoOrdini;
+	}
+
+	public boolean hasGestioneImportiFlussiFinanziari() {
+		return gestioneImportiFlussiFinanziari;
+	}
+
+	@Override
+	protected void init(Config config, ActionContext actioncontext) throws BusinessProcessException {
+		try {
+			attivoOrdini = Utility.createConfigurazioneCnrComponentSession().isAttivoOrdini(actioncontext.getUserContext());
+			gestioneImportiFlussiFinanziari = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(actioncontext.getUserContext());
+			attachRestContrStoredFromSigla = Utility.createConfigurazioneCnrComponentSession().isAttachRestContrStoredFromSigla(actioncontext.getUserContext());
+		} catch (ComponentException e) {
+			throw handleException(e);
+		} catch (RemoteException e) {
+			throw handleException(e);
+		}
+		super.init(config, actioncontext);
+	}
+
 	private SimpleDetailCRUDController crudAssUO = new SimpleDetailCRUDController( "Associazione UO", Ass_contratto_uoBulk.class, "associazioneUO", this);
 	private SimpleDetailCRUDController crudAssUODisponibili = new SimpleDetailCRUDController( "Associazione UO Disponibili", Unita_organizzativaBulk.class, "associazioneUODisponibili", this);
 	private SimpleDetailCRUDController crudAssDitte = new SimpleDetailCRUDController( "ditte Invitate", Ass_contratto_ditteBulk.class, "ditteInvitate", this){
@@ -287,7 +324,8 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 			return contratto.isRODefinitivo();
 		return false;
 	}
-	
+
+
 	private it.cnr.contab.config00.bulk.Parametri_cnrBulk getParametri_cnrBulk(it.cnr.jada.action.ActionContext context) throws ComponentException, RemoteException, EJBException{
 		return Utility.createParametriCnrComponentSession().
 			getParametriCnr(context.getUserContext(), CNRUserContext.getEsercizio(context.getUserContext()));
@@ -328,7 +366,7 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	public SimpleDetailCRUDController getCrudAssUO() {
 		return crudAssUO;
 	}
-	/* 
+	/*
 	 * Necessario per la creazione di una form con enctype di tipo "multipart/form-data"
 	 * Sovrascrive quello presente nelle superclassi
 	 * 
@@ -675,54 +713,29 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	public OggettoBulk initializeModelForEdit(ActionContext actioncontext, OggettoBulk oggettobulk) throws BusinessProcessException {
 		ContrattoBulk contratto = (ContrattoBulk)super.initializeModelForEdit(actioncontext, oggettobulk);
 		try {
-			Optional.ofNullable(contrattoService.getFolderContratto(contratto))
-					.map(storageObject -> contrattoService.getChildren(storageObject.getKey()))
-					.map(storageObjects -> storageObjects.stream())
-					.orElse(Stream.empty())
-					.filter(storageObject -> Optional.ofNullable(storageObject.getKey()).isPresent())
-					.forEach(child -> {
-						contratto.setAllegatoFlusso(false);
-						if (contratto.isFromFlussoAcquisti()){
-							AllegatoContrattoFlussoDocumentBulk allegato = AllegatoContrattoFlussoDocumentBulk.construct(child);
-							Optional.ofNullable(child.<List<String>>getPropertyValue(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value()))
-									.map(strings -> strings.stream())
-									.ifPresent(stringStream -> {
-										stringStream
-										.filter(s -> AllegatoContrattoFlussoDocumentBulk.ti_allegatoFlussoKeys.get(s) != null)
-										.findFirst()
-										.ifPresent(s -> allegato.setType(s));
-										if (allegato.getType() != null){
-											allegato.setContentType(child.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
-											allegato.setDescrizione(child.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
-											allegato.setTitolo(child.getPropertyValue(StoragePropertyNames.TITLE.value()));
-											allegato.setNome(allegato.getTitolo());
-											allegato.setCrudStatus(OggettoBulk.NORMAL);
-											contratto.addToArchivioAllegatiFlusso(allegato);
-											contratto.setAllegatoFlusso(true);
-											if (!allegato.isContentStreamPresent())
-												setMessage(ERROR_MESSAGE, "Attenzione l'allegato [" + allegato.getName() + "] risulta privo di contenuto!");
-										}
-									});
-						}
-						if (contratto.getAllegatoFlusso() == false){
-							AllegatoContrattoDocumentBulk allegato = AllegatoContrattoDocumentBulk.construct(child);
-							allegato.setContentType(child.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
-							allegato.setDescrizione(child.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
-							allegato.setTitolo(child.getPropertyValue(StoragePropertyNames.TITLE.value()));
-							allegato.setNome(child.getPropertyValue("sigla_contratti_attachment:original_name"));
-							allegato.setType(child.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()));
-
-							allegato.setLink(child.<String>getPropertyValue("sigla_contratti_aspect_link:url"));
-							allegato.setCrudStatus(OggettoBulk.NORMAL);
-							contratto.addToArchivioAllegati(allegato);
-							if (!allegato.isContentStreamPresent())
-								setMessage(ERROR_MESSAGE, "Attenzione l'allegato [" + allegato.getName() + "] risulta privo di contenuto!");
-						}
-
+			Optional.ofNullable(contrattoService.findAllegatiFlussoContratto(contratto))
+			.filter(list->!list.isEmpty())
+					.ifPresent(list->{
+						list.stream()
+								.forEach(allegato->{
+									contratto.addToArchivioAllegatiFlusso(allegato);
+								});
 					});
+
+
+			Optional.ofNullable(contrattoService.findAllegatiContratto(contratto))
+					.filter(list->!list.isEmpty())
+					.ifPresent(list->{
+						list.stream()
+								.forEach(allegato->{
+									contratto.addToArchivioAllegati(allegato);
+								});
+					});
+
 		} catch (ApplicationException e) {
 			throw handleException(e);
 		}
+
 		return contratto;
 	}
 
@@ -762,6 +775,18 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 	}
 
 	private void archiviaAllegati(ActionContext actioncontext, ContrattoBulk contratto) throws BusinessProcessException, ApplicationException{
+		try {
+			crudArchivioAllegati.validate(actioncontext);
+		} catch (ValidationException e1) {
+			throw handleException(e1);
+		}
+		ContrattoComponentSession comp = (ContrattoComponentSession)createComponentSession();
+		try {
+			comp.archiviaAllegati(actioncontext.getUserContext(),contratto,attachRestContrStoredFromSigla);
+		} catch (ComponentException e) {
+			throw new ApplicationException(e);
+		}
+		/*
 		Optional.ofNullable(contrattoService.getStorageObjectByPath(contrattoService.getCMISPathFolderContratto(contratto)))
 				.orElseGet(() -> {
 					StorageObject parentStorageObject = contrattoService.getStorageObjectByPath(
@@ -773,11 +798,7 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 									contratto
 							));
 				});
-		try {
-			crudArchivioAllegati.validate(actioncontext);
-		} catch (ValidationException e1) {
-			throw handleException(e1);
-		}
+
 		for (Iterator<AllegatoContrattoDocumentBulk> iterator = contratto.getArchivioAllegati().deleteIterator(); iterator.hasNext();) {
 			AllegatoContrattoDocumentBulk allegato = iterator.next();
 			if (allegato.isToBeDeleted()){
@@ -834,6 +855,7 @@ public class CRUDConfigAnagContrattoBP extends SimpleCRUDBP {
 				}
 			}
 		}
+		*/
 	}
 
 	public Boolean getFlagPubblicaContratto() {
@@ -904,20 +926,20 @@ public SimpleDetailCRUDController getCrudAssDitte() {
 				  c = r.getCell((short)1);
 				  if (c!=null && c.getCellType().equals(CellType.STRING))
 					  codice_fiscale=c.getStringCellValue();
-				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.NUMERIC)))
+				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.BLANK)))
 					  throw new ApplicationException("Formato codice fiscale non valido riga:"+(i+1));	
 				  c = r.getCell((short)2);
 				  if (c!=null && c.getCellType().equals(CellType.STRING))
 					  id_fiscale=c.getStringCellValue();
-				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.NUMERIC)))
+				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.BLANK)))
 					  throw new ApplicationException("Formato id fiscale non valido riga:"+(i+1));	
 				  c = r.getCell((short)3);
 				  if (c!=null && c.getCellType().equals(CellType.STRING))
 					  ruolo=c.getStringCellValue();
-				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.NUMERIC)))
+				  else if(c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.BLANK)))
 					  throw new ApplicationException("Formato ruolo non valido riga:"+(i+1));	
 				  c = r.getCell((short)4);
-				  if (c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.NUMERIC)))
+				  if (c!=null && (!c.getCellType().equals(CellType.STRING) && !c.getCellType().equals(CellType.BLANK)))
 					  denominazione_rti=c.getStringCellValue();
 				  else if(c!=null && !c.getCellType().equals(CellType.STRING))
 					  throw new ApplicationException("Formato denominazione rti non valido riga:"+(i+1));	
@@ -977,5 +999,9 @@ public SimpleDetailCRUDController getCrudAssDitte() {
 		catch (RecordFormatException e) {
 			throw new ApplicationException("Errore nella lettura del file!");
 		}
+	}
+
+	public SimpleDetailCRUDController getCrudDettaglio_contratto() {
+		return crudDettaglio_contratto;
 	}
 }

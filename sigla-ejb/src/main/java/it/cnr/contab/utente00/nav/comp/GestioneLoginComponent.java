@@ -31,6 +31,7 @@ import it.cnr.contab.utenze00.bulk.*;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
@@ -40,9 +41,12 @@ import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.PropertyNames;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.keycloak.KeycloakPrincipal;
+import org.keycloak.representations.IDToken;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -59,6 +63,8 @@ public class GestioneLoginComponent
     public static final int VALIDA_NUOVO_UTENTE_LDAP = 1;
     public static final int VALIDA_NUOVO_UTENTE_LDAP_ANNULLA = 2;
     public static final int VALIDA_FASE_INIZIALE_UTENTE_MULTIPLO = 3;
+
+    public static final int VALIDA_FASE_SSO = 5;
 
     public GestioneLoginComponent() {
     }
@@ -723,7 +729,7 @@ public class GestioneLoginComponent
                 if (faseValidazione == VALIDA_FASE_INIZIALE_UTENTE_MULTIPLO)
                     sqlUtente.addSQLClause("AND", "cd_utente", SQLBuilder.EQUALS, utente.getUtente_multiplo());
 
-                List result = getHome(userContext, UtenteBulk.class).fetchAll(sqlUtente);
+                List<UtenteBulk> result = getHome(userContext, UtenteBulk.class).fetchAll(sqlUtente);
 
                 // contiamo prima quanti sono gli utenti validi
                 int numValidi = 0;
@@ -736,12 +742,18 @@ public class GestioneLoginComponent
                         numValidi++;
                     }
                 }
-                if (numValidi > 1 && faseValidazione != VALIDA_NUOVO_UTENTE_LDAP) {
+                if (numValidi > 1 && faseValidazione != VALIDA_NUOVO_UTENTE_LDAP && faseValidazione != VALIDA_FASE_SSO) {
                     throw new UtenteMultiploException();
                 }
 
                 if (!result.isEmpty() && faseValidazione != VALIDA_NUOVO_UTENTE_LDAP) {
                     // se ne esiste uno valido lo impostiamo a quello altrimenti al primo disponibile
+                    if (faseValidazione == VALIDA_FASE_SSO) {
+                        return result
+                                .stream()
+                                .findFirst()
+                                .get();
+                    }
                     if (uteValido != null)
                         utenteReale = uteValido;
                     else
@@ -773,9 +785,11 @@ public class GestioneLoginComponent
                                 }
                                 throw new UtenteLdapNuovoException();
                             }
+                            if (faseValidazione == VALIDA_FASE_SSO)
+                                return utenteReale;
                         } else {
                             // verifichiamo se è un utente nuovo creato in sigla (dt_ultima_var_password nulla)
-                            if (utenteReale.getDt_ultima_var_password() == null)
+                            if (utenteReale.getDt_ultima_var_password() == null || faseValidazione == VALIDA_FASE_SSO)
                                 return utenteReale;
                         }
                     }
@@ -892,11 +906,14 @@ public class GestioneLoginComponent
     public void cambiaAbilitazioneUtente(UserContext userContext, String uid, boolean abilita) throws it.cnr.jada.comp.ComponentException {
         try {
             LDAPService ldapService = SpringUtil.getBean(LDAPService.class);
-            final Optional<Person> personById = ldapService.findPersonById(uid);
-            if (personById.isPresent()) {
-                personById.get().setCnrapp1(abilita ? "si" : "no");
-                ldapService.save(personById.get());
+            if (ldapService != null) {
+                final Optional<Person> personById = ldapService.findPersonById(uid);
+                if (personById.isPresent()) {
+                    personById.get().setCnrapp1(abilita ? "si" : "no");
+                    ldapService.save(personById.get());
+                }
             }
+        } catch (NoSuchBeanDefinitionException e){
         } catch (Throwable e) {
             throw handleException(e);
         }
@@ -956,5 +973,35 @@ public class GestioneLoginComponent
         } catch (Throwable e) {
             throw handleException(e);
         }
+    }
+
+    public boolean isUserAccessoAllowed(Principal principal, Integer esercizio, String cds, String uo, String... accessi) throws ComponentException {
+        CNRUserContext context = new CNRUserContext();
+        context.setEsercizio(esercizio);
+        context.setCd_cds(cds);
+        context.setCd_unita_organizzativa(uo);
+        UtenteBulk utenteBulk = new UtenteBulk();
+        final Optional<IDToken> idToken = Optional.ofNullable(principal)
+                .filter(KeycloakPrincipal.class::isInstance)
+                .map(KeycloakPrincipal.class::cast)
+                .map(KeycloakPrincipal::getKeycloakSecurityContext)
+                .map(keycloakSecurityContext -> {
+                    return Optional.ofNullable(keycloakSecurityContext.getIdToken())
+                            .orElse(keycloakSecurityContext.getToken());
+                });
+        if (idToken.isPresent()) {
+            utenteBulk.setCd_utente(idToken.get().getPreferredUsername());
+            utenteBulk.setCd_utente_uid(idToken.get().getPreferredUsername());
+            return Optional.ofNullable(validaUtente(context, utenteBulk))
+                    .map(utenteBulk1 -> {
+                        context.setUser(utenteBulk.getCd_utente());
+                        try {
+                            return isUserAccessoAllowed(context, accessi);
+                        } catch (ComponentException e) {
+                            return Boolean.FALSE;
+                        }
+                    }).orElse(Boolean.FALSE);
+        }
+        return Boolean.FALSE;
     }
 }

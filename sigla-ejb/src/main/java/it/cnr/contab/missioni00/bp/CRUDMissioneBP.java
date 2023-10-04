@@ -189,6 +189,7 @@ public class CRUDMissioneBP extends AllegatiCRUDBP<AllegatoMissioneBulk, Mission
     private final CollapsableDetailCRUDController movimentiDare = new EconomicaDareDetailCRUDController(this);
     private final CollapsableDetailCRUDController movimentiAvere = new EconomicaAvereDetailCRUDController(this);
     private boolean attivaEconomicaParallela = false;
+    private boolean supervisore = false;
 
     /**
      * CRUDMissioneBP constructor comment.
@@ -730,6 +731,7 @@ public class CRUDMissioneBP extends AllegatiCRUDBP<AllegatoMissioneBulk, Mission
         newToolbar[i] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.riportaAvanti");
         newToolbar[i + 1] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.riportaIndietro");
         newToolbar[i + 2] = new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config.getHandler().getProperties(getClass()), "CRUDToolbar.salvaProvvisorio");
+        newToolbar = IDocAmmEconomicaBP.addPartitario(newToolbar, attivaEconomicaParallela, isEditing(), getModel());
         return newToolbar;
     }
 
@@ -1220,6 +1222,7 @@ public class CRUDMissioneBP extends AllegatiCRUDBP<AllegatoMissioneBulk, Mission
     protected void init(Config config, ActionContext context) throws BusinessProcessException {
         try {
             attivaEconomicaParallela = Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(context.getUserContext());
+            setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
             verificoUnitaENTE(context);
         } catch (Throwable e) {
             throw handleException(e);
@@ -2938,5 +2941,17 @@ public class CRUDMissioneBP extends AllegatiCRUDBP<AllegatoMissioneBulk, Mission
     @Override
     public CollapsableDetailCRUDController getMovimentiAvere() {
         return movimentiAvere;
+    }
+
+    public boolean isSupervisore() {
+        return supervisore;
+    }
+
+    public void setSupervisore(boolean supervisore) {
+        this.supervisore = supervisore;
+    }
+
+    public boolean isButtonGeneraScritturaVisible() {
+        return this.isSupervisore();
     }
 }

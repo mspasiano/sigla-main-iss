@@ -17,10 +17,13 @@
 
 package it.cnr.contab.pdg00.cdip.bulk;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
 import it.cnr.contab.doccont00.core.bulk.MandatoBulk;
+import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
@@ -42,7 +45,7 @@ public Stipendi_cofiHome(java.sql.Connection conn) {
 	public java.util.Collection findStipendiCofiAnno(int esercizio) throws PersistencyException{
 		SQLBuilder sql = createSQLBuilder();
 		sql.addSQLClause(FindClause.AND,"ESERCIZIO",SQLBuilder.EQUALS,esercizio);
-		sql.addOrderBy("MESE DESC");
+		sql.addOrderBy("MESE_REALE");
 		return fetchAll(sql);
 	}
 
@@ -63,5 +66,22 @@ public Stipendi_cofiHome(java.sql.Connection conn) {
 		sql.addClause(FindClause.AND,"pg_mandato",SQLBuilder.EQUALS,mandatoBulk.getPg_mandato());
 		Collection<Stipendi_cofiBulk> result = fetchAll(sql);
 		return result.stream().findFirst().orElse(null);
+	}
+
+	@Override
+	public void initializePrimaryKeyForInsert(UserContext usercontext, OggettoBulk oggettobulk) throws PersistencyException, ComponentException {
+		Optional.ofNullable(oggettobulk)
+				.filter(Stipendi_cofiBulk.class::isInstance)
+				.map(Stipendi_cofiBulk.class::cast)
+				.filter(stipendiCofiBulk -> Optional.ofNullable(stipendiCofiBulk.getMese_reale()).isPresent())
+				.ifPresent(stipendiCofiBulk -> {
+					try {
+						stipendiCofiBulk.setMese(
+								((Integer)findAndLockMax(oggettobulk, "mese", new Integer(0))).intValue() + 1
+						);
+					} catch (PersistencyException|BusyResourceException e) {
+						throw new DetailedRuntimeException(e);
+					}
+				});
 	}
 }

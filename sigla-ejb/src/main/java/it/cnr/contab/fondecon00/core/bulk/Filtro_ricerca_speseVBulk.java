@@ -17,8 +17,6 @@
 
 package it.cnr.contab.fondecon00.core.bulk;
 
-import it.cnr.contab.config00.pdcfin.bulk.*;
-
 public class Filtro_ricerca_speseVBulk extends it.cnr.jada.bulk.OggettoBulk {
 
 	private Fondo_economaleBulk fondo_economale;
@@ -137,12 +135,8 @@ public java.lang.Long getPg_fondo_spesa() {
 public Filtro_ricerca_speseVBulk initializeForSearch(
 									it.cnr.jada.util.action.BulkBP bp,
 									it.cnr.jada.action.ActionContext context) {
-
-//	setDt_spesa(getCurrentDate());
-//	setIm_ammontare_spesa(new java.math.BigDecimal(0).setScale(2, java.math.BigDecimal.ROUND_HALF_UP));
 	setFl_documentata(Boolean.FALSE);
 	setFl_reintegrata(Boolean.FALSE);
-	
 	return this;
 }
 /**

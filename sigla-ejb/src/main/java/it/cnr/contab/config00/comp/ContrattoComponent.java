@@ -23,32 +23,11 @@
  */
 package it.cnr.contab.config00.comp;
 
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.AnagraficoHome;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoHome;
-import it.cnr.contab.anagraf00.core.bulk.V_persona_fisicaBulk;
-import it.cnr.contab.anagraf00.core.bulk.V_persona_fisicaHome;
+import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.compensi00.docs.bulk.CompensoBulk;
-import it.cnr.contab.config00.bulk.CigBulk;
-import it.cnr.contab.config00.bulk.CigHome;
-import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
-import it.cnr.contab.config00.bulk.Parametri_cdsHome;
-import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
-import it.cnr.contab.config00.bulk.RicercaContrattoBulk;
-import it.cnr.contab.config00.contratto.bulk.AllegatoContrattoFlussoDocumentBulk;
+import it.cnr.contab.config00.bulk.*;
 import it.cnr.contab.config00.consultazioni.bulk.VContrattiTotaliDetBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_ditteBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
-import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoHome;
-import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
-import it.cnr.contab.config00.contratto.bulk.ContrattoHome;
-import it.cnr.contab.config00.contratto.bulk.OrganoBulk;
-import it.cnr.contab.config00.contratto.bulk.Procedure_amministrativeBulk;
-import it.cnr.contab.config00.contratto.bulk.Stampa_elenco_contrattiBulk;
-import it.cnr.contab.config00.contratto.bulk.Tipo_atto_amministrativoBulk;
-import it.cnr.contab.config00.contratto.bulk.Tipo_contrattoBulk;
-import it.cnr.contab.config00.ejb.ContrattoComponentSession;
+import it.cnr.contab.config00.contratto.bulk.*;
 import it.cnr.contab.config00.latt.bulk.Ass_linea_attivita_esercizioBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageHome;
@@ -56,30 +35,19 @@ import it.cnr.contab.config00.service.ContrattoService;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaHome;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
-import it.cnr.contab.config00.util.Constants;
+import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
 import it.cnr.contab.doccont00.comp.CheckDisponibilitaContrattoFailed;
 import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
-import it.cnr.contab.doccont00.core.bulk.AccertamentoHome;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
-import it.cnr.contab.doccont00.tabrif.bulk.CupBulk;
-import it.cnr.contab.doccont00.tabrif.bulk.CupHome;
 import it.cnr.contab.incarichi00.tabrif.bulk.Tipo_norma_perlaBulk;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
-import it.cnr.contab.progettiric00.core.bulk.ProgettoHome;
-import it.cnr.contab.progettiric00.core.bulk.Progetto_other_fieldBulk;
-import it.cnr.contab.progettiric00.core.bulk.Progetto_other_fieldHome;
-import it.cnr.contab.progettiric00.core.bulk.TipoFinanziamentoBulk;
-import it.cnr.contab.progettiric00.core.bulk.TipoFinanziamentoHome;
+import it.cnr.contab.progettiric00.core.bulk.*;
 import it.cnr.contab.service.SpringUtil;
-import it.cnr.contab.util.SIGLAGroups;
-import it.cnr.jada.util.DateUtils;
-import it.cnr.si.spring.storage.StorageObject;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.ICancellatoLogicamente;
 import it.cnr.contab.util.RemoveAccent;
+import it.cnr.contab.util.SIGLAGroups;
 import it.cnr.contab.util.Utility;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.bulk.BulkInfo;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -90,15 +58,18 @@ import it.cnr.jada.comp.IPrintMgr;
 import it.cnr.jada.persistency.Broker;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.persistency.sql.FindClause;
-import it.cnr.jada.persistency.sql.LoggableStatement;
-import it.cnr.jada.persistency.sql.PersistentHome;
-import it.cnr.jada.persistency.sql.Query;
-import it.cnr.jada.persistency.sql.SQLBuilder;
+import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import it.cnr.si.spring.storage.StorageException;
+import it.cnr.si.spring.storage.StorageObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.ejb.EJBException;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
@@ -107,15 +78,9 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.StringTokenizer;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import javax.ejb.EJBException;
 
 /**
  * @author mspasiano
@@ -124,6 +89,8 @@ import javax.ejb.EJBException;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class ContrattoComponent extends it.cnr.jada.comp.CRUDDetailComponent implements Cloneable, Serializable, IPrintMgr {
+	private static final Logger logger = LoggerFactory.getLogger(ContrattoComponent.class);
+
 	public Query select(UserContext userContext,CompoundFindClause clauses,OggettoBulk bulk) throws ComponentException, it.cnr.jada.persistency.PersistencyException {
 		if(bulk instanceof ContrattoBulk)
 			return select(userContext, clauses, (ContrattoBulk) bulk);
@@ -161,24 +128,32 @@ public class ContrattoComponent extends it.cnr.jada.comp.CRUDDetailComponent imp
 	 */
 	public SQLBuilder selectContratto_padreByClause (UserContext userContext, OggettoBulk bulk, ContrattoBulk contratto_padre,CompoundFindClause clause)	throws ComponentException, PersistencyException
 	{
-		if(((ContrattoBulk)bulk).getPg_contratto() != null && ((ContrattoBulk)bulk).getNatura_contabile() != null && 
+		if(((ContrattoBulk)bulk).getPg_contratto() != null && ((ContrattoBulk)bulk).getNatura_contabile() != null &&
 		   (((ContrattoBulk)bulk).getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI) /*||
 		   ((ContrattoBulk)bulk).getStato().equals(ContrattoBulk.STATO_PROVVISORIO)*/))
-		   throw new ApplicationException("Non è possibile associare un contratto di riferimento!");		
-		if (clause == null) 
-		  clause = contratto_padre.buildFindClauses(null);
+		   throw new ApplicationException("Non è possibile associare un contratto di riferimento!");
+		if (clause == null) {
+			clause = contratto_padre.buildFindClauses(null);
+		}
+
 		SQLBuilder sql = getHome(userContext, contratto_padre).createSQLBuilder();
+
 		sql.openNotParenthesis("AND");
-		  sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
-		  sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());		
-		  sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
+		sql.addSQLClause("AND", "ESERCIZIO", sql.EQUALS, ((ContrattoBulk)bulk).getEsercizio());
+		sql.addSQLClause("AND", "STATO", sql.EQUALS, ((ContrattoBulk)bulk).getStato());
+		sql.addSQLClause("AND", "PG_CONTRATTO", sql.EQUALS, ((ContrattoBulk)bulk).getPg_contratto());
 		sql.closeParenthesis();
 		sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI);
 		sql.addSQLClause("AND", "STATO", sql.EQUALS, ContrattoBulk.STATO_DEFINITIVO);
-		if (clause != null) 
-		  sql.addClause(clause);		
+		// sql.addSQLClause("AND", "NATURA_CONTABILE", sql.EQUALS, ((ContrattoBulk)bulk).getNatura_contabile());
+		if (clause != null) {
+			sql.addClause(clause);
+		}
 		return sql;
+		//}
 	}
+
+
 	/**
 	 * Pre:  Ricerca Tipo Contratto
 	 * Post: Limitazione ai tipi con Tipo Gestione uguale a quella in oggetto
@@ -513,21 +488,75 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch (SQLException e) {
 			throw new ComponentException(e);
 		}
-	}	
+	}
+
+	private void validaAccordoQuadro(UserContext userContext, ContrattoBulk contratto) throws ComponentException {
+		BigDecimal importoPassivoPadre = contratto.getContratto_padre().getIm_contratto_passivo();
+		BigDecimal importoPassivoNettoPadre = contratto.getContratto_padre().getIm_contratto_passivo_netto();
+		if ( !Optional.ofNullable(importoPassivoPadre).isPresent())
+			throw new ApplicationException("Impossibile associare contratto di riferimento. Il contratto padre non ha impostato l'importo passivo.");
+		if ( !Optional.ofNullable(importoPassivoNettoPadre).isPresent())
+			throw new ApplicationException("Impossibile associare contratto di riferimento. Il contratto padre non ha impostato l'importo passivo Netto.");
+
+
+		BigDecimal importiPassiviFigli = new BigDecimal(0);
+		BigDecimal importiPassiviNettiFigli = new BigDecimal(0);
+
+		ContrattoHome home = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
+		Collection contratti = home.findContrattiPassiviConAccordoQuadro(contratto);
+		Iterator<ContrattoBulk> iterator = contratti.iterator();
+		while (iterator.hasNext()) {
+			ContrattoBulk c = iterator.next();
+			if ( !c.toString().equals(contratto.toString()) ) {
+				importiPassiviFigli = importiPassiviFigli.add(c.getIm_contratto_passivo());
+				importiPassiviNettiFigli = importiPassiviNettiFigli.add(c.getIm_contratto_passivo_netto());
+			} else {
+				logger.error("Il contratto è già presente: " + c.getPg_contratto());
+			}
+		}
+		// aggiungo importo contratto da salvare
+		importiPassiviFigli = importiPassiviFigli.add(contratto.getIm_contratto_passivo());
+		importiPassiviNettiFigli = importiPassiviNettiFigli.add(contratto.
+				getIm_contratto_passivo_netto());
+
+		logger.debug("ImportiPassivi] Padre: " + importoPassivoPadre + ", Figli: " + importiPassiviFigli);
+		logger.debug("ImportiPassiviNetti] Padre: " + importoPassivoNettoPadre + ", Figli: " + importiPassiviNettiFigli);
+
+		if (importiPassiviFigli.compareTo(importoPassivoPadre) > 0 ) {
+			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
+		}
+		if (importiPassiviNettiFigli.compareTo(importoPassivoNettoPadre) > 0) {
+			throw new ApplicationException("Impossibile associare contratto di riferimento per mancanza fondi.");
+		}
+
+	}
+
 	public OggettoBulk creaConBulk(UserContext usercontext, OggettoBulk oggettobulk)
 		throws ComponentException
 	{
-		if(oggettobulk instanceof ContrattoBulk)
+		if(oggettobulk instanceof ContrattoBulk){
 			try {
+				// Boolean hasFlussiFinanziariConImporti = false;
+				Boolean hasFlussiFinanziariConImporti = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(usercontext);
+				ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
 				validaCampiObbligatori(usercontext,(ContrattoBulk)oggettobulk);
+				validaDettaglioContratto( usercontext,(ContrattoBulk)oggettobulk);
+				if ( hasFlussiFinanziariConImporti &&  contratto.isPassivo() && contratto.getContratto_padre() != null ) {
+					validaAccordoQuadro(usercontext, contratto);
+				}
 			} catch (PersistencyException e) {
 				throw new ComponentException(e);
 			} catch (IntrospectionException e) {
 				throw new ComponentException(e);
 			} catch (SQLException e) {
 				throw new ComponentException(e);
+			} catch (RemoteException e) {
+				throw new ComponentException(e);
 			}
+		}
+
 		ContrattoBulk contratto = (ContrattoBulk)oggettobulk;
+
 		if (contratto.getCig() != null && contratto.getCig().isToBeCreated()){
 			super.creaConBulk(usercontext, contratto.getCig());
 		}
@@ -546,9 +575,17 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	 * Post: Aggiorno il progressivo dai numeratori
 	 */  			
 	public OggettoBulk modificaConBulk(UserContext userContext, ContrattoBulk bulk) throws ComponentException{
+		logger.info("Sono in modificaConBulk");
 		try {
+			Boolean hasFlussiFinanziariConImporti = Utility.createConfigurazioneCnrComponentSession().hasGestioneImportiFlussiFinanziari(userContext);
 			validaCampiObbligatori(userContext,(ContrattoBulk)bulk);
+			validaDettaglioContratto( userContext,(ContrattoBulk)bulk);
+
 			ContrattoBulk contratto=(ContrattoBulk)bulk;
+			if ( hasFlussiFinanziariConImporti && contratto.isPassivo() && contratto.getContratto_padre() != null ) {
+				validaAccordoQuadro(userContext, contratto);
+			}
+
 			validaAssociazioneContrattoAccertamenti(userContext,(ContrattoBulk)bulk);
 
 			Date dataStipulaParametri = ((Parametri_cnrBulk)getHome(userContext, Parametri_cnrBulk.class).
@@ -574,6 +611,8 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch (IntrospectionException e) {
 			throw new ComponentException(e);
 		} catch (SQLException e) {
+			throw new ComponentException(e);
+		} catch (RemoteException e) {
 			throw new ComponentException(e);
 		}
 		return super.modificaConBulk(userContext,bulk);
@@ -691,9 +730,12 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			ContrattoHome testataHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
 			testata.setDitteInvitate(new it.cnr.jada.bulk.BulkList(testataHome.findDitteAssociate(userContext, testata, Ass_contratto_ditteBulk.LISTA_INVITATE)));
 
+			testata.setDettaglio_contratto(new it.cnr.jada.bulk.BulkList(testataHome.findDettaglioContratto(userContext, testata )));
+
+
 			if (Optional.ofNullable(testata.getPg_progetto()).isPresent())
 				testata.setProgetto((ProgettoBulk)getHome(userContext, ProgettoBulk.class).findByPrimaryKey(new ProgettoBulk(CNRUserContext.getEsercizio(userContext), testata.getPg_progetto(), ProgettoBulk.TIPO_FASE_NON_DEFINITA)));
-			
+			getHomeCache(userContext).fetchAll(userContext);
 			return calcolaTotDocCont(userContext,testata);
 		} catch(Exception e) {
 				throw handleException(e);
@@ -790,12 +832,15 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			   return contratto;			   
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_SENZA_FLUSSI_FINANZIARI))
 			   return calcolaTotDocContForPadre(userContext,contratto);
+			// if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ACCORDO_QUADRO))
+				// TODO: Gestire metodo per il salvataggio
+			   // return calcolaTotDocContForPadre(userContext,contratto);
 			if(contratto.getNatura_contabile().equals(ContrattoBulk.NATURA_CONTABILE_ATTIVO_E_PASSIVO))
 			   return calcolaTotDocContForAttivoPassivo(userContext,contratto);			   
 			ContrattoHome testataHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
 			
 			contratto.setDitteInvitate(new it.cnr.jada.bulk.BulkList(testataHome.findDitteAssociate(userContext, contratto, Ass_contratto_ditteBulk.LISTA_INVITATE)));
-			
+			contratto.setDettaglio_contratto(new it.cnr.jada.bulk.BulkList(testataHome.findDettaglioContratto(userContext, contratto)));
 			SQLBuilder sql = null;
 			SQLBuilder sql_liq = null;
 			SQLBuilder sql_pag = null;
@@ -1548,7 +1593,158 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 	  *		reloadVarBilancio(UserContext userContext, Var_bilancioBulk varBilancio);
 	  *
 	**/
+	public void archiviaAllegatiFlusso(UserContext userContext, ContrattoBulk contratto,ContrattoService contrattoService) throws ComponentException {
+		for (Iterator<AllegatoContrattoFlussoDocumentBulk> iterator = contratto.getArchivioAllegatiFlusso().deleteIterator(); iterator.hasNext();) {
+			AllegatoContrattoFlussoDocumentBulk allegato = iterator.next();
+			if (allegato.isToBeDeleted()){
+				contrattoService.delete(allegato.getNodeId());
+				allegato.setCrudStatus(OggettoBulk.NORMAL);
+			}
+		}
+		for (AllegatoContrattoFlussoDocumentBulk allegato : contratto.getArchivioAllegatiFlusso()) {
+			if (allegato.isToBeCreated()){
+				try {
+					StorageObject storageObject = Optional.ofNullable(allegato.getInputStream())
+							.map(bytes -> {
+								try {
+									return contrattoService.storeSimpleDocument(
+											allegato,
+											allegato.getInputStream(),
+											allegato.getContentType(),
+											allegato.getDocumentName(),
+											contrattoService.getCMISPathAllegati(contratto),
+											true);
+								} catch (Exception e) {
+									throw new StorageException(StorageException.Type.GENERIC, e);
+								}
+							}).orElseGet(() -> {
+								return contrattoService.storeSimpleDocument(
+										allegato,
+										null,
+										allegato.getContentType(),
+										allegato.getDocumentName(), contrattoService.getCMISPathAllegati(contratto),
+										true);
+							});
+					//Costruire l'alberatura alternativa per i contratti
+					/* Chiedere a Gianfranco
+					if (contratto.isDefinitivo() && !allegato.getType().equals(AllegatoContrattoDocumentBulk.GENERICO))
+						contrattoService.costruisciAlberaturaAlternativa(allegato, storageObject);
+					*/
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+					allegato.setNodeId(storageObject.getKey());
+				} catch (StorageException e) {
+					if (e.getType().equals(StorageException.Type.CONSTRAINT_VIOLATED))
+						throw new ApplicationException("CMIS - File ["+allegato.getNome()+"] gia' presente. Inserimento non possibile!");
+					throw new ComponentException(e);
+				}
+			}else if (allegato.isToBeUpdated()) {
+				try {
+					if (allegato.getBytes() != null)
+						contrattoService.updateStream(allegato.getNodeId(),
+								new ByteArrayInputStream(allegato.getBytes()),
+								allegato.getContentType());
+					contrattoService.updateProperties(allegato, contrattoService.getStorageObjectBykey(allegato.getNodeId()));
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+				} catch (StorageException e) {
+					throw new ApplicationException("CMIS - File ["+allegato.getNome()+"] gia' presente. Inserimento non possibile!");
+				}
+			}
+		}
+	}
+	public void archiviaAllegati(UserContext userContext,ContrattoBulk contratto,ContrattoService contrattoService) throws ComponentException {
+		for (Iterator<AllegatoContrattoDocumentBulk> iterator = contratto.getArchivioAllegati().deleteIterator(); iterator.hasNext();) {
+			AllegatoContrattoDocumentBulk allegato = iterator.next();
+			if (allegato.isToBeDeleted()){
+				contrattoService.delete(allegato.getNodeId());
+				allegato.setCrudStatus(OggettoBulk.NORMAL);
+			}
+		}
+		for (AllegatoContrattoDocumentBulk allegato : contratto.getArchivioAllegati()) {
+			if (allegato.isToBeCreated()){
+				try {
+					StorageObject storageObject = Optional.ofNullable(allegato.getFile())
+							.map(file -> {
+								try {
+									return contrattoService.storeSimpleDocument(
+											allegato,
+											new FileInputStream(file),
+											allegato.getContentType(),
+											allegato.getDocumentName(),
+											contrattoService.getCMISPathAllegati(contratto),
+											true);
+								} catch (FileNotFoundException e) {
+									throw new StorageException(StorageException.Type.GENERIC, e);
+								}
+							}).orElseGet(() -> {
+								return contrattoService.storeSimpleDocument(
+										allegato,
+										null,
+										allegato.getContentType(),
+										allegato.getDocumentName(), contrattoService.getCMISPathAllegati(contratto),
+										true);
+							});
+					if (contratto.isDefinitivo() && !allegato.getType().equals(AllegatoContrattoDocumentBulk.GENERICO))
+						contrattoService.costruisciAlberaturaAlternativa(allegato, storageObject);
+
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+					allegato.setNodeId(storageObject.getKey());
+				} catch (StorageException e) {
+					if (e.getType().equals(StorageException.Type.CONSTRAINT_VIOLATED))
+						throw new ApplicationException("CMIS - File ["+allegato.getNome()+"] gia' presente. Inserimento non possibile!");
+					throw new ComponentException(e);
+				}
+			}else if (allegato.isToBeUpdated()) {
+				try {
+					if (allegato.getFile() != null)
+						contrattoService.updateStream(allegato.getNodeId(),
+								new FileInputStream(allegato.getFile()),
+								allegato.getContentType());
+					contrattoService.updateProperties(allegato, contrattoService.getStorageObjectBykey(allegato.getNodeId()));
+					allegato.setCrudStatus(OggettoBulk.NORMAL);
+				} catch (FileNotFoundException e) {
+					throw new ComponentException(e);
+				}catch (StorageException e) {
+					throw new ApplicationException("CMIS - File ["+allegato.getNome()+"] gia' presente. Inserimento non possibile!");
+				}
+			}
+		}
+	}
+	private void deleteDirectoryAllegatiDaFlusso(UserContext userContext, ContrattoBulk contratto,boolean attFromFlussoStoredInSigla){
+		if ( attFromFlussoStoredInSigla) {
+			try {
+				ContrattoService contrattoService = SpringUtil.getBean("contrattoService",
+						ContrattoService.class);
+
+				Optional.ofNullable(contrattoService.findAllegatiFlussoContratto(contratto))
+						.ifPresent(e -> e.forEach(a -> {
+					contrattoService.delete(a.getNodeId());
+				}));
+			} catch (ApplicationException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	public void archiviaAllegati(UserContext userContext, ContrattoBulk contratto,boolean attFromFlussoStoredInSigla) throws ComponentException {
+		ContrattoService contrattoService = SpringUtil.getBean("contrattoService",
+				ContrattoService.class);
+		Optional.ofNullable(contrattoService.getStorageObjectByPath(contrattoService.getCMISPathFolderContratto(contratto)))
+				.orElseGet(() -> {
+					StorageObject parentStorageObject = contrattoService.getStorageObjectByPath(
+							contrattoService.getCMISPath(contratto), true
+					);
+					return contrattoService.getStorageObjectBykey(
+							contrattoService.createFolderIfNotPresent(parentStorageObject.getPath(),
+									contratto.getCMISFolderName(), null, null,
+									contratto
+							));
+				});
+		if (attFromFlussoStoredInSigla)
+			archiviaAllegatiFlusso( userContext,contratto,contrattoService);
+		archiviaAllegati( userContext,contratto,contrattoService);
+	}
+
 	public ContrattoBulk salvaDefinitivo(UserContext userContext, ContrattoBulk contratto) throws ComponentException{
+		logger.info("Sono in salva definitivo");
 		try {
 			ContrattoService contrattoService = SpringUtil.getBean("contrattoService",
 					ContrattoService.class);
@@ -1558,6 +1754,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			validaModificaConBulk(userContext, contratto);
 			try {
 				validaCampiObbligatori(userContext,contratto);
+				validaDettaglioContratto( userContext,contratto);
 			}catch (IntrospectionException e) {
 				throw new ComponentException(e);
 			} catch (SQLException e) {
@@ -1634,7 +1831,12 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				Ass_contratto_uoBulk ass_contratto_uo = (Ass_contratto_uoBulk)j.next();
 				if(ass_contratto_uo.getCrudStatus()== OggettoBulk.NORMAL)
 					ass_contratto_uo.setCrudStatus(OggettoBulk.TO_BE_DELETED);
-			}			
+			}
+			for (java.util.Iterator j=contratto.getDettaglio_contratto().iterator();j.hasNext();){
+				Dettaglio_contrattoBulk dettaglio_contrattoBulk = (Dettaglio_contrattoBulk)j.next();
+				if(dettaglio_contrattoBulk.getCrudStatus()== OggettoBulk.NORMAL)
+					dettaglio_contrattoBulk.setCrudStatus(OggettoBulk.TO_BE_DELETED);
+			}
 			super.eliminaConBulk(userContext,contratto);
 			/* Inserisco il nuovo contratto 
 			   Recupero le uo associate al contratto e le lego a quello definitivo */		
@@ -1648,6 +1850,12 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				ass_contratto_ditte.setContratto(contrattoClone);
 				ass_contratto_ditte.setCrudStatus(OggettoBulk.TO_BE_CREATED);
 			}
+			for (java.util.Iterator j=contrattoClone.getDettaglio_contratto().iterator();j.hasNext();){
+				Dettaglio_contrattoBulk dettaglio_contrattoBulk = (Dettaglio_contrattoBulk)j.next();
+				dettaglio_contrattoBulk.setContratto(contrattoClone);
+				dettaglio_contrattoBulk.setCrudStatus(OggettoBulk.TO_BE_CREATED);
+			}
+
 			contrattoClone.setCrudStatus(OggettoBulk.TO_BE_CREATED);
 			contrattoClone.setStato(ContrattoBulk.STATO_DEFINITIVO);
 
@@ -1670,11 +1878,22 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 			return contrattoDefinitivo;
 		} catch (it.cnr.jada.persistency.PersistencyException|it.cnr.jada.bulk.OutdatedResourceException|it.cnr.jada.bulk.BusyResourceException e) {
 			throw handleException(contratto,e);
+
 		} catch (ApplicationRuntimeException e) {
 			throw handleException(e);
 		}
 	}
 
+	public it.cnr.jada.persistency.sql.SQLBuilder selectCategoriaGruppoInventByClause(UserContext aUC, Dettaglio_contrattoBulk dettaglio_contrattoBulk, Categoria_gruppo_inventBulk cgi, it.cnr.jada.persistency.sql.CompoundFindClause clauses)
+			throws ComponentException {
+		it.cnr.jada.persistency.sql.SQLBuilder sql = getHome(aUC,cgi).createSQLBuilder();
+
+		sql.addSQLClause("AND","LIVELLO",sql.EQUALS,"1");
+
+		sql.addClause(clauses);
+		sql.addOrderBy("cd_categoria_gruppo");
+		return sql;
+	}
 	/**
 	 * inizializzaBulkPerStampa method comment.
 	 */
@@ -2039,8 +2258,9 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				throw handleException(e);
 			}
 		}
-		public ContrattoBulk creaContrattoDaFlussoAcquisti(UserContext userContext, ContrattoBulk contratto) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException {
+		public ContrattoBulk creaContrattoDaFlussoAcquisti(UserContext userContext, ContrattoBulk contratto, boolean statoDefinitivo) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException {
 			try {
+
 				controlloFlussoAcquistiGiaEsistente(userContext, contratto);
 				TerzoBulk terzoUo = selectTerzoFromUo(userContext, contratto.getUnita_organizzativa());
 				if (terzoUo != null){
@@ -2048,13 +2268,28 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				} else {
 					throw new ComponentException("La uo indicata non ha il terzo corrispondente");
 				}
-				contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
-				contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
-				contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
+				if ( contratto.getCodfisPivaRupExt()!=null && (!contratto.getCodfisPivaRupExt().isEmpty()))
+					contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
+				if ( contratto.getCodfisPivaFirmatarioExt()!=null && (!contratto.getCodfisPivaFirmatarioExt().isEmpty()))
+					contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
+				if ( contratto.getCodfisPivaAggiudicatarioExt()!=null && (!contratto.getCodfisPivaAggiudicatarioExt().isEmpty()))
+					contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
+
 
 				gestioneCigSuContrattoDaFlows(userContext, contratto);
-			
 				contratto = (ContrattoBulk)creaConBulk(userContext, contratto);
+				boolean isAttachRestContrStoredFromSigla=Utility.createConfigurazioneCnrComponentSession().isAttachRestContrStoredFromSigla(userContext);
+				archiviaAllegati(userContext,contratto,isAttachRestContrStoredFromSigla);
+				if ( statoDefinitivo) {
+					try {
+						return salvaDefinitivo(userContext, contratto);
+					}catch (Exception e){
+						if ( isAttachRestContrStoredFromSigla)
+						//rimuovi Contratto con gli allegati
+						deleteDirectoryAllegatiDaFlusso(userContext,contratto,isAttachRestContrStoredFromSigla);
+					}
+				}
+
 				return contratto;
 			} catch (PersistencyException e) {
 				throw new ComponentException(e);
@@ -2130,7 +2365,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				sql.addClause("AND", "codice_fiscale", sql.EQUALS, codFisPiva);
 				sql.addClause("or", "partita_iva", sql.EQUALS, codFisPiva);
 		        List lista = home.fetchAll(sql);
-		        if (lista != null){
+		        if ( Optional.ofNullable(lista).map(List::size).orElse(0)>0){
 			        return (V_persona_fisicaBulk) lista.get(0);
 		        }
 		        return null;
@@ -2318,7 +2553,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				TipoFinanziamentoHome tipoFinanziamentoHome = (TipoFinanziamentoHome)getHome(userContext, TipoFinanziamentoBulk.class);
 				TipoFinanziamentoBulk tipoFinanziamentoBulk = (TipoFinanziamentoBulk)tipoFinanziamentoHome.findByPrimaryKey(new TipoFinanziamentoBulk(otherFieldBulk.getIdTipoFinanziamento()));
 
-				if (Optional.ofNullable(tipoFinanziamentoBulk).filter(TipoFinanziamentoBulk::getFlQuadraContratto).isPresent()) {
+				if (Optional.ofNullable(tipoFinanziamentoBulk).filter(e->e.getFlQuadraContratto()).isPresent()) {
 					ContrattoHome contrattoHome = (ContrattoHome)getHome(userContext, ContrattoBulk.class);
 					SQLBuilder sql = contrattoHome.createSQLBuilder();
 					sql.addSQLClause(FindClause.AND, "CONTRATTO.PG_PROGETTO", SQLBuilder.EQUALS, progetto.getPg_progetto());
@@ -2398,5 +2633,48 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		} catch (Throwable e) {
 			throw handleException(e);
 		}
+	}
+	private void validaDettaglioContratto(UserContext uc, ContrattoBulk bulk) throws ComponentException, ApplicationException, IntrospectionException, PersistencyException, SQLException{
+		if (  bulk.getTipo_dettaglio_contratto() ==null ||  bulk.getTipo_dettaglio_contratto().isEmpty())
+			return;
+		if ( Optional.ofNullable(bulk.getDettaglio_contratto()).filter(e->e.isEmpty()).isPresent())
+			throw new ApplicationException("Bisogna aggiungere almeno un dettaglio Contratto");
+
+		if ( bulk.DETTAGLIO_CONTRATTO_ARTICOLI.equals( bulk.getTipo_dettaglio_contratto()))
+			validaRigheDettContrattoArticoli(uc,bulk);
+		if ( bulk.DETTAGLIO_CONTRATTO_CATGRP.equals( bulk.getTipo_dettaglio_contratto()))
+			validaRigheDettContrattoCatGrp(uc,bulk);
+
+	}
+	private void validaRigheDettContrattoArticoli(UserContext uc, ContrattoBulk bulk) throws ComponentException, ApplicationException, IntrospectionException, PersistencyException, SQLException{
+		if ( bulk.getDettaglio_contratto().stream()
+				.collect(Collectors.groupingBy(Dettaglio_contrattoBulk::getCdBeneServizio, Collectors.counting()))
+				.values().stream().filter(e->e.compareTo(Long.decode("1"))>0).count()>0)
+			throw new ApplicationException("Esistitono Beni duplicati nel Dettalgio Contratto");
+
+		Map<String, Long> result =bulk.getDettaglio_contratto().stream()
+				.collect(Collectors.groupingBy(Dettaglio_contrattoBulk::getCdBeneServizio, Collectors.counting()));
+		for ( Dettaglio_contrattoBulk dettaglio_contrattoBulk:bulk.getDettaglio_contratto()){
+			if ( dettaglio_contrattoBulk.getCdBeneServizio()==null || dettaglio_contrattoBulk.getCdBeneServizio().isEmpty())
+				throw new ApplicationException("Selezionare il bene per tutti i dettagli Contratti");
+			if ( dettaglio_contrattoBulk.getPrezzoUnitario()==null ||dettaglio_contrattoBulk.getPrezzoUnitario().compareTo(BigDecimal.ZERO)<=0)
+				throw new ApplicationException("Inserire il Prezzo Unitario per tutti i dettagli Contratti");
+		}
+
+	}
+	private void validaRigheDettContrattoCatGrp(UserContext uc, ContrattoBulk bulk) throws ComponentException, ApplicationException, IntrospectionException, PersistencyException, SQLException{
+		if ( bulk.getDettaglio_contratto().stream()
+				.collect(Collectors.groupingBy(Dettaglio_contrattoBulk::getCdCategoriaGruppo, Collectors.counting()))
+				.values().stream().filter(e->e.compareTo(Long.decode("1"))>0).count()>0)
+				throw new ApplicationException("Esistitono Categoria Gruppo duplicati nel Dettalgio Contratto");
+
+		for ( Dettaglio_contrattoBulk dettaglio_contrattoBulk:bulk.getDettaglio_contratto()){
+			if (dettaglio_contrattoBulk.getCdCategoriaGruppo()==null || dettaglio_contrattoBulk.getCdCategoriaGruppo().isEmpty())
+				throw new ApplicationException("Selezionare la Categoria/Gruppo tutti i dettagli Contratti");
+			if ( dettaglio_contrattoBulk.getCategoriaGruppoInvent().getDs_categoria_gruppo()==null ||
+					dettaglio_contrattoBulk.getCategoriaGruppoInvent().getDs_categoria_gruppo().isEmpty())
+				throw new ApplicationException("Esiste una Categoria Gruppo non presente in anagrafica");
+		}
+
 	}
 }

@@ -30,6 +30,8 @@ import java.util.*;
 import it.cnr.contab.anagraf00.core.bulk.*;
 import it.cnr.contab.docamm00.docs.bulk.DocumentoGenericoWizardBulk;
 import it.cnr.contab.doccont00.bp.MandatoAutomaticoWizardBP;
+import it.cnr.contab.doccont00.core.ObbligazioneWizard;
+import it.cnr.contab.fondecon00.core.bulk.Fondo_economaleBulk;
 import it.cnr.contab.util.enumeration.TipoIVA;
 import it.cnr.jada.bulk.*;
 
@@ -44,8 +46,13 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 	//Indica se il mandato da generare deve essere diviso tra competenza/residuo o unico
 	private boolean flGeneraMandatoUnico;
 
+	//Indica se il mandato da generare deve essere unico o diversi per voce di bilancio
+	private boolean flGeneraMandatoMonoVoce;
+
 	protected BancaBulk banca = new BancaBulk();
 	protected Modalita_pagamentoBulk modalita_pagamento = new Modalita_pagamentoBulk();
+	protected Fondo_economaleBulk fondoEconomaleBulk = null;
+
 	protected List modalita_pagamentoOptions;
 	protected List bancaOptions;
 
@@ -206,8 +213,13 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		for (Iterator i = impegniColl.iterator(); i.hasNext(); )
 		{
 			impegno = (V_obbligazioneBulk) i.next();
-			if ( impegno.getIm_da_trasferire() != null && impegno.getIm_da_trasferire().compareTo(new BigDecimal(0)) != 0 )
-				impegniSelezionatiColl.add( impegno );
+			if ( impegno.getIm_da_trasferire() != null && impegno.getIm_da_trasferire().compareTo(new BigDecimal(0)) != 0 ) {
+				ObbligazioneWizard obbligazioneWizardBulk = new ObbligazioneWizard(impegno);
+				obbligazioneWizardBulk.setTerzoWizardBulk(this.getTerzo());
+				obbligazioneWizardBulk.setModalitaPagamentoWizardBulk(this.getModalita_pagamento());
+				obbligazioneWizardBulk.setBancaWizardBulk(this.getBanca());
+				impegniSelezionatiColl.add(obbligazioneWizardBulk);
+			}
 		}		
 	}
 	
@@ -232,7 +244,7 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 	public void validate() throws ValidationException {
 		super.validate();
 		for ( java.util.Iterator i = impegniSelezionatiColl.iterator(); i.hasNext(); )
-			((V_obbligazioneBulk)i.next()).validate();
+			((ObbligazioneWizard)i.next()).getObbligazioneBulk().validate();
 		for ( Iterator i = getMandato_rigaColl().iterator(); i.hasNext(); )
 			((Mandato_rigaIBulk) i.next()).validate();					
 	}
@@ -485,12 +497,30 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		this.ti_entrate_spese = ti_entrate_spese;
 	}
 
+	/**
+	 * Indica se il mandato da generare deve essere diviso tra competenza/residuo o unico
+	 * Se true viene creato un unico mandato
+	 * Se false viene creato un mandato di competenza e/o di residuo
+	 */
 	public boolean isFlGeneraMandatoUnico() {
 		return flGeneraMandatoUnico;
 	}
 
 	public void setFlGeneraMandatoUnico(boolean flGeneraMandatoUnico) {
 		this.flGeneraMandatoUnico = flGeneraMandatoUnico;
+	}
+
+	/**
+	 * Indica se il mandato da generare deve essere unico o diversi per voce di bilancio
+	 * Se true viene creato un unico mandato
+	 * Se false vengono creati tanti mandati quante sono le voci di bilancio associate
+	 */
+	public boolean isFlGeneraMandatoMonoVoce() {
+		return flGeneraMandatoMonoVoce;
+	}
+
+	public void setFlGeneraMandatoMonoVoce(boolean flGeneraMandatoMonoVoce) {
+		this.flGeneraMandatoMonoVoce = flGeneraMandatoMonoVoce;
 	}
 
 	public static MandatoAutomaticoWizardBulk createBy(MandatoAutomaticoWizardBulk mandatoWizard) {
@@ -529,4 +559,11 @@ public class MandatoAutomaticoWizardBulk extends MandatoIBulk {
 		return mandatoCloneWizard;
 	}
 
+	public Fondo_economaleBulk getFondoEconomaleBulk() {
+		return fondoEconomaleBulk;
+	}
+
+	public void setFondoEconomaleBulk(Fondo_economaleBulk fondoEconomaleBulk) {
+		this.fondoEconomaleBulk = fondoEconomaleBulk;
+	}
 }

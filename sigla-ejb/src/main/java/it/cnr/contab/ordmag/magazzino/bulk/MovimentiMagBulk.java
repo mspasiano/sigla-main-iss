@@ -28,6 +28,10 @@ import it.cnr.contab.ordmag.anag00.TipoMovimentoMagBulk;
 import it.cnr.contab.ordmag.anag00.UnitaMisuraBulk;
 import it.cnr.contab.ordmag.anag00.UnitaOperativaOrdBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 public class MovimentiMagBulk extends MovimentiMagBase {
 	public final static String STATO_INSERITO = "INS";
 	public final static String STATO_ANNULLATO = "ANN";
@@ -177,6 +181,24 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 	public void setCdUop(String cdUop)  {
 		this.getUnitaOperativaOrd().setCdUnitaOperativa(cdUop);
 	}
+	public String getCdCdsMag() {
+		MagazzinoBulk mag = this.getMagazzinoUt();
+		if (mag == null)
+			return null;
+		return getMagazzinoUt().getCdCds();
+	}
+	public void setCdCdsMag(String cdCdsMag)  {
+		this.getMagazzinoUt().setCdCds(cdCdsMag);
+	}
+	public String getCdMagazzino() {
+		MagazzinoBulk mag = this.getMagazzinoUt();
+		if (mag == null)
+			return null;
+		return getMagazzinoUt().getCdMagazzino();
+	}
+	public void setCdMagazzino(String cdMagazzino)  {
+		this.getMagazzinoUt().setCdMagazzino(cdMagazzino);
+	}
 	public String getCdCdsLotto() {
 		LottoMagBulk lottoMag = this.getLottoMag();
 		if (lottoMag == null)
@@ -287,5 +309,20 @@ public class MovimentiMagBulk extends MovimentiMagBase {
 	}
 	public void setMovimentoAnn(MovimentiMagBulk movimentoAnn) {
 		this.movimentoAnn = movimentoAnn;
+	}
+
+	public  BigDecimal getQuantitaEffettiva(){
+		return this.getQuantita().multiply(this.getCoeffConv());
+	}
+
+	public BigDecimal getPrezzoUnitarioEffettivo( ){
+		if (this.getPrezzoUnitario()==null || this.getPrezzoUnitario().compareTo(BigDecimal.ZERO)==0)
+			return BigDecimal.ZERO;
+
+		return this.getPrezzoUnitario().divide(this.getCoeffConv(), 6, RoundingMode.HALF_UP);
+	}
+
+	public boolean isStatoAnnullato() {
+		return STATO_ANNULLATO.equals(this.getStato());
 	}
 }

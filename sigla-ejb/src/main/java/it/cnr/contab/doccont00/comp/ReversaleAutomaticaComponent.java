@@ -27,11 +27,11 @@ import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.core.bulk.V_anagrafico_terzoBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.sto.bulk.CdsBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
 import it.cnr.contab.doccont00.core.AccertamentoWizard;
-import it.cnr.contab.doccont00.core.ObbligazioneWizard;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.tabrif.bulk.Tipo_bolloBulk;
 import it.cnr.contab.doccont00.tabrif.bulk.Tipo_bolloHome;
@@ -43,6 +43,7 @@ import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ApplicationRuntimeException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
@@ -79,7 +80,7 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 			wizard.getModelloDocumento().setTi_associato_manrev(Documento_genericoBulk.ASSOCIATO_A_MANDATO);
 
 			//Metto sugli accertamenti il terzo unico se è stato indicato a livello di reversale
-			accertamentiColl.stream().forEach(el->{
+			accertamentiColl.forEach(el->{
 				el.setTerzoWizardBulk(Optional.ofNullable(wizard.getTerzo()).orElse(el.getTerzoWizardBulk()));
 				el.setModalitaPagamentoWizardBulk(Optional.ofNullable(wizard.getModalita_pagamento()).orElse(el.getModalitaPagamentoWizardBulk()));
 				el.setBancaWizardBulk(Optional.ofNullable(wizard.getBanca()).orElse(el.getBancaWizardBulk()));
@@ -90,15 +91,13 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 			wizard.setTi_automatismo(ReversaleAutomaticaWizardBulk.AUTOMATISMO_DA_DOCATTIVI);
 			wizard.setDocAttiviSelezionatiColl(((ReversaleAutomaticaWizardHome)getHome(userContext, ReversaleAutomaticaWizardBulk.class)).findDocAttivi(documentoGenericoBulk));
 			//Rimetto sugli oggetti documentiPassiviWizard la descrizione delle righe mandato impostate sugli impegni
-			wizard.getDocAttiviSelezionatiColl().stream().forEach(docattivo->{
-				accertamentiColl.stream()
-						.filter(el->el.getAccertamentoScadenzarioBulk().getEsercizio().equals(docattivo.getEsercizio_accertamento()))
-						.filter(el->el.getAccertamentoScadenzarioBulk().getEsercizio_originale().equals(docattivo.getEsercizio_ori_accertamento()))
-						.filter(el->el.getAccertamentoScadenzarioBulk().getCd_cds().equals(docattivo.getCd_cds_accertamento()))
-						.filter(el->el.getAccertamentoScadenzarioBulk().getPg_accertamento().equals(docattivo.getPg_accertamento()))
-						.filter(el->el.getAccertamentoScadenzarioBulk().getPg_accertamento_scadenzario().equals(docattivo.getPg_accertamento_scadenzario()))
-						.forEach(accertamento->docattivo.setDescrizioneRigaReversaleWizard(accertamento.getDescrizioneRigaReversaleWizard()));
-			});
+			wizard.getDocAttiviSelezionatiColl().forEach(docattivo-> accertamentiColl.stream()
+					.filter(el->el.getAccertamentoScadenzarioBulk().getEsercizio().equals(docattivo.getEsercizio_accertamento()))
+					.filter(el->el.getAccertamentoScadenzarioBulk().getEsercizio_originale().equals(docattivo.getEsercizio_ori_accertamento()))
+					.filter(el->el.getAccertamentoScadenzarioBulk().getCd_cds().equals(docattivo.getCd_cds_accertamento()))
+					.filter(el->el.getAccertamentoScadenzarioBulk().getPg_accertamento().equals(docattivo.getPg_accertamento()))
+					.filter(el->el.getAccertamentoScadenzarioBulk().getPg_accertamento_scadenzario().equals(docattivo.getPg_accertamento_scadenzario()))
+					.forEach(accertamento->docattivo.setDescrizioneRigaReversaleWizard(accertamento.getDescrizioneRigaReversaleWizard())));
 
 			getHomeCache(userContext).fetchAll(userContext);
 
@@ -110,64 +109,97 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 
 	private OggettoBulk creaReversaleAutomaticaDaDocAttivi(UserContext userContext, ReversaleAutomaticaWizardBulk wizard, Collection<V_doc_attivo_accertamento_wizardBulk> docAttiviColl) throws ComponentException {
 		try	{
+			final boolean isReversaleMonoVoce;
+			if (wizard.isFlGeneraReversaleMonoVoce())
+				isReversaleMonoVoce = Boolean.TRUE;
+			else {
+				Configurazione_cnrBulk configTagBilancio;
+				try {
+					configTagBilancio = getConfigurazioneInviaBilancio(userContext);
+				} catch (PersistencyException e) {
+					throw new ComponentException(e);
+				}
+				isReversaleMonoVoce = Optional.ofNullable(configTagBilancio).map(s->Boolean.valueOf(s.getVal01())).orElse(Boolean.FALSE) &&
+						Optional.ofNullable(configTagBilancio).map(s->Integer.valueOf(s.getVal02())).orElse(1)<=1;
+			}
+
 			Map<Integer, Map<Optional<String>, Map<Optional<Long>, List<V_doc_attivo_accertamento_wizardBulk>>>> mapTerzo =
 					docAttiviColl.stream().collect(Collectors.groupingBy(V_doc_attivo_accertamento_wizardBulk::getCd_terzo,
 							Collectors.groupingBy(p->Optional.ofNullable(p.getCd_modalita_pag()),
 									Collectors.groupingBy(q->Optional.ofNullable(q.getPg_banca())))));
 
-			mapTerzo.keySet().stream().forEach(aCdTerzo -> {
-				mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> {
-					mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
+			mapTerzo.keySet().forEach(aCdTerzo -> mapTerzo.get(aCdTerzo).keySet().forEach(aCdModalitaPag -> mapTerzo.get(aCdTerzo).get(aCdModalitaPag).keySet().forEach(aPgBanca -> {
+				List<V_doc_attivo_accertamento_wizardBulk> result = mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca);
+
+				final Map<String, List<V_doc_attivo_accertamento_wizardBulk>> mapVoce;
+
+				//Se rottura per voce la carico sugli oggetti per le successive operazioni
+				if (isReversaleMonoVoce) {
+					result.forEach(docTerzo->{
 						try {
-							List docAttiviCompetenzaColl = new ArrayList();
-							List docAttiviResiduiColl = new ArrayList();
-							mapTerzo.get(aCdTerzo).get(aCdModalitaPag).get(aPgBanca).forEach(docTerzo->{
-								try {
-									Accertamento_scadenzarioBulk as = (Accertamento_scadenzarioBulk)
-											getHome(userContext, Accertamento_scadenzarioBulk.class).findAndLock(new Accertamento_scadenzarioBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_accertamento(), docTerzo.getPg_accertamento(), docTerzo.getPg_accertamento_scadenzario()));
-
-									if (as.getIm_scadenza().compareTo(docTerzo.getIm_scadenza()) != 0 ||
-											as.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
-										throw new ApplicationException("Operazione non possibile! E' stata utilizzata da un altro utente la scadenza nr." + docTerzo.getPg_accertamento_scadenzario() + " dell'accertamento " + docTerzo.getEsercizio_ori_accertamento() + "/" + docTerzo.getPg_accertamento());
-
-									if (docTerzo.isCompetenza() || wizard.isFlGeneraReversaleUnica())
-										docAttiviCompetenzaColl.add(docTerzo);
-									else
-										docAttiviResiduiColl.add(docTerzo);
-								} catch (Exception e) {
-									throw new ApplicationRuntimeException(e);
-								}
-							});
-
-							ReversaleBulk reversaleCompetenza, reversaleResiduo;
-							if ( !docAttiviCompetenzaColl.isEmpty() ) {
-								reversaleCompetenza = creaReversaleAutomatica( userContext, wizard, MandatoBulk.TIPO_COMPETENZA );
-								reversaleCompetenza.setReversale_terzo( creaReversaleTerzo( reversaleCompetenza, cercaTerzo(userContext, aCdTerzo), wizard.getReversale_terzo().getTipoBollo() ) );
-								reversaleCompetenza = aggiungiDocAttivi(userContext, reversaleCompetenza, docAttiviCompetenzaColl );
-
-								reversaleCompetenza.refreshImporto();
-								verificaReversale( userContext, reversaleCompetenza, Boolean.TRUE );
-								super.creaConBulk( userContext, reversaleCompetenza);
-								aggiornaStatoFattura( userContext, reversaleCompetenza, INSERIMENTO_REVERSALE_ACTION );
-								wizard.getReversaliColl().add( reversaleCompetenza );
-							}
-							if ( !docAttiviResiduiColl.isEmpty() )	{
-								reversaleResiduo = creaReversaleAutomatica( userContext, wizard, MandatoBulk.TIPO_RESIDUO );
-								reversaleResiduo.setReversale_terzo( creaReversaleTerzo( reversaleResiduo, cercaTerzo(userContext, aCdTerzo), wizard.getReversale_terzo().getTipoBollo() ) );
-								reversaleResiduo = aggiungiDocAttivi(userContext, reversaleResiduo, docAttiviResiduiColl );
-
-								reversaleResiduo.refreshImporto();
-								verificaReversale( userContext, reversaleResiduo, Boolean.TRUE );
-								super.creaConBulk( userContext, reversaleResiduo);
-								aggiornaStatoFattura( userContext, reversaleResiduo, INSERIMENTO_REVERSALE_ACTION );
-								wizard.getReversaliColl().add( reversaleResiduo );
-							}
+							AccertamentoBulk accBulk = (AccertamentoBulk)getHome(userContext, AccertamentoBulk.class).findAndLock(new AccertamentoBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_accertamento(), docTerzo.getPg_accertamento()));
+							docTerzo.setCdElementoVoce(accBulk.getCd_elemento_voce());
 						} catch (Exception e) {
-							throw new DetailedRuntimeException(e);
+							throw new ApplicationRuntimeException(e);
 						}
 					});
+
+					mapVoce = result.stream().collect(Collectors.groupingBy(V_doc_attivo_accertamento_wizardBulk::getCdElementoVoce));
+				} else {
+					mapVoce = new HashMap<>();
+					mapVoce.put("XXX", result);
+				}
+
+				mapVoce.keySet().forEach(aCdVoce -> {
+					try {
+						List<V_doc_attivo_accertamento_wizardBulk> docAttiviCompetenzaColl = new ArrayList<>();
+						List<V_doc_attivo_accertamento_wizardBulk> docAttiviResiduiColl = new ArrayList<>();
+
+						mapVoce.get(aCdVoce).forEach(docTerzo->{
+							try {
+								Accertamento_scadenzarioBulk as = (Accertamento_scadenzarioBulk)
+										getHome(userContext, Accertamento_scadenzarioBulk.class).findAndLock(new Accertamento_scadenzarioBulk(docTerzo.getCd_cds(), docTerzo.getEsercizio(), docTerzo.getEsercizio_ori_accertamento(), docTerzo.getPg_accertamento(), docTerzo.getPg_accertamento_scadenzario()));
+
+								if (as.getIm_scadenza().compareTo(docTerzo.getIm_scadenza()) != 0 ||
+										as.getIm_associato_doc_contabile().compareTo(docTerzo.getIm_associato_doc_contabile()) != 0)
+									throw new ApplicationException("Operazione non possibile! E' stata utilizzata da un altro utente la scadenza nr." + docTerzo.getPg_accertamento_scadenzario() + " dell'accertamento " + docTerzo.getEsercizio_ori_accertamento() + "/" + docTerzo.getPg_accertamento());
+
+								if (docTerzo.isCompetenza() || wizard.isFlGeneraReversaleUnica())
+									docAttiviCompetenzaColl.add(docTerzo);
+								else
+									docAttiviResiduiColl.add(docTerzo);
+							} catch (Exception e) {
+								throw new ApplicationRuntimeException(e);
+							}
+						});
+
+						if ( !docAttiviCompetenzaColl.isEmpty() ) {
+							ReversaleBulk reversaleCompetenza = creaReversaleAutomatica(userContext, wizard, MandatoBulk.TIPO_COMPETENZA);
+							reversaleCompetenza.setReversale_terzo(creaReversaleTerzo( reversaleCompetenza, cercaTerzo(userContext, aCdTerzo), wizard.getReversale_terzo().getTipoBollo()));
+							reversaleCompetenza = aggiungiDocAttivi(userContext, reversaleCompetenza, docAttiviCompetenzaColl );
+
+							reversaleCompetenza.refreshImporto();
+							verificaReversale(userContext, reversaleCompetenza, Boolean.TRUE);
+							super.creaConBulk(userContext, reversaleCompetenza, Boolean.TRUE, Boolean.FALSE);
+							aggiornaStatoFattura(userContext, reversaleCompetenza, INSERIMENTO_REVERSALE_ACTION);
+							wizard.getReversaliColl().add(reversaleCompetenza);
+						}
+						if (!docAttiviResiduiColl.isEmpty())	{
+							ReversaleBulk reversaleResiduo = creaReversaleAutomatica(userContext, wizard, MandatoBulk.TIPO_RESIDUO);
+							reversaleResiduo.setReversale_terzo(creaReversaleTerzo(reversaleResiduo, cercaTerzo(userContext, aCdTerzo), wizard.getReversale_terzo().getTipoBollo()));
+							reversaleResiduo = aggiungiDocAttivi(userContext, reversaleResiduo, docAttiviResiduiColl);
+
+							reversaleResiduo.refreshImporto();
+							verificaReversale(userContext, reversaleResiduo, Boolean.TRUE);
+							super.creaConBulk(userContext, reversaleResiduo, Boolean.TRUE, Boolean.FALSE);
+							aggiornaStatoFattura(userContext, reversaleResiduo, INSERIMENTO_REVERSALE_ACTION);
+							wizard.getReversaliColl().add(reversaleResiduo);
+						}
+					} catch (Exception e) {
+						throw new DetailedRuntimeException(e);
+					}
 				});
-			});
+			})));
 			return wizard;
 		} catch ( Exception e ) {
 			throw handleException(e);
@@ -207,8 +239,7 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 		}	
 	}
 
-	private Reversale_terzoBulk creaReversaleTerzo (ReversaleBulk reversale, TerzoBulk terzo, Tipo_bolloBulk bollo ) throws ComponentException
-	{
+	private Reversale_terzoBulk creaReversaleTerzo (ReversaleBulk reversale, TerzoBulk terzo, Tipo_bolloBulk bollo ) {
 		Reversale_terzoBulk mTerzo = new Reversale_terzoBulk();
 
 		if (!(reversale instanceof ReversaleAutomaticaWizardBulk))
@@ -365,11 +396,7 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 				throw new ApplicationException( "La ricerca degli Impegni non ha fornito alcun risultato.");
 			return reversale;
 		}
-		catch ( PersistencyException e )
-		{
-			throw handleException( reversale, e );
-		}
-		catch ( it.cnr.jada.persistency.IntrospectionException e )
+		catch (PersistencyException | IntrospectionException e )
 		{
 			throw handleException( reversale, e );
 		}
@@ -388,11 +415,7 @@ public class ReversaleAutomaticaComponent extends ReversaleComponent {
 
 			return (TerzoBulk)getHome( aUC, TerzoBulk.class).findByPrimaryKey( new TerzoBulk(((V_anagrafico_terzoBulk)result.iterator().next()).getCd_terzo()));				
 		}
-		catch ( PersistencyException e )
-		{
-			throw handleException( wizard, e );
-		}
-		catch ( it.cnr.jada.persistency.IntrospectionException e )
+		catch (PersistencyException | IntrospectionException e )
 		{
 			throw handleException( wizard, e );
 		}

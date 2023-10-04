@@ -41,6 +41,7 @@
 	<fieldProperty
 		name="ds_fattura_origine"
 		property="riga_fattura_origine.fattura_passivaI.ds_fattura_passiva"
+		inputCssClass="w-100 "
 		maxLength="200"
 		inputSize="50"
 		inputType="ROTEXT"

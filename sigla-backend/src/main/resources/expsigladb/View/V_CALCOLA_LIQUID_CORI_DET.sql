@@ -94,7 +94,8 @@ where
  and c.cd_contributo_ritenuta = b.cd_contributo_ritenuta
  and e.esercizio = c.esercizio
  and e.cd_gruppo_cr =c.cd_gruppo_cr
- AND (CR.cd_classificazione_cori != 'IV' ) --IVA
+ and cr.cd_classificazione_cori != 'IV'  --IVA
+ and b.fl_versamento = 'Y'
  -- Estrazione del corretto indice di regione/comune con cui entrare in GRUPPO_CR_DET sull base della classificazione del CORI
  and e.cd_regione = getCdRegioneLiquidCori(a.fl_compenso_stipendi,b.cd_contributo_ritenuta,b.ti_ente_percipiente,cr.cd_classificazione_cori, c.esercizio, c.cd_gruppo_cr, a.cd_regione_add,a.cd_regione_irap)
  and e.pg_comune = getPgComuneLiquidCori(cr.cd_classificazione_cori, c.esercizio, c.cd_gruppo_cr, a.pg_comune_add)

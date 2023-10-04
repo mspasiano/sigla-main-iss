@@ -210,6 +210,12 @@
             nullable="false"
             label="imImponibileDivisa"/>
     <fieldProperty
+            name="imponibileErrato"
+            property="imponibileErrato"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            label="Imponibile per Nota di Credito"/>
+    <fieldProperty
             name="imIvaDivisa"
             property="imIvaDivisa"
             inputType="TEXT"
@@ -223,6 +229,7 @@
             inputType="TEXT"
             formatName="it.cnr.contab.util.EuroFormat"
             enabledOnEdit="false"
+            enabledOnInsert="false"
             nullable="false"
             label="Imponibile"/>
     <fieldProperty
@@ -231,7 +238,8 @@
             inputType="TEXT"
             formatName="it.cnr.contab.util.EuroFormat"
             enabledOnEdit="false"
-            nullable="false"
+            enabledOnInsert="false"
+            nullable="true"
             label="Iva"/>
     <fieldProperty
             name="imIvaD"
@@ -266,6 +274,32 @@
             enabledOnEdit="false"
             nullable="false"
             label="statoAss"/>
+    <fieldProperty
+            name="operazioneImpegnoNotaCredito"
+            property="operazioneImpegnoNotaCredito"
+            inputType="SELECT"
+            keysProperty="operazioneImpegnoNotaCreditoKeys"
+            inputSize="20"
+            maxLength="10"
+            enabledOnInsert="true"
+            enabledOnEdit="true"
+            nullable="true"
+            label="Usa Impegno per rettifica" />
+    <fieldProperty
+            name="imImponibileRettificato"
+            property="imImponibileRettificato"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnEdit="true"
+            label="Imponibile rettificato"/>
+    <formFieldProperty
+            name="imIvaRettificata"
+            property="imIvaRettificata"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            enabledOnEdit="true"
+            label="Iva rettificata"/>
+
     <form
             name="searchtool">
         <formFieldProperty
@@ -300,6 +334,9 @@
             name="prezzoUnitarioRett"
             command="doRettificaConsegna"/>
     <formFieldProperty
+            name="imponibileErrato"
+            command="doRettificaConsegna"/>
+    <formFieldProperty
             name="sconto1Rett"
             command="doRettificaConsegna"/>
     <formFieldProperty
@@ -308,6 +345,21 @@
     <formFieldProperty
             name="sconto3Rett"
             command="doRettificaConsegna"/>
+    <formFieldProperty
+            name="operazioneImpegnoNotaCredito"/>
+    <formFieldProperty
+            name="imImponibile"/>
+    <formFieldProperty
+            name="imIva"/>
+    <formFieldProperty
+            name="imImponibileRettificato"
+            label="Imponibile rettificato"
+            command="doRettificaImponibile"/>
+    <formFieldProperty
+            name="imIvaRettificata"
+            label="Iva rettificata"
+            command="doRettificaIva"/>
+
 
     <findFieldProperty
             name="cdCds"/>
@@ -359,38 +411,30 @@
             name="imTotaleConsegna"/>
     <findFieldProperty
             name="statoAss"/>
+    <findFieldProperty
+            name="imponibileErrato"/>
 
     <columnFieldProperty
-            name="dtPrevConsegna"
-            property="ordineAcqConsegna.dtPrevConsegna"
-            formatName="date_short"
-            headerLabel="Consegna"
-            label="Data"/>
+            name="ordineConsegna"
+            property="consegnaDisplay"
+            headerLabel="Ordine"
+            columnStyle="white-space: nowrap"
+            label="Consegna"/>
     <columnFieldProperty
-            name="cdNumeratore"
-            property="ordineAcqConsegna.ordineAcqRiga.cdNumeratore"
-            headerLabel="Consegna"
-            label="Numeratore"/>
-    <columnFieldProperty
-            name="numero"
-            property="ordineAcqConsegna.ordineAcqRiga.numero"
-            headerLabel="Consegna"
-            label="Numero"/>
-    <columnFieldProperty
-            name="riga"
-            property="ordineAcqConsegna.ordineAcqRiga.riga"
-            headerLabel="Consegna"
-            label="Riga"/>
-    <columnFieldProperty
-            name="quantita"
-            property="ordineAcqConsegna.quantita"
-            headerLabel="Consegna"
-            label="Quantità"/>
+            name="dsBeneServizio"
+            property="ordineAcqConsegna.ordineAcqRiga.dsBeneServizio"
+            headerLabel="Ordine"
+            label="Bene/Servizio"/>
     <columnFieldProperty
             name="notaRiga"
             property="ordineAcqConsegna.ordineAcqRiga.notaRiga"
             headerLabel="Ordine"
             label="Note"/>
+    <columnFieldProperty
+            name="quantita"
+            property="ordineAcqConsegna.quantita"
+            headerLabel="Ordine"
+            label="Quantità"/>
     <columnFieldProperty
             name="impegno"
             property="impegnoDisplay"
@@ -457,9 +501,22 @@
             headerLabel="Rettifiche"
             label="% Sc 3"/>
     <columnFieldProperty
-            name="imImponibile"/>
+            name="imponibileErrato"
+            property="imponibileErrato"
+            headerLabel="Rettifiche"
+            label="Imp. NC"/>
     <columnFieldProperty
-            name="imIva"/>
+            name="imponibilePerRigaFattura"
+            property="imponibilePerRigaFattura"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            label="Imponibile"/>
+    <columnFieldProperty
+            name="ivaPerRigaFattura"
+            property="ivaPerRigaFattura"
+            inputType="TEXT"
+            formatName="it.cnr.contab.util.EuroFormat"
+            label="Iva"/>
     <columnFieldProperty
             name="imTotaleConsegna"/>
 

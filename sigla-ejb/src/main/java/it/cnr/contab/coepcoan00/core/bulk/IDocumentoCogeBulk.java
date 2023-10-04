@@ -17,15 +17,19 @@
 
 package it.cnr.contab.coepcoan00.core.bulk;
 
-import it.cnr.contab.docamm00.docs.bulk.IDocumentoAmministrativoBulk;
 import it.cnr.contab.docamm00.docs.bulk.TipoDocumentoEnum;
+import it.cnr.jada.persistency.KeyedPersistent;
+
+import java.sql.Timestamp;
 
 /**
- * Insert the type's description here.
+ * Questa classe è utilizzata per gestire tutti i documenti che generano scritture prima nota.
+ * Sia i documenti Amministrativi che Contabili valorizzano la chiave cd_tipo_doc, cd_cds, cd_uo, esercizio, pg_doc
+ * Il documento di tipo Liquidazione (cd_tipo_doc=LIQUID_IVA) valorizza cd_tipo_doc, cd_cds, cd_uo, esercizio, dtInizioLiquid, dtFineLiquid, tipoLiquid, reportIdLiquid
  * Creation date: (4/17/2002 5:49:25 PM)
  * @author: Roberto Peli
  */
-public interface IDocumentoCogeBulk {
+public interface IDocumentoCogeBulk extends KeyedPersistent{
     String getCd_tipo_doc();
 
     String getCd_cds();
@@ -36,6 +40,14 @@ public interface IDocumentoCogeBulk {
 
     Long getPg_doc();
 
+    Timestamp getDtInizioLiquid();
+
+    Timestamp getDtFineLiquid();
+
+    String getTipoLiquid();
+
+    Long getReportIdLiquid();
+
     TipoDocumentoEnum getTipoDocumentoEnum();
 
     Scrittura_partita_doppiaBulk getScrittura_partita_doppia();
@@ -43,4 +55,10 @@ public interface IDocumentoCogeBulk {
     void setScrittura_partita_doppia(Scrittura_partita_doppiaBulk scrittura_partita_doppia);
 
     java.sql.Timestamp getDt_contabilizzazione();
+
+    void setStato_coge(java.lang.String stato_coge);
+
+    java.lang.String getStato_coge();
+
+    int primaryKeyHashCode();
 }

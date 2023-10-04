@@ -17,6 +17,13 @@
 
 package it.cnr.contab.doccont00.core.bulk;
 
+import it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk;
+import it.cnr.jada.persistency.IntrospectionException;
+import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.sql.FindClause;
+import it.cnr.jada.persistency.sql.PersistentHome;
+import it.cnr.jada.persistency.sql.SQLBuilder;
+
 public class V_doc_passivo_obbligazione_wizardHome extends V_doc_passivo_obbligazioneHome {
 	public V_doc_passivo_obbligazione_wizardHome(java.sql.Connection conn) {
 		super(V_doc_passivo_obbligazione_wizardBulk.class,conn);
@@ -24,4 +31,15 @@ public class V_doc_passivo_obbligazione_wizardHome extends V_doc_passivo_obbliga
 	public V_doc_passivo_obbligazione_wizardHome(java.sql.Connection conn,it.cnr.jada.persistency.PersistentCache persistentCache) {
 		super(V_doc_passivo_obbligazione_wizardBulk.class,conn,persistentCache);
 	}
+
+	public java.util.List<V_doc_passivo_obbligazione_wizardBulk> findDocPassivi(Documento_genericoBulk docgen) throws IntrospectionException, PersistencyException {
+		SQLBuilder sql = this.createSQLBuilder();
+		sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, docgen.getEsercizio());
+		sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, docgen.getCd_cds());
+		sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, docgen.getCd_unita_organizzativa());
+		sql.addClause(FindClause.AND, "cd_tipo_documento_amm", SQLBuilder.EQUALS, docgen.getCd_tipo_documento_amm());
+		sql.addClause(FindClause.AND, "pg_documento_amm", SQLBuilder.EQUALS, docgen.getPg_doc_amm());
+		return this.fetchAll(sql);
+	}
+
 }

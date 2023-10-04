@@ -50,7 +50,7 @@
 			columnName="LINEA_DESCRIZIONE"
 			propertyName="lineaDescrizione"
 			sqlTypeName="VARCHAR"
-			columnSize="1000"
+			columnSize="1500"
 			nullable="true" />
 		<columnMapping
 			columnName="LINEA_QUANTITA"

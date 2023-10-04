@@ -23,6 +23,7 @@ import it.cnr.contab.config00.bulk.Parametri_enteBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
+import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.progettiric00.core.bulk.*;
@@ -37,6 +38,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
 import it.cnr.contab.util00.bulk.storage.AllegatoGenericoTypeBulk;
 import it.cnr.contab.varstanz00.bulk.Var_stanz_resBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Config;
@@ -45,6 +47,7 @@ import it.cnr.jada.bulk.BulkInfo;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ApplicationRuntimeException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.ejb.CRUDComponentSession;
@@ -199,6 +202,7 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
         super(function);
     }
 
+
     private boolean attivaAnagraficaProgetto = false;
 
     public boolean isAttivaAnagraficaProgetto() {
@@ -221,6 +225,9 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
             BigDecimal annoFrom = configSession.getIm01(actioncontext.getUserContext(), 0, null, Configurazione_cnrBulk.PK_GESTIONE_PROGETTI, Configurazione_cnrBulk.SK_PROGETTO_PIANO_ECONOMICO);
             if (Optional.ofNullable(annoFrom).isPresent())
                 setAnnoFromPianoEconomico(annoFrom.intValue());
+
+            attivaAnagraficaProgetto = Utility.createConfigurazioneCnrComponentSession().isAssPrgAnagraficoAttiva(actioncontext.getUserContext());
+
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
         }
@@ -1021,19 +1028,23 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
                     String path = rimodulazione.getStorePath().replaceFirst(progetto.getCd_unita_organizzativa(), cdUnitaOrganizzativa);
                     if (path != null && storeService.getStorageObjectByPath(path) != null) {
                         for (StorageObject storageObject : storeService.getChildren(storeService.getStorageObjectByPath(path).getKey())) {
-                            if (!storeService.hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()) && !excludeChild(storageObject) &&
-                                    !Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
-                                            .map(String.class::cast)
-                                            .filter(s -> s.equals(StoragePropertyNames.CMIS_FOLDER.value()))
-                                            .isPresent()) {
-                                AllegatoProgettoRimodulazioneBulk allegato = new AllegatoProgettoRimodulazioneBulk(storageObject.getKey());
-                                allegato.setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
-                                allegato.setNome(storageObject.getPropertyValue(StoragePropertyNames.NAME.value()));
-                                allegato.setDescrizione(storageObject.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
-                                allegato.setTitolo(storageObject.getPropertyValue(StoragePropertyNames.TITLE.value()));
-                                allegato.setObjectType(storageObject.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()));
-                                allegato.setCrudStatus(OggettoBulk.NORMAL);
-                                progetto.addToArchivioAllegati(allegato);
+                            try {
+                                if (!storeService.hasAspect(storageObject, StoragePropertyNames.SYS_ARCHIVED.value()) && !excludeChild(storageObject) &&
+                                        !Optional.ofNullable(storageObject.getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
+                                                .map(String.class::cast)
+                                                .filter(s -> s.equals(StoragePropertyNames.CMIS_FOLDER.value()))
+                                                .isPresent()) {
+                                    AllegatoProgettoRimodulazioneBulk allegato = new AllegatoProgettoRimodulazioneBulk(storageObject.getKey());
+                                    allegato.setContentType(storageObject.getPropertyValue(StoragePropertyNames.CONTENT_STREAM_MIME_TYPE.value()));
+                                    allegato.setNome(storageObject.getPropertyValue(StoragePropertyNames.NAME.value()));
+                                    allegato.setDescrizione(storageObject.getPropertyValue(StoragePropertyNames.DESCRIPTION.value()));
+                                    allegato.setTitolo(storageObject.getPropertyValue(StoragePropertyNames.TITLE.value()));
+                                    allegato.setObjectType(storageObject.getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()));
+                                    allegato.setCrudStatus(OggettoBulk.NORMAL);
+                                    progetto.addToArchivioAllegati(allegato);
+                                }
+                            } catch (ApplicationException e) {
+                                new RuntimeException(e);
                             }
                         }
                     }
@@ -1136,7 +1147,14 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
         }
     }
 
+
+
     public SimpleDetailCRUDController getCrudProgetto_anagrafico() {
         return crudProgetto_anagrafico;
+    }
+
+    public boolean isUoEnte( UserContext uc ){
+        return  Optional.ofNullable(this.getUoScrivania()).filter(Unita_organizzativaBulk::isUoEnte).isPresent();
+
     }
 }

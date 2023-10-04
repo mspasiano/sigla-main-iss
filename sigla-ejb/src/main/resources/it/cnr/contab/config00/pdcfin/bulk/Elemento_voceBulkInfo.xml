@@ -17,61 +17,61 @@
   -->
 
 <bulkInfo
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns="https://contab.cnr.it/schema/SIGLA"
-        xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns="https://contab.cnr.it/schema/SIGLA"
+		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
 
-    <fieldProperty
-            name="find_elemento_padre"
-            property="elemento_padre"
-            inputType="SEARCHTOOL"
-            enabledOnSearch="true"
-    />
-    <fieldProperty
-            name="cd_elemento_padre"
-            property="elemento_padre.cd_elemento_voce"
-            label="Voce padre"
-            inputType="TEXT"
-            maxLength="30"
-            inputSize="6"
-            enabledOnSearch="true"
-            readonlyProperty="ROElemento_padre"
-    />
-    <fieldProperty
-            name="ds_elemento_padre"
-            property="elemento_padre.ds_elemento_voce"
-            inputSize="20"
-            label=""
-            inputType="ROTEXT"
-    />
-    <fieldProperty
-            name="cd_elemento_voce"
-            property="cd_elemento_voce"
-            label="Codice completo"
-            inputType="ROTEXT"
-            maxLength="30"
-            inputSize="30"
-            enabledOnSearch="true"
-    />
-    <fieldProperty
-            name="searchtool_cd_elemento_voce"
-            property="cd_elemento_voce"
-            label="Codice completo"
-            inputType="TEXT"
-            maxLength="30"
-            inputSize="15"
-            enabledOnSearch="true"
-    />
-    <fieldProperty
-            name="cd_proprio_elemento"
-            property="cd_proprio_elemento"
-            label="Codice proprio"
-            inputType="TEXT"
-            maxLength="30"
-            inputSize="20"
-            enabledOnSearch="true"
-            enabledOnEdit="false"
-    />
+	<fieldProperty
+		name="find_elemento_padre"
+		property="elemento_padre"
+		inputType="SEARCHTOOL"
+		enabledOnSearch="true"
+		/>
+	<fieldProperty
+		name="cd_elemento_padre"
+		property="elemento_padre.cd_elemento_voce"
+		label="Voce padre"
+		inputType="TEXT"
+		maxLength="30"
+		inputSize="6"
+		enabledOnSearch="true"
+		readonlyProperty="ROElemento_padre"
+		/>
+	<fieldProperty
+		name="ds_elemento_padre"
+		property="elemento_padre.ds_elemento_voce"
+		inputSize="20"
+		label=""
+		inputType="ROTEXT"
+		/>
+	<fieldProperty
+		name="cd_elemento_voce"
+		property="cd_elemento_voce"
+		label="Codice completo"
+		inputType="ROTEXT"
+		maxLength="30"
+		inputSize="30"
+		enabledOnSearch="true"
+		/>
+	<fieldProperty
+		name="searchtool_cd_elemento_voce"
+		property="cd_elemento_voce"
+		label="Codice completo"
+		inputType="TEXT"
+		maxLength="30"
+		inputSize="15"
+		enabledOnSearch="true"
+		/>
+	<fieldProperty
+		name="cd_proprio_elemento"
+		property="cd_proprio_elemento"
+		label="Codice proprio"
+		inputType="TEXT"
+		maxLength="30"
+		inputSize="20"
+		enabledOnSearch="true"
+		enabledOnEdit="false"
+		/>
 
     <fieldProperty
             name="fl_limite_ass_obblig"
@@ -444,6 +444,51 @@
             inputType="TEXT"
             label="Voce Piano Economico" />
 
+    <fieldProperty
+            name="esercizio_bilancio"
+            property="esercizio_bilancio"
+            label="Esercizio Bilancio"
+            inputType="TEXT"
+            maxLength="4"
+            inputSize="6"
+            enabledOnEdit="false"
+            enabledOnInsert="false"/>
+    <fieldProperty
+            name="cd_cdr_bilancio"
+            property="cd_cdr_bilancio"
+            inputType="TEXT"
+            enabledOnFreeSearch="true"
+            enabledOnEdit="false"
+            enabledOnInsert="false"
+            label="Codice CdR Bilancio" />
+    <fieldProperty
+            name="importo_assestato_bilancio"
+            property="importo_assestato_bilancio"
+            inputType="TEXT"
+            enabledOnEdit="false"
+            enabledOnInsert="false"
+            label="Importo Assestato Bilancio"
+            formatName = "it.cnr.contab.util.EuroFormat"
+    />
+    <fieldProperty
+            name="importo_utilizzato_bilancio"
+            property="importo_utilizzato_bilancio"
+            inputType="TEXT"
+            enabledOnEdit="false"
+            enabledOnInsert="false"
+            label="Importo Utilizzato Bilancio"
+            formatName = "it.cnr.contab.util.EuroFormat"
+    />
+    <fieldProperty
+            name="importo_disponibile_bilancio"
+            property="importo_disponibile_bilancio"
+            inputType="TEXT"
+            enabledOnEdit="false"
+            enabledOnInsert="false"
+            label="Importo Disponibile Bilancio"
+            formatName = "it.cnr.contab.util.EuroFormat"
+    />
+
     <form
             name="searchtool">
         <formFieldProperty
@@ -532,31 +577,31 @@
 	<columnFieldProperty
             name="fl_voce_fondo"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
 	<columnFieldProperty
             name="fl_recon"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
 	<columnFieldProperty
             name="fl_inv_beni_patr"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_check_terzo_siope"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_limite_spesa"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_soggetto_prelievo"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_prelievo"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="perc_prelievo_pdgp_entrate"
             textTruncate="true"
@@ -564,19 +609,19 @@
     <columnFieldProperty
             name="fl_solo_competenza"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_solo_residuo"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_azzera_residui"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
     <columnFieldProperty
             name="fl_trovato"
             textTruncate="true"
-            headerStyle="max-width: 8ch"/>
+            headerStyle="max-width: 13ch"/>
 
     <columnSet
             name="restService">
@@ -654,6 +699,28 @@
                 name="ds_elemento_voce" />
         <columnFieldProperty
                 name="cd_voce_piano_associato" />
+    </columnSet>
+
+    <columnSet name="voce_importi_bilancio">
+        <columnFieldProperty
+                name="esercizio" />
+        <columnFieldProperty
+                name="cd_elemento_voce"
+                label="Codice" />
+        <columnFieldProperty
+                name="ds_elemento_voce" />
+        <columnFieldProperty
+                name="fl_limite_ass_obblig"
+                label="Limita" />
+        <columnFieldProperty
+                name="importo_assestato_bilancio"
+                label="Assestato" />
+        <columnFieldProperty
+                name="importo_utilizzato_bilancio"
+                label="Utilizzato" />
+        <columnFieldProperty
+                name="importo_disponibile_bilancio"
+                label="Disponibile" />
     </columnSet>
 
     <formFieldProperty

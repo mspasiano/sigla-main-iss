@@ -141,6 +141,56 @@
 			sqlTypeName="DECIMAL"
 			columnSize="22"
 			nullable="false" />
+		<columnMapping
+				columnName="IMPONIBILE_ERRATO"
+				propertyName="imponibileErrato"
+				sqlTypeName="DECIMAL"
+				columnSize="15"
+				columnScale="2" />
+		<columnMapping
+				columnName="CD_CDS_OBBL_NC"
+				propertyName="cdCdsObblNc"
+				sqlTypeName="VARCHAR"
+				columnSize="30"
+				nullable="true" />
+		<columnMapping
+				columnName="ESERCIZIO_OBBL_NC"
+				propertyName="esercizioObblNc"
+				sqlTypeName="DECIMAL"
+				columnSize="4"
+				nullable="true" />
+		<columnMapping
+				columnName="ESERCIZIO_ORIG_OBBL_NC"
+				propertyName="esercizioOrigObblNc"
+				sqlTypeName="DECIMAL"
+				columnSize="4"
+				nullable="true" />
+		<columnMapping
+				columnName="PG_OBBLIGAZIONE_NC"
+				propertyName="pgObbligazioneNc"
+				sqlTypeName="DECIMAL"
+				columnSize="10"
+				nullable="true" />
+		<columnMapping
+				columnName="PG_OBBLIGAZIONE_SCAD_NC"
+				propertyName="pgObbligazioneScadNc"
+				sqlTypeName="DECIMAL"
+				columnSize="10"
+				nullable="true" />
+		<columnMapping
+				columnName="IM_IMPONIBILE_RETTIFICATO"
+				propertyName="imImponibileRettificato"
+				sqlTypeName="DECIMAL"
+				columnSize="15"
+				columnScale="2"
+				nullable="true" />
+		<columnMapping
+				columnName="IM_IVA_RETTIFICATA"
+				propertyName="imIvaRettificata"
+				sqlTypeName="DECIMAL"
+				columnSize="15"
+				columnScale="2"
+				nullable="true" />
 	</defaultColumnMap>
 	<persistentProperty
 		name="cdVoceIvaRett" />
@@ -158,6 +208,8 @@
 		name="imIvaDivisa" />
 	<persistentProperty
 		name="imImponibile" />
+	<persistentProperty
+			name="imponibileErrato" />
 	<persistentProperty
 		name="imIva" />
 	<persistentProperty
@@ -178,4 +230,19 @@
 		name="utuv" />
 	<persistentProperty
 		name="pg_ver_rec" />
+	<persistentProperty
+			name="cdCdsObblNc" />
+	<persistentProperty
+			name="esercizioObblNc" />
+	<persistentProperty
+			name="esercizioOrigObblNc" />
+	<persistentProperty
+			name="pgObbligazioneNc" />
+	<persistentProperty
+			name="pgObbligazioneScadNc" />
+	<persistentProperty
+			name="imImponibileRettificato" />
+	<persistentProperty
+			name="imIvaRettificata" />
+
 </SQLPersistentInfo>

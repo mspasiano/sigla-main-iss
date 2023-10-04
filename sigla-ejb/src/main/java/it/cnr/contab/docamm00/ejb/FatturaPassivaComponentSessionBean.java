@@ -17,14 +17,14 @@
 
 package it.cnr.contab.docamm00.ejb;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.Modalita_pagamentoBulk;
 import it.cnr.contab.docamm00.comp.FatturaPassivaComponent;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
 import it.cnr.contab.docamm00.docs.bulk.TrovatoBulk;
 import it.cnr.contab.doccont00.core.bulk.OptionRequestParameter;
+import it.cnr.contab.doccont00.core.bulk.V_doc_passivo_obbligazioneBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
-import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
@@ -32,6 +32,7 @@ import it.cnr.jada.persistency.sql.CompoundFindClause;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
+import java.math.BigDecimal;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -1336,13 +1337,13 @@ public class FatturaPassivaComponentSessionBean extends it.cnr.jada.ejb.CRUDComp
         }
     }
 
-    public List<EvasioneOrdineRigaBulk> findContabilizzaRigaByClause(UserContext userContext,
-                                                                     Fattura_passiva_rigaBulk fatturaPassivaRiga,
+    public List<EvasioneOrdineRigaBulk> findRicercaOrdiniByClause(UserContext userContext,
+                                                                     Fattura_passivaBulk fatturaPassiva,
                                                                      CompoundFindClause findclause)
             throws it.cnr.jada.comp.ComponentException, javax.ejb.EJBException {
         pre_component_invocation(userContext, componentObj);
         try {
-            List<EvasioneOrdineRigaBulk> result = (((FatturaPassivaComponent) componentObj).findContabilizzaRigaByClause(userContext, fatturaPassivaRiga, findclause));
+            List<EvasioneOrdineRigaBulk> result = (((FatturaPassivaComponent) componentObj).findRicercaOrdiniByClause(userContext, fatturaPassiva, findclause));
             component_invocation_succes(userContext, componentObj);
             return result;
         } catch (it.cnr.jada.comp.NoRollbackException e) {
@@ -1375,6 +1376,60 @@ public class FatturaPassivaComponentSessionBean extends it.cnr.jada.ejb.CRUDComp
             throw uncaughtError(param0, componentObj, e);
         }
     }
+    public Fattura_passivaBulk valorizzaDatiDaOrdini(UserContext userContext, Fattura_passivaBulk fattura)
+    throws ComponentException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
+        try {
+            Fattura_passivaBulk result = ((FatturaPassivaComponent) componentObj).valorizzaDatiDaOrdini(userContext, fattura);
+            component_invocation_succes(userContext, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
+            throw e;
+        } catch (it.cnr.jada.comp.ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
 
+    public V_doc_passivo_obbligazioneBulk sdoppiaDettagliInAutomatico(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivo, BigDecimal newImponibile, BigDecimal newImposta) throws it.cnr.jada.comp.ComponentException,javax.ejb.EJBException {
+        pre_component_invocation(userContext,componentObj);
+        try {
+            V_doc_passivo_obbligazioneBulk result = ((FatturaPassivaComponent)componentObj).sdoppiaDettagliInAutomatico(userContext,docPassivo,newImponibile,newImposta);
+            component_invocation_succes(userContext,componentObj);
+            return result;
+        } catch(it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext,componentObj);
+            throw e;
+        } catch(it.cnr.jada.comp.ComponentException e) {
+            component_invocation_failure(userContext,componentObj);
+            throw e;
+        } catch(RuntimeException e) {
+            throw uncaughtRuntimeException(userContext,componentObj,e);
+        } catch(Error e) {
+            throw uncaughtError(userContext,componentObj,e);
+        }
+    }
 
+    public void aggiornaModalitaPagamento(UserContext userContext, V_doc_passivo_obbligazioneBulk docPassivoObb, Modalita_pagamentoBulk newModalitaPag, BancaBulk newBanca) throws it.cnr.jada.comp.ComponentException,javax.ejb.EJBException {
+        pre_component_invocation(userContext,componentObj);
+        try {
+            ((FatturaPassivaComponent)componentObj).aggiornaModalitaPagamento(userContext,docPassivoObb,newModalitaPag,newBanca);
+            component_invocation_succes(userContext,componentObj);
+        } catch(it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext,componentObj);
+            throw e;
+        } catch(it.cnr.jada.comp.ComponentException e) {
+            component_invocation_failure(userContext,componentObj);
+            throw e;
+        } catch(RuntimeException e) {
+            throw uncaughtRuntimeException(userContext,componentObj,e);
+        } catch(Error e) {
+            throw uncaughtError(userContext,componentObj,e);
+        }
+    }
 }

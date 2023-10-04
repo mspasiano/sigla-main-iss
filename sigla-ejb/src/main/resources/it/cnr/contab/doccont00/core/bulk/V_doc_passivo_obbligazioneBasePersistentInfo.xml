@@ -53,6 +53,12 @@
 			columnSize="10"
 			nullable="false" />
 		<columnMapping
+			columnName="CD_NUMERATORE"
+			propertyName="cd_numeratore"
+			sqlTypeName="VARCHAR"
+			columnSize="3"
+			nullable="false" />
+		<columnMapping
 			columnName="FL_PGIRO"
 			propertyName="fl_pgiro"
 			sqlTypeName="CHAR"
@@ -132,6 +138,11 @@
 		<columnMapping
 			columnName="CD_TIPO_DOCUMENTO_AMM"
 			propertyName="cd_tipo_documento_amm"
+			sqlTypeName="VARCHAR"
+			columnSize="10" />
+		<columnMapping
+			columnName="DSP_TIPO_DOCUMENTO_AMM"
+			propertyName="dsp_tipo_documento_amm"
 			sqlTypeName="VARCHAR"
 			columnSize="10" />
 		<columnMapping
@@ -224,6 +235,8 @@
 	<persistentProperty
 		name="cd_tipo_documento_cont" />
 	<persistentProperty
+		name="cd_numeratore" />
+	<persistentProperty
 		name="cd_modalita_pag" />
 	<persistentProperty
 		name="fl_pgiro" />
@@ -255,6 +268,8 @@
 		name="dt_scadenza" />
 	<persistentProperty
 		name="cd_tipo_documento_amm" />
+	<persistentProperty
+		name="dsp_tipo_documento_amm" />
 	<persistentProperty
 		name="im_totale_doc_amm" />
 	<persistentProperty

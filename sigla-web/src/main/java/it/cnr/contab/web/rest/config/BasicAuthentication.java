@@ -45,6 +45,24 @@ public class BasicAuthentication {
 	private static final Logger logger = LoggerFactory.getLogger(BasicAuthentication.class);
 	private static final String AUTHENTICATION_SCHEME = "Basic";
 
+	public static UtenteBulk findUtenteBulk(String username) throws ComponentException {
+		UtenteBulk utente = new UtenteBulk();
+		try {
+			utente.setCd_utente(username);
+			utente = loginComponentSession().validaUtente(
+					AdminUserContext.getInstance(),
+					utente,
+					GestioneLoginComponent.VALIDA_FASE_SSO);
+			if (utente != null)
+				return utente;
+		} catch (RemoteException e) {
+			throw new ApplicationException(e.getMessage());
+		} catch (EJBException e) {
+			throw new ApplicationException(e.getMessage());
+		}
+		return null;
+	}
+
 	public static UtenteBulk authenticateUtenteMultiplo(String authorization, String utenteMultiplo) throws ComponentException{
         boolean authorized = false;
 		UtenteBulk utente = new UtenteBulk();
@@ -67,11 +85,7 @@ public class BasicAuthentication {
 				utente.setPasswordInChiaro(password.toUpperCase());
 				utente.setUtente_multiplo(utenteMultiplo);
 				try {
-					utente = loginComponentSession().validaUtente(AdminUserContext.getInstance(), utente,
-							Optional.ofNullable(utenteMultiplo)
-								.map(s -> GestioneLoginComponent.VALIDA_FASE_INIZIALE_UTENTE_MULTIPLO)
-								.orElseGet(() -> GestioneLoginComponent.VALIDA_FASE_INIZIALE)
-							);
+					utente = loginComponentSession().validaUtente(AdminUserContext.getInstance(), utente, GestioneLoginComponent.VALIDA_FASE_SSO);
 					if (utente != null)
 						authorized = true;
 				} catch (RemoteException e) {
@@ -126,7 +140,7 @@ public class BasicAuthentication {
 				}
 				throw new RuntimeException(e);
 			}
-			return loginComponentSession().validaUtente(AdminUserContext.getInstance(), utente);
+			return loginComponentSession().validaUtente(AdminUserContext.getInstance(), utente, GestioneLoginComponent.VALIDA_FASE_SSO);
 		} catch (RemoteException e) {
 			throw new ApplicationException(e.getMessage());
 		} catch (EJBException e) {

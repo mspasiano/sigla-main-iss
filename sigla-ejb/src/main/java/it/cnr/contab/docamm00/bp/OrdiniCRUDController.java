@@ -21,22 +21,27 @@ import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.util.EuroFormat;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
 import it.cnr.jada.bulk.BulkInfo;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.action.Selection;
 import it.cnr.jada.util.jsp.TableCustomizer;
+import org.springframework.data.annotation.Immutable;
 
 import javax.servlet.jsp.JspWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.rmi.RemoteException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Insert the type's description here.
@@ -44,9 +49,9 @@ import java.util.Optional;
  *
  * @author: Marco Spasiano
  */
-public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCRUDController implements TableCustomizer {
+public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDetailCRUDController implements TableCustomizer {
     private boolean rettificheCollapse = true;
-
+    private static BigDecimal range = new BigDecimal(2.02);
     public boolean isRettificheCollapse() {
         return rettificheCollapse;
     }
@@ -64,27 +69,7 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
      */
     public OrdiniCRUDController(String name, Class modelClass, String listPropertyName, it.cnr.jada.util.action.FormController parent) {
         super(name, modelClass, listPropertyName, parent);
-    }
-
-    public BulkList<FatturaOrdineBulk> getDetails() {
-        final Optional<Fattura_passiva_rigaBulk> fattura_passiva_rigaBulk = Optional.ofNullable(getParentController())
-                .filter(CRUDFatturaPassivaBP.class::isInstance)
-                .map(CRUDFatturaPassivaBP.class::cast)
-                .filter(crudFatturaPassivaBP -> crudFatturaPassivaBP.getDettaglio().getSelection().getFocus() != -1)
-                .map(crudFatturaPassivaBP -> crudFatturaPassivaBP.getDettaglio().getDetails().get(
-                        crudFatturaPassivaBP.getDettaglio().getSelection().getFocus())
-                )
-                .filter(Fattura_passiva_rigaBulk.class::isInstance)
-                .map(Fattura_passiva_rigaBulk.class::cast);
-        if (fattura_passiva_rigaBulk.isPresent()) {
-            return Optional.ofNullable(getParentModel())
-                    .filter(Fattura_passivaBulk.class::isInstance)
-                    .map(Fattura_passivaBulk.class::cast)
-                    .map(fattura_passivaBulk -> fattura_passivaBulk.getFatturaRigaOrdiniHash())
-                    .map(fatturaRigaOrdiniTable -> fatturaRigaOrdiniTable.get(fattura_passiva_rigaBulk.get()))
-                    .orElseGet(() -> new BulkList(Collections.emptyList()));
-        }
-        return new BulkList(Collections.emptyList());
+        setCollapsed(false);
     }
 
     /**
@@ -107,6 +92,11 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
     }
 
     @Override
+    public String getRowCSSClass(Object obj, boolean even) {
+        return null;
+    }
+
+    @Override
     public boolean isRowEnabled(Object obj) {
         return true;
     }
@@ -118,73 +108,186 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.SimpleDetailCR
 
     @Override
     public String getTableClass() {
-        return " table-fixed-header";
+        return null;
     }
 
+    @Override
+    public Selection setSelection(ActionContext actioncontext) throws ValidationException, BusinessProcessException {
+        Optional.ofNullable(getParentController())
+                .filter(CRUDFatturaPassivaBP.class::isInstance)
+                .map(CRUDFatturaPassivaBP.class::cast)
+                .ifPresent(crudFatturaPassivaBP -> {
+                    crudFatturaPassivaBP.getFatturaOrdiniController().setRettificheCollapse(false);
+                });
+        return super.setSelection(actioncontext);
+    }
+
+    private Map<String, BigDecimal> differenze() {
+        final Optional<Fattura_passivaBulk> fattura_passiva = Optional.ofNullable(getParentController())
+                .filter(CRUDFatturaPassivaBP.class::isInstance)
+                .map(CRUDFatturaPassivaBP.class::cast)
+                .map(crudFatturaPassivaBP -> crudFatturaPassivaBP.getModel()
+                )
+                .filter(Fattura_passivaBulk.class::isInstance)
+                .map(Fattura_passivaBulk.class::cast);
+        final List<FatturaOrdineBulk> fatturaOrdineBulks = getDetails();
+        if (!fatturaOrdineBulks.isEmpty()) {
+            final BigDecimal totaleImponibile = fatturaOrdineBulks
+                    .stream()
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImImponibileRettificato()).orElse(fatturaOrdineBulk.getImImponibile()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            final BigDecimal totaleIva = fatturaOrdineBulks
+                    .stream()
+                    .map(fatturaOrdineBulk -> Optional.ofNullable(fatturaOrdineBulk.getImIvaRettificata()).orElse(fatturaOrdineBulk.getImIva()))
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            final BigDecimal totaleImponibilePerNotaCredito = fatturaOrdineBulks
+                    .stream()
+                    .map(FatturaOrdineBulk::getImponibilePerRigaFattura)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+            final BigDecimal totaleIvaPerNotaCredito = fatturaOrdineBulks
+                    .stream()
+                    .map(FatturaOrdineBulk::getIvaPerRigaFattura)
+                    .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            final BigDecimal differenzaImponibile = fattura_passiva.get()
+                    .getTotaleImponibileFatturaElettronica().subtract(totaleImponibilePerNotaCredito);
+            final BigDecimal differenzaIva = fattura_passiva.get()
+                    .getTotaleIvaFatturaElettronica().subtract(totaleIvaPerNotaCredito);
+            return Stream.of(
+                    new AbstractMap.SimpleEntry<>("totaleImponibile", totaleImponibile),
+                    new AbstractMap.SimpleEntry<>("totaleIva", totaleIva),
+                    new AbstractMap.SimpleEntry<>("totaleImponibilePerNotaCredito", totaleImponibilePerNotaCredito),
+                    new AbstractMap.SimpleEntry<>("totaleIvaPerNotaCredito", totaleIvaPerNotaCredito),
+                    new AbstractMap.SimpleEntry<>("differenzaImponibile", differenzaImponibile),
+                    new AbstractMap.SimpleEntry<>("differenzaIva", differenzaIva)
+            ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        }
+        return Collections.emptyMap();
+    }
     @Override
     public void writeTfoot(JspWriter jspWriter) throws IOException {
         final EuroFormat euroFormat = new EuroFormat();
         final long numberOfColspan = Collections.list(BulkInfo.getBulkInfo(this.getModelClass())
                 .getColumnFieldProperties()).stream().count() - 2;
-
-        final Optional<Fattura_passiva_rigaBulk> fattura_passiva_rigaBulk = Optional.ofNullable(getParentController())
+        final Optional<Fattura_passivaBulk> fattura_passiva = Optional.ofNullable(getParentController())
                 .filter(CRUDFatturaPassivaBP.class::isInstance)
                 .map(CRUDFatturaPassivaBP.class::cast)
-                .filter(crudFatturaPassivaBP -> crudFatturaPassivaBP.getDettaglio().getSelection().getFocus() != -1)
-                .map(crudFatturaPassivaBP -> crudFatturaPassivaBP.getDettaglio().getDetails().get(
-                        crudFatturaPassivaBP.getDettaglio().getSelection().getFocus())
+                .map(crudFatturaPassivaBP -> crudFatturaPassivaBP.getModel()
                 )
-                .filter(Fattura_passiva_rigaBulk.class::isInstance)
-                .map(Fattura_passiva_rigaBulk.class::cast);
-        final List<FatturaOrdineBulk> fatturaOrdineBulks = getDetails();
-        if (!fatturaOrdineBulks.isEmpty()) {
-            final BigDecimal totaleImponibile = BigDecimal.valueOf(fatturaOrdineBulks.stream()
-                    .mapToDouble(value -> value.getImImponibile().doubleValue())
-                    .sum());
-            final BigDecimal totaleIva = BigDecimal.valueOf(fatturaOrdineBulks.stream()
-                    .mapToDouble(value -> value.getImIva().doubleValue())
-                    .sum());
-            final BigDecimal differenzaImponibile = fattura_passiva_rigaBulk.get()
-                    .getIm_imponibile().subtract(totaleImponibile);
-            final BigDecimal differenzaIva = fattura_passiva_rigaBulk.get()
-                    .getIm_iva().subtract(totaleIva);
-
-            if (differenzaImponibile.compareTo(BigDecimal.ZERO) != 0 || differenzaIva.compareTo(BigDecimal.ZERO) != 0 ) {
-                jspWriter.println("<tfoot class=\"bg-danger\">");
-                jspWriter.println("<tr>");
-                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" colspan=\"" + numberOfColspan +"\" align=\"right\">");
-                jspWriter.println("<span>Differenze:</span>");
-                jspWriter.println("</td>");
-                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
-                jspWriter.print(euroFormat.format(differenzaImponibile));
-                jspWriter.println("</td>");
-                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
-                jspWriter.print(euroFormat.format(differenzaIva));
-                jspWriter.println("</td>");
-                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
-                jspWriter.print(euroFormat.format(differenzaImponibile.add(differenzaIva)));
-                jspWriter.println("</td>");
-                jspWriter.println("</tr>");
-                jspWriter.println("</tfoot>");
-            }
+                .filter(Fattura_passivaBulk.class::isInstance)
+                .map(Fattura_passivaBulk.class::cast);
+        final Map<String, BigDecimal> differenze = differenze();
+        if (!differenze.isEmpty()) {
 
             jspWriter.println("<tfoot class=\"bg-info\">");
             jspWriter.println("<tr>");
-            jspWriter.println("<td class=\"TableHeader text-primary font-weight-bold\"  colspan=\"" + numberOfColspan + "\" align=\"right\">");
-            jspWriter.println("<span>Totali:</span>");
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\"  colspan=\"" + numberOfColspan + "\" align=\"right\">");
+            jspWriter.println("<span>Totali Ordine:</span>");
             jspWriter.println("</td>");
-            jspWriter.println("<td class=\"TableHeader text-primary font-weight-bold\" align=\"right\">");
-            jspWriter.print(euroFormat.format(totaleImponibile));
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(differenze.get("totaleImponibile")));
             jspWriter.println("</td>");
-            jspWriter.println("<td class=\"TableHeader text-primary font-weight-bold\" align=\"right\">");
-            jspWriter.print(euroFormat.format(totaleIva));
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(differenze.get("totaleIva")));
             jspWriter.println("</td>");
-            jspWriter.println("<td class=\"TableHeader text-primary font-weight-bold\" align=\"right\">");
-            jspWriter.print(euroFormat.format(totaleImponibile.add(totaleIva)));
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(differenze.get("totaleImponibile").add(differenze.get("totaleIva"))));
             jspWriter.println("</td>");
             jspWriter.println("</tr>");
-            jspWriter.println("</tfoot>");
 
+            if (differenze.get("totaleImponibile").compareTo(differenze.get("totaleImponibilePerNotaCredito")) != 0 ||
+                    differenze.get("totaleIva").compareTo(differenze.get("totaleIvaPerNotaCredito")) != 0){
+                jspWriter.println("<tr>");
+                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\"  colspan=\"" + numberOfColspan + "\" align=\"right\">");
+                jspWriter.println("<span>Totali Ordine Per Nota Credito:</span>");
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("totaleImponibilePerNotaCredito")));
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("totaleIvaPerNotaCredito")));
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("totaleImponibilePerNotaCredito").add(differenze.get("totaleIvaPerNotaCredito"))));
+                jspWriter.println("</td>");
+                jspWriter.println("</tr>");
+            }
+
+            jspWriter.println("<tr>");
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\"  colspan=\"" + numberOfColspan + "\" align=\"right\">");
+            jspWriter.println("<span>Importi Fattura:</span>");
+            jspWriter.println("</td>");
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(fattura_passiva.get()
+                    .getTotaleImponibileFatturaElettronica()));
+            jspWriter.println("</td>");
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(fattura_passiva.get()
+                    .getTotaleIvaFatturaElettronica()));
+            jspWriter.println("</td>");
+            jspWriter.println("<td class=\"TableHeader text-white font-weight-bold\" align=\"right\">");
+            jspWriter.print(euroFormat.format(fattura_passiva.get()
+                    .getTotaleImponibileFatturaElettronica().add(fattura_passiva.get()
+                            .getTotaleIvaFatturaElettronica())));
+            jspWriter.println("</td>");
+            jspWriter.println("</tr>");
+            if (differenze.get("differenzaImponibile").compareTo(BigDecimal.ZERO) != 0 || differenze.get("differenzaIva").compareTo(BigDecimal.ZERO) != 0){
+                jspWriter.println("<tr>");
+                jspWriter.println("<td class=\"TableHeader text-white bg-danger font-weight-bold\" colspan=\"" + numberOfColspan +"\" align=\"right\">");
+                jspWriter.println("<span>Differenze:</span>");
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white bg-danger font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("differenzaImponibile")));
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white bg-danger font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("differenzaIva")));
+                jspWriter.println("</td>");
+                jspWriter.println("<td class=\"TableHeader text-white bg-danger font-weight-bold\" align=\"right\">");
+                jspWriter.print(euroFormat.format(differenze.get("differenzaImponibile").add(differenze.get("differenzaIva"))));
+                jspWriter.println("</td>");
+                jspWriter.println("</tr>");
+            }
+            jspWriter.println("</tfoot>");
         }
+    }
+
+
+    @Override
+    public void writeHTMLToolbar(
+            javax.servlet.jsp.PageContext context,
+            boolean reset,
+            boolean find,
+            boolean delete, boolean closedToolbar) throws java.io.IOException, javax.servlet.ServletException {
+
+        super.writeHTMLToolbar(context, reset, find, delete, false);
+        boolean isFromBootstrap = HttpActionContext.isFromBootstrap(context);
+        String command = null;
+        if (getParentController() != null)
+            command = "javascript:submitForm('doSelezionaOrdini')";
+        it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
+                context,
+                isFromBootstrap ? "fa fa-fw fa-bolt" : "img/history16.gif",
+                !(isInputReadonly() ||  ((CRUDFatturaPassivaBP) getParentController()).isSearching()) ? command : null,
+                true,
+                "Seleziona Ordini",
+                "btn-sm btn-outline-primary btn-title",
+                isFromBootstrap);
+        command = null;
+        final Map<String, BigDecimal> differenze = differenze();
+        if (getParentController() != null && !differenze.isEmpty()
+                && differenze.get("differenzaImponibile").compareTo(range.negate()) >= 0
+                && differenze.get("differenzaImponibile").compareTo(range) <= 0)
+            command = "javascript:submitForm('doConfermaRiscontroAValore')";
+        it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
+                context,
+                isFromBootstrap ? "fa fa-fw fa-lock" : "img/history16.gif",
+                !(isInputReadonly() || getDetails().isEmpty() || ((CRUDFatturaPassivaBP) getParentController()).isSearching()) ? command : null,
+                true,
+                "Fine riscontro a valore",
+                "btn-sm btn-outline-primary btn-title",
+                isFromBootstrap);
+
+        super.closeButtonGROUPToolbar(context);
     }
 }

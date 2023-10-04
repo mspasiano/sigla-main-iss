@@ -144,7 +144,7 @@ ID
 ,ATTRIBUTO_57   -- SWIFT
 ,ATTRIBUTO_58   -- SWIFT_TERZO
 ,ATTRIBUTO_59   -- cd_Cup
-,ATTRIBUTO_60   -- Ds_Cup
+,ATTRIBUTO_LONG_11   -- Ds_Cup
 ,IMPORTO_17     -- Im_cup
 ,ATTRIBUTO_61   -- STATO
 from tmp_report_generico;

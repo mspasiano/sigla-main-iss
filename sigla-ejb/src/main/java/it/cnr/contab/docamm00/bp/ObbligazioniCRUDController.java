@@ -58,20 +58,7 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
     }
 
     public java.util.List getDetails() {
-
         java.util.Vector lista = new java.util.Vector();
-
-        //if (this.parent.getModel().getClass().getName().equalsIgnoreCase("it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk")){
-        //it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk doc = (it.cnr.contab.docamm00.docs.bulk.Documento_genericoBulk)getParentModel();
-        //if (doc != null) {
-        //java.util.Hashtable h = doc.getDocumento_generico_obbligazioniHash();
-        //if (h != null) {
-        //for (java.util.Enumeration e = h.keys(); e.hasMoreElements();)
-        //lista.add(e.nextElement());
-        //}
-        //}
-        //}
-        //else {
         if (getParentModel() != null && getParentModel() instanceof IDocumentoAmministrativoBulk) {
             java.util.Hashtable h = ((IDocumentoAmministrativoBulk) getParentModel()).getObbligazioniHash();
             if (h != null) {
@@ -79,7 +66,6 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                     lista.add(e.nextElement());
             }
         }
-        //}
         return lista;
     }
 
@@ -115,22 +101,15 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
         }
         if (bp instanceof IDocumentoAmministrativoBP) {
             enabled = enabled || ((IDocumentoAmministrativoBP) bp).isDeleting() || ((IDocumentoAmministrativoBP) bp).isManualModify();
-            modelEditable = (getParentModel() != null &&
+            modelEditable = (bp instanceof CRUDFatturaPassivaAmministraBP) ||
+                    (getParentModel() != null &&
                     ((IDocumentoAmministrativoBulk) getParentModel()).isEditable() &&
                     !((IDocumentoAmministrativoBulk) getParentModel()).isDeleting());
-            if (modelEditable) {
-                if (getParentModel() instanceof Fattura_passiva_IBulk) {
-                    modelEditable = !((Fattura_passiva_IBulk) getParentModel()).isDoc1210Associato();
-                } else if (getParentModel() instanceof Documento_genericoBulk &&
-                        !((Documento_genericoBulk) getParentModel()).isGenericoAttivo()) {
-                    modelEditable = !((Documento_genericoBulk) getParentModel()).isDoc1210Associato();
-                }
-            }
         }
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,
                 HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-edit" : "img/redo16.gif",
-                (bp.isViewing() || enabled) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
+                (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doOpenObbligazioniWindow')" : null,
                 true,
                 "Aggiorna in manuale",
                 "btn btn-outline-primary  btn-sm btn-title",
@@ -139,7 +118,7 @@ public class ObbligazioniCRUDController extends it.cnr.jada.util.action.SimpleDe
                 context,
                 HttpActionContext.isFromBootstrap(context) ? "fa fa-fw fa-pencil" : "img/refresh16.gif",
                 (!bp.isViewing() && enabled && modelEditable) ? "javascript:submitForm('doModificaScadenzaInAutomatico(" + getInputPrefix() + ")')" : null,
-                false,
+                true,
                 "Aggiorna in automatico",
                 "btn btn-outline-info btn-sm btn-title",
                 HttpActionContext.isFromBootstrap(context));

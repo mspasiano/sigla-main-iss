@@ -17,10 +17,13 @@
 
 package it.cnr.contab.web.rest.resource.security;
 
+import it.cnr.contab.web.rest.exception.UnprocessableEntityException;
+import it.cnr.contab.web.rest.local.config00.AccountLocal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.security.PermitAll;
+import javax.ejb.EJB;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.*;
@@ -31,26 +34,28 @@ import javax.ws.rs.core.SecurityContext;
 import java.util.Optional;
 
 @Path("login")
+@Produces(MediaType.APPLICATION_JSON)
 @PermitAll
 public class Login {
     private final Logger LOGGER = LoggerFactory.getLogger(Login.class);
     @Context
     SecurityContext securityContext;
 
+    @EJB
+    private AccountLocal accountLocal;
+
     @POST
-    public Response postLogin(@Context HttpServletRequest request, @FormParam("j_username") String username, @FormParam("j_password") String password) {
+    public Response postLogin(@Context HttpServletRequest request, @FormParam("j_username") String username, @FormParam("j_password") String password) throws Exception {
         try {
             if (!Optional.ofNullable(securityContext.getUserPrincipal()).isPresent())
                 request.login(username, password);
-            return Response.ok().build();
+            return Response.ok(accountLocal.getAccountDTO(request)).build();
         } catch (ServletException e) {
-            LOGGER.error("Login error for user:{} password:{}", username, password, e);
-            return Response.serverError().build();
+            LOGGER.trace("Login error for user:{} password:{}", username, password, e);
+            return Response.status(Response.Status.UNAUTHORIZED) .build();
+        } catch (UnprocessableEntityException e) {
+            LOGGER.trace("Login error for user:{} password:{}", username, password, e);
+            return Response.status(Response.Status.NOT_ACCEPTABLE) .build();
         }
-    }
-
-    @OPTIONS
-    public Response options() {
-        return Response.ok().build();
     }
 }

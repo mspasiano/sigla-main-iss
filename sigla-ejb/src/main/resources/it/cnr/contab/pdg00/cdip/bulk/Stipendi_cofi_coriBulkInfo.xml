@@ -45,12 +45,22 @@
 		property="mese"
 		maxLength="30"
 		inputSize="30"
-		inputType="SELECT"
-		nullable="true"
+		inputType="TEXT"
 		enabledOnSearch="true"
-        keysProperty="meseKeys"
-		label="Mese"/>
-		
+		label="Progressivo"/>
+	<fieldProperty
+			name="find_stipendi_cofi"
+			property="stipendi_cofi"
+			inputType="SEARCHTOOL"
+			formName="searchtool"
+			label="Progr. riferimento"
+			caseSensitiveSearch="false"
+			enabledOnInsert="true"
+			enabledOnEdit="true"
+			enabledOnSearch="true"
+			enabledOnFreeSearch="true"
+			nullable="false" />
+
 	/***********************************************************
 	* Searchtool per la ricerca del codice contributo_ritenuta *
 	***********************************************************/
@@ -125,6 +135,7 @@
 		
 
 	<formFieldProperty name="esercizio" />
+	<formFieldProperty name="find_stipendi_cofi" />
 	<formFieldProperty name="mese" />
 	<formFieldProperty name="find_tipo_contributo_ritenuta" />
 	<formFieldProperty name="ti_ente_percipiente" />

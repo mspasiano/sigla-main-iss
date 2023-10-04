@@ -126,7 +126,10 @@ public OggettoBulk initializeForSearch(it.cnr.jada.util.action.CRUDBP bp,ActionC
 
 	it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk unita_organizzativa = it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context);
 	setCd_cds_origine(unita_organizzativa.getUnita_padre().getCd_unita_organizzativa());
-	
+
+	if (getEsercizio() == null)
+		setEsercizio(it.cnr.contab.utenze00.bulk.CNRUserInfo.getEsercizio(context));
+
 	setTi_fattura(null);
 	setFl_intra_ue(null);
 	setFl_extra_ue(null);

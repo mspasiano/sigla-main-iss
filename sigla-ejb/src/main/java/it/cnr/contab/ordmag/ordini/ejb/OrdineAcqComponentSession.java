@@ -17,32 +17,22 @@
 
 package it.cnr.contab.ordmag.ordini.ejb;
 
-import java.math.BigDecimal;
-import java.rmi.RemoteException;
-import java.util.List;
-
-import javax.ejb.EJBException;
-import javax.ejb.Remote;
-
+import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.pdcep.bulk.ContoBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
-import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
-import it.cnr.contab.ordmag.magazzino.bulk.ParametriSelezioneMovimentiBulk;
-import it.cnr.contab.ordmag.ordini.bulk.AbilitazioneOrdiniAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
-import it.cnr.contab.ordmag.ordini.bulk.ParametriSelezioneOrdiniAcqBulk;
+import it.cnr.contab.ordmag.ordini.bulk.*;
 import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
-import it.cnr.contab.ordmag.richieste.bulk.RichiestaUopBulk;
-import it.cnr.contab.util.Utility;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.RemoteIterator;
+
+import javax.ejb.EJBException;
+import javax.ejb.Remote;
+import java.rmi.RemoteException;
 
 @Remote
 public interface OrdineAcqComponentSession extends it.cnr.jada.ejb.CRUDComponentSession{
@@ -53,7 +43,6 @@ public interface OrdineAcqComponentSession extends it.cnr.jada.ejb.CRUDComponent
 	OrdineAcqBulk contabilizzaDettagliSelezionati(it.cnr.jada.UserContext param0,OrdineAcqBulk param1,java.util.Collection param2,it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk param3) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 	public OrdineAcqBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws RemoteException,ComponentException, PersistencyException;
 	public void controllaQuadraturaObbligazioni(UserContext aUC,OrdineAcqBulk ordine) throws RemoteException,ComponentException, PersistencyException;
-	public OrdineAcqBulk cancellaOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws RemoteException,ComponentException, PersistencyException;
 	public Unita_organizzativaBulk recuperoUoPerImpegno(it.cnr.jada.UserContext userContext, OrdineAcqConsegnaBulk consegna) throws RemoteException,ComponentException, PersistencyException;
 	OrdineAcqBulk contabilizzaConsegneSelezionate(it.cnr.jada.UserContext param0,OrdineAcqBulk param1,java.util.Collection param2,it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk param3) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
 	public ImportoOrdine calcoloImportoOrdine(UserContext userContext,ParametriCalcoloImportoOrdine parametri) throws RemoteException,ComponentException;
@@ -62,4 +51,10 @@ public interface OrdineAcqComponentSession extends it.cnr.jada.ejb.CRUDComponent
 	public RemoteIterator ricercaOrdiniAcqCons(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametri,String tipoSelezione) throws ComponentException, RemoteException;
 	void chiusuraForzataOrdini(UserContext userContext, OrdineAcqConsegnaBulk ordineAcqConsegnaBulk) throws ComponentException, PersistencyException, RemoteException, ApplicationException;
 	ContoBulk recuperoContoDefault(UserContext userContext, Categoria_gruppo_inventBulk categoria_gruppo_inventBulk) throws PersistencyException, RemoteException, ComponentException;
+	Dettaglio_contrattoBulk recuperoDettaglioContratto(UserContext userContext, OrdineAcqRigaBulk riga) throws PersistencyException, RemoteException, ComponentException;
+	FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine) throws PersistencyException, RemoteException, it.cnr.jada.comp.ComponentException;
+	FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine, Boolean magazzino) throws PersistencyException, RemoteException, it.cnr.jada.comp.ComponentException;
+
+	java.util.List findListabanche(it.cnr.jada.UserContext param0, OrdineAcqBulk param1) throws it.cnr.jada.comp.ComponentException,java.rmi.RemoteException;
+
 }

@@ -26,13 +26,20 @@ import it.cnr.contab.bollo00.tabrif.bulk.Tipo_atto_bolloBulk;
 
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.inventario00.docs.bulk.Ass_inv_bene_fatturaBulk;
 import it.cnr.contab.inventario01.bulk.Buono_carico_scaricoBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
+import it.cnr.contab.service.SpringUtil;
+import it.cnr.contab.spring.service.StorePath;
 import it.cnr.contab.util.enumeration.TipoIVA;
+import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
+import it.cnr.contab.util00.bulk.storage.AllegatoParentBulk;
+import it.cnr.contab.util00.bulk.storage.AllegatoStorePath;
+import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.persistency.*;
@@ -40,8 +47,10 @@ import it.cnr.jada.persistency.beans.*;
 import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.action.*;
+import it.cnr.si.spring.storage.StorageDriver;
 
-public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, Voidable, IDefferUpdateSaldi {
+public class Documento_genericoBulk extends Documento_genericoBase implements IDocumentoAmministrativoSpesaBulk, IDocumentoAmministrativoEntrataBulk, Voidable, IDefferUpdateSaldi, AllegatoParentBulk, AllegatoStorePath {
+	private BulkList<AllegatoGenericoBulk> archivioAllegati = new BulkList<>();
 	protected BulkList documento_generico_dettColl= new BulkList();
 	private java.util.Vector dettagliCancellati= new Vector();
 	private int num_dettColl= 0;
@@ -350,7 +359,7 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 		// Metti solo le liste di oggetti che devono essere resi persistenti
 
 		return new it.cnr.jada.bulk.BulkCollection[] { 
-				documento_generico_dettColl				
+				documento_generico_dettColl,archivioAllegati
 		};
 	}
 	public java.lang.String getCd_divisa() {
@@ -901,6 +910,7 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 		setEsercizio(it.cnr.contab.utenze00.bulk.CNRUserInfo.getEsercizio(context));
 		setCd_cds(null); // ho aggiunto CD_CDS nelle findFieldProperties -> imposto a NULL per escluderlo dai filtri di ricerca
 		if (bp instanceof CRUDDocumentoGenericoPassivoBP && ((CRUDDocumentoGenericoPassivoBP)bp).isSpesaBP()){
+			setCd_unita_organizzativa(it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context).getCd_unita_organizzativa());
 			setStato_cofi(this.STATO_CONTABILIZZATO);
 			setCd_tipo_documento_amm(this.GENERICO_S);
 			setStato_pagamento_fondo_eco(FONDO_ECO);
@@ -948,14 +958,15 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 
 		setEsercizio(it.cnr.contab.utenze00.bulk.CNRUserInfo.getEsercizio(context));
 		setCd_cds(null); // ho aggiunto CD_CDS nelle findFieldProperties -> imposto a NULL per escluderlo dai filtri di ricerca
-
+		it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk uo = it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context);
+		if (uo.isUoEnte())
+			setCd_uo_origine(null);
 		if (bp instanceof CRUDDocumentoGenericoPassivoBP && ((CRUDDocumentoGenericoPassivoBP)bp).isSpesaBP()){
 			setStato_cofi(this.STATO_CONTABILIZZATO);
 			setTipo_documento(new Tipo_documento_ammBulk());
 			setCd_tipo_documento_amm(this.GENERICO_S);
 			setStato_pagamento_fondo_eco(FONDO_ECO);
 			setStato_liquidazione(LIQ);
-			it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk uo = it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context);
 			setCd_cds(uo.getCd_unita_padre());
 			setCd_cds_origine(uo.getCd_unita_padre());
 			if (it.cnr.contab.config00.sto.bulk.Tipo_unita_organizzativaHome.TIPO_UO_SAC.equalsIgnoreCase(uo.getCd_tipo_unita())){
@@ -1977,5 +1988,80 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 	@Override
 	public Timestamp getDt_contabilizzazione() {
 		return this.getData_registrazione();
+	}
+
+	public boolean isRegistratoInFondoEconomale() {
+		return REGISTRATO_IN_FONDO_ECO.equalsIgnoreCase(getStato_pagamento_fondo_eco());
+	}
+
+	/**
+	 * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+	 */
+	@Override
+	public Timestamp getDtInizioLiquid() {
+		return null;
+	}
+
+	/**
+	 * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+	 */
+	@Override
+	public Timestamp getDtFineLiquid() {
+		return null;
+	}
+
+	/**
+	 * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+	 */
+	@Override
+	public String getTipoLiquid() {
+		return null;
+	}
+
+	/**
+	 * Ritorna sempre valore null in quanto campo valido solo per liquidazioni
+	 */
+	@Override
+	public Long getReportIdLiquid() {
+		return null;
+	}
+
+	@Override
+	public int addToArchivioAllegati(AllegatoGenericoBulk allegato) {
+		archivioAllegati.add(allegato);
+		return archivioAllegati.size()-1;
+	}
+
+	@Override
+	public AllegatoGenericoBulk removeFromArchivioAllegati(int index) {
+		return getArchivioAllegati().remove(index);
+	}
+
+	@Override
+	public BulkList<AllegatoGenericoBulk> getArchivioAllegati() {
+		return archivioAllegati;
+	}
+
+	@Override
+	public void setArchivioAllegati(BulkList<AllegatoGenericoBulk> archivioAllegati) {
+		this.archivioAllegati = archivioAllegati;
+	}
+
+	@Override
+	public List<String> getStorePath() {
+		return Collections.singletonList(Arrays.asList(
+				SpringUtil.getBean(StorePath.class).getPathComunicazioniDal(),
+				Optional.ofNullable(this)
+						.map(s -> s.getCd_unita_organizzativa())
+						.orElse(""),
+				isGenericoAttivo() ? "Documenti Generici Attivi" : "Documenti Generici Passivi",
+				Optional.ofNullable(getEsercizio())
+						.map(esercizio -> String.valueOf(esercizio))
+						.orElse("0"),
+				getCd_tipo_documento_amm(),
+				String.valueOf(getPg_doc())
+		).stream().collect(
+				Collectors.joining(StorageDriver.SUFFIX)
+		));
 	}
 }

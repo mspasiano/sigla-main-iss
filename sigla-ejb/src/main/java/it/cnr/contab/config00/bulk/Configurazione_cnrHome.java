@@ -20,14 +20,14 @@ package it.cnr.contab.config00.bulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
-import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.PersistentCache;
+import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Date;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -290,6 +290,7 @@ public class Configurazione_cnrHome extends BulkHome {
                 .orElse(null);
     }
 
+
     /**
      *
      * @param userContext
@@ -297,8 +298,12 @@ public class Configurazione_cnrHome extends BulkHome {
      * @throws PersistencyException
      */
     public boolean isAttivaEconomica(UserContext userContext) throws PersistencyException {
+        return isAttivaEconomica(CNRUserContext.getEsercizio(userContext));
+    }
+
+    public boolean isAttivaEconomica(int esercizio) throws PersistencyException {
         return Optional.ofNullable(
-                        this.getConfigurazione(CNRUserContext.getEsercizio(userContext), null,
+                        this.getConfigurazione(esercizio, null,
                                 Configurazione_cnrBulk.PK_ECONOMICO_PATRIMONIALE,
                                 Configurazione_cnrBulk.SK_TIPO_ECONOMICO_PATRIMONIALE)
                 )
@@ -390,6 +395,13 @@ public class Configurazione_cnrHome extends BulkHome {
                 .orElse(null);
     }
 
+    public Integer getCdTerzoDiversiCollaboratori() throws PersistencyException {
+        return Optional.ofNullable(
+                        this.getConfigurazione(null,Configurazione_cnrBulk.PK_TERZO_SPECIALE, Configurazione_cnrBulk.SK_DIVERSI_STIPENDI))
+                .map(Configurazione_cnrBulk::getIm02)
+                .map(BigDecimal::intValue)
+                .orElse(null);
+    }
 
     /**
      * Ritorna il codice bollo da utilizzare per la genersazione dei madati stipendi
@@ -412,4 +424,18 @@ public class Configurazione_cnrHome extends BulkHome {
                 .orElse(null);
     }
 
+    public Integer getCodiceAnagraficoEnte() throws PersistencyException {
+        return Optional.ofNullable(
+                        this.getConfigurazione(null,Configurazione_cnrBulk.PK_COSTANTI, Configurazione_cnrBulk.SK_CODICE_ANAG_ENTE))
+                .map(Configurazione_cnrBulk::getIm01)
+                .map(BigDecimal::intValue)
+                .orElse(null);
+    }
+
+    public String getLiquidazioneIvaTipoStanziamento() throws PersistencyException {
+        return Optional.ofNullable(
+                        this.getConfigurazione(null,Configurazione_cnrBulk.PK_UO_SPECIALE, Configurazione_cnrBulk.SK_UO_VERSAMENTO_IVA))
+                .map(Configurazione_cnrBulk::getVal02)
+                .orElse(null);
+    }
 }

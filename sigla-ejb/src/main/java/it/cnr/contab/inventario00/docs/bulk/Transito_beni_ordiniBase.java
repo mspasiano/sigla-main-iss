@@ -91,6 +91,9 @@ public class Transito_beni_ordiniBase extends Transito_beni_ordiniKey implements
 	private String seriale;
 
 	private java.lang.String stato;
+
+	private String nota_canc;
+
 public Transito_beni_ordiniBase() {
 	super();
 }
@@ -240,5 +243,13 @@ public Transito_beni_ordiniBase(Long id) {
 
 	public void setSeriale(String seriale) {
 		this.seriale = seriale;
+	}
+
+	public String getNota_canc() {
+		return nota_canc;
+	}
+
+	public void setNota_canc(String nota_canc) {
+		this.nota_canc = nota_canc;
 	}
 }

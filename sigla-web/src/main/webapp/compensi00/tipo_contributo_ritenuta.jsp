@@ -81,12 +81,11 @@
   <tr>
   	<td><% bp.getController().writeFormInput(out,"fl_sospensione_irpef");%></td>
 	<td align="left"><% bp.getController().writeFormLabel(out,"fl_sospensione_irpef");%></td>
-  </tr>
- <tr>
   	<td><% bp.getController().writeFormInput(out,"fl_credito_irpef");%></td>
 	<td align="left"><% bp.getController().writeFormLabel(out,"fl_credito_irpef");%></td>
+  	<td><% bp.getController().writeFormInput(out,"fl_versamento");%></td>
+	<td align="left"><% bp.getController().writeFormLabel(out,"fl_versamento");%></td>
   </tr>
-
 </table>
 
 <table class="Group" style="width:100%">

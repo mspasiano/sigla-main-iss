@@ -444,6 +444,13 @@
             name="destinazione"/>
     <columnFieldProperty
             name="cd_avviso_pagopa"/>
+
+    <form name="searchtool">
+        <formFieldProperty name="esercizio"/>
+        <formFieldProperty name="cd_cds"/>
+        <formFieldProperty name="cd_sospeso_padre"/>
+    </form>
+
     <columnSet
             name="SospesiPadre">
         <columnFieldProperty

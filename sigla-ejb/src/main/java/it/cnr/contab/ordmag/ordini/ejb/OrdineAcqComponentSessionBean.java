@@ -17,18 +17,15 @@
 
 package it.cnr.contab.ordmag.ordini.ejb;
 
+import it.cnr.contab.config00.contratto.bulk.Dettaglio_contrattoBulk;
 import it.cnr.contab.config00.pdcep.bulk.ContoBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
-import it.cnr.contab.ordmag.ordini.bulk.AbilitazioneOrdiniAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
-import it.cnr.contab.ordmag.ordini.bulk.ParametriSelezioneOrdiniAcqBulk;
+import it.cnr.contab.ordmag.ordini.bulk.*;
 import it.cnr.contab.ordmag.ordini.comp.OrdineAcqComponent;
 import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.jada.UserContext;
-import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.util.RemoteIterator;
@@ -39,13 +36,13 @@ import java.rmi.RemoteException;
 
 @Stateless(name = "CNRORDMAG00_EJB_OrdineAcqComponentSession")
 public class OrdineAcqComponentSessionBean extends it.cnr.jada.ejb.CRUDComponentSessionBean implements OrdineAcqComponentSession {
+    public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
+        return new OrdineAcqComponentSessionBean();
+    }
+
     @PostConstruct
     public void ejbCreate() {
         componentObj = new OrdineAcqComponent();
-    }
-
-    public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
-        return new OrdineAcqComponentSessionBean();
     }
 
     public Boolean isUtenteAbilitatoOrdine(UserContext usercontext, OrdineAcqBulk ordine) throws ComponentException, PersistencyException, javax.ejb.EJBException {
@@ -179,25 +176,6 @@ public class OrdineAcqComponentSessionBean extends it.cnr.jada.ejb.CRUDComponent
         }
     }
 
-    public OrdineAcqBulk cancellaOrdine(it.cnr.jada.UserContext userContext, OrdineAcqBulk ordine) throws RemoteException, ComponentException, PersistencyException {
-        pre_component_invocation(userContext, componentObj);
-        try {
-            OrdineAcqBulk result = ((OrdineAcqComponent) componentObj).cancellaOrdine(userContext, ordine);
-            component_invocation_succes(userContext, componentObj);
-            return result;
-        } catch (it.cnr.jada.comp.NoRollbackException e) {
-            component_invocation_succes(userContext, componentObj);
-            throw e;
-        } catch (it.cnr.jada.comp.ComponentException e) {
-            component_invocation_failure(userContext, componentObj);
-            throw e;
-        } catch (RuntimeException e) {
-            throw uncaughtRuntimeException(userContext, componentObj, e);
-        } catch (Error e) {
-            throw uncaughtError(userContext, componentObj, e);
-        }
-    }
-
     public Unita_organizzativaBulk recuperoUoPerImpegno(it.cnr.jada.UserContext userContext, OrdineAcqConsegnaBulk consegna) throws RemoteException, ComponentException, PersistencyException {
         pre_component_invocation(userContext, componentObj);
         try {
@@ -267,81 +245,162 @@ public class OrdineAcqComponentSessionBean extends it.cnr.jada.ejb.CRUDComponent
             throw uncaughtError(userContext, componentObj, e);
         }
     }
-	public AbilitazioneOrdiniAcqBulk initializeAbilitazioneOrdiniAcq(UserContext userContext, AbilitazioneOrdiniAcqBulk abilitazioneOrdiniAcqBulk)
-			throws ComponentException, PersistencyException, RemoteException, ApplicationException{
-		pre_component_invocation(userContext,componentObj);
-		try {
-			AbilitazioneOrdiniAcqBulk result = ((OrdineAcqComponent)componentObj).initializeAbilitazioneOrdiniAcq(userContext, abilitazioneOrdiniAcqBulk);
-			component_invocation_succes(userContext,componentObj);
-			return result;
-		} catch(it.cnr.jada.comp.NoRollbackException e) {
-			component_invocation_succes(userContext,componentObj);
-			throw e;
-		} catch(ComponentException e) {
-			component_invocation_failure(userContext,componentObj);
-			throw e;
-		} catch(RuntimeException e) {
-			throw uncaughtRuntimeException(userContext,componentObj,e);
-		} catch(Error e) {
-			throw uncaughtError(userContext,componentObj,e);
-		}
-	}
-    public RemoteIterator ricercaOrdiniAcqCons(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametri,String tipoSelezione) throws ComponentException, RemoteException{
-        pre_component_invocation(userContext,componentObj);
+
+    public AbilitazioneOrdiniAcqBulk initializeAbilitazioneOrdiniAcq(UserContext userContext, AbilitazioneOrdiniAcqBulk abilitazioneOrdiniAcqBulk)
+            throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
         try {
-            RemoteIterator result = ((OrdineAcqComponent)componentObj).ricercaOrdiniAcqCons(userContext, parametri,tipoSelezione);
-            component_invocation_succes(userContext,componentObj);
+            AbilitazioneOrdiniAcqBulk result = ((OrdineAcqComponent) componentObj).initializeAbilitazioneOrdiniAcq(userContext, abilitazioneOrdiniAcqBulk);
+            component_invocation_succes(userContext, componentObj);
             return result;
-        } catch(it.cnr.jada.comp.NoRollbackException e) {
-            component_invocation_succes(userContext,componentObj);
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
             throw e;
-        } catch(ComponentException e) {
-            component_invocation_failure(userContext,componentObj);
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
             throw e;
-        } catch(RuntimeException e) {
-            throw uncaughtRuntimeException(userContext,componentObj,e);
-        } catch(Error e) {
-            throw uncaughtError(userContext,componentObj,e);
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
+
+    public RemoteIterator ricercaOrdiniAcqCons(UserContext userContext, ParametriSelezioneOrdiniAcqBulk parametri, String tipoSelezione) throws ComponentException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
+        try {
+            RemoteIterator result = ((OrdineAcqComponent) componentObj).ricercaOrdiniAcqCons(userContext, parametri, tipoSelezione);
+            component_invocation_succes(userContext, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
+            throw e;
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
         }
     }
 
 
     public ContoBulk recuperoContoDefault(UserContext userContext, Categoria_gruppo_inventBulk categoria_gruppo_inventBulk)
-            throws ComponentException, PersistencyException, RemoteException{
-        pre_component_invocation(userContext,componentObj);
+            throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
         try {
-            ContoBulk result = ((OrdineAcqComponent)componentObj).recuperoContoDefault(userContext, categoria_gruppo_inventBulk);
-            component_invocation_succes(userContext,componentObj);
+            ContoBulk result = ((OrdineAcqComponent) componentObj).recuperoContoDefault(userContext, categoria_gruppo_inventBulk);
+            component_invocation_succes(userContext, componentObj);
             return result;
-        } catch(it.cnr.jada.comp.NoRollbackException e) {
-            component_invocation_succes(userContext,componentObj);
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
             throw e;
-        } catch(ComponentException e) {
-            component_invocation_failure(userContext,componentObj);
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
             throw e;
-        } catch(RuntimeException e) {
-            throw uncaughtRuntimeException(userContext,componentObj,e);
-        } catch(Error e) {
-            throw uncaughtError(userContext,componentObj,e);
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
         }
     }
 
     @Override
-    public void chiusuraForzataOrdini(UserContext userContext, OrdineAcqConsegnaBulk ordineAcqConsegnaBulk) throws ComponentException, PersistencyException, RemoteException, ApplicationException {
-        pre_component_invocation(userContext,componentObj);
+    public void chiusuraForzataOrdini(UserContext userContext, OrdineAcqConsegnaBulk ordineAcqConsegnaBulk) throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
         try {
-            ((OrdineAcqComponent)componentObj).chiusuraForzataOrdini(userContext, ordineAcqConsegnaBulk);
-            component_invocation_succes(userContext,componentObj);
-        } catch(it.cnr.jada.comp.NoRollbackException e) {
-            component_invocation_succes(userContext,componentObj);
+            ((OrdineAcqComponent) componentObj).chiusuraForzataOrdini(userContext, ordineAcqConsegnaBulk);
+            component_invocation_succes(userContext, componentObj);
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
             throw e;
-        } catch(ComponentException e) {
-            component_invocation_failure(userContext,componentObj);
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
             throw e;
-        } catch(RuntimeException e) {
-            throw uncaughtRuntimeException(userContext,componentObj,e);
-        } catch(Error e) {
-            throw uncaughtError(userContext,componentObj,e);
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
+
+    public Dettaglio_contrattoBulk recuperoDettaglioContratto(UserContext userContext, OrdineAcqRigaBulk riga)
+            throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
+        try {
+            Dettaglio_contrattoBulk result = ((OrdineAcqComponent) componentObj).recuperoDettaglioContratto(userContext, riga);
+            component_invocation_succes(userContext, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
+            throw e;
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
+
+    public FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine)
+            throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
+        try {
+            FatturaOrdineBulk result = ((OrdineAcqComponent) componentObj).calcolaImportoOrdine(userContext, fatturaOrdine);
+            component_invocation_succes(userContext, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
+            throw e;
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
+
+    public FatturaOrdineBulk calcolaImportoOrdine(it.cnr.jada.UserContext userContext, FatturaOrdineBulk fatturaOrdine, Boolean magazzino)
+            throws ComponentException, PersistencyException, RemoteException {
+        pre_component_invocation(userContext, componentObj);
+        try {
+            FatturaOrdineBulk result = ((OrdineAcqComponent) componentObj).calcolaImportoOrdine(userContext, fatturaOrdine, magazzino);
+            component_invocation_succes(userContext, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(userContext, componentObj);
+            throw e;
+        } catch (ComponentException e) {
+            component_invocation_failure(userContext, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(userContext, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(userContext, componentObj, e);
+        }
+    }
+
+    public java.util.List findListabanche(it.cnr.jada.UserContext param0, OrdineAcqBulk param1) throws it.cnr.jada.comp.ComponentException, javax.ejb.EJBException {
+        pre_component_invocation(param0, componentObj);
+        try {
+            java.util.List result = ((OrdineAcqComponent) componentObj).findListabanche(param0, param1);
+            component_invocation_succes(param0, componentObj);
+            return result;
+        } catch (it.cnr.jada.comp.NoRollbackException e) {
+            component_invocation_succes(param0, componentObj);
+            throw e;
+        } catch (it.cnr.jada.comp.ComponentException e) {
+            component_invocation_failure(param0, componentObj);
+            throw e;
+        } catch (RuntimeException e) {
+            throw uncaughtRuntimeException(param0, componentObj, e);
+        } catch (Error e) {
+            throw uncaughtError(param0, componentObj, e);
         }
     }
 }

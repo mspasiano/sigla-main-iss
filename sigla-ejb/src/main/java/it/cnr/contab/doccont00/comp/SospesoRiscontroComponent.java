@@ -19,6 +19,8 @@ package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
+import it.cnr.contab.config00.bulk.Configurazione_cnrHome;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioHome;
 import it.cnr.contab.config00.sto.bulk.*;
@@ -27,16 +29,13 @@ import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.ReversaleComponentSession;
 import it.cnr.contab.doccont00.intcass.bulk.*;
 import it.cnr.contab.doccont00.intcass.giornaliera.MovimentoContoEvidenzaBulk;
-import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
-import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
-import it.cnr.contab.logs.ejb.BatchControlComponentSession;
 import it.cnr.contab.pagopa.bulk.PendenzaPagopaBulk;
 import it.cnr.contab.pagopa.ejb.PendenzaPagopaComponentSession;
 import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaBulk;
 import it.cnr.contab.prevent00.bulk.Voce_f_saldi_cdr_lineaHome;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.Utility;
 import it.cnr.contab.util.enumeration.EsitoOperazione;
-import it.cnr.contab.util.enumeration.StatoVariazioneSostituzione;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
@@ -45,8 +44,9 @@ import it.cnr.jada.persistency.PersistencyException;
 import it.cnr.jada.persistency.sql.*;
 import it.cnr.jada.util.DateUtils;
 import it.cnr.jada.util.RemoteIterator;
-import it.cnr.jada.util.SendMail;
 import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -54,13 +54,14 @@ import java.math.RoundingMode;
 import java.rmi.RemoteException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 public class SospesoRiscontroComponent extends CRUDComponent implements ISospesoRiscontroMgr, ICRUDMgr, Cloneable, Serializable, IPrintMgr {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SospesoRiscontroComponent.class);
     /**
      * SospesoRiscontroComponent constructor comment.
      */
@@ -394,7 +395,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      * annullato (metodo aggiornaStatoDocContabile)
      *
      * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param bulk        <code>SospesoBulk</code> il riscontro da annullare
+     * @param sospeso        <code>SospesoBulk</code> il riscontro da annullare
      */
     private void annullaDettaglioSospeso(UserContext userContext, SospesoBulk sospeso) throws ComponentException {
         try {
@@ -480,7 +481,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      * L'operazione di lettura viene effettuata con una FetchPolicy il cui nome è
      * ottenuto concatenando il nome della component con la stringa ".find"
      *
-     * @param    uc    lo UserContext che ha generato la richiesta
+     * @param    userContext    lo UserContext che ha generato la richiesta
      * @param    clausole    Una CompoundFindClause che descrive l'albero di clausole
      * da applicare nella ricerca
      * @param    bulk    l'OggettoBulk che è stato usato come prototipo per la generazione
@@ -594,7 +595,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      * un Mandato (metodo creaDettaglioSospesoUsc).
      *
      * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param bulk        <code>SospesoBulk</code> il riscontro corrente
+     * @param sospeso        <code>SospesoBulk</code> il riscontro corrente
      */
     private void creaDettaglioSospeso(UserContext userContext, SospesoBulk sospeso) throws ComponentException {
         if (sospeso.getTi_entrata_spesa().equals(SospesoBulk.TIPO_ENTRATA))
@@ -617,7 +618,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      * (metodo aggiornaStatoDocContabile).
      *
      * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param bulk        <code>SospesoBulk</code> il riscontro corrente
+     * @param sospeso        <code>SospesoBulk</code> il riscontro corrente
      */
     private void creaDettaglioSospesoEtr(UserContext userContext, SospesoBulk sospeso) throws ComponentException {
         try {
@@ -672,7 +673,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      * (metodo aggiornaStatoDocContabile).
      *
      * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param bulk        <code>SospesoBulk</code> il riscontro corrente
+     * @param sospeso        <code>SospesoBulk</code> il riscontro corrente
      */
     private void creaDettaglioSospesoUsc(UserContext userContext, SospesoBulk sospeso) throws ComponentException {
         try {
@@ -1602,7 +1603,7 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
      *
      * @param userContext lo userContext che ha generato la richiesta
      * @param bulk        l'OggettoBulk che rappresenta il contesto della ricerca.
-     * @param uo          l'OggettoBulk da usare come prototipo della ricerca; sul prototipo vengono
+     * @param cds          l'OggettoBulk da usare come prototipo della ricerca; sul prototipo vengono
      *                    costruite delle clausole aggiuntive che vengono aggiunte in AND alle clausole specificate.
      * @return Un'istanza di SQLBuilder contenente l'istruzione SQL da eseguire e tutti i parametri
      * della query.
@@ -2063,10 +2064,6 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
 
     }
 
-    /**
-     * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param riscontro   <code>SospesoBulk</code> di tipo riscontro da validare, prima di procedere alla cancellazione
-     */
     protected void verificaAnnullabilitaRiscontroEntrataPGiro(UserContext userContext, int esercizio, String cd_cds, int esercizio_ori_accertamento, long pg_accertamento) throws ComponentException {
         try {
             String schema = EJBCommonServices.getDefaultSchema();
@@ -2207,10 +2204,6 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
 
     }
 
-    /**
-     * @param userContext lo <code>UserContext</code> che ha generato la richiesta
-     * @param riscontro   <code>SospesoBulk</code> di tipo riscontro da validare, prima di procedere alla cancellazione
-     */
     protected void verificaAnnullabilitaRiscontroSpesaPGiro(UserContext userContext, int esercizio, String cd_cds, int esercizio_ori_obbligazione, long pg_obbligazione) throws ComponentException {
         try {
             String schema = EJBCommonServices.getDefaultSchema();
@@ -2563,6 +2556,27 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
         return 1;
     }
 
+    private CdsBulk getCdsDefaultSospesi(UserContext userContext) throws ComponentException, PersistencyException {
+        try {
+            Boolean isAttivoGestioneStatoIniziale = Utility.createConfigurazioneCnrComponentSession().isGestioneStatoInizialeSospesiAttivo(userContext);
+            if (isAttivoGestioneStatoIniziale) {
+                String cds = ((Configurazione_cnrHome) getHome(userContext, Configurazione_cnrBulk.class)).getConfigurazione(
+                        CNRUserContext.getEsercizio(userContext),
+                        null,
+                        Configurazione_cnrBulk.PK_SOSPESI,
+                        Configurazione_cnrBulk.SK_GESTIONE_STATO_INIZIALE).getVal(2);
+
+                return (CdsBulk) getHome(userContext, CdsBulk.class).
+                        findByPrimaryKey(new CdsKey(cds));
+            }
+            return null;
+        }catch( Exception e){
+            LOGGER.error("Errore recupero configurazione gestione stato inziale sospesi ( getCdsDefaultSospesi) " + e.getMessage());
+        }
+        return null;
+
+
+    }
     public Integer caricamentoRigaGiornaleCassa(UserContext userContext, boolean tesoreriaUnica, EnteBulk cdsEnte, MovimentoContoEvidenzaBulk riga) throws ComponentException, PersistencyException {
         try {
             SospesoHome homeSospeso = (SospesoHome)getHome(userContext, SospesoBulk.class);
@@ -2652,6 +2666,11 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                             aggiornaSaldiCapitoli(userContext, manRev);
                         }
                         super.updateBulk(userContext,rev);
+                        try {
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, rev);
+                        } catch (Exception e) {
+                            LOGGER.error("La reversale "+rev.getIdReversaleAsString()+" presenta un errore in fase di scrittura partita doppia: " + e.getMessage());
+                        }
                         return aggiornaRigaProcessata(userContext, riga);
                     } else if (riga.isMandato()){
                         MandatoBulk man = new MandatoIBulk();
@@ -2737,6 +2756,11 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                             aggiornaSaldiCapitoli(userContext, manRev);
                         }
                         super.updateBulk(userContext, man);
+                        try {
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, man);
+                        } catch (Exception e) {
+                            LOGGER.error("Il mandato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia:" + e.getMessage());
+                        }
                         return aggiornaRigaProcessata(userContext, riga);
                     } else {
                         throw  new ComponentException("Il Tipo Ordinativo "+ riga.getTipoDocumento()+" non è compatibile, può assumere solo i valori R (Reversale) e M (Mandato)");
@@ -2776,7 +2800,13 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         man.setStato_trasmissione_annullo(MandatoBulk.STATO_TRASMISSIONE_TRASMESSO);
                         man.setToBeUpdated();
                         super.updateBulk(userContext,man);
-
+                        try {
+                            Utility.createScritturaPartitaDoppiaFromDocumentoComponentSession().createScritturaRequiresNew(userContext, man);
+                        } catch (Exception e) {
+                            java.io.StringWriter sw = new java.io.StringWriter();
+                            e.getCause().printStackTrace(new java.io.PrintWriter(sw));
+                            throw new ComponentException("Il mandato annullato "+man.getIdMandatoAsString()+" presenta un errore in fase di scrittura partita doppia: " + sw.toString());
+                        }
                         return aggiornaRigaProcessata(userContext, riga);
                     }
                 }
@@ -2878,6 +2908,12 @@ public class SospesoRiscontroComponent extends CRUDComponent implements ISospeso
                         sospesoFiglio.setCd_sospeso(sospesoFiglio.getCd_sospeso()+"."+sospeso.getNextCdSospesoFiglio());
                         sospesoFiglio.setCd_proprio_sospeso(sospeso.getNextCdSospesoFiglio());
                         sospesoFiglio.setToBeCreated();
+                        CdsBulk cds=getCdsDefaultSospesi(userContext);
+                        if( cds!=null){
+                            sospesoFiglio.setCds_origine( cds);
+                            sospesoFiglio.setStato_sospeso(SospesoBulk.STATO_SOSP_ASS_A_CDS);
+                        }
+
                         super.insertBulk(userContext, sospesoFiglio);
 
                         if (riga.isIncassoPagopa()){

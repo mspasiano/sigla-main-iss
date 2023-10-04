@@ -18,7 +18,8 @@
 
 <bulkInfo
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xmlns="https://contab.cnr.it/schema/SIGLA" 
+		xmlns="https://contab.cnr.it/schema/SIGLA"
+		shortDescription="Fattura Attiva"
 		xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
 
 	<fieldProperty
@@ -172,7 +173,7 @@
 		maxLength="6"
 		inputSize="6"
 		inputType="TEXT"
-		label="Cod. tipo sez." 
+		label="Cod. Sezionale"
 		enabledOnEdit="false"/>
 	<fieldProperty
 		name="cd_uo_origine"
@@ -233,58 +234,6 @@
 		inputCssClass=""
 		CRUDBusinessProcessName="CRUDAnagraficaPersonaBP"
 		nullable="false"/>
-	<fieldProperty
-			name="pendenzaPagopa"
-			property="pendenzaPagopa"
-			inputType="SEARCHTOOL"
-			formName="searchtool"
-			label="Avviso PagoPA"
-			enabledOnSearch="true"
-			enabledOnEdit="true"
-			readonlyProperty="ROPendenzaSearchTool"
-			inputCssClass=""
-			nullable="true"/>
-	<fieldProperty
-			name="cdAvviso"
-			property="pendenzaPagopa.cdAvviso"
-			maxLength="20"
-			inputSize="15"
-			inputType="TEXT"
-			label="Codice Avviso"
-			readonlyPropertyOnEdit="ROpendenza"
-			readonlyPropertyOnInsert="ROpendenza"
-			readonlyPropertyOnSearch="ROpendenza"
-			enabledOnSearch="true"
-			nullable="true"/>
-	<fieldProperty
-			name="descrizionePendenza"
-			property="pendenzaPagopa.descrizione"
-			maxLength="300"
-			inputSize="30"
-			inputType="ROTEXT"
-			label="Descrizione"
-			enabledOnSearch="false"
-			nullable="true"/>
-	<fieldProperty
-			name="dtScadenzaPendenza"
-			property="pendenzaPagopa.dtScadenza"
-			inputType="TEXT"
-			formatName="date_short"
-			label="Scadenza"
-			enabledOnSearch="false"
-			enabledOnInsert="false"
-			nullable="true"/>
-	<fieldProperty
-			name="importoPendenza"
-			property="pendenzaPagopa.importoPendenza"
-			inputType="TEXT"
-			formatName="it.cnr.contab.util.EuroFormat"
-			enabledOnEdit="false"
-			enabledOnInsert="false"
-			enabledOnFreeSearch="false"
-			label="Importo"
-			enabledOnSearch="false"
-			nullable="true"/>
 	<fieldProperty
 		name="codice_fiscale"
 		property="codice_fiscale"
@@ -464,7 +413,8 @@
 		readonlyProperty="abledToModifyFlagsTipoFattura"
 		keysProperty="intra_ueKeys"
 		label="Intra U.E."
-		enabledOnEdit="false"/>
+		enabledOnEdit="false"
+	/>
 	<fieldProperty
 		name="fl_liquidazione_differita"
 		property="fl_liquidazione_differita"
@@ -639,7 +589,7 @@
 		maxLength="25"
 		inputSize="25"
 		inputType="TEXT"
-		label="stato_coge"
+		label="stato Coge"
 		caseSensitiveSearch="false" />
 	<fieldProperty
 		name="termini_pagamento_uo"
@@ -697,19 +647,16 @@
 		property="codiceUnivocoUfficioIpa"
 		maxLength="6"
 		inputSize="6"
-		inputType="ROTEXT"
-		label="Codice IPA"
-		enabledOnSearch="true"
-		enabledOnFreeSearch="true" />
+		inputType="TEXT"
+		label="Codice IPA"/>	
 	<fieldProperty
 		name="codiceInvioSdi"
 		property="codiceInvioSdi"
 		maxLength="30"
 		inputSize="30"
 		label="Identificativo SDI"
-		inputType="ROTEXT"
-		enabledOnSearch="true"
-		enabledOnFreeSearch="true" />
+		inputType="TEXT"
+		/>
 	<fieldProperty
 		name="statoInvioSdi"
 		property="statoInvioSdi"
@@ -737,8 +684,9 @@
 		property="dtConsegnaSdi"
 		maxLength="10"
 		inputSize="10"
-		inputType="ROTEXT"
-		label="Data Consegna SDI"/>		
+		inputType="TEXT"
+		formatName="date_short"
+		label="Data Consegna SDI"/>
 	<fieldProperty
 		name="dtRicezioneSdi"
 		property="dtRicezioneSdi"
@@ -777,7 +725,18 @@
 		name="fl_stampa"
 		property="fl_stampa"
 		inputType="CHECKBOX"
-		label="fl_stampa" />
+		label="stampa" />
+	<fieldProperty
+			name="fl_pagamento_anticipato"
+			property="fl_pagamento_anticipato"
+			inputType="CHECKBOX"
+			label="pagamento anticipato" />
+	<fieldProperty
+			name="ncAnnulloSdi"
+			property="ncAnnulloSdi"
+			inputType="CHECKBOX"
+			label="Nota Credito annullo SDI" />
+
 	<fieldProperty
 		name="flFatturaElettronica"
 		property="flFatturaElettronica"
@@ -927,6 +886,39 @@
 			enabledOnEdit="true"
 			enabledOnSearch="true"
 			enabledOnFreeSearch="true"/>
+	<fieldProperty
+			name="progrUnivocoAnno"
+			property="progrUnivocoAnno"
+			inputType="TEXT"
+			inputSize="10"
+			label="Progressivo Anno"
+			enabledOnInsert="false"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnFreeSearch="false"/>
+	<fieldProperty
+			name="utcr"
+			property="utcr"
+			inputSize="20"
+			inputType="TEXT"
+			label="Utente Creazione"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnInsert="false"
+			enabledOnFreeSearch="true"/>
+	<fieldProperty
+			name="dacr"
+			property="dacr"
+			maxLength="10"
+			inputSize="10"
+			inputType="TEXT"
+			formatName="date_short"
+			label="Data Creazione"
+			enabledOnEdit="false"
+			enabledOnSearch="false"
+			enabledOnInsert="false"
+			enabledOnFreeSearch="false"/>
+
 
 	<findFieldProperty name="pg_fattura_attiva"/>
 	<findFieldProperty name="protocollo_iva" />	
@@ -944,6 +936,7 @@
 	<findFieldProperty name="im_totale_fattura" />
 	<findFieldProperty name="im_totale_iva" />	
 	<findFieldProperty name="ds_fattura_attiva" />
+	<findFieldProperty name="cd_tipo_sezionale" />
 	<findFieldProperty name="nome" />
 	<findFieldProperty name="cognome" />
 	<findFieldProperty name="ragione_sociale" />
@@ -956,12 +949,16 @@
 	<findFieldProperty name="ti_bene_servizioForSearch" />
 	<findFieldProperty name="flFatturaElettronica"/>
 	<findFieldProperty name="statoInvioSdi" />
-	<findFieldProperty name="codiceInvioSdi" inputType="TEXT"/>
-	<findFieldProperty name="codiceUnivocoUfficioIpa" inputType="TEXT"/>
+	<findFieldProperty name="codiceInvioSdi" />
+	<findFieldProperty name="codiceUnivocoUfficioIpa" />
 	<findFieldProperty name="dtConsegnaSdi" />
 	<findFieldProperty name="dt_ordine" />
 	<findFieldProperty name="fl_ordine_elettronico" />
 	<findFieldProperty name="codiceUnivocoUfficioOrdine" />
+	<findFieldProperty name="utcr"/>
+
+
+
 
 	<formFieldProperty
 		name="statoFattElett" />
@@ -991,16 +988,6 @@
 		name="ti_causale_emissione" />
 	<formFieldProperty
 		name="cliente" />
-	<formFieldProperty
-			name="pendenzaPagopa" />
-	<formFieldProperty
-			name="cdAvviso" />
-	<formFieldProperty
-			name="importoPendenza" />
-	<formFieldProperty
-			name="dtScadenzaPendenza" />
-	<formFieldProperty
-			name="descrizionePendenza" />
 	<formFieldProperty
 		name="cd_cliente" />
 	<formFieldProperty
@@ -1147,6 +1134,13 @@
 		name="im_totale_fattura" />
 	<formFieldProperty
 		name="im_totale_imponibile" />
+	<columnFieldProperty
+			name="ds_divisa"
+			property="valuta.ds_divisa"
+			label="Valuta"/>
+	<formFieldProperty
+			name="cambio" />
+
 	<formFieldProperty
 		name="ragione_sociale" />
 	<formFieldProperty
@@ -1201,17 +1195,42 @@
 	<columnFieldProperty
 		name="ti_causale_emissione" />
 	<columnFieldProperty
-		name="sezionale" />
+		name="sezionale"
+		property="tipo_sezionale.ds_tipo_sezionale"
+		printProperty=""/>
+	<columnFieldProperty
+		name="cd_tipo_sezionale" />
 	<columnFieldProperty
 		name="protocollo_iva" />
 	<columnFieldProperty
+		name="protocollo_iva_generale" />
+	<columnFieldProperty
+		name="fl_liquidazione_differita" />
+	<columnFieldProperty
+			name="modalita_pagamento_uo" />
+
+
+	<columnFieldProperty
 		name="dt_emissione" />
+	<columnFieldProperty
+			name="dt_scadenza" />
+	<columnFieldProperty
+			name="im_totale_imponibile" />
+	<columnFieldProperty
+			name="im_totale_iva" />
 	<columnFieldProperty
 		name="im_totale_fattura" />
 	<columnFieldProperty
 		name="ti_associato_manrev" />
 	<columnFieldProperty
 		name="stato_cofi" />
+	<columnFieldProperty
+			name="stato_coge"
+			label="Stato EP"/>
+	<columnFieldProperty
+			name="dt_da_competenza_coge"/>
+	<columnFieldProperty
+			name="dt_a_competenza_coge"/>
 	<columnFieldProperty
 		name="codiceUnivocoUfficioIpa" />
 	<columnFieldProperty
@@ -1220,6 +1239,44 @@
 		name="dtConsegnaSdi" />
 	<columnFieldProperty
 		name="statoInvioSdi" />
+	<columnFieldProperty
+			name="noteInvioSdi" />
+	<columnFieldProperty
+			name="ncAnnulloSdi" />
+	<columnFieldProperty
+			name="pecFatturaElettronica" />
+	<columnFieldProperty
+			name="dtRicezioneSdi" />
+
+
+	<columnFieldProperty
+			name="riferimento_ordine" />
+	<columnFieldProperty
+			name="dt_ordine" />
+
+	<columnFieldProperty
+			name="ti_bene_servizio" />
+	<columnFieldProperty
+			name="codiceDestinatarioFatt" />
+
+
+	<columnFieldProperty
+			name="fl_intra_ue" />
+	<columnFieldProperty
+			name="fl_extra_ue" />
+	<columnFieldProperty
+			name="fl_san_marino" />
+	<columnFieldProperty
+			name="fl_stampa" />
+	<columnFieldProperty
+			name="fl_pagamento_anticipato" />
+	<columnFieldProperty
+			name="progrUnivocoAnno" />
+	<columnFieldProperty name="utcr"/>
+	<columnFieldProperty name="dacr"/>
+
+
+
 
 	<columnSet
 		name="protocollazioneIvaSet">
@@ -1245,24 +1302,24 @@
 	</columnSet>
 
 	<columnSet name="fatturazioneElettronicaSet">
-	<columnFieldProperty name="esercizio" />
-	<columnFieldProperty name="cd_uo_origine" />
-	<columnFieldProperty name="pg_fattura_attiva" />
-	<columnFieldProperty name="dt_registrazione" />
-	<columnFieldProperty name="ds_fattura_attiva" />
-	<columnFieldProperty name="cd_cliente" />
-	<columnFieldProperty name="cognome" />
-	<columnFieldProperty name="nome" />
-	<columnFieldProperty name="ragione_sociale" />
-	<columnFieldProperty name="codice_fiscale" />
-	<columnFieldProperty name="partita_iva" />
-	<columnFieldProperty name="protocollo_iva"  label="Registr. IVA"/>
-	<columnFieldProperty name="dt_emissione" />
-	<columnFieldProperty name="im_totale_fattura" />
-	<columnFieldProperty name="codiceUnivocoUfficioIpa" />
-	<columnFieldProperty name="statoInvioSdi"  label="Stato"/>
-	<columnFieldProperty name="ti_fattura"  label="Tipo"/>
-	<columnFieldProperty name="collegamentoDocumentale" label="Documenti"/>
+		<columnFieldProperty name="esercizio" />
+		<columnFieldProperty name="cd_uo_origine" />
+		<columnFieldProperty name="pg_fattura_attiva" />
+		<columnFieldProperty name="dt_registrazione" />
+		<columnFieldProperty name="ds_fattura_attiva" />
+		<columnFieldProperty name="cd_cliente" />
+		<columnFieldProperty name="cognome" />
+		<columnFieldProperty name="nome" />
+		<columnFieldProperty name="ragione_sociale" />
+		<columnFieldProperty name="codice_fiscale" />
+		<columnFieldProperty name="partita_iva" />
+		<columnFieldProperty name="protocollo_iva"  label="Registr. IVA"/>
+		<columnFieldProperty name="dt_emissione" />
+		<columnFieldProperty name="im_totale_fattura" />
+		<columnFieldProperty name="codiceUnivocoUfficioIpa" />
+		<columnFieldProperty name="statoInvioSdi"  label="Stato"/>
+		<columnFieldProperty name="ti_fattura"  label="Tipo"/>
+		<columnFieldProperty name="collegamentoDocumentale" label="Documenti"/>
 	</columnSet>
 
 </bulkInfo>

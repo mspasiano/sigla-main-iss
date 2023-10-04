@@ -20,22 +20,43 @@
  * Date 21/09/2017
  */
 package it.cnr.contab.ordmag.ordini.bulk;
+
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.ValidationException;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
+import java.util.Dictionary;
 import java.util.Optional;
 
 public class FatturaOrdineBulk extends FatturaOrdineBase {
+
+	public String getOperazioneImpegnoNotaCredito() {
+		return operazioneImpegnoNotaCredito;
+	}
+
+	public void setOperazioneImpegnoNotaCredito(String operazioneImpegnoNotaCredito) {
+		this.operazioneImpegnoNotaCredito = operazioneImpegnoNotaCredito;
+	}
+
+	public final static Dictionary OPERAZIONE_IMPEGNO_NOTA_CREDITO;
+	public final static String OPERAZIONE_IMPEGNO_NC_USA_ORDINE = "O";
+	public final static String OPERAZIONE_IMPEGNO_NC_USA_DIVERSO = "D";
+	private String operazioneImpegnoNotaCredito;
+	static{
+		OPERAZIONE_IMPEGNO_NOTA_CREDITO = new it.cnr.jada.util.OrderedHashtable();
+		OPERAZIONE_IMPEGNO_NOTA_CREDITO.put(OPERAZIONE_IMPEGNO_NC_USA_DIVERSO,"Diverso da Ordine");
+		OPERAZIONE_IMPEGNO_NOTA_CREDITO.put(OPERAZIONE_IMPEGNO_NC_USA_ORDINE,"Ordine");
+	}
+
 	/**
 	 * [FATTURA_PASSIVA_RIGA Rappresenta le righe di dettaglio della fattura. Ogni fattura ha sempre almeno una riga di dettaglio]
 	 **/
-	private Fattura_passiva_rigaBulk fatturaPassivaRiga;
+	private Fattura_passiva_rigaBulk fatturaPassivaRiga = new Fattura_passiva_rigaIBulk();
 	/**
 	 * [ORDINE_ACQ_CONSEGNA Consegna Ordine d'Acquisto]
 	 **/
@@ -51,6 +72,68 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 	public FatturaOrdineBulk() {
 		super();
 	}
+	BigDecimal imponibilePerNotaCredito;
+	BigDecimal importoIvaPerNotaCredito;
+	BigDecimal totaleConsegnaPerNotaCredito;
+
+	public OggettoBulk[] getBulksForPersistentcy() {
+		return new OggettoBulk[]{
+				ordineAcqConsegna
+		};
+	}
+
+	private Obbligazione_scadenzarioBulk obbligazioneScadenzarioNc =  new Obbligazione_scadenzarioBulk();
+
+	public Obbligazione_scadenzarioBulk getObbligazioneScadenzarioNc() {
+		return obbligazioneScadenzarioNc;
+	}
+
+	public void setObbligazioneScadenzarioNc(Obbligazione_scadenzarioBulk obbligazioneScadenzarioNc) {
+		this.obbligazioneScadenzarioNc = obbligazioneScadenzarioNc;
+	}
+
+	public BigDecimal getTotaleConsegnaPerNotaCredito() {
+		return totaleConsegnaPerNotaCredito;
+	}
+
+	public void setTotaleConsegnaPerNotaCredito(BigDecimal totaleConsegnaPerNotaCredito) {
+		this.totaleConsegnaPerNotaCredito = totaleConsegnaPerNotaCredito;
+	}
+
+	public BigDecimal getImponibilePerNotaCredito() {
+		return imponibilePerNotaCredito;
+	}
+
+	public void setImponibilePerNotaCredito(BigDecimal imponibilePerNotaCredito) {
+		this.imponibilePerNotaCredito = imponibilePerNotaCredito;
+	}
+
+	public BigDecimal getImportoIvaPerNotaCredito() {
+		return importoIvaPerNotaCredito;
+	}
+
+	public void setImportoIvaPerNotaCredito(BigDecimal importoIvaPerNotaCredito) {
+		this.importoIvaPerNotaCredito = importoIvaPerNotaCredito;
+	}
+
+	public BigDecimal getImportoIvaDetraibilePerNotaCredito() {
+		return importoIvaDetraibilePerNotaCredito;
+	}
+
+	public void setImportoIvaDetraibilePerNotaCredito(BigDecimal importoIvaDetraibilePerNotaCredito) {
+		this.importoIvaDetraibilePerNotaCredito = importoIvaDetraibilePerNotaCredito;
+	}
+
+	public BigDecimal getImportoIvaIndPerNotaCredito() {
+		return importoIvaIndPerNotaCredito;
+	}
+
+	public void setImportoIvaIndPerNotaCredito(BigDecimal importoIvaIndPerNotaCredito) {
+		this.importoIvaIndPerNotaCredito = importoIvaIndPerNotaCredito;
+	}
+
+	BigDecimal importoIvaDetraibilePerNotaCredito;
+	BigDecimal importoIvaIndPerNotaCredito;
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: FATTURA_ORDINE
@@ -65,7 +148,10 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 	 * Restituisce il valore di: [Rappresenta le righe di dettaglio della fattura. Ogni fattura ha sempre almeno una riga di dettaglio]
 	 **/
 	public Fattura_passiva_rigaBulk getFatturaPassivaRiga() {
-		return fatturaPassivaRiga;
+		return Optional.ofNullable(fatturaPassivaRiga)
+				.orElseGet(() -> {
+					return new Fattura_passiva_rigaIBulk();
+				});
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
@@ -317,14 +403,16 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 				.map(obbligazione_scadenzarioBulk -> {
 					return String.valueOf(obbligazione_scadenzarioBulk.getEsercizio())
 							.concat("/")
-							.concat(obbligazione_scadenzarioBulk.getCd_cds())
-							.concat("/")
 							.concat(String.valueOf(obbligazione_scadenzarioBulk.getPg_obbligazione()));
 				})
 				.orElse(null);
 	}
 
 	public String getCssClassNotaRiga() {
+		return "table-cell-ellipsis";
+	}
+
+	public String getCssClassDsBeneServizio() {
 		return "table-cell-ellipsis";
 	}
 
@@ -343,4 +431,130 @@ public class FatturaOrdineBulk extends FatturaOrdineBase {
 				.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)).setScale(2, RoundingMode.HALF_UP));
         setImTotaleConsegna(getImImponibile().add(getImIva()));
 	}
+
+	public BigDecimal calcolaIva(BigDecimal imponibile) {
+		final BigDecimal percentualeIva = Optional.ofNullable(getVoceIva())
+				.filter(voce_ivaBulk -> Optional.ofNullable(voce_ivaBulk.getPercentuale()).isPresent())
+				.map(voce_ivaBulk -> voce_ivaBulk.getPercentuale())
+				.orElseGet(() -> getOrdineAcqConsegna().getOrdineAcqRiga().getVoce_iva().getPercentuale());
+		return imponibile.multiply(percentualeIva)
+				.divide(BigDecimal.TEN.multiply(BigDecimal.TEN)).setScale(2, RoundingMode.HALF_UP);
+	}
+
+
+	public BigDecimal getImponibilePerRigaFattura() {
+		if (getImImponibileRettificato() != null && getImImponibileRettificato().compareTo(BigDecimal.ZERO) > 0){
+			return getImImponibileRettificato();
+		}
+		if (getImponibileErrato() != null && getImponibileErrato().compareTo(BigDecimal.ZERO) > 0){
+			return getImponibileErrato();
+		}
+		if (getImponibilePerNotaCredito() != null && getImponibilePerNotaCredito().compareTo(BigDecimal.ZERO) > 0){
+			return getImponibilePerNotaCredito();
+		}
+		return getImImponibile();
+	}
+	public BigDecimal getIvaPerRigaFattura() {
+		if (getImIvaRettificata() != null && getImIvaRettificata().compareTo(BigDecimal.ZERO) > 0){
+			return getImIvaRettificata();
+		}
+		if (getImportoIvaPerNotaCredito() != null && getImportoIvaPerNotaCredito().compareTo(BigDecimal.ZERO) > 0){
+			return getImportoIvaPerNotaCredito();
+		}
+		return getImIva();
+	}
+	public String getConsegnaDisplay() {
+					return String.valueOf(getEsercizioOrdine())
+							.concat("-")
+							.concat(getCdNumeratore())
+							.concat("-")
+							.concat(String.valueOf(getNumero()))
+							.concat("-")
+							.concat(String.valueOf(getRiga()))
+							.concat("-")
+							.concat(String.valueOf(getConsegna()));
+	}
+	public Boolean isRigaAttesaNotaCredito() {
+		if (getImponibileErrato() != null && getImponibilePerNotaCredito() != null &&
+				getImponibilePerNotaCredito().compareTo(getImImponibile()) != 0){
+			return true;
+		}
+		return false;
+	}
+	public Boolean isImportoRettificato() {
+		return Optional.ofNullable(getPrezzoUnitarioRett()).filter(b -> !b.equals(BigDecimal.ZERO) ).isPresent();
+	}
+
+	public Dictionary getOperazioneImpegnoNotaCreditoKeys() {
+		return OPERAZIONE_IMPEGNO_NOTA_CREDITO;
+	}
+
+	public java.lang.String getCdCdsObblNc() {
+		Obbligazione_scadenzarioBulk obbligazioneScadenzario = this.getObbligazioneScadenzarioNc();
+		if (obbligazioneScadenzario == null)
+			return null;
+		return getObbligazioneScadenzarioNc().getCd_cds();
+	}
+
+	public void setCdCdsObblNc(java.lang.String cdCdsObbl)  {
+		this.getObbligazioneScadenzarioNc().setCd_cds(cdCdsObbl);
+	}
+
+	public java.lang.Integer getEsercizioObblNc() {
+		Obbligazione_scadenzarioBulk obbligazioneScadenzario = this.getObbligazioneScadenzarioNc();
+		if (obbligazioneScadenzario == null)
+			return null;
+		return getObbligazioneScadenzarioNc().getEsercizio();
+	}
+
+	public void setEsercizioObblNc(java.lang.Integer esercizioObbl)  {
+		this.getObbligazioneScadenzarioNc().setEsercizio(esercizioObbl);
+	}
+
+	public java.lang.Integer getEsercizioOrigObblNc() {
+		Obbligazione_scadenzarioBulk obbligazioneScadenzario = this.getObbligazioneScadenzarioNc();
+		if (obbligazioneScadenzario == null)
+			return null;
+		return getObbligazioneScadenzarioNc().getEsercizio_originale();
+	}
+
+	public void setEsercizioOrigObblNc(java.lang.Integer esercizioOrigObbl)  {
+		this.getObbligazioneScadenzarioNc().setEsercizio_originale(esercizioOrigObbl);
+	}
+
+	public java.lang.Long getPgObbligazioneNc() {
+		Obbligazione_scadenzarioBulk obbligazioneScadenzario = this.getObbligazioneScadenzarioNc();
+		if (obbligazioneScadenzario == null)
+			return null;
+		return getObbligazioneScadenzarioNc().getPg_obbligazione();
+	}
+
+	public void setPgObbligazioneNc(java.lang.Long pgObbligazione)  {
+		this.getObbligazioneScadenzarioNc().setPg_obbligazione(pgObbligazione);
+	}
+
+	public java.lang.Long getPgObbligazioneScadNc() {
+		Obbligazione_scadenzarioBulk obbligazioneScadenzario = this.getObbligazioneScadenzarioNc();
+		if (obbligazioneScadenzario == null)
+			return null;
+		return getObbligazioneScadenzarioNc().getPg_obbligazione_scadenzario();
+	}
+
+	public void setPgObbligazioneScadNc(java.lang.Long pgObbligazioneScad)  {
+		this.getObbligazioneScadenzarioNc().setPg_obbligazione_scadenzario(pgObbligazioneScad);
+	}
+
+	public String getCssClassImponibilePerRigaFattura(){
+		return Utility.CSS_CLASS_W_10;
+	}
+
+	public String getCssClassIvaPerRigaFattura(){
+		return Utility.CSS_CLASS_W_10;
+	}
+	public String getCssClassImTotaleConsegna(){
+		return Utility.CSS_CLASS_W_10;
+	}
+
+
+
 }

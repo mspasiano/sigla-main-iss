@@ -14,25 +14,23 @@
 %>
 
 <div class="Group">
-	<table>
+	<table class="card p-2" cellpadding="2">
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findBeneServizio");
 			    bp.getRighe().writeFormField(out, "unitaMisuraMinima");
 			%>
 		</tr>
-	</table>
-	<table>
-      <tr>      	
+        <tr>
 			<td>
 				<% bp.getRighe().writeFormLabel(out,"notaRiga");%>
 			</td>      	
-			<td colspan="4">
+			<td>
 				<% bp.getRighe().writeFormInput(out,"notaRiga");%>
 			</td>
-      </tr>
+        </tr>
 	</table>
-	<table>
+	<table class="card mt-1 p-2" cellpadding="2">
 		<tr>
 			<% bp.getRighe().writeFormField(out, "findUnitaMisura");%>
 			<td>
@@ -49,36 +47,28 @@
 			</td>
 				<%bp.getRighe().writeFormField(out, "quantitaRichiesta"); %>
 		</tr>
-	</table>
-	<table>
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findElementoVoce");
 			%>
 		</tr>
 	</table>
-	<table>
+	<table class="card mt-1 p-2" cellpadding="2">
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findObbligazione");
 			%>
 		</tr>
-	</table>
-	<table>
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findCentroResponsabilita");
 			%>
 		</tr>
-	</table>
-	<table>
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findProgetto");
 			%>
 		</tr>
-	</table>
-	<table>
 		<tr>
 			<%
 				bp.getRighe().writeFormField(out, "findLineaAttivita");

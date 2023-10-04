@@ -105,8 +105,10 @@ public abstract class CRUDFatturaAttivaBP
     private boolean isGestoreBancaFatturaAttiva;
     private boolean contoEnte;
     private DocumentiCollegatiDocAmmService docCollService;
-    private boolean attivaEconomicaParallela = false;
+    protected boolean attivaEconomicaParallela = false;
+    private boolean supervisore = false;
 
+    protected boolean attivaInventaria = true;
     public CRUDFatturaAttivaBP() {
         this(Fattura_attiva_rigaBulk.class);
     }
@@ -418,6 +420,8 @@ public abstract class CRUDFatturaAttivaBP
             int solaris = Fattura_attivaBulk.getDateCalendar(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate()).get(java.util.Calendar.YEAR);
             int esercizioScrivania = it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context.getUserContext()).intValue();
             attivaEconomicaParallela = Utility.createConfigurazioneCnrComponentSession().isAttivaEconomicaParallela(context.getUserContext());
+            attivaInventaria= Utility.createConfigurazioneCnrComponentSession().isAttivoInventariaDocumenti(context.getUserContext());
+            setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
             setAnnoSolareInScrivania(solaris == esercizioScrivania);
             setRibaltato(initRibaltato(context));
             if (!isAnnoSolareInScrivania()) {
@@ -1256,7 +1260,7 @@ public abstract class CRUDFatturaAttivaBP
 
     public void visualizzaDocumentoAttivo(ActionContext actioncontext) throws Exception {
         Fattura_attivaBulk fattura = (Fattura_attivaBulk) getModel();
-        InputStream is = docCollService.getStreamDocumento(fattura);
+        InputStream is = docCollService.getStreamDocumentoAttivo(fattura);
         if (is != null) {
             ((HttpActionContext) actioncontext).getResponse().setContentType("application/pdf");
             OutputStream os = ((HttpActionContext) actioncontext).getResponse().getOutputStream();
@@ -1292,7 +1296,7 @@ public abstract class CRUDFatturaAttivaBP
     }
 
     @Override
-    protected boolean excludeChild(StorageObject storageObject) {
+    protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
         if (storageObject.<List<String>>getPropertyValue(StoragePropertyNames.SECONDARY_OBJECT_TYPE_IDS.value()).stream()
                 .anyMatch(s -> s.equalsIgnoreCase(StorageDocAmmAspect.SIGLA_FATTURE_ATTACHMENT_ALLEGATI_NON_INVIATI_SDI.value())))
             return false;
@@ -1453,4 +1457,15 @@ public abstract class CRUDFatturaAttivaBP
         return movimentiAvere;
     }
 
+    public boolean isSupervisore() {
+        return supervisore;
+    }
+
+    public void setSupervisore(boolean supervisore) {
+        this.supervisore = supervisore;
+    }
+
+    public boolean isButtonGeneraScritturaVisible() {
+        return this.isSupervisore();
+    }
 }

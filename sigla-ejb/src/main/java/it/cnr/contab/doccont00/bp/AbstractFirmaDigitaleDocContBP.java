@@ -303,7 +303,7 @@ public abstract class AbstractFirmaDigitaleDocContBP extends SelezionatoreListaB
                             ZipEntry zipEntryChild = new ZipEntry(statoTrasmissione.getCMISFolderName()
                                     .concat(
                                             Optional.ofNullable(storageObject.getPath())
-                                            .map(s -> s.substring(statoTrasmissione.getStorePath().length()))
+                                            .map(s -> s.substring(statoTrasmissione.getStorePath().length() - 1))
                                             .orElse(StorageDriver.SUFFIX)
                                     ));
                             zos.putNextEntry(zipEntryChild);
@@ -490,12 +490,22 @@ public abstract class AbstractFirmaDigitaleDocContBP extends SelezionatoreListaB
         pdfSignApparence.setPassword(firmaOTPBulk.getPassword());
         pdfSignApparence.setOtp(firmaOTPBulk.getOtp());
 
-        Apparence apparence = new Apparence(
-                null,
-                "Rome", "Firma documento contabile",
-                getTitoloFirma() + "\n" + getTitolo() +
-                        subjectDN.get("GIVENNAME") + " " + subjectDN.get("SURNAME"),
-                0, 40, 1, 300, 80);
+        Apparence apparence = null;
+        if(Utility.createConfigurazioneCnrComponentSession().isPagamentoEsteroISSAttivo(actioncontext.getUserContext())){
+            apparence = new Apparence(
+                    null,
+                    "Rome", "Firma documento contabile",
+                    getTitoloFirma() + "\n" + getTitolo() +
+                            subjectDN.get("GIVENNAME") + " " + subjectDN.get("SURNAME"),
+                    400, 5, 1, 600, 45);
+        }else {
+            apparence = new Apparence(
+                    null,
+                    "Rome", "Firma documento contabile",
+                    getTitoloFirma() + "\n" + getTitolo() +
+                            subjectDN.get("GIVENNAME") + " " + subjectDN.get("SURNAME"),
+                    0, 40, 1, 300, 80);
+        }
         pdfSignApparence.setApparence(apparence);
 
         try {

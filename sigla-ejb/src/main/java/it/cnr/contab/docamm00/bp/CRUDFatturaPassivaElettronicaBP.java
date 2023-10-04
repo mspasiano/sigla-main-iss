@@ -73,6 +73,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.rmi.RemoteException;
 import java.sql.Timestamp;
 import java.text.Format;
@@ -100,6 +101,7 @@ import javax.xml.transform.stream.StreamSource;
 import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.TipoDocumentoType;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.mail.EmailException;
+import org.springframework.web.util.UriUtils;
 
 public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatturaBulk, DocumentoEleTestataBulk> implements FatturaPassivaElettronicaBP{
 	private static final long serialVersionUID = 1L;
@@ -434,7 +436,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	public String getNomeFileAllegato() {
 		DocumentoEleAllegatiBulk allegato = (DocumentoEleAllegatiBulk)getCrudDocEleAllegatiColl().getModel();
 		if (allegato != null && allegato.getCmisNodeRef() != null)
-			return allegato.getNomeAttachment();
+			return UriUtils.encode(allegato.getNomeAttachment(), Charset.defaultCharset());
 		return null;
 	}
 
@@ -509,6 +511,12 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 			CRUDFatturaPassivaAction action = new CRUDFatturaPassivaAction();
 			FatturaPassivaComponentSession comp = (FatturaPassivaComponentSession)nbp.createComponentSession();
 					DocumentoEleTestataBulk documentoEleTestata = (DocumentoEleTestataBulk) getModel();
+
+			boolean isBPAmministra = nbp instanceof CRUDFatturaPassivaAmministraBP;
+
+			Calendar dataRicezione = Calendar.getInstance();
+			dataRicezione.setTimeInMillis(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione().getTime());
+
 			fatturaPassivaBulk.setDocumentoEleTestata(documentoEleTestata);
 			fatturaPassivaBulk = comp.caricaAllegatiBulk(context.getUserContext(), fatturaPassivaBulk);
 			fatturaPassivaBulk.setTi_fattura(documentoEleTestata.getTipoDocumentoSIGLA());
@@ -516,7 +524,15 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	fatturaPassivaBulk.setDt_fattura_fornitore(documentoEleTestata.getDataDocumento());
 	    	fatturaPassivaBulk.setEsercizio_fattura_fornitore(CNRUserContext.getEsercizio(context.getUserContext()));//TODO
 	    	fatturaPassivaBulk.setData_protocollo(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione());
-	    	Calendar date = Calendar.getInstance();
+
+			if (isBPAmministra) {
+				fatturaPassivaBulk.setEsercizio(dataRicezione.get(Calendar.YEAR));
+				fatturaPassivaBulk.setEsercizio_fattura_fornitore(dataRicezione.get(Calendar.YEAR));
+				fatturaPassivaBulk.setPg_fattura_passiva(documentoEleTestata.getIdentificativoSdi());
+				fatturaPassivaBulk.setDt_registrazione(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione());
+			}
+
+			Calendar date = Calendar.getInstance();
 	    	date.setTimeInMillis(documentoEleTestata.getDataDocumento().getTime());
 	    	date.add(Calendar.MONTH, 1);
 	    	
@@ -544,8 +560,15 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	GregorianCalendar gcDataMinima = new GregorianCalendar(), gcDataMassima = new GregorianCalendar();
 	    	gcDataMinima.setTime(calcolaDataMinimaCompetenza(documentoEleTestata));
 	    	gcDataMassima.setTime(calcolaDataMassimaCompetenza(documentoEleTestata));
-	    	
-    		if (!fatturaPassivaBulk.getFl_fattura_compenso() && gcDataMinima.get(Calendar.YEAR)<gcDataMassima.get(Calendar.YEAR))
+
+			if (isBPAmministra) {
+				if (gcDataMinima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))
+					gcDataMinima.setTime(dataRicezione.getTime());
+				if (gcDataMassima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))
+					gcDataMassima.setTime(dataRicezione.getTime());
+			}
+
+			if (!fatturaPassivaBulk.getFl_fattura_compenso() && gcDataMinima.get(Calendar.YEAR)<gcDataMassima.get(Calendar.YEAR))
     			gcDataMinima.setTime(DateUtils.firstDateOfTheYear(gcDataMassima.get(Calendar.YEAR)));
 
         	fatturaPassivaBulk.setDt_da_competenza_coge(new Timestamp(gcDataMinima.getTime().getTime()));
@@ -570,43 +593,8 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    		action.doOnModalitaPagamentoChange(context);	    		
 	    	}
 			fatturaPassivaBulk = (Fattura_passivaBulk) nbp.getModel();
-			if (fatturaPassivaDiRiferimento == null) {
-				FatturaPassivaRigaCRUDController dettaglioController = nbp.getDettaglio();			
-				for (DocumentoEleLineaBulk documentoEleLinea : documentoEleTestata.getDocEleLineaColl()) {
-					Fattura_passiva_rigaBulk rigaFattura = documentoEleTestata.getInstanceRiga();			
-					int i = dettaglioController.addDetail(rigaFattura);
-					dettaglioController.setDirty(true);
-					dettaglioController.setModelIndex(context, i);
-					rigaFattura.setBene_servizio(documentoEleLinea.getBeneServizio());
-					if(documentoEleLinea.getLineaDescrizione().length()>199)
-						rigaFattura.setDs_riga_fattura(documentoEleLinea.getLineaDescrizione().substring(0, 199));
-					else
-						rigaFattura.setDs_riga_fattura(documentoEleLinea.getLineaDescrizione());
-					rigaFattura.setVoce_iva(recuperaCodiceIVA(documentoEleTestata, documentoEleLinea));
-					rigaFattura.setQuantita(documentoEleLinea.getLineaQuantita());
-					action.doOnQuantitaChange(context);
-					rigaFattura.setPrezzo_unitario(documentoEleLinea.getLineaPrezzounitario());
-					action.doCalcolaTotaliDiRiga(context);
-					if (documentoEleTestata.getModalitaPagamento() != null)
-						rigaFattura.setModalita_pagamento(documentoEleTestata.getModalitaPagamento().getRif_modalita_pagamento());
-
-			    	//TODO eliminata su richiesta di Patrizia fatturaPassivaBulk.setDt_scadenza(new java.sql.Timestamp(date.getTime().getTime())); 
-			    	GregorianCalendar gcDataMinimaRiga = new GregorianCalendar(), gcDataMassimaRiga = new GregorianCalendar();
-			    	gcDataMinimaRiga.setTime(documentoEleLinea.getInizioDatacompetenza()==null?gcDataMinima.getTime():documentoEleLinea.getInizioDatacompetenza());
-			    	gcDataMassimaRiga.setTime(documentoEleLinea.getFineDatacompetenza()==null?gcDataMassima.getTime():documentoEleLinea.getFineDatacompetenza());
-			    	
-			    	if (fatturaPassivaBulk.getFl_fattura_compenso()) {
-						rigaFattura.setDt_da_competenza_coge(new Timestamp(gcDataMinimaRiga.getTime().getTime()));
-						rigaFattura.setDt_a_competenza_coge(new Timestamp(gcDataMassimaRiga.getTime().getTime()));	
-			    	} else {
-			    		if (gcDataMinimaRiga.get(Calendar.YEAR)<gcDataMinima.get(Calendar.YEAR))
-			    			gcDataMinimaRiga = gcDataMinima;
-			    		if (gcDataMassimaRiga.get(Calendar.YEAR)<gcDataMinima.get(Calendar.YEAR))
-			    			gcDataMassimaRiga = gcDataMinima;
-						rigaFattura.setDt_da_competenza_coge(new Timestamp(gcDataMinimaRiga.getTime().getTime()));
-						rigaFattura.setDt_a_competenza_coge(new Timestamp(gcDataMassimaRiga.getTime().getTime()));	
-			    	}
-				}				
+			if (fatturaPassivaDiRiferimento == null && !Optional.ofNullable(fatturaPassivaBulk.getFlDaOrdini()).orElse(Boolean.FALSE)) {
+				caricaRigheFatturaDaFatturazioneElettronica(context, fatturaPassivaBulk, nbp, action, documentoEleTestata);
 			}
 			nbp.initializeModelForEditAllegati(context, fatturaPassivaBulk);
 			return fatturaPassivaBulk;
@@ -617,17 +605,8 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 		}			
 	}
 
-	private Voce_ivaBulk recuperaCodiceIVA(DocumentoEleTestataBulk documentoEleTestata, DocumentoEleLineaBulk documentoEleLinea) {
-		for (DocumentoEleIvaBulk documentoEleIVA : documentoEleTestata.getDocEleIVAColl()) {
-			if ((documentoEleLinea.getLineaAliquotaiva() != null && 
-					documentoEleIVA.getAliquotaIva() != null && 
-					documentoEleLinea.getLineaAliquotaiva().equals(documentoEleIVA.getAliquotaIva())) ||
-					(documentoEleLinea.getLineaNatura() != null && 
-					documentoEleIVA.getNatura() != null && 
-					documentoEleLinea.getLineaNatura().equals(documentoEleIVA.getNatura())))
-			return documentoEleIVA.getVoceIva();
-		}		
-		return null;
+	private void caricaRigheFatturaDaFatturazioneElettronica(ActionContext context, Fattura_passivaBulk fatturaPassivaBulk, CRUDFatturaPassivaBP nbp, CRUDFatturaPassivaAction action, DocumentoEleTestataBulk documentoEleTestata) throws BusinessProcessException {
+		nbp.caricaRigheFatturaDaFatturazioneElettronica(context, fatturaPassivaBulk, action, documentoEleTestata);
 	}
 
 	private Timestamp calcolaDataMinimaCompetenza(
@@ -661,12 +640,10 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 				return Boolean.TRUE;
 		}	
 		if (documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale()!= null && 
-			(documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_02.name()) ||
-			 documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_19.name()))		
-		   )
+			(documentoEleTestata.getDocumentoEleTrasmissione().getRegimefiscale().equals(RegimeFiscaleType.RF_02.name()))) {
 			return Boolean.TRUE;
-			
-	return Boolean.FALSE;
+		}
+		return Boolean.FALSE;
 	}
 
 	@Override
@@ -688,7 +665,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	}
 
 	@Override
-	protected boolean excludeChild(StorageObject storageObject) {
+	protected boolean excludeChild(StorageObject storageObject) throws ApplicationException{
 		if (Stream.of(crudDocEleAllegatiColl.getDetails().stream().toArray())
 				.filter(DocumentoEleAllegatiBulk.class::isInstance)
 				.map(DocumentoEleAllegatiBulk.class::cast)
@@ -701,9 +678,15 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 				))){
 			return true;
 		}
-		if (storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value())
+		if (Optional.ofNullable(storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()))
+				.orElseGet(() -> storageObject.<String>getPropertyValue(StoragePropertyNames.BASE_TYPE_ID.value()))
 				.equalsIgnoreCase("D:sigla_fatture_attachment:document"))
 			return true;
+		/*
+		if (Optional.ofNullable(storageObject.<String>getPropertyValue(StoragePropertyNames.OBJECT_TYPE_ID.value()))
+				.orElseThrow(()-> new ApplicationException("L'allegato ".concat(storageObject.getKey().concat(" non ha il metadato OBJECT_TYPE_ID"))))
+				.equalsIgnoreCase("D:sigla_fatture_attachment:document"))
+			return true;*/
 		return super.excludeChild(storageObject);
 	}
 

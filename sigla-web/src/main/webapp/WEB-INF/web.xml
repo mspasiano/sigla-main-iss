@@ -208,7 +208,6 @@
 			<url-pattern>/RicercaCDRAction.do</url-pattern>
 			<url-pattern>/RicercaVoceAction.do</url-pattern>
 			<url-pattern>/RicercaContrattoAction.do</url-pattern>
-			<url-pattern>/Macro.do</url-pattern>
 			<url-pattern>/RicercaTerziAction.do</url-pattern>
 			<url-pattern>/RicercaNaProComAction.do</url-pattern>
 			<url-pattern>/RicercaGAEAction.do</url-pattern>
@@ -220,6 +219,8 @@
 			<url-pattern>/ConsNazioneAction.do</url-pattern>
 			<url-pattern>/RicercaFatturaPassivaAction.do</url-pattern>
 			<url-pattern>/cancellaSchedulazioneExcel.do</url-pattern>
+			<url-pattern>/info.json</url-pattern>
+			<url-pattern>/restapi/swagger.json</url-pattern>
 			<http-method>POST</http-method>
 			<http-method>GET</http-method>
 		</web-resource-collection>
@@ -229,18 +230,20 @@
 			<web-resource-name>HtmlAuth</web-resource-name>
 			<description>application security constraints</description>
 			<url-pattern>*.do</url-pattern>
+			<url-pattern>*.json</url-pattern>
 			<http-method>POST</http-method>
 			<http-method>GET</http-method>
 		</web-resource-collection>
 		<auth-constraint>
-			<role-name>USER</role-name>
+			<role-name>default-roles-cnr</role-name>
+			<role-name>default-roles-cnr.it</role-name>
 		</auth-constraint>
 	</security-constraint>
 	<welcome-file-list>
 		<welcome-file>Login.do</welcome-file>
 	</welcome-file-list>
 	<login-config>
-		<auth-method>FORM</auth-method>
+		<auth-method>BASIC?silent=true,FORM</auth-method>
 		<realm-name>SIGLA realm</realm-name>
 		<form-login-config>
 			<form-login-page>/util/index.jsp</form-login-page>
