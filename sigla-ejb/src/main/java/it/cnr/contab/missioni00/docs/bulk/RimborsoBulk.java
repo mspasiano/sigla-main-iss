@@ -359,4 +359,9 @@ public class RimborsoBulk extends RimborsoBase implements IDocumentoCogeBulk, ID
     public void setAccertamentoScadenzario(Accertamento_scadenzarioBulk accertamentoScadenzario) {
         this.accertamentoScadenzario = accertamentoScadenzario;
     }
+
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_contabilizzazione();
+    }
 }

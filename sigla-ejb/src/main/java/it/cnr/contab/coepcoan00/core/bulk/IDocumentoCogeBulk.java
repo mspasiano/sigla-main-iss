@@ -61,4 +61,6 @@ public interface IDocumentoCogeBulk extends KeyedPersistent{
     java.lang.String getStato_coge();
 
     int primaryKeyHashCode();
+
+    java.sql.Timestamp getDtGenerazioneScrittura();
 }
