@@ -15,13 +15,23 @@
 <% JSPUtils.printBaseUrl(pageContext); %>
 <script language="JavaScript" src="scripts/util.js"></script>
 <script language="javascript" src="scripts/css.js"></script>
-<title>Transito Beni da Ordini</title>
-</head>
-<body class="Form">		
 
 <% CRUDTransitoBeniOrdiniBP bp = (CRUDTransitoBeniOrdiniBP)BusinessProcess.getBusinessProcess(request);
    Transito_beni_ordiniBulk bene = (Transito_beni_ordiniBulk)bp.getModel();
-   bp.openFormWindow(pageContext); %>
+    %>
+
+</head>
+<% if ( bp.getMapping().getConfig().getInitParameter("RICERCA_ANNULLATI") != null) { %>
+
+    <title>Beni Annullati dal Transito</title>
+<% } else { %>
+
+    <title>Transito Beni da Ordini</title>
+<%	} %>
+
+<body class="Form">		
+<%bp.openFormWindow(pageContext);%>
+
 
   <div class="Group">
 	<table>			

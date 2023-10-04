@@ -6021,4 +6021,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/mod_type_column_unita_organizzativa_sigla_iss.xml"/>
 
     <include file="bootstrap/modifiche_nuovi_tipi_fatturazione_elettronica.xml"/>
+    <!-- Autore : VALENTINA TOMADA - nuova voce di menù per consultazione dei beni annullati dal transito  -->
+    <include file="bootstrap/add_accesso_beni_ann_transito.xml"/>
+
 </databaseChangeLog>

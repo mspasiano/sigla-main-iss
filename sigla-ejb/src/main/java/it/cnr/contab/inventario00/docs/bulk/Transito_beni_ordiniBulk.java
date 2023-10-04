@@ -17,7 +17,9 @@
 
 package it.cnr.contab.inventario00.docs.bulk;
 
+import it.cnr.contab.config00.sto.bulk.DipartimentoBulk;
 import it.cnr.contab.docamm00.tabrif.bulk.Categoria_gruppo_inventBulk;
+import it.cnr.contab.inventario00.bp.CRUDTransitoBeniOrdiniBP;
 import it.cnr.contab.inventario00.tabrif.bulk.Condizione_beneBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.Id_inventarioBulk;
 import it.cnr.contab.inventario00.tabrif.bulk.Tipo_ammortamentoBulk;
@@ -28,6 +30,7 @@ import it.cnr.contab.ordmag.magazzino.bulk.MovimentiMagBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqRigaBulk;
+import it.cnr.contab.progettiric00.core.bulk.ProgettoBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.bulk.BulkCollection;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -49,6 +52,7 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 	public final static String STATO_TRASFERITO = "TRA";
 	private Collection condizioni;
 
+
 	public MovimentiMagBulk getMovimentiMag() {
 		return movimentiMag;
 	}
@@ -69,10 +73,13 @@ public class Transito_beni_ordiniBulk extends Transito_beni_ordiniBase {
 	private it.cnr.contab.anagraf00.core.bulk.TerzoBulk assegnatario;
 
 	private Boolean fl_transito_canc = false;
+	private Boolean fl_search_ann = false;
 
 	public final static Dictionary ISTITUZIONALE_COMMERCIALE;
 	public final static String ISTITUZIONALE      = "I";
 	public final static String COMMERCIALE      = "C";
+
+
 
 
 
@@ -488,5 +495,13 @@ public void setValore_unitario(java.math.BigDecimal newValore_unitario) {
 	public boolean isCheckCanc()
 	{
 		return !getFl_transito_canc();
+	}
+
+	public Boolean getFl_search_ann() {
+		return fl_search_ann;
+	}
+
+	public void setFl_search_ann(Boolean fl_search_ann) {
+		this.fl_search_ann = fl_search_ann;
 	}
 }
