@@ -201,9 +201,10 @@ public it.cnr.jada.bulk.OggettoBulk creaConBulk(it.cnr.jada.UserContext userCont
 			autofattura.setFlFatturaElettronica(Boolean.TRUE);
 			autofattura.setFlTerzoEnte(Boolean.TRUE);
 			autofattura.setStatoInvioSdi(VDocammElettroniciAttiviBulk.FATT_ELETT_ALLA_FIRMA);
-		} else
+		} else {
 			autofattura.setFlFatturaElettronica(Boolean.FALSE);
-
+			autofattura.setFlTerzoEnte(Boolean.FALSE);
+		}
 		autofattura.setUser(userContext.getUser());
 		return super.creaConBulk(userContext, autofattura);
 	} catch (Throwable t) {
