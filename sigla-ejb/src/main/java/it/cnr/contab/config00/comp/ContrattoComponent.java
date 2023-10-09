@@ -2268,13 +2268,30 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				} else {
 					throw new ComponentException("La uo indicata non ha il terzo corrispondente");
 				}
-				if ( contratto.getCodfisPivaRupExt()!=null && (!contratto.getCodfisPivaRupExt().isEmpty()))
-					contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
-				if ( contratto.getCodfisPivaFirmatarioExt()!=null && (!contratto.getCodfisPivaFirmatarioExt().isEmpty()))
-					contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
-				if ( contratto.getCodfisPivaAggiudicatarioExt()!=null && (!contratto.getCodfisPivaAggiudicatarioExt().isEmpty()))
-					contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
+				if ( contratto.getCodfisPivaRupExt()==null || (!contratto.getCodfisPivaRupExt().isEmpty())) {
+					throw new ApplicationException("Valorizzare "+BulkInfo.getBulkInfo(contratto.getClass()).getFieldProperty("cd_terzo_resp").getLabel());
 
+				}
+				if ( contratto.getCodfisPivaRupExt()!=null && (!contratto.getCodfisPivaRupExt().isEmpty())) {
+					contratto.setResponsabile(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaRupExt()));
+					if ( !Optional.ofNullable(contratto.getResponsabile()).isPresent()){
+						throw new ComponentException("Il Responsabile con Codice Fiscale/P.Iva "+ contratto.getCodfisPivaRupExt() +" non esiste in SIGLA");
+					}
+				}
+
+				if ( contratto.getCodfisPivaFirmatarioExt()!=null && (!contratto.getCodfisPivaFirmatarioExt().isEmpty())) {
+					contratto.setFirmatario(getPersonaFisicaFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaFirmatarioExt()));
+					if ( !Optional.ofNullable(contratto.getFirmatario()).isPresent()){
+						throw new ComponentException("Il Firmatario con Codice Fiscale/P.Iva "+ contratto.getCodfisPivaRupExt() +" non esiste in SIGLA");
+					}
+				}
+
+				if ( contratto.getCodfisPivaAggiudicatarioExt()!=null && (!contratto.getCodfisPivaAggiudicatarioExt().isEmpty())) {
+					contratto.setFigura_giuridica_esterna(getTerzoFromCodiceFiscalePiva(userContext, contratto.getCodfisPivaAggiudicatarioExt()));
+					if ( !Optional.ofNullable(contratto.getFigura_giuridica_esterna()).isPresent()){
+						throw new ComponentException("La figura giuridica Esterna con Codice Fiscale/P.Iva "+ contratto.getCodfisPivaRupExt() +" non esiste in SIGLA");
+					}
+				}
 
 				gestioneCigSuContrattoDaFlows(userContext, contratto);
 				contratto = (ContrattoBulk)creaConBulk(userContext, contratto);
@@ -2313,6 +2330,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 		}
 		private void gestioneCigSuContrattoDaFlows(UserContext userContext, ContrattoBulk contratto)
 				throws ComponentException, PersistencyException {
+
 			if (contratto.getCdCigExt() != null){
 				CigBulk cig = new CigBulk();
 				cig.setCdCig(contratto.getCdCigExt());
