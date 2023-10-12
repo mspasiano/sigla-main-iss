@@ -108,4 +108,9 @@
             path="/StampaMastroRendicontoFinanziarioAction"
             actionClass="it.cnr.contab.prevent01.action.StampaMastroRendicontoFinanziarioAction">
     </action>
+
+    <action
+            path="/RiaccertamentoResiduiPassiviAction"
+            actionClass="it.cnr.contab.prevent01.action.RiaccertamentoResiduiPassiviAction">
+    </action>
 </action-mappings>

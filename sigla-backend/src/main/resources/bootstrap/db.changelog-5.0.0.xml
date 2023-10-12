@@ -6027,6 +6027,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_column_mastro_finanziario.xml"/>
     <include file="bootstrap/add_priority_mastro_finanziario.xml"/>
 
-
+    <!-- Autore : PIERGIORGIO FARAGLIA - Aggiunge gestione report Riaccertamento Residui Passivi -->
+    <include file="bootstrap/add_menu_riaccertamento_residui_passivi.xml" />
+    <include file="bootstrap/add_priority_riaccertamento_residui_passivi.xml" />
 
 </databaseChangeLog>
