@@ -2210,8 +2210,11 @@ public class OrdineAcqComponent
                         if (cons.getObbligazioneScadenzario() != null) {
                             if (ordine.getOrdineObbligazioniHash() == null ||
                                     ordine.getOrdineObbligazioniHash().getKey(scadenza) == null) {
-                                ordine.addToOrdineObbligazioniHash(caricaScadenzaObbligazionePer(aUC, scadenza), cons);
+                                scadenza = caricaScadenzaObbligazionePer(aUC, scadenza);
+                            }else {
+                                scadenza = ordine.getOrdineObbligazioniHash().getKey(scadenza);
                             }
+                            ordine.addToOrdineObbligazioniHash(scadenza, cons);
                         }
                     }
                 }
