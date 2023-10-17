@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2019  Consiglio Nazionale delle Ricerche
+  ~
+  ~     This program is free software: you can redistribute it and/or modify
+  ~     it under the terms of the GNU Affero General Public License as
+  ~     published by the Free Software Foundation, either version 3 of the
+  ~     License, or (at your option) any later version.
+  ~
+  ~     This program is distributed in the hope that it will be useful,
+  ~     but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~     GNU Affero General Public License for more details.
+  ~
+  ~     You should have received a copy of the GNU Affero General Public License
+  ~     along with this program.  If not, see <https://www.gnu.org/licenses/>.
+  -->
+
+<bulkInfo
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="https://contab.cnr.it/schema/SIGLA"
+        shortDescription="Cambia Voce su Partite di Giro"
+        longDescription="Cambia Voce su Partite di Giro"
+        xsi:schemaLocation="https://contab.cnr.it/schema/SIGLA https://contab.cnr.it/schema/SIGLA/BulkInfo_1_5.xsd">
+    <fieldProperty
+        name="tiGestione"
+        property="tiGestione"
+        keysProperty="tiGestioneKeys"
+        label="Tipo"
+        layout="HORIZONTAL"
+        inputType="RADIOGROUP"/>
+    <fieldProperty
+        name="voceIniziale"
+        property="voceIniziale"
+        inputType="SEARCHTOOL"
+        formName="accertamento"
+        nullable="false"
+        completeOnSave="true"
+        label="Voce iniziale" />
+    <fieldProperty
+        name="voceFinale"
+        property="voceFinale"
+        inputType="SEARCHTOOL"
+        formName="accertamento"
+        nullable="false"
+        completeOnSave="true"
+        label="Voce finale" />
+
+    <formFieldProperty
+        name="tiGestione" />
+    <formFieldProperty
+        name="voceIniziale" />
+    <formFieldProperty
+        name="voceFinale" />
+
+</bulkInfo>

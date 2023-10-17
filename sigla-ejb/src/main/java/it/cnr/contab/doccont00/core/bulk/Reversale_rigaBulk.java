@@ -69,7 +69,7 @@ public class Reversale_rigaBulk extends Reversale_rigaBase {
         statoKeys.put(STATO_INCASSATO, "Incassata");
     }
 
-    protected ReversaleBulk reversale;
+    protected ReversaleBulk reversale = new ReversaleBulk();
     protected BancaBulk banca = new BancaBulk();
     protected Modalita_pagamentoBulk modalita_pagamento = new Modalita_pagamentoBulk();
     protected List modalita_pagamentoOptions;

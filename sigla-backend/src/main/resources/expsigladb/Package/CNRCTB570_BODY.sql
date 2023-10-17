@@ -1602,9 +1602,9 @@ end;
            And a.ti_appartenenza = CNRCTB001.APPARTENENZA_CDS;
       Exception
               when TOO_MANY_ROWS then
-                   IBMERR001.RAISE_ERR_GENERICO('Esiste piÃ¹ di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
+                   IBMERR001.RAISE_ERR_GENERICO('Esiste più di un conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr);
               when NO_DATA_FOUND then
-                   IBMERR001.RAISE_ERR_GENERICO('Conto finanziario associato a CORI del gruppo '||aAggregato.cd_gruppo_cr||' non trovato');
+                   IBMERR001.RAISE_ERR_GENERICO('Conto finanziario associato a CORI del gruppo "'||aAggregato.esercizio||'/'||aAggregato.cd_gruppo_cr||'" non trovato!');
       End;
 
       Begin

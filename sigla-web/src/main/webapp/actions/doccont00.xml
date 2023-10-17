@@ -612,4 +612,16 @@
         <init-param name="componentSessionName" value="CNRDOCCONT00_EJB_SospesoRiscontroComponentSession"/>
         <init-param name="defaultAction" value="ListaSospesiSpesaAction"/>
     </businessProcess>
+
+    <action
+            path="/CambiaVocePGiroAction" actionClass="it.cnr.contab.doccont00.action.CambiaVocePGiroAction">
+    </action>
+    <businessProcess
+            name="CambiaVocePGiroBP" className="it.cnr.contab.doccont00.bp.CambiaVocePGiroBP">
+        <forward name="default" path="/doccont00/cambia_voce_pgiro.jsp"/>
+        <init-param name="bulkClassName" value="it.cnr.contab.doccont00.tabrif.bulk.CambiaVocePGiroBulk"/>
+        <init-param name="componentSessionName" value="CNRDOCCONT00_EJB_CambiaVocePGiroComponentSession"/>
+        <init-param name="defaultAction" value="CambiaVocePGiroAction"/>
+    </businessProcess>
+
 </action-mappings>

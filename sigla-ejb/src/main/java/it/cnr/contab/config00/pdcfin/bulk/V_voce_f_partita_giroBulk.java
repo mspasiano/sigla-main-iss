@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(value=Include.NON_NULL)
 public class V_voce_f_partita_giroBulk extends Voce_fBulk {
 	protected String ds_titolo_capitolo;
+
+	private Boolean fl_partita_giro;
 	/**
 	 * V_voce_f_partita_giroBulk constructor comment.
 	 */
@@ -50,5 +52,13 @@ public class V_voce_f_partita_giroBulk extends Voce_fBulk {
 	 */
 	public void setDs_titolo_capitolo(java.lang.String newDs_titolo_capitolo) {
 		ds_titolo_capitolo = newDs_titolo_capitolo;
+	}
+
+	public Boolean getFl_partita_giro() {
+		return fl_partita_giro;
+	}
+
+	public void setFl_partita_giro(Boolean fl_partita_giro) {
+		this.fl_partita_giro = fl_partita_giro;
 	}
 }

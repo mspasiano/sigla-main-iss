@@ -49,7 +49,7 @@
 		<tr>
 			<td colspan=3>
 			      <b><font size=3 class="h3 text-primary">Righe reversale</font></b>
-			      <% bp.getDocumentiAttiviSelezionati().writeHTMLTable(pageContext,(bp.isSiope_attiva() && reversale.isRequiredSiope())?"columnSetConSiope":null,false,false,bp.isInserting(),"100%","150px", true); %>
+			      <% bp.getDocumentiAttiviSelezionati().writeHTMLTable(pageContext,(bp.isSiope_attiva() && reversale.isRequiredSiope())?"columnSetConSiope":null,false,false,bp.isInserting(),"100%","auto;max-height: 40vh;", true); %>
 			</td>
 		</tr>
 	</table>
