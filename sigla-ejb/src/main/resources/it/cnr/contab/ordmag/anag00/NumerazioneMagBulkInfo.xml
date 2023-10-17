@@ -80,10 +80,14 @@
 			inputSize="20"
 			maxLength="20"
 			enabledOnInsert="true"
-			enabledOnEdit="false"
+			enabledOnEdit="true"
+			enabledOnSearch="false"
+			enabledOnFreeSearch="false"
 			nullable="false"
 			keysProperty="numeratoriMagKeys"
-			label="Codice Numeratore" />
+			label="Codice Numeratore"
+			caseSensitiveSearch="false"/>
+
 	<fieldProperty
 		name="corrente"
 		property="corrente"
@@ -140,6 +144,11 @@
 		name="corrente" />
 	<findFieldProperty
 		name="dtCancellazione" />
+
+	<columnFieldProperty
+			name="cdMagazzino" />
+	<columnFieldProperty
+			name="dsMagazzino" />
 	<columnFieldProperty
 			name="cdNumeratoreMag" />
 	<columnFieldProperty

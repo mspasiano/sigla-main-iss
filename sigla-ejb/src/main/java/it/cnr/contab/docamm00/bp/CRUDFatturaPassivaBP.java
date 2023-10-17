@@ -312,6 +312,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                 .filter(Fattura_passivaBulk.class::isInstance)
                 .map(Fattura_passivaBulk.class::cast)
                 .ifPresent(fattura_passivaBulk -> fattura_passivaBulk.setFlDaOrdini(isPropostaFatturaDaOrdini()));
+        ((Fattura_passivaBulk)emptyModel).setFromAmministra(this instanceof CRUDFatturaPassivaAmministraBP);
         return emptyModel;
     }
 
