@@ -109,6 +109,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
 
     protected BulkList richiesteDaTrasformareInOrdineColl = new BulkList();
     private Boolean aggiornaImpegniInAutomatico = false;
+    private boolean verificaContratto = true;
     protected TerzoBulk fornitore;
     private java.util.Collection modalita;
     private java.util.Collection termini;
@@ -1056,6 +1057,7 @@ public class OrdineAcqBulk extends OrdineAcqBase
             if (consegnaBulk != null) {
                 consAssociate.remove(consegnaBulk);
                 consAssociate.add(consegnaAggiornata);
+         //      consegnaAggiornata.getObbligazioneScadenzario().getObbligazione().setCheckDisponibilitaContrattoEseguito(true);
                 ordineObbligazioniHash.put(consegnaAggiornata.getObbligazioneScadenzario(), consAssociate);
             }
         }
@@ -1681,5 +1683,13 @@ public class OrdineAcqBulk extends OrdineAcqBase
     @Override
     public Timestamp getDtGenerazioneScrittura() {
         return this.getDt_contabilizzazione();
+    }
+
+    public boolean isVerificaContratto() {
+        return verificaContratto;
+    }
+
+    public void setVerificaContratto(boolean verificaContratto) {
+        this.verificaContratto = verificaContratto;
     }
 }
