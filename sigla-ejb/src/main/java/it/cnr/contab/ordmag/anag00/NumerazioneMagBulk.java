@@ -21,6 +21,7 @@
  */
 package it.cnr.contab.ordmag.anag00;
 
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 
 import java.util.Dictionary;
@@ -107,6 +108,7 @@ public class NumerazioneMagBulk extends NumerazioneMagBase {
 	}
 	protected OggettoBulk initialize(it.cnr.jada.util.action.CRUDBP bp,it.cnr.jada.action.ActionContext context) {
 		setCdCds(it.cnr.contab.utenze00.bulk.CNRUserInfo.getUnita_organizzativa(context).getCd_cds());
+		setEsercizio(it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context.getUserContext()));
 		return super.initialize(bp,context);
 	}
 	public Dictionary getNumeratoriMagKeys() {
