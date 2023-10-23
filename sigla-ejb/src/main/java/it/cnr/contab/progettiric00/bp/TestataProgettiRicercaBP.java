@@ -17,6 +17,8 @@
 
 package it.cnr.contab.progettiric00.bp;
 
+import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
+import it.cnr.contab.anagraf00.core.bulk.RapportoBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
 import it.cnr.contab.config00.bulk.Parametri_enteBulk;
@@ -24,6 +26,7 @@ import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
+import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.pdg00.bulk.Pdg_variazioneBulk;
 import it.cnr.contab.progettiric00.core.bulk.*;
@@ -183,10 +186,36 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
             Progetto_anagraficoBulk riga = (Progetto_anagraficoBulk) getCrudProgetto_anagrafico().getModel();
             super.validateForDelete(context,riga);
 
+
+        }
+
+        public boolean isGrowable() {
+
+            ProgettoBulk progetto = (ProgettoBulk) getParentModel();
+
+            if(progetto != null){
+                if(!isAnagraficheProgettoEdit()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public boolean isShrinkable() {
+
+            ProgettoBulk progetto = (ProgettoBulk) getParentModel();
+
+            if(progetto != null){
+                if(!isAnagraficheProgettoEdit()) {
+                    return false;
+                }
+            }
+            return true;
         }
     };
 
-    /**
+
+        /**
      * TestataProgettiRicercaBP constructor comment.
      */
     public TestataProgettiRicercaBP() {
@@ -1155,6 +1184,44 @@ public class TestataProgettiRicercaBP extends AllegatiProgettoCRUDBP<AllegatoGen
 
     public boolean isUoEnte( UserContext uc ){
         return  Optional.ofNullable(this.getUoScrivania()).filter(Unita_organizzativaBulk::isUoEnte).isPresent();
+
+    }
+
+    public String getAnagraficheProgettoFormName() {
+        ProgettoBulk progetto = (ProgettoBulk) this.getModel();
+        if(progetto != null){
+            if(!isAnagraficheProgettoEdit()) {
+                    return "readonly";
+                }
+            }
+            return "default";
+    }
+
+    private boolean isAnagraficheProgettoEdit(){
+        ProgettoBulk progetto = (ProgettoBulk) getModel();
+        if(progetto != null){
+            if(progetto.getOtherField().isStatoAnnullato() ||
+                    progetto.getOtherField().isStatoChiuso() ||
+                    progetto.isProgettoScaduto() ||
+                    !isSaveButtonEnabled()) {
+                return false;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isInputReadonly() {
+        ProgettoBulk progetto = (ProgettoBulk) getModel();
+        if (Optional.ofNullable(getTab("tab")).filter(x -> x.equals("tabAnagrafico")).isPresent()){
+            if(progetto != null){
+                if(!isAnagraficheProgettoEdit()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return super.isInputReadonly();
 
     }
 }
