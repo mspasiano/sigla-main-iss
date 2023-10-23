@@ -1,4 +1,4 @@
-<%@page import="it.cnr.contab.ordmag.anag00.MagazzinoBulk"%>
+<%@page import="it.cnr.contab.ordmag.anag00.NumerazioneMagBulk"%>
 <%@page import="it.cnr.contab.ordmag.anag00.bp.CRUDAssUnitaOperativaBP"%>
 <%@ page pageEncoding="UTF-8"
 	import="it.cnr.jada.action.*,
@@ -8,7 +8,7 @@
 
 <%
 CRUDNumerazioneMagBP bp = (CRUDNumerazioneMagBP)BusinessProcess.getBusinessProcess(request);
-MagazzinoBulk mag = (MagazzinoBulk)bp.getModel();
+
 %>
 
 <html>
@@ -26,7 +26,7 @@ MagazzinoBulk mag = (MagazzinoBulk)bp.getModel();
 	<table class="Panel">
 		<TR>
 		   <TD><% bp.getController().writeFormLabel(out,"cdMagazzino");%></TD>
-		   <TD><% bp.getController().writeFormInput(out,null,"cdMagazzino", !mag.isInQuery(),null,null);%></TD>
+		   <TD><% bp.getController().writeFormInput(out,null,"cdMagazzino", false,null,null);%></TD>
 		</TR>
 		<TR>
 		   <TD><% bp.getController().writeFormLabel(out,"dsMagazzino");%></TD>
@@ -51,7 +51,12 @@ MagazzinoBulk mag = (MagazzinoBulk)bp.getModel();
 		<tr></tr>
 		<tr></tr>
 		<tr>
-		   <TD><% bp.getNumerazioneMagController().writeFormField(out,"cdNumeratoreMag");%></TD>
+
+		  <td><% bp.getNumerazioneMagController().writeFormLabel( out, "cdNumeratoreMag"); %></td>
+
+            <td><% bp.getNumerazioneMagController().writeFormField( out, "cdNumeratoreMag"); %></td>
+
+
 		   <TD><% bp.getNumerazioneMagController().writeFormLabel(out,"corrente");%></TD>
 		   <TD><% bp.getNumerazioneMagController().writeFormInput(out,"corrente");%></TD>
 		</tr>

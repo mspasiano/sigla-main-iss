@@ -2268,7 +2268,7 @@ public SQLBuilder selectFigura_giuridica_esternaByClause(UserContext userContext
 				} else {
 					throw new ComponentException("La uo indicata non ha il terzo corrispondente");
 				}
-				if ( contratto.getCodfisPivaRupExt()==null || (!contratto.getCodfisPivaRupExt().isEmpty())) {
+				if ( contratto.getCodfisPivaRupExt()==null || (contratto.getCodfisPivaRupExt().isEmpty())) {
 					throw new ApplicationException("Valorizzare "+BulkInfo.getBulkInfo(contratto.getClass()).getFieldProperty("cd_terzo_resp").getLabel());
 
 				}

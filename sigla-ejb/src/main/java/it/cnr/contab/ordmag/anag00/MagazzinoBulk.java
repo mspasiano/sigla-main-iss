@@ -64,6 +64,7 @@ public class MagazzinoBulk extends MagazzinoBase {
 	private BulkList numeratoreColl = new BulkList();
 	private boolean isInQuery = false;
 
+	private Integer esercizio;
 	public final static Dictionary METODO_VAL;
 	static{
 		METODO_VAL = new OrderedHashtable();
@@ -727,4 +728,11 @@ public class MagazzinoBulk extends MagazzinoBase {
 		return Bene_servizioBulk.TIPO_CONSEGNA;
 	}
 
+	public Integer getEsercizio() {
+		return esercizio;
+	}
+
+	public void setEsercizio(Integer esercizio) {
+		this.esercizio = esercizio;
+	}
 }

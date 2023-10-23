@@ -6031,4 +6031,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_menu_riaccertamento_residui_passivi.xml" />
     <include file="bootstrap/add_priority_riaccertamento_residui_passivi.xml" />
 
+    <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per il cambio voce su partite di giro -->
+    <include file="bootstrap/add_accessi_cambia_voce_pgiro.xml"/>
+
+
 </databaseChangeLog>

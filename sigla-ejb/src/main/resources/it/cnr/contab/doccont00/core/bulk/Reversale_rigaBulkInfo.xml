@@ -26,7 +26,7 @@
 		maxLength="30"
 		inputSize="30"
 		inputType="TEXT"
-		label="cd_cds" />
+		label="CdS" />
 	<fieldProperty
 		name="im_reversale_riga"
 		property="im_reversale_riga"
@@ -51,7 +51,7 @@
 		name="esercizio_doc_amm"
 		property="esercizio_doc_amm"
 		inputType="TEXT"
-		label="Esercizio doc.amm." />
+		label="Es.doc.amm." />
 	<fieldProperty
 		name="cd_terzo_uo"
 		property="cd_terzo_uo"
@@ -79,7 +79,7 @@
 		name="pg_reversale"
 		property="pg_reversale"
 		inputType="TEXT"
-		label="pg_reversale" />
+		label="Nr. Reversale" />
 	<fieldProperty
 		name="cd_terzo"
 		property="cd_terzo"
@@ -118,7 +118,7 @@
 		name="pg_accertamento_scadenzario"
 		property="pg_accertamento_scadenzario"
 		inputType="TEXT"
-		label="pg_accertamento_scadenzario" />
+		label="Nr. Accert. Scadenzario" />
 	<fieldProperty
 		name="banca_cab"
 		property="banca.cab"
@@ -282,5 +282,29 @@
 		name="cd_cds_doc_amm" />
 	<findFieldProperty
 		name="pg_doc_amm" />
+
+	<columnFieldProperty
+			headerLabel="Reversale"
+			name="cd_cds"/>
+	<columnFieldProperty
+			headerLabel="Reversale"
+			name="pg_reversale"
+			label="Numero"/>
+	<columnFieldProperty
+			headerLabel="Accertamento"
+			name="esercizio_ori_accertamento"
+			label="Esercizio"/>
+	<columnFieldProperty
+			headerLabel="Accertamento"
+			name="pg_accertamento"
+			label="Numero"/>
+	<columnFieldProperty
+			headerLabel="Accertamento"
+			name="pg_accertamento_scadenzario"
+			label="Scadenzario"/>
+	<columnFieldProperty
+			name="cd_terzo" />
+	<columnFieldProperty
+			name="im_reversale_riga" />
 
 </bulkInfo>

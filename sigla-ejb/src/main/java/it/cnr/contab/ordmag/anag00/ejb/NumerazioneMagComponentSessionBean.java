@@ -15,25 +15,28 @@
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package it.cnr.contab.docamm00.bp;
+package it.cnr.contab.ordmag.anag00.ejb;
 
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
+import it.cnr.contab.ordmag.anag00.comp.NumerazioneMagComponent;
+import it.cnr.jada.ejb.CRUDComponentSessionBean;
 
-/**
- * Gestisce le catene di elementi correlate con la fattura passiva in uso.
- */
-public class CRUDFatturaPassivaAmministraBP extends CRUDFatturaPassivaIBP {
-    public CRUDFatturaPassivaAmministraBP() {
-        super();
-    }
+import javax.annotation.PostConstruct;
+import javax.ejb.Remove;
+import javax.ejb.Stateless;
 
-    public CRUDFatturaPassivaAmministraBP(String function) throws it.cnr.jada.action.BusinessProcessException {
-        super(function);
-    }
+@Stateless(name="CNRORDMAG00_EJB_NumerazioneMagComponentSession")
+public class NumerazioneMagComponentSessionBean extends CRUDComponentSessionBean implements NumerazioneMagComponentSession {
+	@PostConstruct
+	public void ejbCreate() {
+		componentObj = new NumerazioneMagComponent();
+	}
+	@Remove
+	public void ejbRemove() throws javax.ejb.EJBException {
+		componentObj.release();
+	}
+	
+	public static CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
+		return new NumerazioneMagComponentSessionBean();
+	}
 
-    public void create(it.cnr.jada.action.ActionContext context) throws it.cnr.jada.action.BusinessProcessException {
-        if (getModel() instanceof Fattura_passivaBulk)
-            ((Fattura_passivaBulk)getModel()).setFromAmministra(Boolean.TRUE);
-        super.create(context);
-    }
 }

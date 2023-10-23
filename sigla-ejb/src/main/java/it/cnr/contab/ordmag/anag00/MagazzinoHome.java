@@ -60,6 +60,17 @@ public class MagazzinoHome extends BulkHome {
 		sql.addSQLClause( FindClause.AND, "cd_cds", SQLBuilder.EQUALS, mag.getCdCds());
 		return repHome.fetchAll(sql);
 	}
+	public java.util.List findNumeratoreMagList(MagazzinoBulk mag ) throws IntrospectionException,PersistencyException, ApplicationException
+	{
+		PersistentHome repHome = getHomeCache().getHome(NumerazioneMagBulk.class);
+		SQLBuilder sql = repHome.createSQLBuilder();
+
+		sql.addSQLClause( FindClause.AND, "cd_magazzino", SQLBuilder.EQUALS, mag.getCdMagazzino());
+		sql.addSQLClause( FindClause.AND, "cd_cds", SQLBuilder.EQUALS, mag.getCdCds());
+		sql.addSQLClause( FindClause.AND, "esercizio", SQLBuilder.EQUALS, mag.getEsercizio());
+
+		return repHome.fetchAll(sql);
+	}
 	
 	public SQLBuilder selectByClause(UserContext usercontext, CompoundFindClause compoundfindclause) throws PersistencyException {
 		SQLBuilder sql = super.selectByClause(usercontext, compoundfindclause);

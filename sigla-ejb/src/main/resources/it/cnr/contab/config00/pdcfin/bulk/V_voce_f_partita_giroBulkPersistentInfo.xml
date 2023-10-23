@@ -23,7 +23,15 @@
 		<columnMapping
 			columnName="DS_TITOLO_CAPITOLO"
 			propertyName="ds_titolo_capitolo"/>
+		<columnMapping
+			columnName="FL_PARTITA_GIRO"
+			propertyName="fl_partita_giro"
+			sqlTypeName="CHAR"
+			columnSize="1"
+			converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter"/>
 	</defaultColumnMap>
 	<persistentProperty
 		name="ds_titolo_capitolo" />
+	<persistentProperty
+		name="fl_partita_giro" />
 </SQLPersistentInfo>

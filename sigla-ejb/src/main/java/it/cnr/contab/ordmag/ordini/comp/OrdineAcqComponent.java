@@ -2005,7 +2005,6 @@ public class OrdineAcqComponent
                     } catch (PersistencyException e1) {
                         throw handleException(e1);
                     }
-
                     scadenza.setObbligazione(obbl);
 
                     java.math.BigDecimal im_ass = null;
@@ -2023,6 +2022,9 @@ public class OrdineAcqComponent
                         ObbligazioneComponentSession obbligComp = (ObbligazioneComponentSession) EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazioneComponentSession");
                         try {
                             obbl = (ObbligazioneBulk) obbligComp.inizializzaBulkPerModifica(userContext, scadenza.getObbligazione());
+                            if(!ordine.isVerificaContratto()){
+                                obbl.setCheckDisponibilitaContrattoEseguito(true);
+                            }
                             scadenza.setObbligazione(obbl);
                         } catch (RemoteException remoteException) {
                             throw new ComponentException(remoteException);
@@ -2210,8 +2212,11 @@ public class OrdineAcqComponent
                         if (cons.getObbligazioneScadenzario() != null) {
                             if (ordine.getOrdineObbligazioniHash() == null ||
                                     ordine.getOrdineObbligazioniHash().getKey(scadenza) == null) {
-                                ordine.addToOrdineObbligazioniHash(caricaScadenzaObbligazionePer(aUC, scadenza), cons);
+                                scadenza = caricaScadenzaObbligazionePer(aUC, scadenza);
+                            }else {
+                                scadenza = ordine.getOrdineObbligazioniHash().getKey(scadenza);
                             }
+                            ordine.addToOrdineObbligazioniHash(scadenza, cons);
                         }
                     }
                 }
@@ -2947,6 +2952,7 @@ public class OrdineAcqComponent
 
                             ordineComp.sostituisciConsegnaFromObbligazioniHash(ordineConsegnaComp);
                             ordineComp.setAggiornaImpegniInAutomatico(true);
+                            ordineComp.setVerificaContratto(false);
                         });
                     });
                     modificaConBulk(userContext, ordineComp);

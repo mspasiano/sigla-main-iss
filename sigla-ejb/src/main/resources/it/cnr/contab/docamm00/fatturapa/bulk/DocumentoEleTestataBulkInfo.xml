@@ -1317,5 +1317,16 @@
 	<columnFieldProperty
 		name="statoNotificaEsito" />
 	<columnFieldProperty
-		name="flIrregistrabile"/>	
+		name="flIrregistrabile"/>
+
+	<form
+			name="searchtool" >
+		<formFieldProperty
+				name="identificativoSdi"
+				enabledOnSearch="true" />
+		<formFieldProperty
+				name="progressivo"
+				enabledOnSearch="false" />
+	</form>
+
 </bulkInfo>

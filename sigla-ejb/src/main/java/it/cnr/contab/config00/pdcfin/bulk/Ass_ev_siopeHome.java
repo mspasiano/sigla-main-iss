@@ -24,10 +24,12 @@ import java.sql.Connection;
 import java.util.Hashtable;
 import java.util.List;
 
+import it.cnr.contab.config00.bulk.Codici_siopeBulk;
 import it.cnr.contab.config00.bulk.Codici_siopeHome;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkHome;
 import it.cnr.jada.comp.ApplicationException;
@@ -76,15 +78,16 @@ public class Ass_ev_siopeHome extends BulkHome {
 	    sql.addClause("AND","esercizio",SQLBuilder.EQUALS, CNRUserContext.getEsercizio(usercontext));
 		return sql;
 	}
-	
-	/*public Hashtable loadTi_gestioneKeys(Elemento_voceBulk bulk) throws ApplicationException {
-		return new Elemento_voceHome( getConnection()).loadTi_gestioneKeys(bulk);
+
+	public Codici_siopeBulk findByElementoVoce(UserContext userContext, Elemento_voceBulk elementoVoceBulk) throws PersistencyException, ApplicationException {
+		SQLBuilder sql = createSQLBuilder();
+		sql.addClause(FindClause.AND, "elemento_voce", SQLBuilder.EQUALS, elementoVoceBulk);
+		final List<Ass_ev_siopeBulk> result = fetchAll(sql);
+		if (result.size() == 0)
+			throw new ApplicationMessageFormatException("Non esistono codici SIOPE associati alla voce {0}", elementoVoceBulk.getCd_elemento_voce());
+		else if (result.size() > 1)
+			throw new ApplicationMessageFormatException("Esisto più codici SIOPE associati alla voce {0}", elementoVoceBulk.getCd_elemento_voce());
+		return result.get(0).getCodici_siope();
 	}
-	
-	
-	public Hashtable loadTi_appartenenzaKeys(Elemento_voceBulk bulk) throws ApplicationException {
-		return new Elemento_voceHome( getConnection()).loadTi_appartenenzaKeys( bulk);
-	}*/
-	
 	
 }

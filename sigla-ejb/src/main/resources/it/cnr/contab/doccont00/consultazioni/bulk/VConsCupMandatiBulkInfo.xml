@@ -120,7 +120,7 @@
 		maxLength="4"
 		enabledOnEdit="false"
 		nullable="false"
-		label="esercizio Doc.Amm." />
+		label="Es.Doc.Amm." />
 	<fieldProperty
 		name="cdTipoDocumentoAmm"
 		property="cdTipoDocumentoAmm"

@@ -6,7 +6,7 @@
 %>
 
 <%
-	SimpleCRUDBP bp = (SimpleCRUDBP)BusinessProcess.getBusinessProcess(request);
+	BulkBP bp = (BulkBP)BusinessProcess.getBusinessProcess(request);
 %>
 
 <html>
