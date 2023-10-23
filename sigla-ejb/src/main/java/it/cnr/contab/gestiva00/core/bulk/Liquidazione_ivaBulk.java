@@ -139,4 +139,9 @@ public class Liquidazione_ivaBulk extends Liquidazione_ivaBase implements IDocum
 	public Timestamp getDt_contabilizzazione() {
 		return this.getDt_fine();
 	}
+
+	@Override
+	public Timestamp getDtGenerazioneScrittura() {
+		return this.getDt_contabilizzazione();
+	}
 }

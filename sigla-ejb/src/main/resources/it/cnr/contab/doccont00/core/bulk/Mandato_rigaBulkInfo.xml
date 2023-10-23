@@ -26,7 +26,7 @@
 		maxLength="30"
 		inputSize="30"
 		inputType="TEXT"
-		label="cd_cds" />
+		label="CdS" />
 	<fieldProperty
 		name="stato"
 		property="stato"
@@ -45,7 +45,7 @@
 		name="esercizio_doc_amm"
 		property="esercizio_doc_amm"
 		inputType="TEXT"
-		label="Esercizio doc.amm." />
+		label="Es.doc.amm." />
 	<fieldProperty
 		name="pg_obbligazione_scadenzario"
 		property="pg_obbligazione_scadenzario"
@@ -304,5 +304,29 @@
 		name="pg_doc_amm" />
 	<findFieldProperty
 		name="im_ritenute_riga" />
+
+	<columnFieldProperty
+			headerLabel="Mandato"
+			name="cd_cds"/>
+	<columnFieldProperty
+			headerLabel="Mandato"
+			name="pg_mandato"
+			label="Numero"/>
+	<columnFieldProperty
+			headerLabel="Obbligazione"
+			name="esercizio_ori_obbligazione"
+			label="Esercizio"/>
+	<columnFieldProperty
+			headerLabel="Obbligazione"
+			name="pg_obbligazione"
+			label="Numero"/>
+	<columnFieldProperty
+			headerLabel="Obbligazione"
+			name="pg_obbligazione_scadenzario"
+			label="Scadenzario"/>
+	<columnFieldProperty
+			name="cd_terzo" />
+	<columnFieldProperty
+			name="im_mandato_riga" />
 
 </bulkInfo>

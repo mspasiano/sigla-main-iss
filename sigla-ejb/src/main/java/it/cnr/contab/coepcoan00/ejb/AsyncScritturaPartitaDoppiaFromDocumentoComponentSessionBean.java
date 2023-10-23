@@ -88,14 +88,15 @@ public class AsyncScritturaPartitaDoppiaFromDocumentoComponentSessionBean extend
 				List<String> listInsert = new ArrayList<>();
 				List<String> listError = new ArrayList<>();
 
-				allDocuments.stream().filter(el-> Optional.ofNullable(el.getDt_contabilizzazione()).isPresent())
+				allDocuments.stream()
+						.filter(el-> Optional.ofNullable(el.getDtGenerazioneScrittura()).isPresent())
 						.filter(el-> MandatoBulk.STATO_COGE_N.equals(el.getStato_coge()) || MandatoBulk.STATO_COGE_R.equals(el.getStato_coge()))
-						.sorted(Comparator.comparing(IDocumentoCogeBulk::getDt_contabilizzazione)
+						.sorted(Comparator.comparing(IDocumentoCogeBulk::getDtGenerazioneScrittura)
 								.thenComparing(el->el.getTipoDocumentoEnum().getOrdineCostruzione())
 								.thenComparing(IDocumentoCogeBulk::getPg_doc))
 						.forEach(documentoCoge -> {
 					try {
-						System.out.println("Data: "+documentoCoge.getDt_contabilizzazione()+" - Tipo: "+
+						System.out.println("Data: "+documentoCoge.getDtGenerazioneScrittura()+" - Tipo: "+
 								documentoCoge.getTipoDocumentoEnum().getValue() +" - Numero: "+
 								documentoCoge.getPg_doc());
 						logger.info("Documento in elaborazione: "+documentoCoge.getEsercizio()+"/"+documentoCoge.getCd_uo()+"/"+documentoCoge.getCd_tipo_doc()+"/"+documentoCoge.getPg_doc());

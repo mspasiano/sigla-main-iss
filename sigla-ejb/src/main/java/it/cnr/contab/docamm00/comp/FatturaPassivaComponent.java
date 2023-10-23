@@ -2818,6 +2818,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
                 autofattura.setCd_unita_organizzativa(uoEnte.getCd_unita_organizzativa());
                 autofattura.setEsercizio(fattura_passiva.getEsercizio());
                 autofattura.completeFrom(fattura_passiva);
+
                 AutoFatturaComponentSession h = getAutofatturaComponentSession(userContext);
                 try {
                     Vector sez = h.estraeSezionali(userContext, autofattura, autoObb || fatturaSplit);
@@ -3204,7 +3205,7 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         if (fattura_passiva.getPg_fattura_passiva()==null || !fattura_passiva.isFromAmministra())
             assegnaProgressivo(userContext, fattura_passiva);
 
-        if (fattura_passiva.isElettronica())
+        if (fattura_passiva.isElettronica() )
             validaFatturaElettronica(userContext, fattura_passiva);
 
         try {
@@ -5415,6 +5416,9 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
 
         Fattura_passivaBulk fatturaPassiva = (Fattura_passivaBulk) bulk;
+        if ( fatturaPassiva.isFromAmministra()){
+            if ( fatturaPassiva.getIdentificativoSdi()!=null && fatturaPassiva.getProgressivo()!=null){}
+        }
         if (fatturaPassiva.isElettronica())
             validaFatturaElettronica(aUC, fatturaPassiva);
         try {
@@ -9112,4 +9116,19 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             throw handleException(e);
         }
     }
+    public SQLBuilder selectDocumentoEleTestataByClause(UserContext userContext , Fattura_passiva_IBulk fatturaPassiva,
+                                                  DocumentoEleTestataBulk documentoEleTestataBulk, CompoundFindClause findclause) throws ComponentException {
+        DocumentoEleTestataHome  home = Optional.ofNullable(getHome(userContext, DocumentoEleTestataBulk.class))
+                .filter(DocumentoEleTestataHome.class::isInstance)
+                .map(DocumentoEleTestataHome.class::cast)
+                .orElseThrow(() -> new ComponentException("Cannot find DocumentoEleTestataHome"));
+
+        SQLBuilder sqlBuilder = home.createSQLBuilder();
+        sqlBuilder.addClause(findclause);
+        return sqlBuilder;
+
+    }
+
+
+
 }

@@ -45,7 +45,7 @@
 		name="esercizio_doc_amm"
 		property="esercizio_doc_amm"
 		inputType="TEXT"
-		label="Esercizio doc.amm." />
+		label="Es.doc.amm." />
 	<fieldProperty
 		name="pg_obbligazione_scadenzario"
 		property="pg_obbligazione_scadenzario"

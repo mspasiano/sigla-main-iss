@@ -45,7 +45,7 @@ public class RestServiceContrattiTest {
         ObjectMapper mapper = new ObjectMapper();
         ContrattoDtoBulk c = new ContrattoDtoBulk();
         c.setEsercizio(2023);
-        c.setCodiceFlussoAcquisti( "testCompleto23122022");
+        c.setCodiceFlussoAcquisti( "G00127");
         c.setCd_unita_organizzativa("000.000");
         c.setCodfisPivaRupExt("RGLNLR52E69Z600O");
         c.setCodfisPivaAggiudicatarioExt("05923561004");
@@ -75,8 +75,8 @@ public class RestServiceContrattiTest {
         c.setDt_fine_validita(new java.sql.Timestamp(dateFormat.parse("20241122").getTime()));
         c.setDt_registrazione(new java.sql.Timestamp(dateFormat.parse("20231223").getTime()));
 
-        //c.setCdCigExt();
-        //c.setCdCupExt();
+        c.setCdCigExt("845fkjnv");
+        c.setCdCupExt("983e938");
         //Tipologia
         //Tipo_norma_perlaBulk tipoNormaPerla da aggiungere al contrarroDtoBulk ( tipoNormaPerla)
         //Procedura amministrativa da aggiungere al contrattoDtoBulk (Procedure_amministrativeBulk)

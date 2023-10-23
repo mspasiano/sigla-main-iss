@@ -3699,4 +3699,9 @@ public abstract class Fattura_passivaBulk
                 .map(s -> s.equalsIgnoreCase(LIQ))
                 .orElse(Boolean.FALSE);
     }
+
+    @Override
+    public Timestamp getDtGenerazioneScrittura() {
+        return this.getDt_contabilizzazione();
+    }
 }

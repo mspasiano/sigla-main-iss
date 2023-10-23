@@ -3813,4 +3813,9 @@ public class MissioneBulk extends MissioneBase implements IDefferUpdateSaldi, ID
 	public Timestamp getDt_contabilizzazione() {
 		return this.getDt_registrazione();
 	}
+
+	@Override
+	public Timestamp getDtGenerazioneScrittura() {
+		return this.getDt_contabilizzazione();
+	}
 }

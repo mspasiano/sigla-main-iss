@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import it.cnr.contab.docamm00.docs.bulk.Fattura_attivaBulk;
+import it.cnr.contab.docamm00.docs.bulk.VDocammElettroniciAttiviBulk;
 import it.cnr.contab.dp.DigitalPreservationProperties;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.spring.service.StorePath;
@@ -174,9 +175,11 @@ public class StorageFolderFatturaAttiva extends StorageFolderFattura {
 	
 	@StorageProperty(name="sigla_fatture:stato_invio_sdi")
 	public String getStatoInvioSdi() {
-		if (this.getFattura_attivaBulk()==null)
-			return null;
-		return (String)this.getFattura_attivaBulk().recuperoStatoInvioSdiKeys();
+		return Optional.ofNullable(this.getFattura_attivaBulk())
+				.flatMap(fatatt->Optional.ofNullable(fatatt.getStatoInvioSdi()))
+				.map(statoInvioSdi-> VDocammElettroniciAttiviBulk.getStatoInvioSdiKeys().get(statoInvioSdi))
+				.map(String.class::cast)
+				.orElse(null);
 	}
 		
 	@StorageProperty(name="sigla_fatture:note_invio_sdi")

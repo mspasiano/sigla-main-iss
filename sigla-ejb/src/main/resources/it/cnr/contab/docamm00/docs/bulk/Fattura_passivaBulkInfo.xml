@@ -1244,6 +1244,16 @@
             enabledOnInsert="false"
             enabledOnFreeSearch="true"
             label="Identificativo SDI"/>
+
+    <fieldProperty
+            name="findDocumentEleTestata"
+            property="documentoEleTestata"
+            formName="searchtool"
+            inputType="SEARCHTOOL"
+            label="Documento Elettronico"
+    />
+    <formFieldProperty
+            name="findDocumentEleTestata" />
     <fieldProperty
             name="progressivo"
             property="progressivo"

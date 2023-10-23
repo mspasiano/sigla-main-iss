@@ -1990,6 +1990,11 @@ public class Documento_genericoBulk extends Documento_genericoBase implements ID
 		return this.getData_registrazione();
 	}
 
+	@Override
+	public Timestamp getDtGenerazioneScrittura() {
+		return this.getDt_contabilizzazione();
+	}
+
 	public boolean isRegistratoInFondoEconomale() {
 		return REGISTRATO_IN_FONDO_ECO.equalsIgnoreCase(getStato_pagamento_fondo_eco());
 	}
