@@ -35,31 +35,13 @@
 		<td><% bp.getController().writeFormLabel(out,"ti_gestione"); %></td>
         <td><% bp.getController().writeFormInput(out,null,"ti_gestione",false,null,"onClick=\"submitForm('doOnTipoChange')\""); %></td>
 	  </tr>
-	  <!--
 	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"ti_stampa"); %></td>
-        <td><% bp.getController().writeFormInput(out,null,"ti_stampa",true,null,"onClick=\"submitForm('doOnTipoBilancioChange')\""); %></td>
-	  </tr>  
-      <tr>
-        <td><% bp.getController().writeFormLabel(out,"ti_aggregazione"); %></td>
-        <td><% bp.getController().writeFormInput(out,null,"ti_aggregazione",true,null,"onClick=\"submitForm('doOnTipoAggregazioneChange')\""); %></td>
-      </tr>
-          <tr>
-            <td><% bp.getController().writeFormLabel(out,"ti_origine"); %></td>
-            <td><% bp.getController().writeFormInput(out,null,"ti_origine", true, null,""); %></td>
-          </tr>
-	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"livello_stampa"); %></td>
-		<td><% bp.getController().writeFormInput(out,"livello_stampa"); %></td>
-	  </tr>
-          -->
-	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"voce_da"); %></td>
-		<td><% bp.getController().writeFormInput(out,"voce_da"); %></td>
+		<td><% bp.getController().writeFormLabel(out,"find_voce_da"); %></td>
+		<td><% bp.getController().writeFormInput(out,"find_voce_da"); %></td>
 	  </tr>
 	  <tr>
-		<td><% bp.getController().writeFormLabel(out,"voce_a"); %></td>
-		<td><% bp.getController().writeFormInput(out,"voce_a"); %></td>
+		<td><% bp.getController().writeFormLabel(out,"find_voce_a"); %></td>
+		<td><% bp.getController().writeFormInput(out,"find_voce_a"); %></td>
 	  </tr>
 	</table>
    </td>

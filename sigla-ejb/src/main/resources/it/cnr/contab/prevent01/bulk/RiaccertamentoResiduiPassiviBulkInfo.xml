@@ -73,21 +73,44 @@
 			inputType="ROTEXT"
 			label="Livello Stampa" />
 	<fieldProperty
-			name="voce_da"
+			name="find_voce_da"
 			property="voce_da"
-			inputSize="5"
-			inputType="TEXT"
+			inputType="SEARCHTOOL"
+			formName="searchtool"
 			label="Voce Da"
-			nullable="true"
+			enabledOnSearch="true"
+			completeOnSave="false"
+			nullable="false"
 	/>
 	<fieldProperty
-			name="voce_a"
-			property="voce_a"
-			inputSize="5"
+			name="cd_voce_da"
+			property="voce_da.cd_voce_da"
+			label="Voce del piano"
+			readonlyProperty="ROVoce_da"
 			inputType="TEXT"
-			label="Voce A"
-			nullable="true"
+			maxLength="20"
+			inputSize="20"
+			enabledOnSearch="true"
+			nullable="false"
 	/>
+	<fieldProperty
+			name="cd_voce_daRO"
+			property="voce_da.cd_voce_da"
+			label="Voce del piano"
+			inputType="ROTEXT"
+			maxLength="20"
+			inputSize="20"
+	/>
+	<fieldProperty
+			name="ds_voce_da"
+			property="voce_da.ds_voce_da"
+			label=""
+			readonlyProperty="ROVoce_da"
+			inputType="ROTEXT"
+			inputSize="60"
+	/>
+
+
 
 	<formFieldProperty name="esercizio"/>
 	<formFieldProperty name="ti_gestione" />
@@ -95,6 +118,8 @@
 	<formFieldProperty name="ti_aggregazione" />
 	<formFieldProperty name="ti_origine" />
 	<formFieldProperty name="livello_stampa" />
+	<formFieldProperty name="find_voce_da" />
+	<formFieldProperty name="find_voce_a" />
 	<formFieldProperty name="voce_da" />
 	<formFieldProperty name="voce_a" />
 
@@ -143,14 +168,14 @@
 				paramTypeJR="java.lang.Integer" />
 		<printFieldProperty
 				name="voce_da"
-				property="voce_da"
+				property="voce_da.cd_elemento_voce"
 				parameterPosition="6"
 				parameterType="STRING"
 				paramNameJR="P_VOCE_DA"
 				paramTypeJR="java.lang.String" />
 		<printFieldProperty
 				name="voce_a"
-				property="voce_a"
+				property="voce_a.cd_elemento_voce"
 				parameterPosition="7"
 				parameterType="STRING"
 				paramNameJR="P_VOCE_A"
