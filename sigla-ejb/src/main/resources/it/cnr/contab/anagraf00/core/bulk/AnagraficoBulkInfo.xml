@@ -838,13 +838,22 @@
 		<formFieldProperty
 				name="codice_fiscale"/>
 	</form>
+	<form name="searchtool_dipendenti">
+		<formFieldProperty
+				name="cd_anag"/>
+		<formFieldProperty
+				name="cognome"/>
+		<formFieldProperty
+				name="nome"/>
+		/>
+	</form>
 	<form name="searchtool">
 		<formFieldProperty
 			name="cd_anag"/> 
 		<formFieldProperty
 			name="ragione_sociale"/> 			    	    
 	</form>
-	
+
 	<formFieldProperty
 		name="aliquota_fiscale"
 		/>
@@ -1165,5 +1174,5 @@
 	<findFieldProperty
 		name="dataAvvioFattElettr"	/>
 	<findFieldProperty
-		name="fl_abilita_diaria_miss_est" />		
+		name="fl_abilita_diaria_miss_est" />
 </bulkInfo>

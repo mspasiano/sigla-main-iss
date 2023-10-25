@@ -40,6 +40,7 @@ import it.cnr.contab.missioni00.docs.bulk.MissioneBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.ApplicationException;
+import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.*;
 import it.cnr.jada.persistency.sql.*;
 
@@ -819,5 +820,31 @@ public boolean findRapportoDipendenteFor(AnagraficoBulk anagrafico) throws Intro
 		sql.addSQLClause("AND", subQuery);
 		sql.setOrderBy("cd_anag",it.cnr.jada.util.OrderConstants.ORDER_ASC);
 		return fetchAll(sql);
+	}
+
+	public SQLBuilder findAnagraficoDipendenteByClause(UserContext userContext,CompoundFindClause clause)
+			throws ComponentException, it.cnr.jada.persistency.PersistencyException {
+		SQLBuilder sql = this.selectByClause(userContext, clause);
+		sql.addTableToHeader("RAPPORTO");
+
+		// RECUPERA LA DATA DI SISTEMA PER I CONFRONTI
+		java.sql.Timestamp dataOdierna = this.getServerDate();
+
+
+
+		String schema = it.cnr.jada.util.ejb.EJBCommonServices.getDefaultSchema();
+
+		String subQuery = "RAPPORTO.CD_TIPO_RAPPORTO IN ( " +
+				"SELECT CD_TIPO_RAPPORTO FROM "+ schema + "TIPO_RAPPORTO " +
+				"WHERE TI_DIPENDENTE_ALTRO = '" + Tipo_rapportoBulk.DIPENDENTE + "' )";
+
+		sql.addSQLJoin("ANAGRAFICO.CD_ANAG", "RAPPORTO.CD_ANAG");
+		sql.addSQLClause("AND","RAPPORTO.DT_INI_VALIDITA",sql.LESS_EQUALS,dataOdierna);
+		sql.addSQLClause("AND","RAPPORTO.DT_FIN_VALIDITA",sql.GREATER_EQUALS,dataOdierna);
+		sql.addSQLClause("AND", subQuery);
+
+		sql.addOrderBy("COGNOME");
+
+		return sql;
 	}
 }

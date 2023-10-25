@@ -26,6 +26,8 @@ import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
 import it.cnr.jada.util.ejb.*;
 
 public class TransactionalAnagraficoComponentSession extends it.cnr.jada.ejb.TransactionalCRUDComponentSession implements AnagraficoComponentSession {
@@ -477,5 +479,29 @@ public boolean isGestitoCreditoIrpef(UserContext param0)throws ComponentExceptio
 			}
 		}
 	}
+
+	@Override
+	public SQLBuilder findAnagraficoDipendenteByClause(UserContext param0, AnagraficoBulk param1, CompoundFindClause param2) throws ComponentException, PersistencyException, RemoteException {
+		try {
+			return ((SQLBuilder) invoke("findAnagraficoDipendenteByClause",new Object[] {
+					param0,
+					param1,
+					param2}));
+		}catch (RemoteException e){
+			throw e;
+		}catch(java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch(it.cnr.jada.comp.ComponentException ex) {
+				throw ex;
+			} catch(Throwable ex) {
+				throw new java.rmi.RemoteException("Uncaugth exception",ex);
+			}
+		}
+
+
+	}
+
+
 }
 

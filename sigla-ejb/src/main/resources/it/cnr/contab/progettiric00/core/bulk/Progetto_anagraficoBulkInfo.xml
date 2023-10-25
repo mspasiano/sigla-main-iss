@@ -5,10 +5,10 @@
 			name="findAnagrafico"
 			property="anagrafico"
 			inputType="SEARCHTOOL"
-			formName="searchtool_completo"
+			formName="searchtool_dipendenti"
 			enabledOnSearch="true"
 			label="Anagrafica"
-			/>
+	/>
 
 	<fieldProperty
 		name="cdAnag"
