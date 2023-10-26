@@ -17,7 +17,9 @@
 
 package it.cnr.contab.progettiric00.comp;
 
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
+import it.cnr.contab.anagraf00.core.bulk.*;
+import it.cnr.contab.anagraf00.ejb.AnagraficoComponentSession;
+import it.cnr.contab.anagraf00.tabrif.bulk.Tipo_rapportoBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.config00.bulk.Parametri_cdsBulk;
 import it.cnr.contab.config00.bulk.Parametri_cnrBulk;
@@ -2516,5 +2518,14 @@ public SQLBuilder selectModuloForPrintByClause (UserContext userContext,Stampa_e
 			return Boolean.TRUE;
 		}
 		return Boolean.FALSE;
+	}
+	public SQLBuilder selectAnagraficoByClause(UserContext userContext,
+											   Progetto_anagraficoBulk progetto,
+											   AnagraficoBulk anag_find,
+											   CompoundFindClause clause)
+			throws ComponentException, it.cnr.jada.persistency.PersistencyException, RemoteException {
+
+		AnagraficoComponentSession sess = (AnagraficoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRANAGRAF00_EJB_AnagraficoComponentSession", AnagraficoComponentSession.class);
+		return sess.findAnagraficoDipendenteByClause(userContext,anag_find,clause);
 	}
 }

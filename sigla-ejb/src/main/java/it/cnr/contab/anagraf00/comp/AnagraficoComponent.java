@@ -2751,4 +2751,14 @@ public class AnagraficoComponent extends UtilitaAnagraficaComponent implements I
         sql.addSQLClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, CNRUserContext.getEsercizio(userContext));
         return sql;
     }
+
+    public SQLBuilder findAnagraficoDipendenteByClause(UserContext userContext,
+                                               AnagraficoBulk anag,
+                                               CompoundFindClause clause)
+            throws ComponentException, it.cnr.jada.persistency.PersistencyException {
+
+            AnagraficoHome anagraficoHome = (AnagraficoHome) getHome(userContext, AnagraficoBulk.class);
+            return anagraficoHome.findAnagraficoDipendenteByClause(userContext, clause);
+
+        }
 }

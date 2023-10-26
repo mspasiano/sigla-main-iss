@@ -26,11 +26,14 @@ import it.cnr.contab.anagraf00.comp.AnagraficoComponent;
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
 import it.cnr.contab.anagraf00.core.bulk.Carico_familiare_anagBulk;
 import it.cnr.contab.compensi00.comp.CompensoComponent;
+import it.cnr.contab.missioni00.comp.MissioneComponent;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
+import it.cnr.jada.persistency.sql.SQLBuilder;
 
 @Stateless(name="CNRANAGRAF00_EJB_AnagraficoComponentSession")
 public class AnagraficoComponentSessionBean extends it.cnr.jada.ejb.CRUDComponentSessionBean implements AnagraficoComponentSession {
@@ -512,5 +515,26 @@ public class AnagraficoComponentSessionBean extends it.cnr.jada.ejb.CRUDComponen
 		} catch(Error e) {
 			throw uncaughtError(param0,componentObj,e);
 		}
+	}
+
+	public SQLBuilder findAnagraficoDipendenteByClause(UserContext param0, AnagraficoBulk param1, CompoundFindClause param2)throws ComponentException, it.cnr.jada.persistency.PersistencyException,RemoteException {
+		try {
+			SQLBuilder result = ((AnagraficoComponent) componentObj).findAnagraficoDipendenteByClause(param0, param1, param2);
+			component_invocation_succes(param0,componentObj);
+			return result;
+
+		} catch(it.cnr.jada.comp.NoRollbackException e) {
+			component_invocation_succes(param0,componentObj);
+			throw e;
+		} catch(it.cnr.jada.comp.ComponentException e) {
+			component_invocation_failure(param0,componentObj);
+			throw e;
+		} catch(RuntimeException e) {
+			throw uncaughtRuntimeException(param0,componentObj,e);
+		} catch(Error e) {
+			throw uncaughtError(param0,componentObj,e);
+		}
+
+
 	}
 }
