@@ -91,6 +91,11 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
 
             int index = 1;
 
+            stampa.setVoce_a(null);
+            stampa.setVoce_da(null);
+            stampa.setVoce_a(null);
+            stampa.setVoce_da(null);
+
 
             if (Optional.ofNullable(stampa)
                     .filter(StampaMastroRendicontoFinanziarioBulk::isTipoGestioneEntrata)
@@ -139,6 +144,10 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
                 }
             }
             stampa.setTi_livello(livelliOptions.get(0).toString());
+
+
+            // annullo selezioni voceDa e voceA
+
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
         }

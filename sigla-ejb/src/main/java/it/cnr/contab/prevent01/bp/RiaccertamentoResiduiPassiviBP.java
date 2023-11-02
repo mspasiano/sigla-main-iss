@@ -93,6 +93,11 @@ public class RiaccertamentoResiduiPassiviBP extends StampaMastroRendicontoFinanz
 
             int index = 1;
 
+            stampa.setVoce_a(null);
+            stampa.setVoce_da(null);
+            stampa.setVoce_a(null);
+            stampa.setVoce_da(null);
+
 
             if (Optional.ofNullable(stampa)
                     .filter(RiaccertamentoResiduiPassiviBulk::isTipoGestioneEntrata)
