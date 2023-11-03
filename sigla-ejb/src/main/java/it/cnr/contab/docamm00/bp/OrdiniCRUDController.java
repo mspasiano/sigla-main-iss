@@ -17,28 +17,20 @@
 
 package it.cnr.contab.docamm00.bp;
 
-import it.cnr.contab.docamm00.docs.bulk.*;
+import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
-import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.util.EuroFormat;
-import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
 import it.cnr.jada.bulk.BulkInfo;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
-import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.Selection;
 import it.cnr.jada.util.jsp.TableCustomizer;
-import org.springframework.data.annotation.Immutable;
 
 import javax.servlet.jsp.JspWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.rmi.RemoteException;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -276,8 +268,10 @@ public class OrdiniCRUDController extends it.cnr.jada.util.action.CollapsableDet
         command = null;
         final Map<String, BigDecimal> differenze = differenze();
         if (getParentController() != null && !differenze.isEmpty()
-                && differenze.get("differenzaImponibile").compareTo(range.negate()) >= 0
-                && differenze.get("differenzaImponibile").compareTo(range) <= 0)
+                && (differenze.get("differenzaImponibile").compareTo(range.negate()) >= 0
+                && differenze.get("differenzaImponibile").compareTo(range) <= 0) || (
+                     differenze.get("totaleImponibilePerNotaCredito").equals(differenze.get("totaleImponibile"))
+                ))
             command = "javascript:submitForm('doConfermaRiscontroAValore')";
         it.cnr.jada.util.jsp.JSPUtils.toolbarButton(
                 context,
