@@ -54,7 +54,7 @@ public java.util.Dictionary getFl_voce_sacKeys() {
 public OggettoBulk initializeForInsert(it.cnr.jada.util.action.CRUDBP bp,it.cnr.jada.action.ActionContext context) {
 	super.initializeForInsert(bp, context);
 	setFl_voce_personale( new Boolean("false") );
-Fi	setBlocco_impegni_natfin("N");
+	setBlocco_impegni_natfin("N");
 	return this;
 }
 }
