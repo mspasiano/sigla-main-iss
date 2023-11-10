@@ -202,7 +202,7 @@
             name="classificazione_entrate"
             property="classificazione_entrate"
             inputType="SEARCHTOOL"
-            formName="searchtool"
+            formName="searchtoolbase"
             enabledOnSearch="true"
             label="Classificazione di Entrata"/>
     <fieldProperty
