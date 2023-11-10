@@ -17,11 +17,10 @@
 
 package it.cnr.contab.config00.pdcfin.bulk;
 
-import it.cnr.jada.bulk.*;
-import it.cnr.jada.persistency.*;
-import it.cnr.jada.util.*;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.util.OrderedHashtable;
 
-import java.util.*;
+import java.util.Dictionary;
 /**
  * Elemento_voceBulk che rappresenta i capitoli di entrata del CNR
  */
@@ -55,6 +54,7 @@ public java.util.Dictionary getFl_voce_sacKeys() {
 public OggettoBulk initializeForInsert(it.cnr.jada.util.action.CRUDBP bp,it.cnr.jada.action.ActionContext context) {
 	super.initializeForInsert(bp, context);
 	setFl_voce_personale( new Boolean("false") );
+	setBlocco_impegni_natfin("N");
 	return this;
 }
 }
