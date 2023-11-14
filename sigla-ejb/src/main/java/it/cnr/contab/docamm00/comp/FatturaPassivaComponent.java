@@ -5947,6 +5947,58 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         return null;
     }
 
+    private void searchDuplicateFattEleDaAnnistraInDB(UserContext aUC, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
+        if (fatturaPassiva.getNr_fattura_fornitore() == null)
+            throw new it.cnr.jada.comp.ApplicationException("Attenzione: inserire il numero del documento del fornitore.");
+        try {
+            SQLBuilder sqlFattNoNotaCredito = getSlqBuilderFatturaIdentSdi(aUC);
+            SQLBuilder sqlNotaCredito = getHome(aUC,Nota_di_credito_rigaBulk.class).createSQLBuilder();
+            sqlNotaCredito.resetColumns();
+            sqlNotaCredito.generateJoin("notaDiCredito", "NOTA_CREDITO");
+            sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.CD_CDS_ASSNCNA_ECO");
+            sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.CD_UO_ASSNCNA_ECO");
+            sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.ESERCIZIO_ASSNCNA_ECO");
+            sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.PG_FATTURA_ASSNCNA_ECO");
+
+            sqlNotaCredito.addClause(FindClause.AND, "CD_CDS_ASSNCNA_ECO",SQLBuilder.EQUALS,fatturaPassiva.getCd_cds());
+            sqlNotaCredito.addClause(FindClause.AND,"FATTURA_PASSIVA_RIGA.CD_UO_ASSNCNA_ECO",SQLBuilder.EQUALS,fatturaPassiva.getCd_unita_organizzativa());
+            sqlNotaCredito.addClause(FindClause.AND,"FATTURA_PASSIVA_RIGA.ESERCIZIO_ASSNCNA_ECO",SQLBuilder.EQUALS,fatturaPassiva.getEsercizio());
+            sqlNotaCredito.addClause(FindClause.AND,"FATTURA_PASSIVA_RIGA.PG_FATTURA_ASSNCNA_ECO",SQLBuilder.EQUALS,fatturaPassiva.getPg_fattura_passiva());
+            sqlNotaCredito.addSQLClause(FindClause.AND, "NOTA_CREDITO.TI_FATTURA", SQLBuilder.EQUALS, Fattura_passivaBulk.TIPO_NOTA_DI_CREDITO);
+
+            sqlFattNoNotaCredito.addSQLNotExistsClause(FindClause.AND,  sqlNotaCredito);
+            Fattura_passivaBulk clause = null;
+            if (fatturaPassiva instanceof Fattura_passiva_IBulk)
+                clause = new Fattura_passiva_IBulk();
+            else if (fatturaPassiva instanceof Nota_di_creditoBulk)
+                clause = new Nota_di_creditoBulk();
+            else
+                clause = new Nota_di_debitoBulk();
+
+            //clause.setCd_cds(fatturaPassiva.getCd_cds());
+            //clause.setEsercizio(fatturaPassiva.getEsercizio());
+            clause.setEsercizio_fattura_fornitore(fatturaPassiva.getEsercizio_fattura_fornitore());
+            clause.setNr_fattura_fornitore(fatturaPassiva.getNr_fattura_fornitore());
+            clause.setDt_fattura_fornitore(fatturaPassiva.getDt_fattura_fornitore());
+            if (fatturaPassiva.getPartita_iva() != null)
+                clause.setPartita_iva(fatturaPassiva.getPartita_iva());
+            else
+                clause.setFornitore(fatturaPassiva.getFornitore());
+            clause.setTi_fattura(fatturaPassiva.getTi_fattura());
+            java.util.List occurences = ((Fattura_passivaHome) getHome(aUC, fatturaPassiva)).findDuplicateFatturaFornitore(clause);
+            if (occurences != null && !occurences.isEmpty()) {
+                for (Iterator i = occurences.iterator(); i.hasNext(); ) {
+                    Fattura_passivaBulk occurence = (Fattura_passivaBulk) i.next();
+                    if ((!fatturaPassiva.equalsByPrimaryKey(occurence)) && (!occurence.isAnnullato()))
+                        throw new it.cnr.jada.comp.ApplicationException("Attenzione duplicazione documento fornitore: il numero di documento " + fatturaPassiva.getNr_fattura_fornitore() + " risulta già registrato");
+                }
+            }
+        } catch (it.cnr.jada.persistency.PersistencyException e) {
+            throw handleException(fatturaPassiva, e);
+        }
+
+    }
+
     private void searchDuplicateInDB(UserContext aUC, Fattura_passivaBulk fatturaPassiva)
             throws ComponentException {
 
@@ -6753,7 +6805,11 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             validaRiga(aUC, riga);
             controlliCig(riga);
         }
-        searchDuplicateInDB(aUC, fatturaPassiva);
+        if ( fatturaPassiva.isFromAmministra() && fatturaPassiva.isElettronica())
+            //caso di seconda registrazione della fattura elettronica in quano la prima stornata con nota di Credito
+            searchDuplicateFattEleDaAnnistraInDB( aUC, fatturaPassiva);
+        if ( !fatturaPassiva.isFromAmministra() || ( fatturaPassiva.isFromAmministra() && (! fatturaPassiva.isElettronica())))
+            searchDuplicateInDB(aUC, fatturaPassiva);
 
         validazioneComune(aUC, fatturaPassiva);
 
@@ -9116,6 +9172,14 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
             throw handleException(e);
         }
     }
+
+    private SQLBuilder getSlqBuilderFatturaIdentSdi(UserContext userContext ) throws ComponentException {
+        SQLBuilder sqlFatt = getHome(userContext,Fattura_passiva_IBulk.class).createSQLBuilder();
+        sqlFatt.resetColumns();
+        sqlFatt.addColumn("FATTURA_PASSIVA.identificativo_sdi");
+        sqlFatt.addSQLJoin("FATTURA_PASSIVA.identificativo_sdi","documento_ele_testata.identificativo_sdi");
+        return sqlFatt;
+    }
     public SQLBuilder selectDocumentoEleTestataByClause(UserContext userContext , Fattura_passiva_IBulk fatturaPassiva,
                                                   DocumentoEleTestataBulk documentoEleTestataBulk, CompoundFindClause findclause) throws ComponentException {
         DocumentoEleTestataHome  home = Optional.ofNullable(getHome(userContext, DocumentoEleTestataBulk.class))
@@ -9125,6 +9189,30 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
         SQLBuilder sqlBuilder = home.createSQLBuilder();
         sqlBuilder.addClause(findclause);
+
+        SQLBuilder sqlFattNotaCredito = getSlqBuilderFatturaIdentSdi(userContext);
+        SQLBuilder sqlFattNoNotaCredito = getSlqBuilderFatturaIdentSdi(userContext);
+
+        SQLBuilder sqlNotaCredito = getHome(userContext,Nota_di_credito_rigaBulk.class).createSQLBuilder();
+        sqlNotaCredito.resetColumns();
+        sqlNotaCredito.generateJoin("notaDiCredito", "NOTA_CREDITO");
+        sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.CD_CDS_ASSNCNA_ECO");
+        sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.CD_UO_ASSNCNA_ECO");
+        sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.ESERCIZIO_ASSNCNA_ECO");
+        sqlNotaCredito.addColumn("FATTURA_PASSIVA_RIGA.PG_FATTURA_ASSNCNA_ECO");
+        sqlNotaCredito.addSQLJoin("FATTURA_PASSIVA_RIGA.CD_CDS_ASSNCNA_ECO","FATTURA_PASSIVA.CD_CDS");
+        sqlNotaCredito.addSQLJoin("FATTURA_PASSIVA_RIGA.CD_UO_ASSNCNA_ECO","FATTURA_PASSIVA.CD_UNITA_ORGANIZZATIVA");
+        sqlNotaCredito.addSQLJoin("FATTURA_PASSIVA_RIGA.ESERCIZIO_ASSNCNA_ECO","FATTURA_PASSIVA.ESERCIZIO");
+        sqlNotaCredito.addSQLJoin("FATTURA_PASSIVA_RIGA.PG_FATTURA_ASSNCNA_ECO","FATTURA_PASSIVA.PG_FATTURA_PASSIVA");
+        sqlNotaCredito.addSQLClause(FindClause.AND, "NOTA_CREDITO.TI_FATTURA", SQLBuilder.EQUALS, Fattura_passivaBulk.TIPO_NOTA_DI_CREDITO);
+
+        sqlFattNotaCredito.addSQLExistsClause(FindClause.AND,  sqlNotaCredito);
+        sqlFattNoNotaCredito.addSQLNotExistsClause(FindClause.AND,  sqlNotaCredito);
+
+        sqlBuilder.addSQLExistsClause(FindClause.AND,sqlFattNotaCredito);
+        sqlBuilder.addSQLNotExistsClause(FindClause.AND,sqlFattNoNotaCredito);
+
+
         return sqlBuilder;
 
     }

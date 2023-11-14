@@ -17,20 +17,18 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
-import java.util.Dictionary;
-import java.util.Vector;
-import java.util.Collection;
-
-import it.cnr.contab.docamm00.intrastat.bulk.Fattura_passiva_intraBulk;
-import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_modalita_pagamentoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.Rif_termini_pagamentoBulk;
-import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
-import it.cnr.jada.bulk.BulkList;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.util.OrderedHashtable;
 import it.cnr.jada.util.action.CRUDBP;
+
+import java.util.Collection;
+import java.util.Dictionary;
+import java.util.Vector;
 
 /**
  * Insert the type's description here.
@@ -199,6 +197,7 @@ public void copyFrom(
 	setModalita_erogazioneColl(fattura_passiva.getModalita_erogazioneColl());
 	setDt_termine_creazione_docamm(fattura_passiva.getDt_termine_creazione_docamm());
 	setFlDaOrdini(Boolean.FALSE);
+	setFromAmministra( fattura_passiva.isFromAmministra());
 }
 /**
  * Insert the method's description here.
@@ -551,6 +550,8 @@ public Dictionary getCausaleKeys(){
 	OrderedHashtable clone = (OrderedHashtable)d.clone();
 	clone.remove(ATTNC);
 	clone.put(NCRED,"Nota Credito");
+	if ( this.isFromAmministra())
+		clone.put(NVARI,"Nota Variazione");
 	return clone;
 }
 }
