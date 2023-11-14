@@ -6028,6 +6028,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_priority_mastro_finanziario.xml"/>
     <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per il cambio voce su partite di giro -->
     <include file="bootstrap/add_accessi_cambia_voce_pgiro.xml"/>
-
+    <!-- Autore : CIRO SALVIO - Aggiunta possibilità di lanciare da applicazione la procedura per il ribaltamento di inizio anno -->
+    <include file="bootstrap/add_prc_ribaltamento_pdg_altro_schedulazione.xml"/>
 
 </databaseChangeLog>
