@@ -196,16 +196,13 @@ procedure ins_RIBALTAMENTO_LOG (aDest RIBALTAMENTO_LOG%rowtype) is
     );
 end;
 ----------------------------------------------------------------------------
-procedure init_ribaltamento_altro(aEs number, aMessage in out varchar2) is
+procedure init_ribaltamento_altro(aEs number, aPgEsec number,aMessage in out varchar2) is
 aEsPrec number;
-aPgEsec number;
 stato_fine char(1) := 'I';
 aNum number;
 begin
 
 	begin
-		aPgEsec := IBMUTL200.LOGSTART(TI_LOG_RIBALTAMENTO_ALTRO,dsProcesso_altro,null,cgUtente,null,null);
-
 		startLogRibaltamento(aEs, aPgEsec, dsProcesso_altro , cgUtente);
 
 		if isRibaltamentoAltroEffettuato(aEs, aPgEsec) then
@@ -1021,6 +1018,13 @@ begin
 		ibmutl200.LOGERR(aPgEsec,aMessage,'','');
 	end;
 
+end;
+----------------------------------------------------------------------------
+procedure init_ribaltamento_altro(aEs number,aMessage in out varchar2) is
+ aPgEsec  number;
+begin	
+	aPgEsec := IBMUTL200.LOGSTART(TI_LOG_RIBALTAMENTO_ALTRO,dsProcesso_altro,null,cgUtente,null,null);
+    init_ribaltamento_altro(aEs, aPgEsec, aMessage);
 end;
 ----------------------------------------------------------------------------
 procedure init_ribaltamento_pdgp(aEs number, aPgEsec number, aMessage in out varchar2) is
@@ -3811,4 +3815,26 @@ begin
     end if;
  end;
 ----------------------------------------------------------------------------
-end;
+
+procedure JOB_RIBALTAMENTO_ALTRO_PDGP(job number, pg_exec number, next_date date, aEs number) as
+    aTSNow date;
+    aUser varchar2(20);
+    aMessage varchar2(500);
+begin
+    aTSNow:=sysdate;
+    aUser:=IBMUTL200.getUserFromLog(pg_exec);
+    lPgExec := pg_exec;
+
+    -- Aggiorna le info di testata del log
+    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_PDGP, job, 'Batch di ribaltamento inizio Anno. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
+
+    if aEs = 0 then
+       ibmutl200.logErr(lPgExec,'Esercizio zero non gestito', '', '');
+    else
+       init_ribaltamento_altro( aEs,pg_exec,aMessage);
+       ibmutl200.logInf(pg_exec,aMessage, '', '');
+       ibmutl200.logInf(pg_exec,'Batch  di ribaltamento inizio Anno.', 'End:'||to_char(sysdate,'YYYY/MM/DD HH-MI-SS'), '');
+    end if;
+ end;
+ ----------------------------------------------------------------------------
+ end;
