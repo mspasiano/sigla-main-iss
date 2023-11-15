@@ -17,12 +17,12 @@
 
 package it.cnr.contab.docamm00.bp;
 
-import java.math.BigDecimal;
-import java.rmi.RemoteException;
-
+import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaIBulk;
+import it.cnr.contab.docamm00.docs.bulk.Nota_di_creditoBulk;
+import it.cnr.contab.docamm00.docs.bulk.Nota_di_credito_rigaBulk;
 import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
-import it.cnr.contab.doccont00.core.bulk.*;
-import it.cnr.contab.docamm00.docs.bulk.*;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_scadenzarioBulk;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.bulk.OggettoBulk;
@@ -33,6 +33,9 @@ import it.cnr.jada.util.ObjectReplacer;
 import it.cnr.jada.util.RemoteIterator;
 import it.cnr.jada.util.action.SearchProvider;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+
+import java.math.BigDecimal;
+import java.rmi.RemoteException;
 
 /**
  * Insert the type's description here.
