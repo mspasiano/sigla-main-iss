@@ -102,7 +102,7 @@ create or replace PACKAGE "CNRMIG100" as
 --
 -- Date: 20/11/2008
 -- Version: 1.19
--- Inserito job per lanciare la copia del bilancio Gestionale dal Previsionale
+-- Inserito job per lanciare la copia del bilancio Decisionale al Gestionale
 -- Constants:
 --
 -- Descrizione utente
@@ -194,5 +194,5 @@ procedure ins_RIBALTAMENTO_LOG (aDest RIBALTAMENTO_LOG%rowtype);
 --
 procedure JOB_RIBALTAMENTO_PDGP(job number, pg_exec number, next_date date, aEs number);
 
-procedure JOB_RIBALTAMENTO_PREV_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 );
+procedure JOB_RIBALTAMENTO_DECIS_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 );
 end;

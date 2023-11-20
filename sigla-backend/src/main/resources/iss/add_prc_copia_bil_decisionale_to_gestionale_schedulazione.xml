@@ -24,9 +24,9 @@
 
     <changeSet author="ciro.salvio" id="add_prc_copia_bil_previsionale_to_decisionale_schedulazione.xml">
         <insert tableName="batch_procedura">
-            <column name="cd_procedura" type="STRING" value="COPYBILPREVDEC"/>
-            <column name="ds_procedura" type="STRING" value="Copia Bilancio Prev. in Decisionale"/>
-            <column name="object_name" type="STRING" value="JOB_RIBALTAMENTO_PREV_GEST"/>
+            <column name="cd_procedura" type="STRING" value="COPYBILDECISGEST"/>
+            <column name="ds_procedura" type="STRING" value="Copia Bilancio Decisionale in Gestionale"/>
+            <column name="object_name" type="STRING" value="JOB_RIBALTAMENTO_DECIS_GEST"/>
             <column name="package_name" type="STRING" value="CNRMIG100"/>
             <column name="dacr" type="${date.type}" valueDate="${now}"/>
             <column name="utcr" type="STRING" value="SYSTEM"/>
@@ -36,7 +36,7 @@
         </insert>
 
         <insert tableName="batch_procedura_parametro">
-            <column name="cd_procedura" type="STRING" value="COPYBILPREVDEC"/>
+            <column name="cd_procedura" type="STRING" value="COPYBILDECISGEST"/>
             <column name="nome_parametro" type="STRING" value="AES"/>
             <column name="pg_valore_parametro" type="NUMERIC" value="1"/>
             <column name="valore_number" type="NUMERIC" value="2024"/>
@@ -47,7 +47,7 @@
             <column name="pg_ver_rec" type="NUMERIC" value="0"/>
         </insert>
         <insert tableName="batch_procedura_parametro">
-            <column name="cd_procedura" type="STRING" value="COPYBILPREVDEC"/>
+            <column name="cd_procedura" type="STRING" value="COPYBILDECISGEST"/>
             <column name="nome_parametro" type="STRING" value="ACDCENTRORESPONSABILITA"/>
             <column name="pg_valore_parametro" type="NUMERIC" value="2"/>
             <column name="valore_varchar" type="NUMERIC" value="000.000.000"/>
@@ -58,7 +58,7 @@
             <column name="pg_ver_rec" type="NUMERIC" value="0"/>
         </insert>
         <insert tableName="batch_procedura_parametro">
-            <column name="cd_procedura" type="STRING" value="COPYBILPREVDEC"/>
+            <column name="cd_procedura" type="STRING" value="COPYBILDECISGEST"/>
             <column name="nome_parametro" type="STRING" value="ACDLINEAATTIVITA"/>
             <column name="pg_valore_parametro" type="NUMERIC" value="3"/>
             <column name="valore_varchar" type="NUMERIC" value="P0000001"/>

@@ -1,6 +1,3 @@
---------------------------------------------------------
---  DDL for Package Body CNRMIG100
---------------------------------------------------------
 create or replace PACKAGE BODY "CNRMIG100" is
 
 lPgExec number;
@@ -1022,7 +1019,7 @@ end;
 ----------------------------------------------------------------------------
 procedure init_ribaltamento_altro(aEs number,aMessage in out varchar2) is
  aPgEsec  number;
-begin	
+begin
 	aPgEsec := IBMUTL200.LOGSTART(TI_LOG_RIBALTAMENTO_ALTRO,dsProcesso_altro,null,cgUtente,null,null);
     init_ribaltamento_altro(aEs, aPgEsec, aMessage);
 end;
@@ -3785,7 +3782,7 @@ begin
    ibmutl200.LOGINF(pg_exec,aMessage,'','');
 end;
 
-procedure INIT_RIBALTAMENTO_PREV_GEST(aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2,aPgEsec number, aMessage in out varchar2) as
+procedure INIT_RIBALTAMENTO_DECIS_GEST(aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2,aPgEsec number, aMessage in out varchar2) as
 stato_fine      char(1) := 'I';
 aTSNow date;
 aUser varchar2(20);
@@ -3805,7 +3802,7 @@ begin
 		end if;
 		if isRibaltamentoAltroEffettuato(aEs, aPgEsec) then
 		   stato_fine := 'E';
-		   aMessage := 'Lo script di ribaltamento è già stato eseguito con successo per l''esercizio '|| aEs ||': non è possibile eseguire quello per copiare il bilancio di Previsione sul Decisionale.';
+		   aMessage := 'Lo script di ribaltamento è già stato eseguito con successo per l''esercizio '|| aEs ||': non è possibile eseguire la copia del bilancio di Decisionale sul quello Gestionale.';
 		   endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage);
 		end if;
 
@@ -3818,7 +3815,7 @@ begin
                            select 1 from PDG_MODULO_ENTRATE_GEST
 			 	   		   where esercizio = aEs);
 			 stato_fine := 'E';
-			 aMessage := 'Esistono elementi voce definiti sull''esercizio '||aEs||': impossibile ribaltare il Bilancio di Previsione su Gestionale';
+			 aMessage := 'Esistono elementi voce definiti sull''esercizio '||aEs||': impossibile ribaltare il Bilancio di Decisionale su quello Gestionale';
 			 endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage);
 		exception when NO_DATA_FOUND then
 			 null;
@@ -3829,7 +3826,7 @@ begin
         dbms_output.put_line('0001');
 
 		begin
-			aMessage := 'Inserimento del Bilancio decisionale per l''esercizio base '||aEs;
+			aMessage := 'Inserimento del Bilancio Gestionale per l''esercizio base '||aEs;
 			ibmutl200.LOGINF(aPgEsec,aMessage,'','');
 
             FOR DET_SPESE IN (
@@ -3888,7 +3885,7 @@ begin
                             stato_fine := 'W';
                     end;
                END LOOP;
-               aMessage := 'Aggiornamento Bilancio Decisionale Spesa. Inseriti '||sql%rowcount||' record.';
+               aMessage := 'Aggiornamento Bilancio Gestionale Spesa. Inseriti '||sql%rowcount||' record.';
                 ibmutl200.LOGINF(aPgEsec,aMessage,'','');
                 CONTA_INS:=0;
              FOR DET_ENTRATA IN (
@@ -3946,7 +3943,7 @@ begin
                             stato_fine := 'W';
                     end;
                END LOOP;
-               aMessage := 'Aggiornamento Bilancio Previsionale Spesa. Inseriti '||sql%rowcount||' record.';
+               aMessage := 'Aggiornamento Bilancio Gestionale Spesa. Inseriti '||sql%rowcount||' record.';
                 ibmutl200.LOGINF(aPgEsec,aMessage,'','');
 
             endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage );
@@ -4013,7 +4010,7 @@ begin
     end if;
  end;
  ----------------------------------------------------------------------------
- procedure JOB_RIBALTAMENTO_PREV_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 ) as
+ procedure JOB_RIBALTAMENTO_DECIS_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 ) as
  aMessage varchar2(500);
  aTSNow date;
  esisteLineaAttivita number;
@@ -4021,7 +4018,7 @@ begin
     aTSNow:=sysdate;
     lPgExec := pg_exec;
     -- Aggiorna le info di testata del log
-    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_PDGP, job, 'Batch di ribaltamento bilancio Previsionale su Gestionale. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
+    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_PDGP, job, 'Batch di ribaltamento bilancio Decisionale su quello Gestionale. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
 
 	if aEs = 0 then
 	   ibmutl200.logErr(lPgExec,'Esercizio zero non gestito', '', '');
@@ -4031,13 +4028,15 @@ begin
         begin
             select count(*) into esisteLineaAttivita from LINEA_ATTIVITA
                     where CD_CENTRO_RESPONSABILITA=aCdCentroResponsabilita
-                    and CD_LINEA_ATTIVITA=aCdLineaAttivita;
-                    INIT_RIBALTAMENTO_PREV_GEST(aEs,aCdCentroResponsabilita,aCdLineaAttivita,pg_exec,aMessage);
+                    and CD_LINEA_ATTIVITA=aCdLineaAttivita
+                     and esercizio_inizio>=aEs
+                    and esercizio_fine<aEs;
+                    INIT_RIBALTAMENTO_DECIS_GEST(aEs,aCdCentroResponsabilita,aCdLineaAttivita,pg_exec,aMessage);
             exception when NO_DATA_FOUND then
                      aMessage:='Non esiste la linea attivita cd_centro_responsabilita:'||aCdCentroResponsabilita||' a cd_linea_attivita:'||aCdLineaAttivita;
 
            ibmutl200.logInf(pg_exec,aMessage, '', '');
-           ibmutl200.logInf(pg_exec,'Batch di ribaltamento bilancio Previsionale su Gestionale.', 'End:'||to_char(sysdate,'YYYY/MM/DD HH-MI-SS'), '');
+           ibmutl200.logInf(pg_exec,'Batch di ribaltamento bilancio Decizionale su quello Gestionale.', 'End:'||to_char(sysdate,'YYYY/MM/DD HH-MI-SS'), '');
            end;
     end if;
  end;

@@ -110,7 +110,7 @@
     <!-- Autore : CIRO SALVIO-GESTIONE INVENTARIA DA DOCUMENTI -->
     <include file="iss/update_gestione_inventaria_documenti.xml"></include>
     <!-- Autore : CIRO SALVIO - Aggiunta possibilità di lanciare da applicazione la copia del bilancio previsionale su quello decisionale -->
-    <include file="iss/add_prc_copia_bil_previsionale_to_decisionale_schedulazione.xml"></include>
+    <include file="iss/add_prc_copia_bil_decisionale_to_gestionale_schedulazione.xml"></include>
 
 
 </databaseChangeLog>
