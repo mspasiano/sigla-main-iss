@@ -22,7 +22,7 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd
                                        http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
-    <changeSet author="ciro.salvio" id="add_prc_copia_bil_previsionale_to_decisionale_schedulazione.xml">
+    <changeSet author="ciro.salvio" id="add_prc_copia_bil_decisionale_to_gestionale_schedulazione.xml">
         <insert tableName="batch_procedura">
             <column name="cd_procedura" type="STRING" value="COPYBILDECISGEST"/>
             <column name="ds_procedura" type="STRING" value="Copia Bilancio Decisionale in Gestionale"/>
