@@ -1,6 +1,3 @@
---------------------------------------------------------
---  DDL for Package Body CNRMIG100
---------------------------------------------------------
 create or replace PACKAGE BODY "CNRMIG100" is
 
 lPgExec number;
@@ -1022,7 +1019,7 @@ end;
 ----------------------------------------------------------------------------
 procedure init_ribaltamento_altro(aEs number,aMessage in out varchar2) is
  aPgEsec  number;
-begin	
+begin
 	aPgEsec := IBMUTL200.LOGSTART(TI_LOG_RIBALTAMENTO_ALTRO,dsProcesso_altro,null,cgUtente,null,null);
     init_ribaltamento_altro(aEs, aPgEsec, aMessage);
 end;
@@ -3785,6 +3782,182 @@ begin
    ibmutl200.LOGINF(pg_exec,aMessage,'','');
 end;
 
+procedure INIT_RIBALTAMENTO_DECIS_GEST(aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2,aPgEsec number, aMessage in out varchar2) as
+stato_fine      char(1) := 'I';
+aTSNow date;
+aUser varchar2(20);
+CONTA_INS NUMBER := 0;
+aNum number:=0;
+
+begin
+        dbms_output.put_line('0001');
+        aUser:=IBMUTL200.getUserFromLog(aPgEsec);
+        aTSNow:=sysdate;
+		startLogRibaltamento(aEs, aPgEsec, dsProcesso_prev_gest , cgUtente);
+
+		if not isRibaltamentoPDGPEffettuato(aEs, aPgEsec) then
+		   stato_fine := 'E';
+		   aMessage := 'Lo script di ribaltamento per il PDGP non è già ancora eseguito con successo per l''esercizio '|| aEs ||'.';
+		   endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage);
+		end if;
+		if isRibaltamentoAltroEffettuato(aEs, aPgEsec) then
+		   stato_fine := 'E';
+		   aMessage := 'Lo script di ribaltamento è già stato eseguito con successo per l''esercizio '|| aEs ||': non è possibile eseguire la copia del bilancio di Decisionale sul quello Gestionale.';
+		   endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage);
+		end if;
+
+		begin
+			 select 1 into aNum
+			 from dual
+			 where exists (select 1 from PDG_MODULO_SPESE_GEST
+			 	   		   where esercizio = aEs
+                           union all
+                           select 1 from PDG_MODULO_ENTRATE_GEST
+			 	   		   where esercizio = aEs);
+			 stato_fine := 'E';
+			 aMessage := 'Esistono elementi voce definiti sull''esercizio '||aEs||': impossibile ribaltare il Bilancio di Decisionale su quello Gestionale';
+			 endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage);
+		exception when NO_DATA_FOUND then
+			 null;
+		end;
+
+    -- Ribaltamento PDG_MODULO_SPESE_GEST  sull'esercizio contabile destinazione
+		-- a partire dal bilancio di previsione
+        dbms_output.put_line('0001');
+
+		begin
+			aMessage := 'Inserimento del Bilancio Gestionale per l''esercizio base '||aEs;
+			ibmutl200.LOGINF(aPgEsec,aMessage,'','');
+
+            FOR DET_SPESE IN (
+                select p.ESERCIZIO,
+                            p.CD_CENTRO_RESPONSABILITA,
+                            p.PG_PROGETTO,
+                            p.ID_CLASSIFICAZIONE,
+                            p.CD_CDS_AREA,
+                            v.TI_APPARTENENZA,
+                            v.TI_GESTIONE,
+                             v.CD_ELEMENTO_VOCE,
+                             p.pg_dettaglio,
+                             'PREV',
+                             'DIR',
+                             'N',
+                             p.IM_SPESE_GEST_DECENTRATA_INT,
+                             p.im_spese_gest_decentrata_est,
+                            p.im_spese_gest_accentrata_int,
+                            im_spese_gest_accentrata_est,
+                            GREATEST(NVL(p.im_spese_a2,0),NVL(p.im_spese_a3,0)) IM_PAGAMENTI
+                            from PDG_MODULO_SPESE p
+                            inner join classificazione_voci c
+                            on p.id_classificazione=c.id_classificazione
+                            and p.esercizio=c.esercizio
+                            inner join elemento_voce v
+                            on v.TI_GESTIONE=c.TI_GESTIONE
+                            and v.cd_elemento_voce=c.cd_livello6
+                            and v.esercizio=c.esercizio
+                            where p.esercizio=aEs) LOOP
+                    begin
+
+                        insert into PDG_MODULO_SPESE_GEST (ESERCIZIO,CD_CENTRO_RESPONSABILITA,PG_PROGETTO,ID_CLASSIFICAZIONE,
+                                         CD_CDS_AREA,CD_CDR_ASSEGNATARIO,CD_LINEA_ATTIVITA,TI_APPARTENENZA,TI_GESTIONE,
+                                         CD_ELEMENTO_VOCE,DT_REGISTRAZIONE,ORIGINE,CATEGORIA_DETTAGLIO,FL_SOLA_LETTURA,
+                                         IM_SPESE_GEST_DECENTRATA_INT,IM_SPESE_GEST_DECENTRATA_EST,IM_SPESE_GEST_ACCENTRATA_INT,IM_SPESE_GEST_ACCENTRATA_EST,
+                                         IM_PAGAMENTI,UTCR,DACR,UTUV,DUVA,PG_VER_REC,PG_DETTAGLIO)
+                       VALUES(DET_SPESE.ESERCIZIO, DET_SPESE.CD_CENTRO_RESPONSABILITA, DET_SPESE.PG_PROGETTO, DET_SPESE.ID_CLASSIFICAZIONE, DET_SPESE.CD_CDS_AREA,
+                            aCdCentroResponsabilita, aCdLineaAttivita,DET_SPESE.TI_APPARTENENZA,DET_SPESE.TI_GESTIONE,DET_SPESE.CD_ELEMENTO_VOCE,
+                            aTSNow,'PRE','DIR','N',DET_SPESE.IM_SPESE_GEST_DECENTRATA_INT,DET_SPESE.im_spese_gest_decentrata_est,DET_SPESE.im_spese_gest_accentrata_int,
+                            DET_SPESE.im_spese_gest_accentrata_est,0 ,aUser,  aTSNow, aUser, aTSNow, 1,DET_SPESE.PG_DETTAGLIO);
+
+
+                       CONTA_INS := CONTA_INS + SQL%ROWCOUNT;
+                       exception when DUP_VAL_ON_INDEX then
+                            ibmutl200.LOGWAR(aPgEsec,'PDG_MODULO_SPESE_GEST con PK('||aEs||', '
+                                    ||DET_SPESE.CD_CENTRO_RESPONSABILITA||', '
+                                    ||DET_SPESE.PG_PROGETTO||', '
+                                    ||DET_SPESE.ID_CLASSIFICAZIONE||', '
+                                    ||DET_SPESE.CD_CDS_AREA||','
+                                    ||DET_SPESE.PG_DETTAGLIO||','
+                                    ||aCdCentroResponsabilita||', '
+                                    ||aCdLineaAttivita||', '
+                                    ||DET_SPESE.TI_APPARTENENZA||', '
+                                    ||DET_SPESE.TI_GESTIONE||', '
+                                    ||DET_SPESE.CD_ELEMENTO_VOCE||') già esistente','','');
+                            stato_fine := 'W';
+                    end;
+               END LOOP;
+               aMessage := 'Aggiornamento Bilancio Gestionale Spesa. Inseriti '||sql%rowcount||' record.';
+                ibmutl200.LOGINF(aPgEsec,aMessage,'','');
+                CONTA_INS:=0;
+             FOR DET_ENTRATA IN (
+             select p.ESERCIZIO,
+                        p.CD_CENTRO_RESPONSABILITA,
+                        p.PG_PROGETTO,
+                        p.CD_NATURA,
+                        p.ID_CLASSIFICAZIONE,
+                        p.CD_CDS_AREA,
+                        v.TI_APPARTENENZA,
+                        v.TI_GESTIONE,
+                         v.CD_ELEMENTO_VOCE,
+                         p.pg_dettaglio,
+                         'PREV',
+                         'DIR',
+                         'N',
+                         p.im_entrata_tot,
+                         p.im_entrata,
+                         p.im_entrata_app,
+                        p.im_entrata_a2,
+                        p.im_entrata_a3
+                        from pdg_modulo_entrate p
+                        inner join classificazione_voci c
+                        on p.id_classificazione=c.id_classificazione
+                        and p.esercizio=c.esercizio
+                        inner join elemento_voce v
+                        on v.TI_GESTIONE=c.TI_GESTIONE
+                        and v.cd_elemento_voce=c.cd_livello6
+                        and v.esercizio=c.esercizio
+                        where p.esercizio=aEs) LOOP
+                    begin
+                        insert into PDG_MODULO_ENTRATE_GEST (ESERCIZIO,CD_CENTRO_RESPONSABILITA,PG_PROGETTO,CD_NATURA,ID_CLASSIFICAZIONE,
+                                         CD_CDS_AREA,PG_DETTAGLIO,CD_CDR_ASSEGNATARIO,CD_LINEA_ATTIVITA,TI_APPARTENENZA,TI_GESTIONE,
+                                         CD_ELEMENTO_VOCE,DT_REGISTRAZIONE,ORIGINE,CATEGORIA_DETTAGLIO,FL_SOLA_LETTURA,
+                                         IM_ENTRATA,IM_INCASSI,UTCR,DACR,UTUV,DUVA,PG_VER_REC)
+                       VALUES(DET_ENTRATA.ESERCIZIO, DET_ENTRATA.CD_CENTRO_RESPONSABILITA, DET_ENTRATA.PG_PROGETTO, DET_ENTRATA.CD_NATURA,DET_ENTRATA.ID_CLASSIFICAZIONE,
+                        DET_ENTRATA.CD_CDS_AREA,DET_ENTRATA.pg_dettaglio,aCdCentroResponsabilita, aCdLineaAttivita,DET_ENTRATA.TI_APPARTENENZA,DET_ENTRATA.TI_GESTIONE,
+                        DET_ENTRATA.CD_ELEMENTO_VOCE, aTSNow,'PRE','DIR','N',
+                        DET_ENTRATA.im_entrata_tot,0,aUser,  aTSNow, aUser, aTSNow, 1);
+
+                       CONTA_INS := CONTA_INS + SQL%ROWCOUNT;
+                       exception when DUP_VAL_ON_INDEX then
+                            ibmutl200.LOGWAR(aPgEsec,'PDG_MODULO_ENTRATE_GEST con PK('||aEs||', '
+                                    ||DET_ENTRATA.CD_CENTRO_RESPONSABILITA||', '
+                                    ||DET_ENTRATA.PG_PROGETTO||', '
+                                    ||DET_ENTRATA.CD_NATURA||', '
+                                    ||DET_ENTRATA.ID_CLASSIFICAZIONE||', '
+                                    ||DET_ENTRATA.CD_CDS_AREA||','
+                                    ||DET_ENTRATA.pg_dettaglio||','
+                                    ||aCdCentroResponsabilita||', '
+                                    ||aCdLineaAttivita||', '
+                                    ||DET_ENTRATA.TI_APPARTENENZA||', '
+                                    ||DET_ENTRATA.TI_GESTIONE||', '
+                                    ||DET_ENTRATA.CD_ELEMENTO_VOCE||') già esistente','','');
+                            stato_fine := 'W';
+                    end;
+               END LOOP;
+               aMessage := 'Aggiornamento Bilancio Gestionale Spesa. Inseriti '||sql%rowcount||' record.';
+                ibmutl200.LOGINF(aPgEsec,aMessage,'','');
+
+            endLogRibaltamentoPerPDGP(aEs, aPgEsec, stato_fine, aMessage );
+            dbms_output.put_line('0004');
+		end;
+
+       exception when OTHERS then
+	    rollback;
+		aMessage := 'Errore non gestito: '||DBMS_UTILITY.FORMAT_ERROR_STACK;
+		ibmutl200.LOGERR(aPgEsec,aMessage,'','');
+
+end;
+----------------------------------------------------------------------------
+
 procedure JOB_RIBALTAMENTO_PDGP(job number, pg_exec number, next_date date, aEs number) as
     aTSNow date;
     aUser varchar2(20);
@@ -3834,6 +4007,37 @@ begin
        init_ribaltamento_altro( aEs,pg_exec,aMessage);
        ibmutl200.logInf(pg_exec,aMessage, '', '');
        ibmutl200.logInf(pg_exec,'Batch  di ribaltamento inizio Anno.', 'End:'||to_char(sysdate,'YYYY/MM/DD HH-MI-SS'), '');
+    end if;
+ end;
+ ----------------------------------------------------------------------------
+ procedure JOB_RIBALTAMENTO_DECIS_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 ) as
+ aMessage varchar2(500);
+ aTSNow date;
+ esisteLineaAttivita number;
+ begin
+    aTSNow:=sysdate;
+    lPgExec := pg_exec;
+    -- Aggiorna le info di testata del log
+    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_PDGP, job, 'Batch di ribaltamento bilancio Decisionale su quello Gestionale. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
+
+	if aEs = 0 then
+	   ibmutl200.logErr(lPgExec,'Esercizio zero non gestito', '', '');
+	elsif ( aCdCentroResponsabilita is null or aCdLineaAttivita is null) then
+        ibmutl200.logErr(lPgExec,'aCdCentroResponsabilita o aCdLineaAttivita non valorizzate', '', '');
+    else
+        begin
+            select count(*) into esisteLineaAttivita from LINEA_ATTIVITA
+                    where CD_CENTRO_RESPONSABILITA=aCdCentroResponsabilita
+                    and CD_LINEA_ATTIVITA=aCdLineaAttivita
+                     and esercizio_inizio>=aEs
+                    and esercizio_fine<aEs;
+                    INIT_RIBALTAMENTO_DECIS_GEST(aEs,aCdCentroResponsabilita,aCdLineaAttivita,pg_exec,aMessage);
+            exception when NO_DATA_FOUND then
+                     aMessage:='Non esiste la linea attivita cd_centro_responsabilita:'||aCdCentroResponsabilita||' a cd_linea_attivita:'||aCdLineaAttivita;
+
+           ibmutl200.logInf(pg_exec,aMessage, '', '');
+           ibmutl200.logInf(pg_exec,'Batch di ribaltamento bilancio Decizionale su quello Gestionale.', 'End:'||to_char(sysdate,'YYYY/MM/DD HH-MI-SS'), '');
+           end;
     end if;
  end;
  ----------------------------------------------------------------------------
