@@ -1,18 +1,19 @@
 /*
  * Created by BulkGenerator 2.0 [07/12/2009]
- * Date 24/11/2023
+ * Date 25/11/2023
  */
 package it.cnr.contab.doccont00.core.bulk;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.KeyedPersistent;
 public class obbligazione_pluriennale_voceKey extends OggettoBulk implements KeyedPersistent {
 	private String cdCds;
-	private Long esercizio;
-	private Long esercizioOriginale;
+	private Integer esercizio;
+	private Integer esercizioOriginale;
 	private Long pgObbligazione;
-	private Long anno;
+	private Integer anno;
 	private String cdCentroResponsabilita;
 	private String cdLineaAttivita;
+	private Integer esercizioVoce;
 	private String tiAppartenenza;
 	private String tiGestione;
 	private String cdVoce;
@@ -23,7 +24,7 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	public obbligazione_pluriennale_voceKey() {
 		super();
 	}
-	public obbligazione_pluriennale_voceKey(String cdCds, Long esercizio, Long esercizioOriginale, Long pgObbligazione, Long anno, String cdCentroResponsabilita, String cdLineaAttivita, String tiAppartenenza, String tiGestione, String cdVoce) {
+	public obbligazione_pluriennale_voceKey(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
 		super();
 		this.cdCds=cdCds;
 		this.esercizio=esercizio;
@@ -32,6 +33,7 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 		this.anno=anno;
 		this.cdCentroResponsabilita=cdCentroResponsabilita;
 		this.cdLineaAttivita=cdLineaAttivita;
+		this.esercizioVoce=esercizioVoce;
 		this.tiAppartenenza=tiAppartenenza;
 		this.tiGestione=tiGestione;
 		this.cdVoce=cdVoce;
@@ -47,6 +49,7 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 		if (!compareKey(getAnno(), k.getAnno())) return false;
 		if (!compareKey(getCdCentroResponsabilita(), k.getCdCentroResponsabilita())) return false;
 		if (!compareKey(getCdLineaAttivita(), k.getCdLineaAttivita())) return false;
+		if (!compareKey(getEsercizioVoce(), k.getEsercizioVoce())) return false;
 		if (!compareKey(getTiAppartenenza(), k.getTiAppartenenza())) return false;
 		if (!compareKey(getTiGestione(), k.getTiGestione())) return false;
 		if (!compareKey(getCdVoce(), k.getCdVoce())) return false;
@@ -61,6 +64,7 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 		i = i + calculateKeyHashCode(getAnno());
 		i = i + calculateKeyHashCode(getCdCentroResponsabilita());
 		i = i + calculateKeyHashCode(getCdLineaAttivita());
+		i = i + calculateKeyHashCode(getEsercizioVoce());
 		i = i + calculateKeyHashCode(getTiAppartenenza());
 		i = i + calculateKeyHashCode(getTiGestione());
 		i = i + calculateKeyHashCode(getCdVoce());
@@ -84,28 +88,28 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Esercizio dell'obbligazione]
 	 **/
-	public void setEsercizio(Long esercizio)  {
+	public void setEsercizio(Integer esercizio)  {
 		this.esercizio=esercizio;
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Esercizio dell'obbligazione]
 	 **/
-	public Long getEsercizio() {
+	public Integer getEsercizio() {
 		return esercizio;
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Esercizio Originale dell'obbligazione]
 	 **/
-	public void setEsercizioOriginale(Long esercizioOriginale)  {
+	public void setEsercizioOriginale(Integer esercizioOriginale)  {
 		this.esercizioOriginale=esercizioOriginale;
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Esercizio Originale dell'obbligazione]
 	 **/
-	public Long getEsercizioOriginale() {
+	public Integer getEsercizioOriginale() {
 		return esercizioOriginale;
 	}
 	/**
@@ -126,14 +130,14 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Anno Obbligazione Pluriennale]
 	 **/
-	public void setAnno(Long anno)  {
+	public void setAnno(Integer anno)  {
 		this.anno=anno;
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Anno Obbligazione Pluriennale]
 	 **/
-	public Long getAnno() {
+	public Integer getAnno() {
 		return anno;
 	}
 	/**
@@ -163,6 +167,20 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	 **/
 	public String getCdLineaAttivita() {
 		return cdLineaAttivita;
+	}
+	/**
+	 * Created by BulkGenerator 2.0 [07/12/2009]
+	 * Restituisce il valore di: [Esercizio della voce del capitolo]
+	 **/
+	public void setEsercizioVoce(Integer esercizioVoce)  {
+		this.esercizioVoce=esercizioVoce;
+	}
+	/**
+	 * Created by BulkGenerator 2.0 [07/12/2009]
+	 * Setta il valore di: [Esercizio della voce del capitolo]
+	 **/
+	public Integer getEsercizioVoce() {
+		return esercizioVoce;
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]

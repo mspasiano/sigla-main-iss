@@ -20,6 +20,9 @@
 			columnName="ANNO"
 			propertyName="obbligazionePluriennale.anno" />
 		<columnMapping
+			columnName="ESERCIZIO_VOCE"
+			propertyName="elementoVoce.esercizio" />
+		<columnMapping
 			columnName="TI_APPARTENENZA"
 			propertyName="elementoVoce.ti_appartenenza" />
 		<columnMapping

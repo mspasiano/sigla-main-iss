@@ -1,11 +1,10 @@
 /*
  * Created by BulkGenerator 2.0 [07/12/2009]
- * Date 24/11/2023
+ * Date 25/11/2023
  */
 package it.cnr.contab.doccont00.core.bulk;
-import it.cnr.jada.action.ActionContext;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.util.action.CRUDBP;
+
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
 public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_voceBase {
 	/**
 	 * [OBBLIGAZIONE_PLURIENNALE ]
@@ -26,10 +25,10 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE_VOCE
 	 **/
-	public obbligazione_pluriennale_voceBulk(String cdCds, Long esercizio, Long esercizioOriginale, Long pgObbligazione, Long anno, String cdCentroResponsabilita, String cdLineaAttivita, String tiAppartenenza, String tiGestione, String cdVoce) {
-		super(cdCds, esercizio, esercizioOriginale, pgObbligazione, anno, cdCentroResponsabilita, cdLineaAttivita, tiAppartenenza, tiGestione, cdVoce);
+	public obbligazione_pluriennale_voceBulk(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
+		super(cdCds, esercizio, esercizioOriginale, pgObbligazione, anno, cdCentroResponsabilita, cdLineaAttivita, esercizioVoce, tiAppartenenza, tiGestione, cdVoce);
 		setObbligazionePluriennale( new Obbligazione_pluriennaleBulk(cdCds,esercizio,esercizioOriginale,pgObbligazione,anno) );
-		setElementoVoce( new Elemento_voceBulk(esercizio,tiAppartenenza,tiGestione,cdVoce) );
+		setElementoVoce( new Elemento_voceBulk(cdVoce,esercizioVoce,tiAppartenenza,tiGestione) );
 	}
 	public Obbligazione_pluriennaleBulk getObbligazionePluriennale() {
 		return obbligazionePluriennale;
@@ -51,20 +50,20 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 		Obbligazione_pluriennaleBulk obbligazionePluriennale = this.getObbligazionePluriennale();
 		if (obbligazionePluriennale == null)
 			return null;
-		return getObbligazionePluriennale().getCd_cds();
+		return getObbligazionePluriennale().getCdCds();
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Cds dell'obbligazione]
 	 **/
 	public void setCdCds(String cdCds)  {
-		this.getObbligazionePluriennale().setCd_cds(cdCds);
+		this.getObbligazionePluriennale().setCdCds(cdCds);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Esercizio dell'obbligazione]
 	 **/
-	public Long getEsercizio() {
+	public Integer getEsercizio() {
 		Obbligazione_pluriennaleBulk obbligazionePluriennale = this.getObbligazionePluriennale();
 		if (obbligazionePluriennale == null)
 			return null;
@@ -74,25 +73,25 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Esercizio dell'obbligazione]
 	 **/
-	public void setEsercizio(Long esercizio)  {
+	public void setEsercizio(Integer esercizio)  {
 		this.getObbligazionePluriennale().setEsercizio(esercizio);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Esercizio Originale dell'obbligazione]
 	 **/
-	public Long getEsercizioOriginale() {
+	public Integer getEsercizioOriginale() {
 		Obbligazione_pluriennaleBulk obbligazionePluriennale = this.getObbligazionePluriennale();
 		if (obbligazionePluriennale == null)
 			return null;
-		return getObbligazionePluriennale().getEsercizio_originale();
+		return getObbligazionePluriennale().getEsercizioOriginale();
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Esercizio Originale dell'obbligazione]
 	 **/
-	public void setEsercizioOriginale(Long esercizioOriginale)  {
-		this.getObbligazionePluriennale().setEsercizio_originale(esercizioOriginale);
+	public void setEsercizioOriginale(Integer esercizioOriginale)  {
+		this.getObbligazionePluriennale().setEsercizioOriginale(esercizioOriginale);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
@@ -102,20 +101,20 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 		Obbligazione_pluriennaleBulk obbligazionePluriennale = this.getObbligazionePluriennale();
 		if (obbligazionePluriennale == null)
 			return null;
-		return getObbligazionePluriennale().getPg_obbligazione();
+		return getObbligazionePluriennale().getPgObbligazione();
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Numero dell'obbligazione]
 	 **/
 	public void setPgObbligazione(Long pgObbligazione)  {
-		this.getObbligazionePluriennale().setPg_obbligazione(pgObbligazione);
+		this.getObbligazionePluriennale().setPgObbligazione(pgObbligazione);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Restituisce il valore di: [Anno Obbligazione Pluriennale]
 	 **/
-	public Long getAnno() {
+	public Integer getAnno() {
 		Obbligazione_pluriennaleBulk obbligazionePluriennale = this.getObbligazionePluriennale();
 		if (obbligazionePluriennale == null)
 			return null;
@@ -125,14 +124,14 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Setta il valore di: [Anno Obbligazione Pluriennale]
 	 **/
-	public void setAnno(Long anno)  {
+	public void setAnno(Integer anno)  {
 		this.getObbligazionePluriennale().setAnno(anno);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
-	 * Restituisce il valore di: [Esercizio dell'obbligazione]
+	 * Restituisce il valore di: [Esercizio della voce del capitolo]
 	 **/
-	public Long getEsercizio() {
+	public Integer getEsercizioVoce() {
 		Elemento_voceBulk elementoVoce = this.getElementoVoce();
 		if (elementoVoce == null)
 			return null;
@@ -140,10 +139,10 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
-	 * Setta il valore di: [Esercizio dell'obbligazione]
+	 * Setta il valore di: [Esercizio della voce del capitolo]
 	 **/
-	public void setEsercizio(Long esercizio)  {
-		this.getElementoVoce().setEsercizio(esercizio);
+	public void setEsercizioVoce(Integer esercizioVoce)  {
+		this.getElementoVoce().setEsercizio(esercizioVoce);
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]

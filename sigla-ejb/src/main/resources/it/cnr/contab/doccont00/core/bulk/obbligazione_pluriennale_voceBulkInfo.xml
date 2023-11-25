@@ -13,10 +13,9 @@
 	<fieldProperty
 		name="esercizio"
 		property="esercizio"
-		inputType="TEXTAREA"
-		cols="60"
-		rows="5"
-		maxLength="38"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
 		enabledOnEdit="false"
 		enabledOnSearch="false"
 		nullable="false"
@@ -24,10 +23,9 @@
 	<fieldProperty
 		name="esercizioOriginale"
 		property="esercizioOriginale"
-		inputType="TEXTAREA"
-		cols="60"
-		rows="5"
-		maxLength="38"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
 		enabledOnEdit="false"
 		enabledOnSearch="false"
 		nullable="false"
@@ -46,10 +44,9 @@
 	<fieldProperty
 		name="anno"
 		property="anno"
-		inputType="TEXTAREA"
-		cols="60"
-		rows="5"
-		maxLength="38"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
 		enabledOnEdit="false"
 		enabledOnSearch="false"
 		nullable="false"
@@ -74,6 +71,16 @@
 		enabledOnSearch="false"
 		nullable="false"
 		label="Codice della linea di attivita" />
+	<fieldProperty
+		name="esercizioVoce"
+		property="esercizioVoce"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Esercizio della voce del capitolo" />
 	<fieldProperty
 		name="tiAppartenenza"
 		property="tiAppartenenza"
@@ -109,7 +116,7 @@
 		name="importo"
 		property="importo"
 		inputType="TEXT"
-		formatName="it.jada.stone.util.EuroFormat"
+		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="false"
 		nullable="false"
 		label="Importo del dettaglio per la linea attivita" />
@@ -129,6 +136,8 @@
 			name="cdCentroResponsabilita" />
 		<formFieldProperty
 			name="cdLineaAttivita" />
+		<formFieldProperty
+			name="esercizioVoce" />
 		<formFieldProperty
 			name="tiAppartenenza" />
 		<formFieldProperty
@@ -157,6 +166,8 @@
 	<findFieldProperty
 		name="cdLineaAttivita" />
 	<findFieldProperty
+		name="esercizioVoce" />
+	<findFieldProperty
 		name="tiAppartenenza" />
 	<findFieldProperty
 		name="tiGestione" />
@@ -178,6 +189,8 @@
 		name="cdCentroResponsabilita" />
 	<columnFieldProperty
 		name="cdLineaAttivita" />
+	<columnFieldProperty
+		name="esercizioVoce" />
 	<columnFieldProperty
 		name="tiAppartenenza" />
 	<columnFieldProperty

@@ -14,14 +14,14 @@
 			columnName="ESERCIZIO"
 			propertyName="esercizio"
 			sqlTypeName="DECIMAL"
-			columnSize="38"
+			columnSize="5"
 			nullable="false"
 			primary="true" />
 		<columnMapping
 			columnName="ESERCIZIO_ORIGINALE"
 			propertyName="esercizioOriginale"
 			sqlTypeName="DECIMAL"
-			columnSize="38"
+			columnSize="5"
 			nullable="false"
 			primary="true" />
 		<columnMapping
@@ -35,7 +35,7 @@
 			columnName="ANNO"
 			propertyName="anno"
 			sqlTypeName="DECIMAL"
-			columnSize="38"
+			columnSize="5"
 			nullable="false"
 			primary="true" />
 		<columnMapping
@@ -50,6 +50,13 @@
 			propertyName="cdLineaAttivita"
 			sqlTypeName="VARCHAR"
 			columnSize="10"
+			nullable="false"
+			primary="true" />
+		<columnMapping
+			columnName="ESERCIZIO_VOCE"
+			propertyName="esercizioVoce"
+			sqlTypeName="DECIMAL"
+			columnSize="5"
 			nullable="false"
 			primary="true" />
 		<columnMapping
@@ -94,6 +101,9 @@
 		partOfOid="true" />
 	<persistentProperty
 		name="cdLineaAttivita"
+		partOfOid="true" />
+	<persistentProperty
+		name="esercizioVoce"
 		partOfOid="true" />
 	<persistentProperty
 		name="tiAppartenenza"

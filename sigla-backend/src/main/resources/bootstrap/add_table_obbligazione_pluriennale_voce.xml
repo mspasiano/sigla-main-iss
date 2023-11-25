@@ -24,19 +24,22 @@
 
     <changeSet author="ciro.salvio" id="obbligazione_pluriennale_voce">
         <createTable remarks="Rappresenta il dettaglio analitico di una obbligazione pluriennale.  Per ogni obbligazione pluriennale è definita la ripartizione degli importi per CdR e linea di attività. E' definita inoltre l'associazione con il capitolo finanziario del bilancio di riferimento dell'obbligazione di competenza. &#10; &#10;La sommatoria degli importi del dettaglio analitico deve corrispodere all'importo della dell'obbligazione pluriennale" tableName="obbligazione_pluriennale_voce">
-            <column name="anno" remarks="Anno Obbligazione Pluriennale" type="INT">
+            <column name="anno" remarks="Anno Obbligazione Pluriennale" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
             <column name="cd_cds" remarks="Cds dell'obbligazione " type="VARCHAR(30)">
                 <constraints nullable="false"/>
             </column>
-            <column name="esercizio" remarks="Esercizio dell'obbligazione" type="INT">
+            <column name="esercizio" remarks="Esercizio dell'obbligazione" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="esercizio_originale" remarks="Esercizio Originale dell'obbligazione" type="INT">
+            <column name="esercizio_originale" remarks="Esercizio Originale dell'obbligazione" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
             <column name="pg_obbligazione" remarks="Numero dell'obbligazione" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="esercizio_voce" remarks="Esercizio della voce del capitolo" type="SMALLINT">
                 <constraints nullable="false"/>
             </column>
             <column name="ti_appartenenza" remarks="Definisce l'appartenenza (CNR o CdS) delle voci del piano finanziario di riferimento dell'obbligazione &#10; &#10;Dominio: &#10;C=CNR &#10;D=CDS" type="CHAR(1)">
@@ -73,9 +76,9 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
-        <addPrimaryKey tableName="obbligazione_pluriennale_voce" constraintName="obbligazione_pluriennale_voce_pkey" columnNames="cd_cds,esercizio,esercizio_originale,pg_obbligazione,anno,cd_centro_responsabilita,cd_linea_attivita,ti_appartenenza,ti_gestione,cd_voce"></addPrimaryKey>
-        <addForeignKeyConstraint baseColumnNames="anno,cd_cds,esercizio,esercizio_originale,pg_obbligazione" baseTableName="obbligazione_pluriennale_voce" constraintName="fk_obbligazione_pluriennale_voce01" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="anno,cd_cds,esercizio,esercizio_originale,pg_obbligazione" referencedTableName="obbligazione_pluriennale"/>
-        <addForeignKeyConstraint baseColumnNames="esercizio,ti_appartenenza,ti_gestione,cd_voce" baseTableName="obbligazione_pluriennale_voce" constraintName="fk_obbligazione_pluriennale_voce02" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="esercizio,ti_appartenenza,ti_gestione,cd_elemento_voce" referencedTableName="elemento_voce"/>
+        <addPrimaryKey tableName="obbligazione_pluriennale_voce" constraintName="obbligazione_pluriennale_voce_pkey" columnNames="cd_cds,esercizio,esercizio_originale,pg_obbligazione,anno,cd_centro_responsabilita,cd_linea_attivita,esercizio_voce,ti_appartenenza,ti_gestione,cd_voce"></addPrimaryKey>
+        <addForeignKeyConstraint baseColumnNames="cd_cds,esercizio,esercizio_originale,pg_obbligazione,anno" baseTableName="obbligazione_pluriennale_voce" constraintName="fk_obbligazione_pluriennale_voce01" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="cd_cds,esercizio,esercizio_originale,pg_obbligazione,anno" referencedTableName="obbligazione_pluriennale"/>
+        <addForeignKeyConstraint baseColumnNames="esercizio_voce,ti_appartenenza,ti_gestione,cd_voce" baseTableName="obbligazione_pluriennale_voce" constraintName="fk_obbligazione_pluriennale_voce02" deferrable="false" initiallyDeferred="false" onDelete="NO ACTION" onUpdate="NO ACTION" referencedColumnNames="esercizio,ti_appartenenza,ti_gestione,cd_elemento_voce" referencedTableName="elemento_voce"/>
         <createIndex indexName="fx_obbligazione_pluriennale_voce00" tableName="obbligazione_pluriennale_voce">
             <column name="anno"/>
             <column name="cd_cds"/>
