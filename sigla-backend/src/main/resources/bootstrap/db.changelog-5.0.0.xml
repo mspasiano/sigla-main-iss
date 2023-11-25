@@ -6032,5 +6032,7 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_accessi_respsiopemandati.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunta possibilità di lanciare da applicazione la procedura per il ribaltamento di inizio anno -->
     <include file="bootstrap/add_prc_ribaltamento_pdg_altro_schedulazione.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta tabella obbligazione_pluriennale_linea_attivita -->
+    <include file="bootstrap/add_table_obbligazione_pluriennale_voce.xml"/>
 
 </databaseChangeLog>
