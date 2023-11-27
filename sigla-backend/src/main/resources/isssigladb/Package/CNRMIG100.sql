@@ -96,11 +96,11 @@ create or replace PACKAGE "CNRMIG100" as
 -- Version: 1.18
 -- Sdoppiati i Ribaltamenti (Per il PDGP e Altro)
 --
--- Date: 10/11/2008
+-- Date: 10/11/2023
 -- Version: 1.19
 -- Inserito job per lanciare il ribaltamento altro da SIGLA applicazione
 --
--- Date: 20/11/2008
+-- Date: 20/11/2023
 -- Version: 1.19
 -- Inserito job per lanciare la copia del bilancio Decisionale al Gestionale
 -- Constants:
@@ -193,6 +193,8 @@ procedure endLogRibaltamentoAltro(aEs number, aPgEsec number, aStato in out char
 procedure ins_RIBALTAMENTO_LOG (aDest RIBALTAMENTO_LOG%rowtype);
 --
 procedure JOB_RIBALTAMENTO_PDGP(job number, pg_exec number, next_date date, aEs number);
-
+--
+procedure JOB_RIBALTAMENTO_ALTRO_PDGP(job number, pg_exec number, next_date date, aEs number);
+--
 procedure JOB_RIBALTAMENTO_DECIS_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 );
 end;
