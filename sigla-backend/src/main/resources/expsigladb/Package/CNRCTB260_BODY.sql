@@ -799,6 +799,10 @@ BEGIN
                            '(A.dt_registrazione BETWEEN ' || aDataDa || ' AND ' ||  aDataA || ') AND ' ||
                            'A.stato_cofi != ' || '''A''' || ' AND ';
 
+         IF    aTiDocumento ='AUTOFATTURA' THEN
+             aStatement:=aStatement ||'A.protocollo_iva IS NULL AND ';
+         end if;
+
          -- Controllo il tipo commerciale o meno del sezionale sul documento
 
          IF aTiIstituzCommerc = 'C' THEN

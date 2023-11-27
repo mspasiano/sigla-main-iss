@@ -303,7 +303,7 @@ public class CRUDSelezionatoreDocumentiAmministrativiFatturazioneElettronicaBP e
 
         IDocumentoAmministrativoElettronicoBulk docammElettronico = component.castDocumentoElettronico(userContext, vDocamm);
 
-        if (docammElettronico instanceof AutofatturaBulk && docammElettronico.getProgrUnivocoAnno()==null)
+        if (docammElettronico instanceof AutofatturaBulk)
             docammElettronico = Utility.createAutoFatturaComponentSession().impostaDatiPerFatturazioneElettronica(userContext, (AutofatturaBulk)docammElettronico);
 
         // Questo metodo va invocato perchè fa tutti i controlli prima che la fattura venga protocollata

@@ -68,27 +68,36 @@ public class SezionaleHome extends BulkHome {
 				tiFattura = SezionaleBulk.NOTADEBITO;
 
 			if (cdTipoSezionale!=null && tiFattura!=null)
-				return this.getSezionaleByTipoDocumento(docamm.getEsercizio(), docamm.getCd_cds(), docamm.getCd_uo(), cdTipoSezionale, tiFattura);
+				return this.getSezionaleByTipoDocumento(docamm.getEsercizio(), docamm.getCd_cds(), docamm.getCd_uo(), cdTipoSezionale, tiFattura, Boolean.FALSE);
 		}
 		return null;
 	}
 
 	public SezionaleBulk getSezionaleByTipoDocumento(AutofatturaBulk autofatturaBulk) throws PersistencyException, ComponentException {
-		return this.getSezionaleByTipoDocumento(autofatturaBulk.getEsercizio(), autofatturaBulk.getCd_cds(), autofatturaBulk.getCd_unita_organizzativa(), autofatturaBulk.getCd_tipo_sezionale(), autofatturaBulk.getTi_fattura());
+		return this.getSezionaleByTipoDocumento(autofatturaBulk.getEsercizio(), autofatturaBulk.getCd_cds(), autofatturaBulk.getCd_unita_organizzativa(), autofatturaBulk.getCd_tipo_sezionale(), autofatturaBulk.getTi_fattura(), Boolean.FALSE);
 	}
 
-	private SezionaleBulk getSezionaleByTipoDocumento(Integer aEsercizio, String aCdCds, String aCdUo, String aCdTipoSezionale, String aTiFattura) throws PersistencyException, ComponentException {
-		SQLBuilder sql = this.createSQLBuilder();
-		sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, aEsercizio);
-		sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, aCdCds);
-		sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, aCdUo);
-		sql.addClause(FindClause.AND, "cd_tipo_sezionale", SQLBuilder.EQUALS, aCdTipoSezionale);
-		sql.addClause(FindClause.AND, "ti_fattura", SQLBuilder.EQUALS, aTiFattura);
+	public SezionaleBulk getSezionaleByTipoDocumento(Integer aEsercizio, String aCdCds, String aCdUo, String aCdTipoSezionale, String aTiFattura, boolean lockTable) throws PersistencyException, ComponentException {
+		try {
+			SQLBuilder sql = this.createSQLBuilder();
+			sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, aEsercizio);
+			sql.addClause(FindClause.AND, "cd_cds", SQLBuilder.EQUALS, aCdCds);
+			sql.addClause(FindClause.AND, "cd_unita_organizzativa", SQLBuilder.EQUALS, aCdUo);
+			sql.addClause(FindClause.AND, "cd_tipo_sezionale", SQLBuilder.EQUALS, aCdTipoSezionale);
+			sql.addClause(FindClause.AND, "ti_fattura", SQLBuilder.EQUALS, aTiFattura);
 
-		List<SezionaleBulk> result = this.fetchAll(sql);
-		if (result.size()>1)
-			throw new ApplicationException("Errore nei dati: nella tabella SEZIONALE esistono per l'esercizio "+aEsercizio+", per il cds "+ aCdCds +
-					". per la UO "+aCdUo+", per il tipo sezionale "+aCdTipoSezionale+" e per la tipologia "+aTiFattura+" più righe valide!");
-		return result.stream().findFirst().orElse(null);
+			if (lockTable)
+				return (SezionaleBulk) this.fetchAndLock(sql);
+			else {
+				List<SezionaleBulk> result = this.fetchAll(sql);
+
+				if (result.size() > 1)
+					throw new ApplicationException("Errore nei dati: nella tabella SEZIONALE esistono per l'esercizio " + aEsercizio + ", per il cds " + aCdCds +
+							". per la UO " + aCdUo + ", per il tipo sezionale " + aCdTipoSezionale + " e per la tipologia " + aTiFattura + " più righe valide!");
+				return result.stream().findFirst().orElse(null);
+			}
+		} catch (BusyResourceException | OutdatedResourceException ex) {
+			throw new ComponentException(ex);
+		}
 	}
 }

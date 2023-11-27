@@ -28,6 +28,7 @@ import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.ProgressiviAmmComponentSession;
 import it.cnr.contab.docamm00.tabrif.bulk.SezionaleBulk;
+import it.cnr.contab.docamm00.tabrif.bulk.SezionaleHome;
 import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileBulk;
 import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileHome;
 import it.cnr.contab.util.Utility;
@@ -639,6 +640,26 @@ public Configurazione_cnrBulk getLimitiRitardoDetraibile(UserContext userContext
 				numerazioneProgressivoUnivoco.setCd_tipo_documento_amm(Numerazione_doc_ammBulk.TIPO_UNIVOCO_FATTURA_ATTIVA);
 				ProgressiviAmmComponentSession progressiviSession = (ProgressiviAmmComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCAMM00_EJB_ProgressiviAmmComponentSession", ProgressiviAmmComponentSession.class);
 				autofattura.setProgrUnivocoAnno(progressiviSession.getNextPG(userContext, numerazioneProgressivoUnivoco));
+			}
+
+			if (autofattura.getProtocollo_iva()==null) {
+				SezionaleBulk sezionaleDocumento = ((SezionaleHome)getHome(userContext, SezionaleBulk.class)).getSezionaleByTipoDocumento(autofattura.getEsercizio(), autofattura.getCd_cds_origine(), autofattura.getCd_uo_origine(), autofattura.getCd_tipo_sezionale(), autofattura.getTi_fattura(), Boolean.TRUE);
+
+				autofattura.setProtocollo_iva(sezionaleDocumento.getCorrente()+1);
+
+				sezionaleDocumento.setCorrente(autofattura.getProtocollo_iva());
+				sezionaleDocumento.setToBeUpdated();
+				makeBulkPersistent(userContext, sezionaleDocumento);
+			}
+
+			if (autofattura.getProtocollo_iva_generale()==null) {
+				SezionaleBulk sezionaleGenerale = ((SezionaleHome)getHome(userContext, SezionaleBulk.class)).getSezionaleByTipoDocumento(autofattura.getEsercizio(), autofattura.getCd_cds_origine(), autofattura.getCd_uo_origine(), autofattura.getCd_tipo_sezionale(), SezionaleBulk.GENERALE, Boolean.TRUE);
+
+				autofattura.setProtocollo_iva_generale(sezionaleGenerale.getCorrente()+1);
+
+				sezionaleGenerale.setCorrente(autofattura.getProtocollo_iva_generale());
+				sezionaleGenerale.setToBeUpdated();
+				makeBulkPersistent(userContext, sezionaleGenerale);
 			}
 
 			TerzoBulk cliente = null;
