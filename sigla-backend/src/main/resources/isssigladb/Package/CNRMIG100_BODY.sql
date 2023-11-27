@@ -1,3 +1,6 @@
+--------------------------------------------------------
+--  DDL for Package Body CNRMIG100
+--------------------------------------------------------
 create or replace PACKAGE BODY "CNRMIG100" is
 
 lPgExec number;
