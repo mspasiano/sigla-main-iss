@@ -270,7 +270,7 @@ public class CRUDSelezionatoreDocumentiAmministrativiFatturazioneElettronicaBP e
             for (Iterator<OggettoBulk> i = lista.iterator(); i.hasNext(); ) {
                 OggettoBulk docAmm = i.next();
                 if (docAmm instanceof VDocammElettroniciAttiviBulk &&
-                        VDocammElettroniciAttiviBulk.DA_PREDISPORRE_ALLA_FIRMA.equals(((VDocammElettroniciAttiviBulk)docAmm).getStatoInvioSdi())) {
+                        VDocammElettroniciAttiviBulk.FATT_ELETT_ALLA_FIRMA.equals(((VDocammElettroniciAttiviBulk)docAmm).getStatoInvioSdi())) {
                     protocollaECreaFileXml(userContext, (VDocammElettroniciAttiviBulk) docAmm);
                     contaAggiornati++;
                 } else
