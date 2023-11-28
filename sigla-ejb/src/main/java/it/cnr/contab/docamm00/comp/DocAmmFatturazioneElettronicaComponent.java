@@ -452,7 +452,7 @@ public class DocAmmFatturazioneElettronicaComponent extends CRUDComponent{
 
 				anagraficiCedenteType.setRegimeFiscale(RegimeFiscaleType.RF_01);
 				cedentePrestatoreType.setDatiAnagrafici(anagraficiCedenteType);
-				cedentePrestatoreType.setSede(impostaIndirizzo(userContext, factory, docammElettronico instanceof Fattura_attivaBulk?terzoUo:terzoCedentePrestatore));
+				cedentePrestatoreType.setSede(impostaIndirizzo(userContext, factory, docammElettronico instanceof Fattura_attivaBulk?terzoUo:terzoCedentePrestatore, docammElettronico));
 
 				fatturaHeaderType.setCedentePrestatore(cedentePrestatoreType);
 
