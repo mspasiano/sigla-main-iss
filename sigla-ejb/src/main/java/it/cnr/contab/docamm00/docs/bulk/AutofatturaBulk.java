@@ -270,7 +270,8 @@ public class AutofatturaBulk extends AutofatturaBase implements IDocumentoAmmini
 
 	@Override
 	public Boolean isFatturaEstera() {
-		return this.getFl_extra_ue() || this.getFl_intra_ue() || this.getFl_san_marino_con_iva() || this.getFl_san_marino_senza_iva();
+		return this.getFattura_passiva()!=null && (getFattura_passiva().getFl_extra_ue()
+					|| getFattura_passiva().getFl_intra_ue() || getFattura_passiva().getFl_san_marino_con_iva() || getFattura_passiva().getFl_san_marino_senza_iva());
 	}
 
 	@Override
