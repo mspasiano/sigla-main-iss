@@ -200,7 +200,7 @@ public it.cnr.jada.bulk.OggettoBulk creaConBulk(it.cnr.jada.UserContext userCont
 
 		if (autofattura.getFattura_passiva().getFl_autofattura() && isAttivaFatturazioneElettronica(userContext, autofattura.getDt_registrazione())) {
 			autofattura.setFlFatturaElettronica(Boolean.TRUE);
-			autofattura.setFlTerzoEnte(Boolean.TRUE);
+			autofattura.setFlTerzoEnte(Boolean.FALSE);
 			autofattura.setStatoInvioSdi(VDocammElettroniciAttiviBulk.FATT_ELETT_ALLA_FIRMA);
 		} else {
 			autofattura.setFlFatturaElettronica(Boolean.FALSE);
