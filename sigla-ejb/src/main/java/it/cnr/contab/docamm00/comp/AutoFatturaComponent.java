@@ -662,23 +662,18 @@ public Configurazione_cnrBulk getLimitiRitardoDetraibile(UserContext userContext
 				makeBulkPersistent(userContext, sezionaleGenerale);
 			}
 
-			TerzoBulk cliente = null;
-			if (autofattura.getFlTerzoEnte()) {
-				Unita_organizzativaBulk uoOrigine = (Unita_organizzativaBulk) getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(new Unita_organizzativaBulk(autofattura.getCd_uo_origine()));
-				cliente = Utility.createTerzoComponentSession().cercaTerzoPerUnitaOrganizzativa(userContext, uoOrigine);
-			} else {
-				Integer cdTerzo = Optional.ofNullable(autofattura.getFattura_passiva()).map(Fattura_passivaBase::getCd_terzo).orElse(null);
-				if (cdTerzo != null)
-					cliente = (TerzoBulk) getHome(userContext, TerzoBulk.class).findByPrimaryKey(new TerzoKey(cdTerzo));
-			}
-			if (cliente!=null) {
-				cliente.setPec(new BulkList(((TerzoHome) getHome(userContext, TerzoBulk.class)).findTelefoni(cliente, TelefonoBulk.PEC)));
+			Unita_organizzativaBulk uoOrigine = (Unita_organizzativaBulk) getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(new Unita_organizzativaBulk(autofattura.getCd_uo_origine()));
+			TerzoBulk terzoUoOrigine = Utility.createTerzoComponentSession().cercaTerzoPerUnitaOrganizzativa(userContext, uoOrigine);
 
-				autofattura.setCodiceUnivocoUfficioIpa(cliente.getCodiceUnivocoUfficioIpa());
-				autofattura.setCodiceDestinatarioFatt(cliente.getCodiceDestinatarioFatt());
-				autofattura.setPecFatturaElettronica(cliente.getPecFatturazioneElettronica() == null ? null : cliente.getPecFatturazioneElettronica().getRiferimento());
-				autofattura.setMailFatturaElettronica(cliente.getEmailFatturazioneElettronica() == null ? null : cliente.getEmailFatturazioneElettronica().getRiferimento());
+			if (terzoUoOrigine!=null) {
+				terzoUoOrigine.setPec(new BulkList(((TerzoHome) getHome(userContext, TerzoBulk.class)).findTelefoni(terzoUoOrigine, TelefonoBulk.PEC)));
+
+				autofattura.setCodiceUnivocoUfficioIpa(terzoUoOrigine.getCodiceUnivocoUfficioIpa());
+				autofattura.setCodiceDestinatarioFatt(terzoUoOrigine.getCodiceDestinatarioFatt());
+				autofattura.setPecFatturaElettronica(terzoUoOrigine.getPecFatturazioneElettronica() == null ? null : terzoUoOrigine.getPecFatturazioneElettronica().getRiferimento());
+				autofattura.setMailFatturaElettronica(terzoUoOrigine.getEmailFatturazioneElettronica() == null ? null : terzoUoOrigine.getEmailFatturazioneElettronica().getRiferimento());
 			}
+
 	        autofattura.setToBeUpdated();
 			makeBulkPersistent(userContext, autofattura);
 			AutofatturaBulk autofatturaDB = (AutofatturaBulk)getHome(userContext, AutofatturaBulk.class).findByPrimaryKey(autofattura);
