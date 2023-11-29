@@ -19,6 +19,7 @@ package it.cnr.contab.utente00.nav.comp;
 
 import it.cnr.contab.config00.bulk.Parametri_enteBulk;
 import it.cnr.contab.config00.bulk.Parametri_enteHome;
+import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.sto.bulk.*;
 import it.cnr.contab.messaggio00.bulk.Messaggio_lettoBulk;
 import it.cnr.contab.messaggio00.bulk.Messaggio_notificatoBulk;
@@ -218,11 +219,21 @@ public class GestioneLoginComponent
         try {
             java.util.ArrayList esercizi = new java.util.ArrayList();
             it.cnr.jada.persistency.sql.SQLBuilder sql = new it.cnr.jada.persistency.sql.SQLBuilder();
-            sql.setHeader("SELECT DISTINCT ESERCIZIO");
+            sql.setHeader("SELECT DISTINCT ESERCIZIO.ESERCIZIO");
 
             if (utente.isUtenteComune()) {
                 sql.addTableToHeader("V_UTENTE_UNITA_ORGANIZZATIVA");
+                sql.addTableToHeader("ESERCIZIO");
+                sql.addSQLJoin("V_UTENTE_UNITA_ORGANIZZATIVA.ESERCIZIO", "ESERCIZIO.ESERCIZIO");
                 sql.addSQLClause("AND", "CD_UTENTE", SQLBuilder.EQUALS, utente.getCd_utente());
+                if (!utente.isSupervisore()){
+                    sql.openParenthesis(FindClause.AND);
+                    sql.addSQLClause(FindClause.AND, "ESERCIZIO.ST_APERTURA_CHIUSURA", SQLBuilder.EQUALS, EsercizioBulk.STATO_APERTO);
+                    sql.addSQLClause(FindClause.OR, "ESERCIZIO.ST_APERTURA_CHIUSURA", SQLBuilder.EQUALS, EsercizioBulk.STATO_CHIUSO_DEF);
+                    sql.closeParenthesis();
+                }
+                //per non far appire tutti gli esercizi che non vogliamo ancora rendere disponibili ( vedi nuovo anno)
+                //sql.addSQLClause("AND", "ESERCIZIO.ST_APERTURA_CHIUSURA", SQLBuilder.NOT_EQUALS, "X");
             } else {
                 sql.addTableToHeader("ESERCIZIO");
                 sql.addSQLClause("AND", "ESERCIZIO >= ( SELECT IM01 FROM CONFIGURAZIONE_CNR WHERE CD_CHIAVE_PRIMARIA = 'ESERCIZIO_SPECIALE' AND CD_CHIAVE_SECONDARIA = 'ESERCIZIO_PARTENZA' )");
