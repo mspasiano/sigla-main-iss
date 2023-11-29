@@ -77,17 +77,13 @@
 			property="voce_da"
 			inputSize="5"
 			inputType="TEXT"
-			label="Voce Da"
-			nullable="true"
-	/>
+			label="Voce Da" />
 	<fieldProperty
 			name="voce_a"
 			property="voce_a"
 			inputSize="5"
 			inputType="TEXT"
-			label="Voce A"
-			nullable="true"
-	/>
+			label="Voce A" />
 
 	<formFieldProperty name="esercizio"/>
 	<formFieldProperty name="ti_gestione" />

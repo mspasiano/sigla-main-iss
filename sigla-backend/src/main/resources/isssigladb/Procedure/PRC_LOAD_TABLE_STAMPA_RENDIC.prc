@@ -17,7 +17,8 @@ create or replace Procedure PRC_LOAD_TABLE_STAMPA_RENDIC
 	P_VOCE_A IN VARCHAR2 DEFAULT NULL
 ) Is
 FONTE_DATI                  VARCHAR2(6);
-PREV_INI                    NUMBER(17,2) :=0;
+/* Gestione di Competenza */
+PREV_INI                    NUMBER(17,2) :=0;--Iniziali
 VARIAZIONI                  NUMBER(17,2) :=0;
 ASSESTATO                   NUMBER(17,2) :=0;
 RIS_PAG                     NUMBER(17,2) :=0;
