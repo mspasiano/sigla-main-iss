@@ -6025,6 +6025,11 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : PIERGIORGIO FARAGLIA - Aggiunge voce di menu per la stampa del mastro rendiconto finanziario -->
     <include file="bootstrap/add_column_mastro_finanziario.xml"/>
     <include file="bootstrap/add_priority_mastro_finanziario.xml"/>
+
+    <!-- Autore : PIERGIORGIO FARAGLIA - Aggiunge gestione report Riaccertamento Residui Passivi -->
+    <include file="bootstrap/add_menu_riaccertamento_residui_passivi.xml" />
+    <include file="bootstrap/add_priority_riaccertamento_residui_passivi.xml" />
+
     <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per il cambio voce su partite di giro -->
     <include file="bootstrap/add_accessi_cambia_voce_pgiro.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunge configurazione rest Service siope mandati -->

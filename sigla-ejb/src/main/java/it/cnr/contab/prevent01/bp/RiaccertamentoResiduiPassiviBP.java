@@ -18,6 +18,7 @@
 package it.cnr.contab.prevent01.bp;
 
 import it.cnr.contab.config00.pdcfin.cla.bulk.Parametri_livelliBulk;
+import it.cnr.contab.prevent01.bulk.RiaccertamentoResiduiPassiviBulk;
 import it.cnr.contab.prevent01.bulk.StampaMastroRendicontoFinanziarioBulk;
 import it.cnr.contab.reports.bp.ParametricPrintBP;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
@@ -30,7 +31,7 @@ import java.util.Enumeration;
 import java.util.Optional;
 
 
-public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
+public class RiaccertamentoResiduiPassiviBP extends StampaMastroRendicontoFinanziarioBP {
 
     /**
      *
@@ -40,7 +41,7 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
     /**
      * StampaRendicontoFinanziarioBP constructor comment.
      */
-    public StampaMastroRendicontoFinanziarioBP() {
+    public RiaccertamentoResiduiPassiviBP() {
         super();
     }
 
@@ -49,23 +50,24 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
      *
      * @param function java.lang.String
      */
-    public StampaMastroRendicontoFinanziarioBP(String function) {
+    public RiaccertamentoResiduiPassiviBP(String function) {
         super(function);
     }
+
 
     @Override
     public OggettoBulk initializeBulkForPrint(ActionContext context, OggettoBulk bulk) throws BusinessProcessException {
         try {
             OggettoBulk oggettoBulk = super.initializeBulkForPrint(context, bulk);
-            if (oggettoBulk instanceof StampaMastroRendicontoFinanziarioBulk) {
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setEsercizio(CNRUserContext.getEsercizio(context.getUserContext()));
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_stampa(StampaMastroRendicontoFinanziarioBulk.TIPO_GESTIONALE);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_aggregazione(StampaMastroRendicontoFinanziarioBulk.TIPO_FINANZIARIO);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_origine(StampaMastroRendicontoFinanziarioBulk.TIPO_REALE);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_gestione(StampaMastroRendicontoFinanziarioBulk.TIPO_GESTIONE_ENTRATA);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setTi_parte(StampaMastroRendicontoFinanziarioBulk.TIPO_PARTE_ENTRAMBE);
-                ((StampaMastroRendicontoFinanziarioBulk) oggettoBulk).setLivello_stampa(StampaMastroRendicontoFinanziarioBulk.TIPO_VOCE);
-                loadModelBulkOptions(context, (StampaMastroRendicontoFinanziarioBulk) oggettoBulk);
+            if (oggettoBulk instanceof RiaccertamentoResiduiPassiviBulk) {
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setEsercizio(CNRUserContext.getEsercizio(context.getUserContext()));
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setTi_stampa(RiaccertamentoResiduiPassiviBulk.TIPO_GESTIONALE);
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setTi_aggregazione(RiaccertamentoResiduiPassiviBulk.TIPO_FINANZIARIO);
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setTi_origine(RiaccertamentoResiduiPassiviBulk.TIPO_REALE);
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setTi_gestione(RiaccertamentoResiduiPassiviBulk.TIPO_GESTIONE_ENTRATA);
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setTi_parte(RiaccertamentoResiduiPassiviBulk.TIPO_PARTE_ENTRAMBE);
+                ((RiaccertamentoResiduiPassiviBulk) oggettoBulk).setLivello_stampa(RiaccertamentoResiduiPassiviBulk.TIPO_VOCE);
+                loadModelBulkOptions(context, (RiaccertamentoResiduiPassiviBulk) oggettoBulk);
             }
             return oggettoBulk;
         } catch (Throwable e) {
@@ -76,14 +78,14 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
     public void loadModelBulkOptions(ActionContext context) throws BusinessProcessException {
         try {
             OggettoBulk oggettoBulk = this.getModel();
-            if (oggettoBulk instanceof StampaMastroRendicontoFinanziarioBulk)
-                loadModelBulkOptions(context, (StampaMastroRendicontoFinanziarioBulk) oggettoBulk);
+            if (oggettoBulk instanceof RiaccertamentoResiduiPassiviBulk)
+                loadModelBulkOptions(context, (RiaccertamentoResiduiPassiviBulk) oggettoBulk);
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
         }
     }
 
-    private StampaMastroRendicontoFinanziarioBulk loadModelBulkOptions(ActionContext context, StampaMastroRendicontoFinanziarioBulk stampa) throws BusinessProcessException {
+    private RiaccertamentoResiduiPassiviBulk loadModelBulkOptions(ActionContext context, RiaccertamentoResiduiPassiviBulk stampa) throws BusinessProcessException {
         try {
             Parametri_livelliBulk parliv = Utility.createClassificazioneVociComponentSession().findParametriLivelli(context.getUserContext(), stampa.getEsercizio());
 
@@ -98,10 +100,10 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
 
 
             if (Optional.ofNullable(stampa)
-                    .filter(StampaMastroRendicontoFinanziarioBulk::isTipoGestioneEntrata)
+                    .filter(RiaccertamentoResiduiPassiviBulk::isTipoGestioneEntrata)
                     .isPresent()) {
 
-                stampa.setTi_aggregazione(StampaMastroRendicontoFinanziarioBulk.TIPO_FINANZIARIO);
+                stampa.setTi_aggregazione(RiaccertamentoResiduiPassiviBulk.TIPO_FINANZIARIO);
 
                 if (parliv.getDs_livello1e() != null)
                     livelliOptions.put(index++, parliv.getDs_livello1e());
@@ -144,10 +146,6 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
                 }
             }
             stampa.setTi_livello(livelliOptions.get(0).toString());
-
-
-            // annullo selezioni voceDa e voceA
-
         } catch (Throwable e) {
             throw new BusinessProcessException(e);
         }
@@ -156,11 +154,11 @@ public class StampaMastroRendicontoFinanziarioBP extends ParametricPrintBP {
 
     @Override
     public String getFormTitle() {
-        return "Stampa Mastro Rendiconto Finanziario";
+        return "Riaccertamento Residui Passivi";
     }
 
     @Override
     public String getReportName() {
-        return "/preventivo/preventivo/mastro.jasper";
+        return "/preventivo/preventivo/riaccertamento.jasper";
     }
 }

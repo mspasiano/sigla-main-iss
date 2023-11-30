@@ -11,8 +11,8 @@
 <head>
 <% JSPUtils.printBaseUrl(pageContext);%>
 <%
-   StampaMastroRendicontoFinanziarioBP bp = (StampaMastroRendicontoFinanziarioBP)BusinessProcess.getBusinessProcess(request);
-   StampaMastroRendicontoFinanziarioBulk model = (StampaMastroRendicontoFinanziarioBulk)bp.getModel();
+   RiaccertamentoResiduiPassiviBP bp = (RiaccertamentoResiduiPassiviBP) BusinessProcess.getBusinessProcess(request);
+   RiaccertamentoResiduiPassiviBulk model = (RiaccertamentoResiduiPassiviBulk)bp.getModel();
 %>
 <script language="JavaScript" src="scripts/util.js"></script>
 <script language="javascript" src="scripts/css.js"></script>

@@ -24,6 +24,7 @@
 package it.cnr.contab.prevent01.bulk;
 
 import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.persistency.KeyedPersistent;
 
 import java.util.Enumeration;
 
@@ -33,7 +34,7 @@ import java.util.Enumeration;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioBulk {
+public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioBulk implements KeyedPersistent {
 
 	public final static Integer TIPO_VOCE = 6;
 
@@ -47,25 +48,39 @@ public class StampaMastroRendicontoFinanziarioBulk extends Stampa_pdgp_bilancioB
 
 	private Integer livello_stampa;
 
-	public String getVoce_da() {
+	private it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_da = new it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk();
+
+	public it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk getVoce_da() {
 		return voce_da;
 	}
 
-	public void setVoce_da(String voce_da) {
+	public void setVoce_da(it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_da) {
 		this.voce_da = voce_da;
 	}
 
-	private String voce_da;
+	public java.lang.String getCd_voce_da() {
+		it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_da = this.getVoce_da();
+		if (voce_da == null)
+			return null;
+		return voce_da.getCd_elemento_voce();
+	}
 
-	public String getVoce_a() {
+	private it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_a = new it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk();
+
+	public it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk getVoce_a() {
 		return voce_a;
 	}
 
-	public void setVoce_a(String voce_a) {
+	public void setVoce_a(it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_a) {
 		this.voce_a = voce_a;
 	}
 
-	private String voce_a;
+	public java.lang.String getCd_voce_a() {
+		it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk voce_a = this.getVoce_a();
+		if (voce_a == null)
+			return null;
+		return voce_a.getCd_elemento_voce();
+	}
 
 	public StampaMastroRendicontoFinanziarioBulk() {
 		super();

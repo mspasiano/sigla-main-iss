@@ -72,7 +72,6 @@
 			inputSize="5"
 			inputType="ROTEXT"
 			label="Livello Stampa" />
-
 	<fieldProperty
 			name="find_voce_da"
 			property="voce_da"
@@ -112,43 +111,6 @@
 	/>
 
 
-	<fieldProperty
-			name="find_voce_a"
-			property="voce_a"
-			inputType="SEARCHTOOL"
-			formName="searchtool"
-			label="Voce a"
-			enabledOnSearch="true"
-			completeOnSave="false"
-			nullable="false"
-	/>
-	<fieldProperty
-			name="cd_voce_a"
-			property="voce_a.cd_voce_a"
-			label="Voce A"
-			readonlyProperty="ROVoce_a"
-			inputType="TEXT"
-			maxLength="20"
-			inputSize="20"
-			enabledOnSearch="true"
-			nullable="false"
-	/>
-	<fieldProperty
-			name="cd_voce_aRO"
-			property="voce_a.cd_voce_a"
-			label="Voce a"
-			inputType="ROTEXT"
-			maxLength="20"
-			inputSize="20"
-	/>
-	<fieldProperty
-			name="ds_voce_a"
-			property="voce_a.ds_voce_a"
-			label=""
-			readonlyProperty="ROVoce_a"
-			inputType="ROTEXT"
-			inputSize="60"
-	/>
 
 	<formFieldProperty name="esercizio"/>
 	<formFieldProperty name="ti_gestione" />
@@ -162,7 +124,7 @@
 	<formFieldProperty name="voce_a" />
 
 	<printForm
-			name="/preventivo/preventivo/mastro.jasper">
+			name="/preventivo/preventivo/riaccertamento.jasper">
 		<printFieldProperty
 				name="esercizio"
 				parameterPosition="0"

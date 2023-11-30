@@ -1022,7 +1022,11 @@ end;
 ----------------------------------------------------------------------------
 procedure init_ribaltamento_altro(aEs number,aMessage in out varchar2) is
  aPgEsec  number;
+<<<<<<<<< Temporary merge branch 1
+begin	
+=========
 begin
+>>>>>>>>> Temporary merge branch 2
 	aPgEsec := IBMUTL200.LOGSTART(TI_LOG_RIBALTAMENTO_ALTRO,dsProcesso_altro,null,cgUtente,null,null);
     init_ribaltamento_altro(aEs, aPgEsec, aMessage);
 end;
@@ -3785,6 +3789,8 @@ begin
    ibmutl200.LOGINF(pg_exec,aMessage,'','');
 end;
 
+<<<<<<<<< Temporary merge branch 1
+=========
 procedure INIT_RIBALTAMENTO_DECIS_GEST(aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2,aPgEsec number, aMessage in out varchar2) as
 stato_fine      char(1) := 'I';
 aTSNow date;
@@ -3961,6 +3967,7 @@ begin
 end;
 ----------------------------------------------------------------------------
 
+>>>>>>>>> Temporary merge branch 2
 procedure JOB_RIBALTAMENTO_PDGP(job number, pg_exec number, next_date date, aEs number) as
     aTSNow date;
     aUser varchar2(20);
@@ -4013,6 +4020,8 @@ begin
     end if;
  end;
  ----------------------------------------------------------------------------
+<<<<<<<<< Temporary merge branch 1
+=========
  procedure JOB_RIBALTAMENTO_DECIS_GEST(job number, pg_exec number, next_date date, aEs number, aCdCentroResponsabilita VARCHAR2,aCdLineaAttivita VARCHAR2 ) as
  aMessage varchar2(500);
  aTSNow date;
@@ -4044,4 +4053,5 @@ begin
     end if;
  end;
  ----------------------------------------------------------------------------
+>>>>>>>>> Temporary merge branch 2
  end;
