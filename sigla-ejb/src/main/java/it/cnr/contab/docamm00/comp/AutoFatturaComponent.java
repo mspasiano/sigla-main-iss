@@ -28,6 +28,7 @@ import it.cnr.contab.config00.sto.bulk.Unita_organizzativa_enteBulk;
 import it.cnr.contab.docamm00.docs.bulk.*;
 import it.cnr.contab.docamm00.ejb.ProgressiviAmmComponentSession;
 import it.cnr.contab.docamm00.tabrif.bulk.SezionaleBulk;
+import it.cnr.contab.docamm00.tabrif.bulk.SezionaleHome;
 import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileBulk;
 import it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileHome;
 import it.cnr.contab.util.Utility;
@@ -199,7 +200,7 @@ public it.cnr.jada.bulk.OggettoBulk creaConBulk(it.cnr.jada.UserContext userCont
 
 		if (autofattura.getFattura_passiva().getFl_autofattura() && isAttivaFatturazioneElettronica(userContext, autofattura.getDt_registrazione())) {
 			autofattura.setFlFatturaElettronica(Boolean.TRUE);
-			autofattura.setFlTerzoEnte(Boolean.TRUE);
+			autofattura.setFlTerzoEnte(Boolean.FALSE);
 			autofattura.setStatoInvioSdi(VDocammElettroniciAttiviBulk.FATT_ELETT_ALLA_FIRMA);
 		} else {
 			autofattura.setFlFatturaElettronica(Boolean.FALSE);
@@ -641,23 +642,38 @@ public Configurazione_cnrBulk getLimitiRitardoDetraibile(UserContext userContext
 				autofattura.setProgrUnivocoAnno(progressiviSession.getNextPG(userContext, numerazioneProgressivoUnivoco));
 			}
 
-			TerzoBulk cliente = null;
-			if (autofattura.getFlTerzoEnte()) {
-				Unita_organizzativaBulk uoOrigine = (Unita_organizzativaBulk) getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(new Unita_organizzativaBulk(autofattura.getCd_uo_origine()));
-				cliente = Utility.createTerzoComponentSession().cercaTerzoPerUnitaOrganizzativa(userContext, uoOrigine);
-			} else {
-				Integer cdTerzo = Optional.ofNullable(autofattura.getFattura_passiva()).map(Fattura_passivaBase::getCd_terzo).orElse(null);
-				if (cdTerzo != null)
-					cliente = (TerzoBulk) getHome(userContext, TerzoBulk.class).findByPrimaryKey(new TerzoKey(cdTerzo));
-			}
-			if (cliente!=null) {
-				cliente.setPec(new BulkList(((TerzoHome) getHome(userContext, TerzoBulk.class)).findTelefoni(cliente, TelefonoBulk.PEC)));
+			if (autofattura.getProtocollo_iva()==null) {
+				SezionaleBulk sezionaleDocumento = ((SezionaleHome)getHome(userContext, SezionaleBulk.class)).getSezionaleByTipoDocumento(autofattura.getEsercizio(), autofattura.getCd_cds_origine(), autofattura.getCd_uo_origine(), autofattura.getCd_tipo_sezionale(), autofattura.getTi_fattura(), Boolean.TRUE);
 
-				autofattura.setCodiceUnivocoUfficioIpa(cliente.getCodiceUnivocoUfficioIpa());
-				autofattura.setCodiceDestinatarioFatt(cliente.getCodiceDestinatarioFatt());
-				autofattura.setPecFatturaElettronica(cliente.getPecFatturazioneElettronica() == null ? null : cliente.getPecFatturazioneElettronica().getRiferimento());
-				autofattura.setMailFatturaElettronica(cliente.getEmailFatturazioneElettronica() == null ? null : cliente.getEmailFatturazioneElettronica().getRiferimento());
+				autofattura.setProtocollo_iva(sezionaleDocumento.getCorrente()+1);
+
+				sezionaleDocumento.setCorrente(autofattura.getProtocollo_iva());
+				sezionaleDocumento.setToBeUpdated();
+				makeBulkPersistent(userContext, sezionaleDocumento);
 			}
+
+			if (autofattura.getProtocollo_iva_generale()==null) {
+				SezionaleBulk sezionaleGenerale = ((SezionaleHome)getHome(userContext, SezionaleBulk.class)).getSezionaleByTipoDocumento(autofattura.getEsercizio(), autofattura.getCd_cds_origine(), autofattura.getCd_uo_origine(), autofattura.getCd_tipo_sezionale(), SezionaleBulk.GENERALE, Boolean.TRUE);
+
+				autofattura.setProtocollo_iva_generale(sezionaleGenerale.getCorrente()+1);
+
+				sezionaleGenerale.setCorrente(autofattura.getProtocollo_iva_generale());
+				sezionaleGenerale.setToBeUpdated();
+				makeBulkPersistent(userContext, sezionaleGenerale);
+			}
+
+			Unita_organizzativaBulk uoOrigine = (Unita_organizzativaBulk) getHome(userContext, Unita_organizzativaBulk.class).findByPrimaryKey(new Unita_organizzativaBulk(autofattura.getCd_uo_origine()));
+			TerzoBulk terzoUoOrigine = Utility.createTerzoComponentSession().cercaTerzoPerUnitaOrganizzativa(userContext, uoOrigine);
+
+			if (terzoUoOrigine!=null) {
+				terzoUoOrigine.setPec(new BulkList(((TerzoHome) getHome(userContext, TerzoBulk.class)).findTelefoni(terzoUoOrigine, TelefonoBulk.PEC)));
+
+				autofattura.setCodiceUnivocoUfficioIpa(terzoUoOrigine.getCodiceUnivocoUfficioIpa());
+				autofattura.setCodiceDestinatarioFatt(terzoUoOrigine.getCodiceDestinatarioFatt());
+				autofattura.setPecFatturaElettronica(terzoUoOrigine.getPecFatturazioneElettronica() == null ? null : terzoUoOrigine.getPecFatturazioneElettronica().getRiferimento());
+				autofattura.setMailFatturaElettronica(terzoUoOrigine.getEmailFatturazioneElettronica() == null ? null : terzoUoOrigine.getEmailFatturazioneElettronica().getRiferimento());
+			}
+
 	        autofattura.setToBeUpdated();
 			makeBulkPersistent(userContext, autofattura);
 			AutofatturaBulk autofatturaDB = (AutofatturaBulk)getHome(userContext, AutofatturaBulk.class).findByPrimaryKey(autofattura);

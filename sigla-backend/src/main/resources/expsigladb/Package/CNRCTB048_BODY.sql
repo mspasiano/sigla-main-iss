@@ -654,8 +654,63 @@ End;
 		   aUser,
 		   aTsNow
           );
+          if (aDocAmm.cd_tipo_documento_amm = 'FATTURA_P') Then
+            --verifico se esiste fattura ordine
+            for aFatord in (Select * from fattura_ordine a
+                            where a.esercizio = aDocAmmRiga.esercizio
+                            and   a.cd_cds    = aDocAmmRiga.cd_cds
+                            and   a.cd_unita_organizzativa = aDocAmmRiga.cd_unita_organizzativa
+                            and   a.pg_fattura_passiva = aDocAmmRiga.pg_documento_amm
+                            and   a.progressivo_riga = aDocAmmRiga.pg_riga) Loop
+              update ordine_acq_consegna
+              set cd_cds_obbl = aObbScadNext.cd_cds,
+                  esercizio_obbl = aObbScadNext.esercizio,
+                  esercizio_orig_obbl = aObbScadNext.esercizio_originale,
+                  pg_obbligazione = aObbScadNext.pg_obbligazione,
+                  pg_obbligazione_scad = aObbScadNext.pg_obbligazione_scadenzario,
+                  utuv = aUser,
+                  duva = aTsNow
+              where cd_cds = aFatord.cd_cds_ordine
+              and   cd_unita_operativa = aFatord.cd_unita_operativa
+              and   esercizio = aFatord.esercizio_ordine
+              and   cd_numeratore = aFatord.cd_numeratore
+              and   numero = aFatord.numero
+              and   riga = aFatord.riga
+              and   consegna = aFatord.consegna;
+            end loop;
+          end if;
 		 end loop;
         end if;
+	end loop;
+
+	--verifico ordini senza fattura
+    for aConsegna in (Select * from ordine_acq_consegna a
+                      where a.cd_cds_obbl = aScad.cd_cds
+                      and   a.esercizio_obbl = aScad.esercizio
+                      and   a.esercizio_orig_obbl = aScad.esercizio_originale
+                      and   a.pg_obbligazione = aScad.pg_obbligazione
+                      and   a.pg_obbligazione_scad = aScad.pg_obbligazione_scadenzario) Loop
+       if aConsegna.stato != 'INS' Then
+		 IBMERR001.RAISE_ERR_GENERICO('La scadenza '||aScad.pg_obbligazione_scadenzario||' dell''obbligazione '||aScad.cd_cds||'/'||aScad.esercizio||'/'||aScad.esercizio_originale||'/'||aScad.pg_obbligazione||
+		  ' risulta associata alla consegna nr.'||aConsegna.consegna||' della riga nr.'||aConsegna.riga||' dell''ordine '||aConsegna.cd_cds||'/'||aConsegna.cd_unita_operativa||'/'||aConsegna.cd_numeratore||'/'||
+		  aConsegna.numero||' che ha uno stato diverso da ''INS''');
+       else
+          update ordine_acq_consegna
+          set cd_cds_obbl = aObbScadNext.cd_cds,
+              esercizio_obbl = aObbScadNext.esercizio,
+              esercizio_orig_obbl = aObbScadNext.esercizio_originale,
+              pg_obbligazione = aObbScadNext.pg_obbligazione,
+              pg_obbligazione_scad = aObbScadNext.pg_obbligazione_scadenzario,
+              utuv = aUser,
+              duva = aTsNow
+          where cd_cds = aConsegna.cd_cds
+          and   cd_unita_operativa = aConsegna.cd_unita_operativa
+          and   esercizio = aConsegna.esercizio
+          and   cd_numeratore = aConsegna.cd_numeratore
+          and   numero = aConsegna.numero
+          and   riga = aConsegna.riga
+          and   consegna = aConsegna.consegna;
+       end if;
 	end loop;
  end;
 
@@ -759,21 +814,6 @@ For aDocAmm In (Select Distinct cd_tipo_documento_amm, cd_cds, esercizio, cd_uni
     If aDocAmm.cd_tipo_documento_amm in (CNRCTB100.TI_GEN_CORI_VER_SPESA) then
            IBMERR001.RAISE_ERR_GENERICO('L'''||cnrutil.getLabelObbligazioniMin()||' '||CNRCTB035.GETDESC(aObb)||' è gestito in automatico alla liquidazione CORI o è di liquidazione IVA');
     End If;
-  -- Rospuc 07/12/2016 Omessa contabilizzazione
-	-- controlli commentati per test
-	-- ATT!! TOGLIERE COMMENTI!!!
-    If aDocAmm.stato_coge not in (CNRCTB100.STATO_COEP_CON,CNRCTB100.STATO_COEP_EXC) then
-	   ibmerr001.RAISE_ERR_GENERICO('L'''||cnrutil.getLabelObbligazioniMin()||' '||CNRCTB035.GETDESC(aObb)||' risulta associato a documento amministrativo da contabilizzare ('||
-                   aDocAmm.cd_tipo_documento_amm||'/'||aDocAmm.cd_cds||'/'||aDocAmm.esercizio||'/'||aDocAmm.cd_unita_organizzativa||'/'||
-                   aDocAmm.pg_documento_amm||')');
-    End if;
-
-    If aDocAmm.stato_coan not in (CNRCTB100.STATO_COEP_CON,CNRCTB100.STATO_COEP_EXC) then
-	   ibmerr001.RAISE_ERR_GENERICO('L'''||cnrutil.getLabelObbligazioneMin()||' '||CNRCTB035.GETDESC(aObb)||' risulta associato a documento amministrativo da contabilizzare ('||
-               aDocAmm.cd_tipo_documento_amm||'/'||aDocAmm.cd_cds||'/'||aDocAmm.esercizio||'/'||aDocAmm.cd_unita_organizzativa||'/'||
-               aDocAmm.pg_documento_amm||')');
-    End If;
-   -- fine  Rospuc 07/12/2016 Omessa contabilizzazione
 End Loop;
 
   -- Verifica che l'obbligazione non sia collegata a fondo economale

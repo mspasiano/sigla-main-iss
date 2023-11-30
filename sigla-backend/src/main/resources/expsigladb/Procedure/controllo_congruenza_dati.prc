@@ -253,7 +253,7 @@ BEGIN
 		rec.PG_ACCERTAMENTO||'. Il CDS ('||rec.CD_CDS||') non corrisponde alla UO ('||rec.cd_unita_organizzativa||').');
     END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -267,7 +267,7 @@ BEGIN
 		') non coincide con quella calcolata ('||to_char(rec.QUANTITA_EVASA_CALCOLATA,'FM999G999G999G990D999999')||').');
 	END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -280,7 +280,7 @@ BEGIN
 		rtrim(to_char(rec.PREZZO_UNITARIO_CARICO_MAGAZZINO_CALCOLATO,'FM999G999G999G990D999999'),',')||').');
     END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -294,7 +294,7 @@ BEGIN
 		rtrim(to_char(rec.PREZZO_UNITARIO_SCARICO_MAGAZZINO_CALCOLATO,'FM999G999G999G990D999999'),',')||').');
     END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -307,7 +307,7 @@ BEGIN
 		') non coincide con quella calcolata ('||rtrim(to_char(rec.QUANTITA_CARICO_LOTTO_CALCOLATO,'FM999G999G999G990D999999'),',')||').');
 	END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -320,12 +320,13 @@ BEGIN
 		') non coincide con quella calcolata ('||rtrim(to_char(rec.GIACENZA_LOTTO_CALCOLATO,'FM999G999G999G990D999999'),',')||').');
 	END LOOP;
 
-    --controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+    --controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
                          AND PREZZO_UNITARIO_SCONTATO_FATTURA IS NULL)
-                AND VALORE_UNITARIO_LOTTO != VALORE_UNITARIO_LOTTO_CALCOLATO) LOOP
+                AND VALORE_UNITARIO_LOTTO != VALORE_UNITARIO_LOTTO_CALCOLATO
+                AND (STATO_CARICO_MAGAZZINO != 'ANN' OR GIACENZA_LOTTO != 0)) LOOP
 		contaanomalie := contaanomalie + 1;
 		dbms_output.put_line('Consegna '||rec.CD_CDS||'/'||rec.CD_UNITA_OPERATIVA||'/'||rec.ESERCIZIO||'/'||rec.CD_NUMERATORE||'/'||rec.NUMERO||'/'||
 		rec.RIGA||'/'||rec.CONSEGNA||'. Il valore unitario ('||rtrim(to_char(rec.VALORE_UNITARIO_LOTTO,'FM999G999G999G990D999999'),',')||
@@ -333,7 +334,7 @@ BEGIN
 		') non coincide con quello calcolato ('||rtrim(to_char(rec.VALORE_UNITARIO_LOTTO_CALCOLATO,'FM999G999G999G990D999999'),',')||').');
 	END LOOP;
 
-	--controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+	--controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -346,7 +347,7 @@ BEGIN
 		') non coincide con il codice bene ('||rec.CD_BENE_SERVIZIO_ORDINE||') associato all''ordine.');
 	END LOOP;
 
-	--controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+	--controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -357,7 +358,7 @@ BEGIN
 		rec.RIGA||'/'||rec.CONSEGNA||'. Non risulta essere associato il movimento di carico magazzino.');
 	END LOOP;
 
-	--controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+	--controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -369,7 +370,7 @@ BEGIN
 		rec.RIGA||'/'||rec.CONSEGNA||'. Valorizzazione movimento di scarico magazzino non coerente con il tipo di consegna.');
 	END LOOP;
 
-	--controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+	--controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'
@@ -380,7 +381,7 @@ BEGIN
 		rec.RIGA||'/'||rec.CONSEGNA||'. Non risulta essere associato alcun lotto.');
 	END LOOP;
 
-	--controllo gli ordini escludendo quelli caricati dalla moigrazione come già evasi e fatturati
+	--controllo gli ordini escludendo quelli caricati dalla migrazione come già evasi e fatturati
     FOR REC IN (SELECT * FROM V_CONTROLLO_ORDINE_ACQ_CONSEGNA
                 WHERE STATO_CONSEGNA='EVA'
                 AND NOT (ESERCIZIO < 2023 AND STATO_CONSEGNA = 'EVA' AND STATO_FATTURA_CONSEGNA = 'ASS'

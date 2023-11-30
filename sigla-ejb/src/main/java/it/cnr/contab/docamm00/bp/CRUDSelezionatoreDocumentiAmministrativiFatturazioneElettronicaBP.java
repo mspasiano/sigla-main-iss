@@ -270,7 +270,7 @@ public class CRUDSelezionatoreDocumentiAmministrativiFatturazioneElettronicaBP e
             for (Iterator<OggettoBulk> i = lista.iterator(); i.hasNext(); ) {
                 OggettoBulk docAmm = i.next();
                 if (docAmm instanceof VDocammElettroniciAttiviBulk &&
-                        VDocammElettroniciAttiviBulk.DA_PREDISPORRE_ALLA_FIRMA.equals(((VDocammElettroniciAttiviBulk)docAmm).getStatoInvioSdi())) {
+                        VDocammElettroniciAttiviBulk.FATT_ELETT_ALLA_FIRMA.equals(((VDocammElettroniciAttiviBulk)docAmm).getStatoInvioSdi())) {
                     protocollaECreaFileXml(userContext, (VDocammElettroniciAttiviBulk) docAmm);
                     contaAggiornati++;
                 } else
@@ -303,7 +303,7 @@ public class CRUDSelezionatoreDocumentiAmministrativiFatturazioneElettronicaBP e
 
         IDocumentoAmministrativoElettronicoBulk docammElettronico = component.castDocumentoElettronico(userContext, vDocamm);
 
-        if (docammElettronico instanceof AutofatturaBulk && docammElettronico.getProgrUnivocoAnno()==null)
+        if (docammElettronico instanceof AutofatturaBulk)
             docammElettronico = Utility.createAutoFatturaComponentSession().impostaDatiPerFatturazioneElettronica(userContext, (AutofatturaBulk)docammElettronico);
 
         // Questo metodo va invocato perchè fa tutti i controlli prima che la fattura venga protocollata
