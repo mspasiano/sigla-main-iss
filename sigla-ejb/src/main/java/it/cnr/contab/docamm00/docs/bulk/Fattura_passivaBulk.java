@@ -3325,6 +3325,9 @@ public abstract class Fattura_passivaBulk
     }
 
     public Dictionary getCausaleKeys() {
+        //if ( this.isFromAmministra()){
+        //    CAUSALE.put(NVARI,"Nota di Variazione");
+        //}
         return CAUSALE;
     }
 
@@ -3433,6 +3436,7 @@ public abstract class Fattura_passivaBulk
     }
 
     public boolean isROStato_liquidazione() {
+
         return (isGenerataDaCompenso() && getCompenso() != null);
     }
 
