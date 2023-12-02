@@ -18,6 +18,9 @@
 package it.cnr.contab.docamm00.bp;
 
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
+import it.cnr.jada.action.ActionContext;
+import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.bulk.OggettoBulk;
 
 /**
  * Gestisce le catene di elementi correlate con la fattura passiva in uso.
@@ -36,4 +39,12 @@ public class CRUDFatturaPassivaAmministraBP extends CRUDFatturaPassivaIBP {
             ((Fattura_passivaBulk)getModel()).setFromAmministra(Boolean.TRUE);
         super.create(context);
     }
+
+    @Override
+    public OggettoBulk initializeModelForEdit(ActionContext actioncontext, OggettoBulk oggettobulk)throws BusinessProcessException {
+        if (oggettobulk instanceof Fattura_passivaBulk)
+            ((Fattura_passivaBulk)oggettobulk).setFromAmministra(Boolean.TRUE);
+        return super.initializeModelForEdit( actioncontext,oggettobulk);
+    }
+
 }

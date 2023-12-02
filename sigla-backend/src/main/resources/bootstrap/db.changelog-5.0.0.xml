@@ -6038,5 +6038,10 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_prc_ribaltamento_pdg_altro_schedulazione.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunta tabella obbligazione_pluriennale_linea_attivita -->
     <include file="bootstrap/add_table_obbligazione_pluriennale_voce.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta prog_reg_fattura alla tabella FATTURA_PASSIVA -->
+    <include file="bootstrap/add_prog_reg_fattura_fattura_passiva.xml"/>
+    <!-- Autore : CIRO SALVIO - drop e ricrea indice ax_fattura_passiva00 per aggiungere la colonna prog_reg_fattura all'indice  -->
+    <include file="bootstrap/ricreate_index_ax_fattura_passiva00.xml"/>
+
 
 </databaseChangeLog>

@@ -625,7 +625,8 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                 }
             }
             bulk = super.initializeModelForEdit(context, bulk);
-            ((Fattura_passivaBulk)bulk).setFromAmministra(this instanceof CRUDFatturaPassivaAmministraBP);
+            if ( this instanceof CRUDFatturaPassivaAmministraBP)
+                ((Fattura_passivaBulk)bulk).setFromAmministra(Boolean.TRUE);
             return bulk;
         } catch (Throwable e) {
             throw new it.cnr.jada.action.BusinessProcessException(e);

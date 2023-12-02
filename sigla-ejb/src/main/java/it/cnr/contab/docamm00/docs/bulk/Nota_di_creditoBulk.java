@@ -56,6 +56,7 @@ public Nota_di_creditoBulk() {
 	super();
 
 	setTi_fattura(TIPO_NOTA_DI_CREDITO);
+	setProgRegFattura(1);
 }
 /**
  * Nota_di_creditoBulk constructor comment.
@@ -78,6 +79,7 @@ public Nota_di_creditoBulk(String cd_cds, String cd_unita_organizzativa, Integer
 	super(cd_cds, cd_unita_organizzativa, esercizio, pg_fattura_passiva);
 
 	setTi_fattura(TIPO_NOTA_DI_CREDITO);
+	setProgRegFattura(1);
 }
 public void addToAccertamenti_scadenzarioHash(
 	Accertamento_scadenzarioBulk accertamento_scadenzario,
@@ -550,8 +552,15 @@ public Dictionary getCausaleKeys(){
 	OrderedHashtable clone = (OrderedHashtable)d.clone();
 	clone.remove(ATTNC);
 	clone.put(NCRED,"Nota Credito");
-	if ( this.isFromAmministra())
+	if ( ( this.isNotNew() && NVARI.equalsIgnoreCase(getCausale()))
+			||this.isFromAmministra())
 		clone.put(NVARI,"Nota Variazione");
 	return clone;
 }
+	@Override
+	public boolean isROStato_liquidazione() {
+	   if ( !isFromAmministra() && NVARI.equalsIgnoreCase(getCausale()))
+		   return Boolean.TRUE;
+		return super.isROStato_liquidazione();
+	}
 }

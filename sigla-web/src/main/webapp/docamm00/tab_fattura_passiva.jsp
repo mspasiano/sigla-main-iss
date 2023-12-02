@@ -16,6 +16,7 @@
 	boolean roForSplit = fatturaPassiva!=null && !fatturaPassiva.isToBeCreated() && 
 			             fatturaPassiva.getFl_split_payment()!=null && fatturaPassiva.getFl_split_payment();
 %>
+
    <div class="Group card">
 	<table>
 	  <% if (fatturaPassiva.isCongelata() && !bp.isSearching()) { %>	
