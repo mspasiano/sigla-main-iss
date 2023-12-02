@@ -3325,9 +3325,12 @@ public abstract class Fattura_passivaBulk
     }
 
     public Dictionary getCausaleKeys() {
-        //if ( this.isFromAmministra()){
-        //    CAUSALE.put(NVARI,"Nota di Variazione");
-        //}
+        CAUSALE.remove(NVARI);
+        if ( ( this.isNotNew() && NVARI.equalsIgnoreCase(getCausale()))
+                ||this.isFromAmministra()){
+            CAUSALE.put(NVARI,"Nota di Variazione");
+        }
+
         return CAUSALE;
     }
 
@@ -3436,7 +3439,8 @@ public abstract class Fattura_passivaBulk
     }
 
     public boolean isROStato_liquidazione() {
-
+        if ( !isFromAmministra() && NVARI.equalsIgnoreCase(getCausale()))
+            return Boolean.TRUE;
         return (isGenerataDaCompenso() && getCompenso() != null);
     }
 
