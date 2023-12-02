@@ -5,7 +5,7 @@
 package it.cnr.contab.doccont00.core.bulk;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.KeyedPersistent;
-public class obbligazione_pluriennale_voceKey extends OggettoBulk implements KeyedPersistent {
+public class Obbligazione_pluriennale_voceKey extends OggettoBulk implements KeyedPersistent {
 	private String cdCds;
 	private Integer esercizio;
 	private Integer esercizioOriginale;
@@ -21,10 +21,10 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE_VOCE
 	 **/
-	public obbligazione_pluriennale_voceKey() {
+	public Obbligazione_pluriennale_voceKey() {
 		super();
 	}
-	public obbligazione_pluriennale_voceKey(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
+	public Obbligazione_pluriennale_voceKey(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
 		super();
 		this.cdCds=cdCds;
 		this.esercizio=esercizio;
@@ -40,8 +40,8 @@ public class obbligazione_pluriennale_voceKey extends OggettoBulk implements Key
 	}
 	public boolean equalsByPrimaryKey(Object o) {
 		if (this== o) return true;
-		if (!(o instanceof obbligazione_pluriennale_voceKey)) return false;
-		obbligazione_pluriennale_voceKey k = (obbligazione_pluriennale_voceKey) o;
+		if (!(o instanceof Obbligazione_pluriennale_voceKey)) return false;
+		Obbligazione_pluriennale_voceKey k = (Obbligazione_pluriennale_voceKey) o;
 		if (!compareKey(getCdCds(), k.getCdCds())) return false;
 		if (!compareKey(getEsercizio(), k.getEsercizio())) return false;
 		if (!compareKey(getEsercizioOriginale(), k.getEsercizioOriginale())) return false;

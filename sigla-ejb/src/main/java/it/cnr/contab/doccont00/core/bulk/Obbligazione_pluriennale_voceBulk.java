@@ -5,7 +5,7 @@
 package it.cnr.contab.doccont00.core.bulk;
 
 import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
-public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_voceBase {
+public class Obbligazione_pluriennale_voceBulk extends Obbligazione_pluriennale_voceBase {
 	/**
 	 * [OBBLIGAZIONE_PLURIENNALE ]
 	 **/
@@ -18,14 +18,14 @@ public class obbligazione_pluriennale_voceBulk extends obbligazione_pluriennale_
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE_VOCE
 	 **/
-	public obbligazione_pluriennale_voceBulk() {
+	public Obbligazione_pluriennale_voceBulk() {
 		super();
 	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE_VOCE
 	 **/
-	public obbligazione_pluriennale_voceBulk(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
+	public Obbligazione_pluriennale_voceBulk(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgObbligazione, Integer anno, String cdCentroResponsabilita, String cdLineaAttivita, Integer esercizioVoce, String tiAppartenenza, String tiGestione, String cdVoce) {
 		super(cdCds, esercizio, esercizioOriginale, pgObbligazione, anno, cdCentroResponsabilita, cdLineaAttivita, esercizioVoce, tiAppartenenza, tiGestione, cdVoce);
 		setObbligazionePluriennale( new Obbligazione_pluriennaleBulk(cdCds,esercizio,esercizioOriginale,pgObbligazione,anno) );
 		setElementoVoce( new Elemento_voceBulk(cdVoce,esercizioVoce,tiAppartenenza,tiGestione) );

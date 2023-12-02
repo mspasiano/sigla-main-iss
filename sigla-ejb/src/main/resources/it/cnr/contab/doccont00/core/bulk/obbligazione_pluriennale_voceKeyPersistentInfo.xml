@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <SQLPersistentInfo
-	persistentClassName="it.cnr.contab.doccont00.core.bulk.obbligazione_pluriennale_voceKey">
+	persistentClassName="it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennale_voceKey">
 	<defaultColumnMap
 		tableName="OBBLIGAZIONE_PLURIENNALE_VOCE">
 		<columnMapping
