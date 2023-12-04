@@ -3123,33 +3123,6 @@ begin
 		end;
 	end loop;
 
-	-- Ribaltamento archivio per liquidazione stipendi
-	aMessage := 'Ribaltamento archivio per liquidazione stipendi sull''esercizio '||aEsDest||'. Lock tabella STIPENDI_COFI';
-	ibmutl200.loginf(aPgEsec,aMessage,'','');
-	For	i In 1..15 Loop
-		begin
-			 insert into STIPENDI_COFI  (ESERCIZIO,
-						     MESE,
-						     STATO,
-						     DACR,
-						     UTCR,
-						     DUVA,
-						     UTUV,
-						     PG_VER_REC)
-			 values (aEsDest,
-			 	 i,
-				 'I',
-				 sysdate,
-				 cgUtente,
-				 sysdate,
-				 cgUtente,
-				 1);
-		exception when DUP_VAL_ON_INDEX then
-			ibmutl200.LOGWAR(aPgEsec,'Mese '||i||' già definito per esercizio '||aEsDest,'','');
-			aStato := 'W';
-		end;
-	End Loop;
-
 	-- Ribaltamento informazioni relative alla regione per liquidazione CORI stipendiali
 	aMessage := 'Ribaltamento informazioni relative alla regione per liquidazione CORI stipendiali sull''esercizio '||aEsDest||'. Lock tabella STIPENDI_COFI_CORI_REG';
 	ibmutl200.loginf(aPgEsec,aMessage,'','');
