@@ -373,4 +373,11 @@
         <init-param name="reportName" value="/preventivo/preventivo/riaccertamento.jasper"/>
     </businessProcess>
 
+    <businessProcess
+            name="VisualizzazioneVistaAssestatoBP" className="it.cnr.contab.docamm00.bp.VisualizzazioneVistaAssestatoBP">
+        <forward name="default" path="/util/form.jsp"/>
+        <init-param name="bulkClassName" value="it.cnr.contab.prevent00.bulk.V_assestatoBulk" />
+        <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
+    </businessProcess>
+
 </action-mappings>

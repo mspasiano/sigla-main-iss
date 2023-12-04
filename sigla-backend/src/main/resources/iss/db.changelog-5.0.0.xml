@@ -112,5 +112,7 @@
     <!-- Autore : CIRO SALVIO - Aggiunta possibilità di lanciare da applicazione la copia del bilancio previsionale su quello decisionale -->
     <include file="iss/add_prc_copia_bil_decisionale_to_gestionale_schedulazione.xml"></include>
 
+    <include file="bootstrap/add_view_assestato.xml" />
+
 
 </databaseChangeLog>
