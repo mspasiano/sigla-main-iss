@@ -683,34 +683,33 @@ End;
         end if;
 	end loop;
 
-	--verifico ordini senza fattura
+	-- aggiorno impegni su ordini
+	-- . senza fattura (a.stato = 'INS')
+	-- . evase a magazzino e non associata a fattura (a.stato = 'EVA' and a.stato_fatt != 'ASS')
+	-- gli ordini evasi a magazzino con fattura sono stati aggiornati nel codice precedente
+	-- gli ordini evasi forzatamanente non vengono aggiornati
     for aConsegna in (Select * from ordine_acq_consegna a
                       where a.cd_cds_obbl = aScad.cd_cds
                       and   a.esercizio_obbl = aScad.esercizio
                       and   a.esercizio_orig_obbl = aScad.esercizio_originale
                       and   a.pg_obbligazione = aScad.pg_obbligazione
-                      and   a.pg_obbligazione_scad = aScad.pg_obbligazione_scadenzario) Loop
-       if aConsegna.stato != 'INS' Then
-		 IBMERR001.RAISE_ERR_GENERICO('La scadenza '||aScad.pg_obbligazione_scadenzario||' dell''obbligazione '||aScad.cd_cds||'/'||aScad.esercizio||'/'||aScad.esercizio_originale||'/'||aScad.pg_obbligazione||
-		  ' risulta associata alla consegna nr.'||aConsegna.consegna||' della riga nr.'||aConsegna.riga||' dell''ordine '||aConsegna.cd_cds||'/'||aConsegna.cd_unita_operativa||'/'||aConsegna.cd_numeratore||'/'||
-		  aConsegna.numero||' che ha uno stato diverso da ''INS''');
-       else
-          update ordine_acq_consegna
-          set cd_cds_obbl = aObbScadNext.cd_cds,
-              esercizio_obbl = aObbScadNext.esercizio,
-              esercizio_orig_obbl = aObbScadNext.esercizio_originale,
-              pg_obbligazione = aObbScadNext.pg_obbligazione,
-              pg_obbligazione_scad = aObbScadNext.pg_obbligazione_scadenzario,
-              utuv = aUser,
-              duva = aTsNow
-          where cd_cds = aConsegna.cd_cds
-          and   cd_unita_operativa = aConsegna.cd_unita_operativa
-          and   esercizio = aConsegna.esercizio
-          and   cd_numeratore = aConsegna.cd_numeratore
-          and   numero = aConsegna.numero
-          and   riga = aConsegna.riga
-          and   consegna = aConsegna.consegna;
-       end if;
+                      and   a.pg_obbligazione_scad = aScad.pg_obbligazione_scadenzario
+                      and   (a.stato = 'INS' or (a.stato = 'EVA' and a.stato_fatt != 'ASS'))) Loop
+       update ordine_acq_consegna
+       set cd_cds_obbl = aObbScadNext.cd_cds,
+           esercizio_obbl = aObbScadNext.esercizio,
+           esercizio_orig_obbl = aObbScadNext.esercizio_originale,
+           pg_obbligazione = aObbScadNext.pg_obbligazione,
+           pg_obbligazione_scad = aObbScadNext.pg_obbligazione_scadenzario,
+           utuv = aUser,
+           duva = aTsNow
+       where cd_cds = aConsegna.cd_cds
+       and   cd_unita_operativa = aConsegna.cd_unita_operativa
+       and   esercizio = aConsegna.esercizio
+       and   cd_numeratore = aConsegna.cd_numeratore
+       and   numero = aConsegna.numero
+       and   riga = aConsegna.riga
+       and   consegna = aConsegna.consegna;
 	end loop;
  end;
 
