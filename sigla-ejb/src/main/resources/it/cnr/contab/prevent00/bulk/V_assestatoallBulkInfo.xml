@@ -93,13 +93,6 @@
 		enabledOnEdit="false"
 		label="Capitolo" />
 	<fieldProperty
-		name="dett_imp_voce"
-		property="dett_imp_voce"
-		inputType="TEXTAREA"
-		maxLength="300"
-		cols="60"
-		rows="5" />
-	<fieldProperty
 		name="cd_modulo"
 		property="cd_modulo"
 		inputType="TEXTAREA"
@@ -149,6 +142,13 @@
 		enabledOnEdit="false"
 		label="Importo_utilizzato" />
 	<fieldProperty
+			name="importo_vincoli"
+			property="importo_vincoli"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo_vincoli" />
+	<fieldProperty
 		name="importo_disponibile"
 		property="importo_disponibile"
 		inputType="TEXT"
@@ -176,6 +176,7 @@
 		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="false"
 		label="Totale" />
+	<!--
 	<fieldProperty
 		name="imp_da_assegnare"
 		property="imp_da_assegnare"
@@ -190,6 +191,31 @@
 		maxLength="5"
 		formatName="it.cnr.contab.util.PercentFormat"
 		label="Percentuale da assegnare" />
+	-->
+	<fieldProperty
+			name="importo_ini_residui_propri"
+			property="importo_ini_residui_propri"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo Ini Residui Propri" />
+	<fieldProperty
+			name="importo_manrev"
+			property="importo_manrev"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo ManRev" />
+
+	<fieldProperty
+			name="assestato_cassa"
+			property="assestato_cassa"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Assestato Cassa" />
+
+	<!--
 	<fieldProperty
 		name="importo_disponibile_netto"
 		property="importo_disponibile_netto"
@@ -202,6 +228,9 @@
 		name="imp_da_assegnare" />
 	<formFieldProperty
 		name="prc_da_assegnare" />
+	-->
+	<formFieldProperty
+			name="cd_elemento_voce" />
 
 	<columnFieldProperty
 		name="cd_centro_responsabilita"
@@ -212,5 +241,8 @@
 	<columnFieldProperty
 		name="cd_elemento_voce"
 		enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_cassa"
+			enabledOnInsert="false" />
 
 </bulkInfo>
