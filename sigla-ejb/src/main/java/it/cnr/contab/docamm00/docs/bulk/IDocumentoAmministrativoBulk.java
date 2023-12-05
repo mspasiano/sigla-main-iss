@@ -44,6 +44,7 @@ public interface IDocumentoAmministrativoBulk extends IDocumentoCogeBulk {
     String CONT = "CONT";
     String ATTNC = "ATTNC";
     String NCRED = "NCRED";
+     String NVARI = "NVARI";
 
 
     void addToDettagliCancellati(IDocumentoAmministrativoRigaBulk dettaglio);

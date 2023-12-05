@@ -244,6 +244,8 @@ public class Fattura_passivaBase extends Fattura_passivaKey implements Keyed {
     private java.lang.Long progressivo;
     // FL_DA_ORDINI CHAR(1)
     private java.lang.Boolean flDaOrdini;
+    // PROG_REG_FATTURA NUMBER(5,0)
+    private Integer progRegFattura;
 
     public Fattura_passivaBase() {
         super();
@@ -1251,4 +1253,11 @@ public class Fattura_passivaBase extends Fattura_passivaKey implements Keyed {
         this.flDaOrdini = flDaOrdini;
     }
 
+    public Integer getProgRegFattura() {
+        return progRegFattura;
+    }
+
+    public void setProgRegFattura(Integer progRegFattura) {
+        this.progRegFattura = progRegFattura;
+    }
 }

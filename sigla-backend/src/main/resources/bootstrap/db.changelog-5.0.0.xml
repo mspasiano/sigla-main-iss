@@ -6025,11 +6025,24 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : PIERGIORGIO FARAGLIA - Aggiunge voce di menu per la stampa del mastro rendiconto finanziario -->
     <include file="bootstrap/add_column_mastro_finanziario.xml"/>
     <include file="bootstrap/add_priority_mastro_finanziario.xml"/>
+
+    <!-- Autore : PIERGIORGIO FARAGLIA - Aggiunge gestione report Riaccertamento Residui Passivi -->
+    <include file="bootstrap/add_menu_riaccertamento_residui_passivi.xml" />
+    <include file="bootstrap/add_priority_riaccertamento_residui_passivi.xml" />
+
     <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per il cambio voce su partite di giro -->
     <include file="bootstrap/add_accessi_cambia_voce_pgiro.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunge configurazione rest Service siope mandati -->
     <include file="bootstrap/add_accessi_respsiopemandati.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunta possibilità di lanciare da applicazione la procedura per il ribaltamento di inizio anno -->
     <include file="bootstrap/add_prc_ribaltamento_pdg_altro_schedulazione.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta tabella obbligazione_pluriennale_linea_attivita
+   ( da decommentare quando finiamo il giro delle obbligazioni pluriennali)
+   <include file="bootstrap/add_table_obbligazione_pluriennale_voce.xml"/>-->
+    <!-- Autore : CIRO SALVIO - Aggiunta prog_reg_fattura alla tabella FATTURA_PASSIVA -->
+    <include file="bootstrap/add_prog_reg_fattura_fattura_passiva.xml"/>
+    <!-- Autore : CIRO SALVIO - drop e ricrea indice ax_fattura_passiva00 per aggiungere la colonna prog_reg_fattura all'indice  -->
+    <include file="bootstrap/ricreate_index_ax_fattura_passiva00.xml"/>
+
 
 </databaseChangeLog>

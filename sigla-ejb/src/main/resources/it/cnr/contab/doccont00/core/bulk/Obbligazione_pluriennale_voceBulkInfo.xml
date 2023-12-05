@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bulkInfo>
+	<fieldProperty
+		name="cdCds"
+		property="cdCds"
+		inputType="TEXT"
+		inputSize="30"
+		maxLength="30"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Cds dell'obbligazione" />
+	<fieldProperty
+		name="esercizio"
+		property="esercizio"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Esercizio dell'obbligazione" />
+	<fieldProperty
+		name="esercizioOriginale"
+		property="esercizioOriginale"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Esercizio Originale dell'obbligazione" />
+	<fieldProperty
+		name="pgObbligazione"
+		property="pgObbligazione"
+		inputType="TEXTAREA"
+		cols="60"
+		rows="5"
+		maxLength="38"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Numero dell'obbligazione" />
+	<fieldProperty
+		name="anno"
+		property="anno"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Anno Obbligazione Pluriennale" />
+	<fieldProperty
+		name="cdCentroResponsabilita"
+		property="cdCentroResponsabilita"
+		inputType="TEXT"
+		inputSize="30"
+		maxLength="30"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Codice identificativo del centro di responsabilità" />
+	<fieldProperty
+		name="cdLineaAttivita"
+		property="cdLineaAttivita"
+		inputType="TEXT"
+		inputSize="10"
+		maxLength="10"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Codice della linea di attivita" />
+	<fieldProperty
+		name="esercizioVoce"
+		property="esercizioVoce"
+		inputType="TEXT"
+		inputSize="5"
+		maxLength="5"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Esercizio della voce del capitolo" />
+	<fieldProperty
+		name="tiAppartenenza"
+		property="tiAppartenenza"
+		inputType="TEXT"
+		inputSize="1"
+		maxLength="1"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Definisce l'appartenenza (CNR o CdS) delle voci del piano finanziario di riferimento dell'obbligazione" />
+	<fieldProperty
+		name="tiGestione"
+		property="tiGestione"
+		inputType="TEXT"
+		inputSize="1"
+		maxLength="1"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Definisce la sezione (entrata o spesa) delle voci del piano finanziario di riferimento dell'obbligazione" />
+	<fieldProperty
+		name="cdVoce"
+		property="cdVoce"
+		inputType="TEXTAREA"
+		cols="60"
+		rows="5"
+		maxLength="50"
+		enabledOnEdit="false"
+		enabledOnSearch="false"
+		nullable="false"
+		label="Codice del capitolo finanziario (mastrino VOCE_F) di riferimento dell'obbligazione" />
+	<fieldProperty
+		name="importo"
+		property="importo"
+		inputType="TEXT"
+		formatName="it.cnr.contab.util.EuroFormat"
+		enabledOnEdit="false"
+		nullable="false"
+		label="Importo del dettaglio per la linea attivita" />
+	<form
+		name="searchtool">
+		<formFieldProperty
+			name="cdCds" />
+		<formFieldProperty
+			name="esercizio" />
+		<formFieldProperty
+			name="esercizioOriginale" />
+		<formFieldProperty
+			name="pgObbligazione" />
+		<formFieldProperty
+			name="anno" />
+		<formFieldProperty
+			name="cdCentroResponsabilita" />
+		<formFieldProperty
+			name="cdLineaAttivita" />
+		<formFieldProperty
+			name="esercizioVoce" />
+		<formFieldProperty
+			name="tiAppartenenza" />
+		<formFieldProperty
+			name="tiGestione" />
+		<formFieldProperty
+			name="cdVoce" />
+	</form>
+	<formFieldProperty
+		name="cdCentroResponsabilita" />
+	<formFieldProperty
+		name="cdLineaAttivita" />
+	<formFieldProperty
+		name="importo" />
+	<findFieldProperty
+		name="cdCds" />
+	<findFieldProperty
+		name="esercizio" />
+	<findFieldProperty
+		name="esercizioOriginale" />
+	<findFieldProperty
+		name="pgObbligazione" />
+	<findFieldProperty
+		name="anno" />
+	<findFieldProperty
+		name="cdCentroResponsabilita" />
+	<findFieldProperty
+		name="cdLineaAttivita" />
+	<findFieldProperty
+		name="esercizioVoce" />
+	<findFieldProperty
+		name="tiAppartenenza" />
+	<findFieldProperty
+		name="tiGestione" />
+	<findFieldProperty
+		name="cdVoce" />
+	<findFieldProperty
+		name="importo" />
+	<columnFieldProperty
+		name="cdCds" />
+	<columnFieldProperty
+		name="esercizio" />
+	<columnFieldProperty
+		name="esercizioOriginale" />
+	<columnFieldProperty
+		name="pgObbligazione" />
+	<columnFieldProperty
+		name="anno" />
+	<columnFieldProperty
+		name="cdCentroResponsabilita" />
+	<columnFieldProperty
+		name="cdLineaAttivita" />
+	<columnFieldProperty
+		name="esercizioVoce" />
+	<columnFieldProperty
+		name="tiAppartenenza" />
+	<columnFieldProperty
+		name="tiGestione" />
+	<columnFieldProperty
+		name="cdVoce" />
+	<columnFieldProperty
+		name="importo" />
+</bulkInfo>

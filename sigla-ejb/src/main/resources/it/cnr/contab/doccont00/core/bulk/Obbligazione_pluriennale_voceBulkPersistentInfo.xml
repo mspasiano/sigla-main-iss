@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SQLPersistentInfo
+	persistentClassName="it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennale_voceBulk"
+	homeClassName="it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennale_voceHome">
+	<defaultColumnMap
+		tableName="OBBLIGAZIONE_PLURIENNALE_VOCE">
+		<columnMapping
+			columnName="CD_CDS"
+			propertyName="obbligazionePluriennale.cd_cds" />
+		<columnMapping
+			columnName="ESERCIZIO"
+			propertyName="obbligazionePluriennale.esercizio" />
+		<columnMapping
+			columnName="ESERCIZIO_ORIGINALE"
+			propertyName="obbligazionePluriennale.esercizio_originale" />
+		<columnMapping
+			columnName="PG_OBBLIGAZIONE"
+			propertyName="obbligazionePluriennale.pg_obbligazione" />
+		<columnMapping
+			columnName="ANNO"
+			propertyName="obbligazionePluriennale.anno" />
+		<columnMapping
+			columnName="ESERCIZIO_VOCE"
+			propertyName="elementoVoce.esercizio" />
+		<columnMapping
+			columnName="TI_APPARTENENZA"
+			propertyName="elementoVoce.ti_appartenenza" />
+		<columnMapping
+			columnName="TI_GESTIONE"
+			propertyName="elementoVoce.ti_gestione" />
+		<columnMapping
+			columnName="CD_VOCE"
+			propertyName="elementoVoce.cd_elemento_voce" />
+	</defaultColumnMap>
+	<persistentProperty
+		name="obbligazionePluriennale"
+		partOfOid="true" />
+	<persistentProperty
+		name="elementoVoce"
+		partOfOid="true" />
+</SQLPersistentInfo>

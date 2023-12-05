@@ -2059,6 +2059,7 @@ public abstract class Fattura_passivaBulk
         setFl_merce_intra_ue(Boolean.FALSE);
         setFl_liquidazione_differita(Boolean.FALSE);
         setFl_split_payment(Boolean.FALSE);
+        setProgRegFattura(1);
         return this;
     }
 
@@ -2080,6 +2081,7 @@ public abstract class Fattura_passivaBulk
         setFl_congelata(Boolean.FALSE);
         setFl_liquidazione_differita(Boolean.FALSE);
         setFl_split_payment(Boolean.FALSE);
+        setProgRegFattura(1);
 
         return this;
     }
@@ -2107,7 +2109,6 @@ public abstract class Fattura_passivaBulk
         setFl_autofattura(null);
         setFl_merce_extra_ue(null);
         setFl_merce_intra_ue(null);
-
         return this;
     }
 
@@ -3324,6 +3325,11 @@ public abstract class Fattura_passivaBulk
     }
 
     public Dictionary getCausaleKeys() {
+        CAUSALE.remove(NVARI);
+        if ( ( this.isNotNew() && NVARI.equalsIgnoreCase(getCausale()))
+                ||this.isFromAmministra()){
+            CAUSALE.put(NVARI,"Nota a Variazione a Debito");
+        }
         return CAUSALE;
     }
 
@@ -3432,6 +3438,8 @@ public abstract class Fattura_passivaBulk
     }
 
     public boolean isROStato_liquidazione() {
+        if ( !isFromAmministra() && NVARI.equalsIgnoreCase(getCausale()))
+            return Boolean.TRUE;
         return (isGenerataDaCompenso() && getCompenso() != null);
     }
 
@@ -3487,7 +3495,7 @@ public abstract class Fattura_passivaBulk
     }
 
     public boolean isROFl_split_payment() {
-        return isElettronica() ||
+        return ( isElettronica() && ( !( getPg_fattura_passiva()==null || ( !( getPg_fattura_passiva()>0)) &&  isFromAmministra())))||
                 (getFl_intra_ue() != null && getFl_intra_ue()) ||
                 (getFl_extra_ue() != null && getFl_extra_ue()) ||
                 (getFl_autofattura() != null && getFl_autofattura()) ||
@@ -3689,6 +3697,7 @@ public abstract class Fattura_passivaBulk
     public void setFromAmministra(boolean fromAmministra) {
         this.fromAmministra = fromAmministra;
     }
+
 
     public boolean isFromAmministra() {
         return fromAmministra;

@@ -23,7 +23,6 @@ import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.anagraf00.tabrif.bulk.*;
 import it.cnr.contab.anagraf00.tabter.bulk.ComuneBulk;
-import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
 import it.cnr.contab.coepcoan00.core.bulk.Scrittura_partita_doppiaBulk;
 import it.cnr.contab.compensi00.tabrif.bulk.Tipo_prestazione_compensoBulk;
 import it.cnr.contab.compensi00.tabrif.bulk.Tipo_trattamentoBulk;
@@ -76,7 +75,7 @@ public class CompensoBulk extends CompensoBase implements IDefferUpdateSaldi, ID
     public final static java.lang.String STATO_INIZIALE = "I";
     public final static java.lang.String STATO_CONTABILIZZATO = "C";
     public final static java.lang.String STATO_PAGATO = "P";
-    public final static java.lang.String STATO_ANNULLATO = "A";
+        public final static java.lang.String STATO_ANNULLATO = "A";
     public final static java.util.Dictionary STATO_FONDO_ECO;
     public final static java.util.Dictionary TI_ASSOCIATO_MANREV;
     public final static java.util.Dictionary STATO_COFI;

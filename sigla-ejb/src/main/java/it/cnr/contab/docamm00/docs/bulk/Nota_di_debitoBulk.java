@@ -35,6 +35,7 @@ public class Nota_di_debitoBulk extends Fattura_passivaBulk {
         super();
 
         setTi_fattura(TIPO_NOTA_DI_DEBITO);
+        setProgRegFattura(1);
     }
 
     /**
@@ -60,6 +61,7 @@ public class Nota_di_debitoBulk extends Fattura_passivaBulk {
         super(cd_cds, cd_unita_organizzativa, esercizio, pg_fattura_passiva);
 
         setTi_fattura(TIPO_NOTA_DI_DEBITO);
+        setProgRegFattura(1);
     }
 
     public void copyFrom(

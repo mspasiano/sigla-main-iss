@@ -1,3 +1,7 @@
+--------------------------------------------------------
+--  DDL for Package CNRMIG100
+--------------------------------------------------------
+
 create or replace PACKAGE "CNRMIG100" as
 --
 -- CNRMIG100 - Package di gestione ribaltamento configurazione, struttura organizzativa,

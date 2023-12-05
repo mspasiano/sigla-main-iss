@@ -1252,6 +1252,13 @@
             inputType="SEARCHTOOL"
             label="Documento Elettronico"
     />
+    <fieldProperty
+            name="progRegFattura"
+            property="progRegFattura"
+            label="Prog. registrazione "
+            inputType="TEXT"
+            enabledOnFreeSearch="false"
+    />
     <formFieldProperty
             name="findDocumentEleTestata" />
     <fieldProperty

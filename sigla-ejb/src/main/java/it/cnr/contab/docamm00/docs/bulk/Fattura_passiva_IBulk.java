@@ -17,10 +17,8 @@
 
 package it.cnr.contab.docamm00.docs.bulk;
 
-import it.cnr.contab.client.docamm.Terzo;
 import it.cnr.contab.docamm00.bp.CRUDFatturaPassivaIBP;
 import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.util.action.CRUDBP;
 
 /**
@@ -52,6 +50,7 @@ public Fattura_passiva_IBulk(String cd_cds, String cd_unita_organizzativa, Integ
 	super(cd_cds, cd_unita_organizzativa, esercizio, pg_fattura_passiva);
 
 	setTi_fattura(TIPO_FATTURA_PASSIVA);
+	setProgRegFattura(1);
 }
 /**
  * Insert the method's description here.

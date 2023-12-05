@@ -506,6 +506,13 @@
                 columnSize="1"
                 nullable="true"
                 converterClassName="it.cnr.jada.persistency.sql.CHARToBooleanConverter"/>
+
+        <columnMapping
+                columnName="PROG_REG_FATTURA"
+                propertyName="progRegFattura"
+                sqlTypeName="NUMERIC"
+                columnSize="5"
+                nullable="false"/>
     </defaultColumnMap>
     <persistentProperty
             name="dt_cancellazione"/>
@@ -673,4 +680,7 @@
             name="fl_split_payment"/>
     <persistentProperty
             name="flDaOrdini"/>
+
+    <persistentProperty
+            name="progRegFattura"/>
 </SQLPersistentInfo>
