@@ -25,6 +25,7 @@ import it.cnr.contab.util.Utility;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.KeyedPersistent;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
@@ -95,7 +96,10 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
  
 //    IMPORTO_DISPONIBILE DECIMAL(22,0)
 	private java.math.BigDecimal importo_disponibile;
- 
+
+
+	private java.math.BigDecimal importo_ini_residui_propri;
+
 //    VARIAZIONI_PROVVISORIE DECIMAL(22,0)
 	private java.math.BigDecimal variazioni_provvisorie;
  
@@ -104,13 +108,15 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
  
 //    ASSESTATO_FINALE DECIMAL(22,0)
 	private java.math.BigDecimal assestato_finale;
- 
-	private java.math.BigDecimal imp_da_assegnare;
 
-	private java.math.BigDecimal prc_da_assegnare;
-	
+
+	private java.math.BigDecimal assestato_cassa;
+
 //  IMPORTO_VINCOLI DECIMAL(22,0)
 	private java.math.BigDecimal importo_vincoli;
+
+
+	private java.math.BigDecimal importo_manrev;
 
 	protected Timestamp progetto_dt_inizio;
 	
@@ -207,12 +213,6 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
 	public void setAssestato_finale(java.math.BigDecimal assestato_finale)  {
 		this.assestato_finale=assestato_finale;
 	}
-	public java.math.BigDecimal getImp_da_assegnare() {
-		return imp_da_assegnare;
-	}
-	public void setImp_da_assegnare(java.math.BigDecimal imp_da_assegnare) {
-		this.imp_da_assegnare = imp_da_assegnare;
-	}
 	public boolean equalsByPrimaryKey(Object o) {
 		if (this == o) return true;
 		if (!(o instanceof V_assestatoallBulk)) return false;
@@ -289,13 +289,6 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
 		this.cd_modulo = cd_modulo;
 	}
 
-	public java.math.BigDecimal getPrc_da_assegnare() {
-		return prc_da_assegnare;
-	}
-	
-	public void setPrc_da_assegnare(java.math.BigDecimal prc_da_assegnare) {
-		this.prc_da_assegnare = prc_da_assegnare;
-	}
 
 	public java.math.BigDecimal getVariazioni_residui_propri() {
 		return variazioni_residui_propri;
@@ -322,13 +315,6 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
 		this.db_imp_utilizzato = db_imp_utilizzato;
 	}
 	
-	/**
-	 * restituisce l'importo ancora disponibile per l'associazione (importo al netto di quello già associato)
-	 */
-	public java.math.BigDecimal getImporto_disponibile_netto() {
-		return Utility.nvl(getImporto_disponibile()).add(Utility.nvl(getDb_imp_utilizzato())).subtract(Utility.nvl(getImp_da_assegnare()));
-	}
-
 	public boolean equals(Object obj) {
 		return equalsByPrimaryKey(obj);
 	}
@@ -364,4 +350,31 @@ public class V_assestatoallBulk extends OggettoBulk implements KeyedPersistent {
 	public void setProgetto_dt_proroga(Timestamp progetto_dt_proroga) {
 		this.progetto_dt_proroga = progetto_dt_proroga;
 	}
+
+
+	public BigDecimal getImporto_ini_residui_propri() {
+		return importo_ini_residui_propri;
+	}
+
+	public void setImporto_ini_residui_propri(BigDecimal importo_ini_residui_propri) {
+		this.importo_ini_residui_propri = importo_ini_residui_propri;
+	}
+
+	public BigDecimal getImporto_manrev() {
+		return importo_manrev;
+	}
+
+	public void setImporto_manrev(BigDecimal importo_manrev) {
+		this.importo_manrev = importo_manrev;
+	}
+
+	public BigDecimal getAssestato_cassa() {
+		return assestato_cassa;
+	}
+
+	public void setAssestato_cassa(BigDecimal assestato_cassa) {
+		this.assestato_cassa = assestato_cassa;
+	}
+
+
 }

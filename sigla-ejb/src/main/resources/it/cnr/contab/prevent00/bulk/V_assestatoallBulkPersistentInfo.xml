@@ -136,6 +136,12 @@
 			columnSize="22"
 			nullable="true" />
 		<columnMapping
+				columnName="IMPORTO_VINCOLI"
+				propertyName="importo_vincoli"
+				sqlTypeName="DECIMAL"
+				columnSize="22"
+				nullable="true" />
+		<columnMapping
 			columnName="VARIAZIONI_PROVVISORIE"
 			propertyName="variazioni_provvisorie"
 			sqlTypeName="DECIMAL"
@@ -154,11 +160,23 @@
 			columnSize="22"
 			nullable="true" />
 		<columnMapping
-			columnName="IMPORTO_VINCOLI"
-			propertyName="importo_vincoli"
+			columnName="IMPORTO_INI_RESIDUI_PROPRI"
+			propertyName="importo_ini_residui_propri"
 			sqlTypeName="DECIMAL"
 			columnSize="22"
 			nullable="true" />
+		<columnMapping
+				columnName="IMPORTO_MANREV"
+				propertyName="importo_manrev"
+				sqlTypeName="DECIMAL"
+				columnSize="22"
+				nullable="true" />
+		<columnMapping
+				columnName="ASSESTATO_CASSA"
+				propertyName="assestato_cassa"
+				sqlTypeName="DECIMAL"
+				columnSize="22"
+				nullable="true" />
 		<columnMapping
 			columnName="PROGETTO_DT_INIZIO"
 			propertyName="progetto_dt_inizio"
@@ -178,6 +196,11 @@
 			columnSize="7"
 			nullable="true" />
 	</defaultColumnMap>
+
+
+
+
+
 	<persistentProperty
 		name="esercizio" 
 		partOfOid="true"/>
@@ -220,6 +243,10 @@
 	<persistentProperty
 		name="importo_utilizzato" />
 	<persistentProperty
+			name="importo_ini_residui_propri" />
+	<persistentProperty
+			name="importo_manrev" />
+	<persistentProperty
 		name="importo_disponibile" />
 	<persistentProperty
 		name="variazioni_provvisorie" />
@@ -235,4 +262,6 @@
 		name="progetto_dt_fine" />
 	<persistentProperty
 		name="progetto_dt_proroga" />
+	<persistentProperty
+			name="assestato_cassa" />
 </SQLPersistentInfo>

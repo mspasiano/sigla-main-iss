@@ -215,6 +215,25 @@
 			enabledOnEdit="false"
 			label="Assestato Cassa" />
 
+	<fieldProperty
+			name="progetto_dt_inizio"
+			property="progetto_dt_inizio"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Inizio" />
+	<fieldProperty
+			name="progetto_dt_fine"
+			property="progetto_dt_fine"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Fine" />
+	<fieldProperty
+			name="progetto_dt_proroga"
+			property="progetto_dt_proroga"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Proroga" />
+
 	<!--
 	<fieldProperty
 		name="importo_disponibile_netto"
@@ -233,16 +252,85 @@
 			name="cd_elemento_voce" />
 
 	<columnFieldProperty
+			name="esercizio"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="esercizio_res"
+			enabledOnInsert="false" />
+	<columnFieldProperty
 		name="cd_centro_responsabilita"
 		enabledOnInsert="false" />
 	<columnFieldProperty
 		name="cd_linea_attivita"
 		enabledOnInsert="false" />
 	<columnFieldProperty
+			name="ds_linea_attivita"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="cd_natura"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="ti_appartenenza"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="ti_gestione"
+			enabledOnInsert="false" />
+	<columnFieldProperty
 		name="cd_elemento_voce"
 		enabledOnInsert="false" />
 	<columnFieldProperty
+			name="cd_modulo"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="stanziamento_iniziale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_positive"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_negative"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_residui_propri"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_iniziale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_utilizzato"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_vincoli"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_disponibile"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_provvisorie"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_definitive"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_finale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_ini_residui_propri"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_manrev"
+			enabledOnInsert="false" />
+	<columnFieldProperty
 			name="assestato_cassa"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_inizio"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_fine"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_proroga"
 			enabledOnInsert="false" />
 
 </bulkInfo>
