@@ -186,7 +186,7 @@
 		nullable="false"		
 		/>
 	<fieldProperty
-		name="Or"
+		name="tiAttivita"
 		property="tiAttivita"
 		inputType="SELECT"
 		readonlyProperty="notAbledToModifyTipoIstCom"
