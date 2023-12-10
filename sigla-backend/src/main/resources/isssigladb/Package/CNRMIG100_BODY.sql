@@ -1040,7 +1040,7 @@ begin
                        1);
             exception when DUP_VAL_ON_INDEX then
                 ibmutl200.LOGWAR(aPgEsec,'Numeratore magazzino '||aMag.CD_CDS||'/'||aMag.CD_MAGAZZINO||'/'||aMag.CD_NUMERATORE_MAG||' già definito per esercizio '||aEs,'','');
-                aStato := 'W';
+                 stato_fine := 'W';
             end;
         end loop;
 
@@ -1086,7 +1086,7 @@ begin
                    aOrd.TI_ISTITUZ_COMMERC);
             exception when DUP_VAL_ON_INDEX then
                 ibmutl200.LOGWAR(aPgEsec,'Numeratore ordine '||aOrd.CD_UNITA_OPERATIVA||'/'||aOrd.CD_NUMERATORE||' già definito per esercizio '||aEs,'','');
-                aStato := 'W';
+                 stato_fine := 'W';
             end;
         end loop;
 
