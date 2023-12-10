@@ -3330,6 +3330,7 @@ public abstract class Fattura_passivaBulk
                 ||this.isFromAmministra()){
             CAUSALE.put(NVARI,"Nota di Variazione");
         }
+        return CAUSALE;
     }
 
     public BulkList<DocumentoEleAllegatiBulk> getDocEleAllegatiColl() {
