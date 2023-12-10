@@ -3328,9 +3328,8 @@ public abstract class Fattura_passivaBulk
         CAUSALE.remove(NVARI);
         if ( ( this.isNotNew() && NVARI.equalsIgnoreCase(getCausale()))
                 ||this.isFromAmministra()){
-            CAUSALE.put(NVARI,"Nota a Variazione a Debito");
+            CAUSALE.put(NVARI,"Nota di Variazione");
         }
-        return CAUSALE;
     }
 
     public BulkList<DocumentoEleAllegatiBulk> getDocEleAllegatiColl() {
