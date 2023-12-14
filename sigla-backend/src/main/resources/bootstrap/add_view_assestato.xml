@@ -18,7 +18,6 @@
         <insert tableName="ass_bp_accesso">
             <column name="cd_accesso" type="VARCHAR(20)" value="CNSRNDFINRVIEWASSE"/>
             <column name="business_process" type="VARCHAR(200)" value="VisualizzazioneVistaAssestatoBP"/>
-            <column name="ti_funzione" type="CHAR(1)" value="M"/>
             <column name="duva" type="${date.type}" valueDate="${now}"/>
             <column name="utuv" type="VARCHAR(20)" value="SYSTEM"/>
             <column name="dacr" type="${date.type}" valueDate="${now}"/>

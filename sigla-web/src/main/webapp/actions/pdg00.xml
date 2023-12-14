@@ -373,11 +373,16 @@
         <init-param name="reportName" value="/preventivo/preventivo/riaccertamento.jasper"/>
     </businessProcess>
 
+    <action path="/VisualizzazioneVistaAssestatoAction" actionClass="it.cnr.jada.util.action.SelezionatoreListaAction"/>
     <businessProcess
-            name="VisualizzazioneVistaAssestatoBP" className="it.cnr.contab.docamm00.bp.VisualizzazioneVistaAssestatoBP">
-        <forward name="default" path="/util/form.jsp"/>
+            name="VisualizzazioneVistaAssestatoBP"
+            className="it.cnr.contab.util.action.ConsSelezionatoreListaBP"
+    >
+        <forward name="default" path="/util/form_lista.jsp"/>
+        <init-param name="multiSelezione" value="N" />
         <init-param name="bulkClassName" value="it.cnr.contab.prevent00.bulk.V_assestatoallBulk" />
         <init-param name="componentSessionName" value="JADAEJB_CRUDComponentSession" />
+        <init-param name="defaultAction" value="VisualizzazioneVistaAssestatoAction" />
     </businessProcess>
 
 </action-mappings>
