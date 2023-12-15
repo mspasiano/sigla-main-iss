@@ -18,7 +18,6 @@
 package it.cnr.contab.docamm00.bp;
 
 import it.cnr.contab.anagraf00.core.bulk.AnagraficoBulk;
-import it.cnr.contab.anagraf00.core.bulk.ContattoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TelefonoBulk;
 import it.cnr.contab.anagraf00.core.bulk.TerzoBulk;
 import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
@@ -27,47 +26,58 @@ import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.config00.tabnum.ejb.Numerazione_baseComponentSession;
 import it.cnr.contab.docamm00.actions.CRUDFatturaPassivaAction;
 import it.cnr.contab.docamm00.docs.bulk.Fattura_passivaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Fattura_passiva_rigaBulk;
-import it.cnr.contab.docamm00.docs.bulk.Tipo_documento_ammBulk;
 import it.cnr.contab.docamm00.ejb.FatturaElettronicaPassivaComponentSession;
 import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
 import it.cnr.contab.docamm00.fatturapa.bulk.*;
 import it.cnr.contab.docamm00.service.FatturaPassivaElettronicaService;
 import it.cnr.contab.docamm00.storage.StorageDocAmmAspect;
 import it.cnr.contab.docamm00.tabrif.bulk.Tipo_sezionaleBulk;
-import it.cnr.contab.docamm00.tabrif.bulk.Voce_ivaBulk;
 import it.cnr.contab.reports.bulk.Print_spoolerBulk;
 import it.cnr.contab.reports.bulk.Report;
 import it.cnr.contab.reports.service.PrintService;
 import it.cnr.contab.service.SpringUtil;
-import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
-import it.cnr.jada.UserContext;
-import it.cnr.jada.bulk.BusyResourceException;
-import it.cnr.jada.ejb.CRUDComponentSession;
-import it.cnr.jada.persistency.sql.CompoundFindClause;
-import it.cnr.jada.util.RemoteIterator;
-import it.cnr.jada.util.action.FormBP;
-import it.cnr.si.spring.storage.MimeTypes;
-import it.cnr.si.spring.storage.StorageObject;
-import it.cnr.si.spring.storage.StoreService;
-import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
+import it.cnr.contab.util00.bulk.storage.AllegatoGenericoBulk;
+import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.HttpActionContext;
+import it.cnr.jada.bulk.BusyResourceException;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.ejb.CRUDComponentSession;
+import it.cnr.jada.persistency.sql.CompoundFindClause;
 import it.cnr.jada.util.DateUtils;
+import it.cnr.jada.util.RemoteIterator;
+import it.cnr.jada.util.action.FormBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
 import it.cnr.jada.util.ejb.EJBCommonServices;
 import it.cnr.jada.util.jsp.Button;
+import it.cnr.si.spring.storage.MimeTypes;
+import it.cnr.si.spring.storage.StorageObject;
+import it.cnr.si.spring.storage.StoreService;
+import it.cnr.si.spring.storage.config.StoragePropertyNames;
 import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.RegimeFiscaleType;
+import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.TipoDocumentoType;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.mail.EmailException;
+import org.springframework.web.util.UriUtils;
 
-import java.io.ByteArrayInputStream;
+import javax.ejb.EJBException;
+import javax.mail.util.ByteArrayDataSource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.jsp.JspWriter;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -81,27 +91,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
-import java.time.temporal.TemporalField;
 import java.util.*;
 import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-import javax.mail.util.ByteArrayDataSource;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.jsp.JspWriter;
-import javax.xml.transform.Source;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import it.gov.agenziaentrate.ivaservizi.docs.xsd.fatture.v1.TipoDocumentoType;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.mail.EmailException;
-import org.springframework.web.util.UriUtils;
 
 public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatturaBulk, DocumentoEleTestataBulk> implements FatturaPassivaElettronicaBP{
 	private static final long serialVersionUID = 1L;
@@ -147,6 +138,16 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 				((DocumentoEleTestataBulk)getModel()).getDocumentoEleTrasmissione().getUnitaOrganizzativa().equalsByPrimaryKey(uoScrivania) &&
 				this.isEsercizioAperto();
 		
+	}
+	public boolean isCompilaFattVarButtonEnabled() throws RemoteException, ComponentException {
+		return isEditable() && getModel() != null && ((DocumentoEleTestataBulk)getModel()).getIdentificativoSdi() != null &&
+				//fp.isRicompilabile(,(DocumentoEleTestataBulk)getModel()) &&
+				((DocumentoEleTestataBulk)getModel()).getCrudStatus() == OggettoBulk.NORMAL &&
+				((DocumentoEleTestataBulk)getModel()).isCompilaFatturaVariazione() &&
+				!((DocumentoEleTestataBulk)getModel()).isIrregistrabile() &&
+				((DocumentoEleTestataBulk)getModel()).getDocumentoEleTrasmissione().getUnitaOrganizzativa().equalsByPrimaryKey(uoScrivania) &&
+				this.isEsercizioAperto();
+
 	}
 
 	public boolean isVisualizzaFatturaButtonEnabled() {
@@ -252,6 +253,11 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 		toolbar.get(toolbar.size() - 1).setSeparator(true);
 		toolbar.add(new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config
 				.getHandler().getProperties(getClass()), "Toolbar.esito.reinvia"));
+
+		if ( this instanceof  CRUDFatturaPassivaElettronicaAmministraBP) {
+			toolbar.add(new it.cnr.jada.util.jsp.Button(it.cnr.jada.util.Config
+					.getHandler().getProperties(getClass()), "Toolbar.recompila"));
+		}
 		return toolbar.toArray(new Button[toolbar.size()]);
 	}
 	
@@ -506,7 +512,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 		}
 	}
 	
-	public OggettoBulk completaFatturaPassiva(ActionContext context, Fattura_passivaBulk fatturaPassivaBulk, CRUDFatturaPassivaBP nbp, Fattura_passivaBulk fatturaPassivaDiRiferimento) throws BusinessProcessException {
+	public OggettoBulk completaFatturaPassiva(ActionContext context, Fattura_passivaBulk fatturaPassivaBulk, CRUDFatturaPassivaBP nbp, Fattura_passivaBulk fatturaPassivaDiRiferimento, Boolean isFatturaVazione) throws BusinessProcessException {
     	try {    		
 			CRUDFatturaPassivaAction action = new CRUDFatturaPassivaAction();
 			FatturaPassivaComponentSession comp = (FatturaPassivaComponentSession)nbp.createComponentSession();
@@ -525,7 +531,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	fatturaPassivaBulk.setEsercizio_fattura_fornitore(CNRUserContext.getEsercizio(context.getUserContext()));//TODO
 	    	fatturaPassivaBulk.setData_protocollo(documentoEleTestata.getDocumentoEleTrasmissione().getDataRicezione());
 
-			if (isBPAmministra) {
+			if (isBPAmministra && !isFatturaVazione) {
 				fatturaPassivaBulk.setEsercizio(dataRicezione.get(Calendar.YEAR));
 				fatturaPassivaBulk.setEsercizio_fattura_fornitore(dataRicezione.get(Calendar.YEAR));
 				fatturaPassivaBulk.setPg_fattura_passiva(documentoEleTestata.getIdentificativoSdi());
@@ -561,7 +567,7 @@ public class CRUDFatturaPassivaElettronicaBP extends AllegatiCRUDBP<AllegatoFatt
 	    	gcDataMinima.setTime(calcolaDataMinimaCompetenza(documentoEleTestata));
 	    	gcDataMassima.setTime(calcolaDataMassimaCompetenza(documentoEleTestata));
 
-			if (isBPAmministra) {
+			if (isBPAmministra && isFatturaVazione) {
 				if (gcDataMinima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))
 					gcDataMinima.setTime(dataRicezione.getTime());
 				if (gcDataMassima.get(Calendar.YEAR)!=dataRicezione.get(Calendar.YEAR))

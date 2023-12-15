@@ -1848,7 +1848,17 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         sql.addClause("AND", "stato_cofi", SQLBuilder.NOT_EQUALS, Fattura_passiva_IBulk.STATO_ANNULLATO);
         //Escludo le riportate
         //sql.addSQLClause("AND", "ESERCIZIO_OBBLIGAZIONE", sql.EQUALS, fatturaPassiva.getEsercizio());
-
+        //Escludo le righe legate ad ordine
+        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(context, FatturaOrdineBulk.class, fatturaPassiva.getCd_tipo_doc()))
+                .filter(FatturaOrdineHome.class::isInstance)
+                .map(FatturaOrdineHome.class::cast)
+                .orElseThrow(() -> new ComponentException("Home di FatturaOrdineBulk non trovata!"));
+        SQLBuilder sqlBuilder = fatturaOrdineHome.createSQLBuilder();
+        sqlBuilder.addSQLClause(FindClause.AND, "CD_CDS", SQLBuilder.EQUALS, fatturaPassiva.getCd_cds());
+        sqlBuilder.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, fatturaPassiva.getCd_unita_organizzativa());
+        sqlBuilder.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, fatturaPassiva.getEsercizio());
+        sqlBuilder.addSQLClause(FindClause.AND, "PG_FATTURA_PASSIVA", SQLBuilder.EQUALS, fatturaPassiva.getPg_fattura_passiva());
+        sql.addSQLNotExistsClause(FindClause.AND, sqlBuilder);
         try {
             return iterator(
                     context,
@@ -5949,17 +5959,24 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         return null;
     }
 
-    private void searchDuplicateFattEleDaAnnistraInDB(UserContext aUC, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
-        if (fatturaPassiva.getNr_fattura_fornitore() == null)
-            throw new it.cnr.jada.comp.ApplicationException("Attenzione: inserire il numero del documento del fornitore.");
-        try {
+    private List<DocumentoEleTestataBulk> getSqlFatturaVariazioneSdi(UserContext aUC, Long identificativoSdi) throws ComponentException, PersistencyException {
+
             DocumentoEleTestataHome  home = Optional.ofNullable(getHome(aUC, DocumentoEleTestataBulk.class))
                     .filter(DocumentoEleTestataHome.class::isInstance)
                     .map(DocumentoEleTestataHome.class::cast)
                     .orElseThrow(() -> new ComponentException("Cannot find DocumentoEleTestataHome"));
-            SQLBuilder sql=querySdiToCreateFattFromAmministra( aUC, fatturaPassiva,null,null);
-            sql.addClause(FindClause.AND,"identificativoSdi",SQLBuilder.EQUALS, fatturaPassiva.getIdentificativoSdi());
-            List occurences = home.fetchAll(sql);
+            SQLBuilder sql=getSqlFattVariazioneSdiDaAnnistra( aUC, null,null);
+            sql.addClause(FindClause.AND,"identificativoSdi",SQLBuilder.EQUALS, identificativoSdi);
+            return home.fetchAll(sql);
+    }
+
+
+    private void searchDuplicateFatturaVariazioneInDB(UserContext aUC, Fattura_passivaBulk fatturaPassiva) throws ComponentException {
+        if (fatturaPassiva.getNr_fattura_fornitore() == null)
+            throw new it.cnr.jada.comp.ApplicationException("Attenzione: inserire il numero del documento del fornitore.");
+        try {
+
+            List occurences = getSqlFatturaVariazioneSdi( aUC,fatturaPassiva.getIdentificativoSdi());
 
             if (occurences == null || occurences.isEmpty()) {
                 throw new it.cnr.jada.comp.ApplicationException("Attenzione duplicazione documento fornitore: il numero di documento " + fatturaPassiva.getNr_fattura_fornitore() + " risulta già registrato");
@@ -5967,7 +5984,6 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         } catch (it.cnr.jada.persistency.PersistencyException e) {
             throw handleException(fatturaPassiva, e);
         }
-
     }
 
     private Boolean isRiferSameFatturaElettroncicaSDI(Fattura_passivaBulk fatturaPassiva, Fattura_passivaBulk fatturaPassivaBulkToCheck )
@@ -6814,7 +6830,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         if ( fatturaPassiva.isFromAmministra() && fatturaPassiva.isElettronica() &&
                 Optional.ofNullable(fatturaPassiva.getPg_fattura_passiva()).map(f-> !(f>0)).orElse(Boolean.TRUE))
             //caso di seconda registrazione della fattura elettronica in quanto la prima stornata con nota di Credito con causale Nota Variazione
-            searchDuplicateFattEleDaAnnistraInDB(aUC, fatturaPassiva);
+            searchDuplicateFatturaVariazioneInDB(aUC, fatturaPassiva);
 
         searchDuplicateInDB(aUC, fatturaPassiva);
 
@@ -9206,7 +9222,7 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
         return sqlNotaCredito;
     }
 
-    private SQLBuilder querySdiToCreateFattFromAmministra(UserContext userContext , Fattura_passivaBulk fatturaPassiva,
+    private SQLBuilder getSqlFattVariazioneSdiDaAnnistra(UserContext userContext ,
                                                         DocumentoEleTestataBulk documentoEleTestataBulk, CompoundFindClause findclause) throws ComponentException {
         DocumentoEleTestataHome  home = Optional.ofNullable(getHome(userContext, DocumentoEleTestataBulk.class))
                 .filter(DocumentoEleTestataHome.class::isInstance)
@@ -9235,10 +9251,22 @@ public java.util.Collection findModalita(UserContext aUC,Fattura_passiva_rigaBul
 
         return sqlBuilder;
     }
+
     public SQLBuilder selectDocumentoEleTestataByClause(UserContext userContext , Fattura_passiva_IBulk fatturaPassiva,
                                                   DocumentoEleTestataBulk documentoEleTestataBulk, CompoundFindClause findclause) throws ComponentException {
-        return querySdiToCreateFattFromAmministra( userContext,fatturaPassiva,documentoEleTestataBulk,findclause);
+        return getSqlFattVariazioneSdiDaAnnistra( userContext,documentoEleTestataBulk,findclause);
 
+    }
+
+    public Boolean isCompilaFatturaVaziazione(UserContext userContext, DocumentoEleTestataBulk testataBulk)throws ComponentException {
+        try {
+            List l = getSqlFatturaVariazioneSdi( userContext,testataBulk.getIdentificativoSdi());
+            if ( l!=null && !l.isEmpty() && l.size()>0)
+                return Boolean.TRUE;
+        } catch (PersistencyException e) {
+            throw new RuntimeException(e);
+        }
+        return Boolean.FALSE;
     }
 
 
