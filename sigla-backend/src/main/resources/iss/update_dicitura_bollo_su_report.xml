@@ -24,7 +24,7 @@
 
     <changeSet author="ciro.salvio" id="update_dicitura_bollo_su_report">
         <update tableName="configurazione_cnr">
-            <column name="val01" type="STRING" value="Imposta di bollo assolta virtualemente"/>
+            <column name="val01" type="STRING" value="Imposta di bollo assolta virtualmente"/>
             <where>ESERCIZIO in ( 2023,2024) AND CD_UNITA_FUNZIONALE='*' AND CD_CHIAVE_PRIMARIA='BOLLO_VIRTUALE'
                 AND CD_CHIAVE_SECONDARIA='ANNOTAZIONE_ASSOLVIMENTO'</where>
         </update>
