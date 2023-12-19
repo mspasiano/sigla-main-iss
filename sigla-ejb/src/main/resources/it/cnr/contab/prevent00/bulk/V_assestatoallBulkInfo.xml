@@ -251,6 +251,25 @@
 	<formFieldProperty
 			name="cd_elemento_voce" />
 
+	<findFieldProperty
+			name="esercizio" />
+	<findFieldProperty
+			name="esercizio_res" />
+	<findFieldProperty
+			name="cd_centro_responsabilita" />
+	<findFieldProperty
+			name="cd_linea_attivita" />
+	<findFieldProperty
+			name="cd_natura" />
+	<findFieldProperty
+			name="ti_appartenenza" />
+	<findFieldProperty
+			name="ti_gestione" />
+	<findFieldProperty
+			name="cd_elemento_voce" />
+	<findFieldProperty
+			name="cd_modulo" />
+
 	<columnFieldProperty
 			name="esercizio"
 			enabledOnInsert="false" />
