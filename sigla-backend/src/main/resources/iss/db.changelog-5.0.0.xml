@@ -113,6 +113,7 @@
     <include file="iss/add_prc_copia_bil_decisionale_to_gestionale_schedulazione.xml"></include>
 
     <include file="bootstrap/add_view_assestato.xml" />
+    <include file="bootstrap/add_view_saldi_piano_economico_progetto.xml" />
 
 
 </databaseChangeLog>
