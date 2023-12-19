@@ -178,7 +178,7 @@
 	<form name="STEP_FINE_ANNO">
 		<formFieldProperty
 				name="val02"
-				keysProperty="TI_BOOLEAN"
+				keysProperty="TI_STEP_FINE_ANNO"
 				layout="HORIZONTAL"
 				inputType="RADIOGROUP"
 				command="doConferma"
@@ -201,7 +201,7 @@
 		<findFieldProperty
 				name="val02"
 				inputType="SELECT"
-				keysProperty="TI_BOOLEAN"
+				keysProperty="TI_STEP_FINE_ANNO"
 				label = "Completato"/>
 		<findFieldProperty
 				name="dt01"
@@ -217,7 +217,7 @@
 			label = "Descrizione"/>
 		<columnFieldProperty
 			name="val02"
-			keysProperty="TI_BOOLEAN"
+			keysProperty="TI_STEP_FINE_ANNO"
 			label = "Completato"/>
 		<columnFieldProperty
 			name="dt01"
