@@ -24,7 +24,6 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.stream.Stream;
 
 public class SelezionatoreStepFineAnnoBP extends BulkBP {
     private final RemoteDetailCRUDController detail = new RemoteDetailCRUDController(
@@ -48,8 +47,7 @@ public class SelezionatoreStepFineAnnoBP extends BulkBP {
 
         @Override
         protected void removeDetails(ActionContext actioncontext, OggettoBulk[] aoggettobulk) throws BusinessProcessException {
-            Arrays.asList(aoggettobulk)
-                    .stream()
+            Arrays.stream(aoggettobulk)
                     .forEach(oggettoBulk -> oggettoBulk.setToBeDeleted());
             super.removeDetails(actioncontext, aoggettobulk);
         }
