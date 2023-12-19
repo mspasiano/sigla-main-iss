@@ -4064,6 +4064,8 @@ public class CRUDFatturaPassivaAction extends EconomicaAction {
         iterator.forEachRemaining(index -> {
             try {
                 final FatturaOrdineBulk fatturaOrdineBulk = details.get(index);
+                if (fatturaOrdineBulk.getFatturaPassivaRiga().isPagata())
+                    throw new DetailedRuntimeException(new ApplicationException("La riga non può essere eliminata in quanto asscociata ad un pagamento!"));
                 Optional.ofNullable(fattura.getFattura_passiva_dettColl().indexOf(fatturaOrdineBulk.getFatturaPassivaRiga()))
                         .filter(i -> i != -1)
                         .ifPresent(i -> {
