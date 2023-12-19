@@ -6043,6 +6043,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_prog_reg_fattura_fattura_passiva.xml"/>
     <!-- Autore : CIRO SALVIO - drop e ricrea indice ax_fattura_passiva00 per aggiungere la colonna prog_reg_fattura all'indice  -->
     <include file="bootstrap/ricreate_index_ax_fattura_passiva00.xml"/>
+    <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per gli step di fine anno -->
+    <include file="bootstrap/add_accessi_step_fine_anno.xml"/>
 
 
 </databaseChangeLog>
