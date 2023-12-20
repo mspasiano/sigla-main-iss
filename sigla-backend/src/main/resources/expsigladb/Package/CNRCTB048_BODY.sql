@@ -442,6 +442,19 @@ End;
   exception when NO_DATA_FOUND then
     null;
   end;
+
+  -- verifica se esiste un pluriennale creato sull'obbligazione originale(quando era di competenza)
+  begin
+  	   select 1 into aNum from dual
+	   where exists (select 1 from obbligazione_pluriennale
+	   		 		 where cd_cds = aObbNext.cd_cds
+					   and esercizio = aObbNext.esercizio_originale
+					   and esercizio_originale = aObbNext.esercizio_originale
+					   and pg_obbligazione = aObbNext.pg_obbligazione);
+	   ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull'''||cnrutil.getLabelObbligazioneMin()||' '||CNRCTB035.getDesc(aObbNext));
+  exception when NO_DATA_FOUND then
+    null;
+  end;
  end;
 
  procedure checkDeRiportaScadEsNext(aAcc accertamento%rowtype, aAccScad accertamento_scadenzario%rowtype, aAccNext accertamento%rowtype, aAccScadNext accertamento_scadenzario%rowtype) is
@@ -570,6 +583,20 @@ End;
   exception when NO_DATA_FOUND then
    null;
   end;
+
+  -- verifica se esiste un pluriennale creato sull'pg_accertamento originale(quando era di competenza)
+  begin
+	   select 1 into aNum from dual
+  	   where exists (select 1 from accertamento_pluriennale
+  	   		 		 where cd_cds = aAccNext.cd_cds
+  					   and esercizio = aAccNext.esercizio_originale
+  					   and esercizio_originale = aAccNext.esercizio_originale
+  					   and pg_accertamento = aAccNext.pg_accertamento);
+  	   ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull''accertamento '||CNRCTB035.getDesc(aAccNext));
+  exception when NO_DATA_FOUND then
+    null;
+  end;
+
   -- verifico se il documento è stato modificato nel nuovo esercizio
   -- rispetto a quanto riportato
   if CNRCTB048.isDocModificato(aAcc,aAccNext) = 'Y' then
