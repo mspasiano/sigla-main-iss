@@ -1,7 +1,8 @@
 --------------------------------------------------------
 --  DDL for Package Body CNRMIG100
 --------------------------------------------------------
-create or replace PACKAGE BODY "CNRMIG100" is
+
+CREATE OR REPLACE PACKAGE BODY "CNRMIG100" is
 
 lPgExec number;
 
@@ -840,6 +841,8 @@ begin
 							PRIMO,
 							CORRENTE,
 							ULTIMO,
+							CD_VOCE_EP_IVA,
+							CD_VOCE_EP_IVA_SPLIT,
 							DACR,
 							UTCR,
 							DUVA,
@@ -853,6 +856,8 @@ begin
 							aSez.PRIMO,
 							0,
 							aSez.ULTIMO,
+							aSez.CD_VOCE_EP_IVA,
+							aSez.CD_VOCE_EP_IVA_SPLIT,
 							sysdate,
 							cgUtente,
 							sysdate,
@@ -2627,7 +2632,9 @@ begin
 								 UTCR,
 								 PG_VER_REC,
 								 CD_VOCE_EP_PADRE,
-								 id_classificazione)
+								 id_classificazione,
+                                 FL_CONTO_VERSAMENTO,
+                                 CD_VOCE_EP_CONTR)
 			values (aEsDest,
 					aVoceEP.CD_VOCE_EP,
 					aVoceEP.NATURA_VOCE,
@@ -2647,7 +2654,9 @@ begin
 					cgUtente,
 					1,
 					aVoceEP.CD_VOCE_EP_PADRE,
-					NULL);
+					NULL,
+                    aVoceEP.FL_CONTO_VERSAMENTO,
+                    aVoceEP.CD_VOCE_EP_CONTR);
 		exception when DUP_VAL_ON_INDEX then
 			ibmutl200.LOGWAR(aPgEsec,'Voce E/P '||aVoceEP.CD_VOCE_EP||' già esistente per l''esercizio '||aEsDest,'','');
 			aStato := 'W';
@@ -3020,6 +3029,37 @@ begin
 		end;
 	end loop;
 
+	-- Ribaltamento associazione ASS_CATGRP_INVENT_VOCE_EP
+	aMessage := 'Ribaltamento associazione ASS_CATGRP_INVENT_VOCE_EP';
+	ibmutl200.loginf(aPgEsec,aMessage,'','');
+	for aAssCatgrpInventVoceEp in (select * from ASS_CATGRP_INVENT_VOCE_EP
+					  	  where esercizio = aEsOrig) loop
+		begin
+		    INSERT INTO ASS_CATGRP_INVENT_VOCE_EP(ESERCIZIO,
+		                CD_CATEGORIA_GRUPPO,
+		                CD_VOCE_EP,
+		                FL_DEFAULT,
+                        DACR,
+		                UTCR,
+		                DUVA,
+		                UTUV,
+		                PG_VER_REC)
+			 values (aEsDest,
+			         aAssCatgrpInventVoceEp.CD_CATEGORIA_GRUPPO,
+					 aAssCatgrpInventVoceEp.CD_VOCE_EP,
+                     aAssCatgrpInventVoceEp.FL_DEFAULT,
+                     sysdate,
+					 cgUtente,
+					 sysdate,
+					 cgUtente,
+					 1);
+		exception when DUP_VAL_ON_INDEX then
+			ibmutl200.LOGWAR(aPgEsec,'ASS_CATGRP_INVENT_VOCE_EP con PK (' ||aEsDest||', '
+																 ||aAssCatgrpInventVoceEp.CD_CATEGORIA_GRUPPO||', '
+																 ||aAssCatgrpInventVoceEp.CD_VOCE_EP||') già inserita','','');
+			aStato := 'W';
+		end;
+	end loop;
 end;
 ----------------------------------------------------------------------------
 procedure ribaltaCORI_altro(aEsDest number, aEsOrig number, aPgEsec number, aStato in out char, aMessage in out varchar2) is
