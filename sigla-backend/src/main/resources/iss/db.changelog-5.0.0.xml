@@ -115,7 +115,6 @@
     <!-- Autore : CIRO SALVIO - Modifica dicitura bollo con Imposta di bollo assolta virtualemente -->
     <include file="iss/update_dicitura_bollo_su_report.xml"></include>
 
-    <include file="bootstrap/add_view_assestato.xml" />
-    <include file="bootstrap/add_view_saldi_piano_economico_progetto.xml" />
+
 
 </databaseChangeLog>
