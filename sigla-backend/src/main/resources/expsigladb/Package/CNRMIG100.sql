@@ -106,6 +106,7 @@ cgUtente constant varchar2(20) := '$$$$RIBALTAMENTO$$$$';
 -- Descrizione processo
 dsProcesso_pdgp constant varchar2(300) := 'Ribaltamento configurazione, str.organizzativa, anagrafica capitoli, PdC EP per PDGP';
 dsProcesso_altro constant varchar2(300) := 'Ribaltamento configurazione, str.organizzativa, anagrafica capitoli, PdC EP';
+dsProcesso_prev_gest constant varchar2(300) := 'Ribaltamento bilancio Previsione su Decisionale';
 --
 -- Tipo Log
 TI_LOG_RIBALTAMENTO_PDGP CONSTANT VARCHAR2(20) := 'RIB_CONF_ES00';
