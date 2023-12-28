@@ -92,7 +92,7 @@ public class CRUDBatchControlBP extends SimpleCRUDBP
 
                 component.asyncLoadScritturePatrimoniali(actioncontext.getUserContext(), esercizio.intValue(), cdcds);
             }
-            /*
+
             if (batch_controlbulk.getProcedura().isProceduraJava() && "RIBPLURIENNALIJAVA".equals(batch_controlbulk.getProcedura().getCd_procedura())) {
                 AsyncScritturaPartitaDoppiaFromDocumentoComponentSession component = Utility.createAsyncScritturaPartitaDoppiaFromDocumentoComponentSession();
                 BigDecimal esercizio = batch_controlbulk.getParametri().stream()
@@ -110,7 +110,7 @@ public class CRUDBatchControlBP extends SimpleCRUDBP
                 component.asyncLoadScritturePatrimoniali(actioncontext.getUserContext(), esercizio.intValue(), cdcds);
             }
 
-             */
+
             super.save(actioncontext);
         } catch (ComponentException | PersistencyException | RemoteException e){
             throw handleException(e);
