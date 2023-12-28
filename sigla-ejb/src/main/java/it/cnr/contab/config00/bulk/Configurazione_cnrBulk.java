@@ -17,6 +17,11 @@
 
 package it.cnr.contab.config00.bulk;
 
+import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class Configurazione_cnrBulk extends Configurazione_cnrBase {
 
     public final static String SK_SDI = "SDI";
@@ -228,6 +233,46 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
     public final static String PK_SOSPESI = "SOSPESI";
     public final static String SK_GESTIONE_STATO_INIZIALE = "GESTIONE_STATO_INIZIALE";
 
+
+    public final static String PK_STEP_FINE_ANNO = "STEP_FINE_ANNO";
+
+    public final static Map<String,String> TI_STEP_FINE_ANNO = new HashMap<String, String>() {{
+        put("N", "No");
+        put("Y", "Si");
+        put("P", "Parziale");
+        put("T", "Totale");
+    }};
+
+    public enum StepFineAnno {
+        APERTURA_PREVISIONE("010_APERTURA_PREVISIONE"),
+        ESERCIZIO_APERTO("020_ESERCIZIO_APERTO"),
+        RIBALTAMENTO_ANAGRAFICHE("030_RIBALTAMENTO_ANAGRAFICHE"),
+        RIBALTAMENTO_RESIDUI("040_RIBALTAMENTO_RESIDUI"),
+        FINE_INVENTARIAZIONE("050_FINE_INVENTARIAZIONE"),
+        FINE_EVASIONE("060_FINE_EVASIONE"),
+        FATTURE_DA_RICEVERE("070_FATTURE_DA_RICEVERE"),
+        RATEI_RISCONTI("080_RATEI_RISCONTI"),
+        CHIUSURA_PROVVISORIA("090_CHIUSURA_PROVVISORIA"),
+        CHIUSURA_DEFINITIVA("100_CHIUSURA_DEFINITIVA");
+
+        private final String value;
+
+        private StepFineAnno(String value) {
+            this.value = value;
+        }
+
+        public String value() {
+            return value;
+        }
+
+        public static StepFineAnno getValueFrom(String value) {
+            for (StepFineAnno stepFineAnno : StepFineAnno.values()) {
+                if (stepFineAnno.value.equals(value))
+                    return stepFineAnno;
+            }
+            throw new IllegalArgumentException("StepFineAnno no found for value: " + value);
+        }
+    }
     public Configurazione_cnrBulk(java.lang.String cd_chiave_primaria, java.lang.String cd_chiave_secondaria, java.lang.String cd_unita_funzionale, java.lang.Integer esercizio) {
         super(cd_chiave_primaria, cd_chiave_secondaria, cd_unita_funzionale, esercizio);
     }

@@ -414,7 +414,7 @@ public class CRUDDocumentoGenericoAttivoBP
                     DocumentoGenericoComponentSession session = (DocumentoGenericoComponentSession) createComponentSession();
                     boolean esercizioScrivaniaAperto = session.verificaStatoEsercizio(context.getUserContext(), new EsercizioBulk(cds, new Integer(esercizioScrivania)));
                     boolean esercizioSuccessivoAperto = session.verificaStatoEsercizio(context.getUserContext(), new EsercizioBulk(cds, new Integer(esercizioScrivania + 1)));
-                    setRiportaAvantiIndietro(esercizioScrivaniaAperto && esercizioSuccessivoAperto && isRibaltato());
+                    setRiportaAvantiIndietro(esercizioScrivaniaAperto && esercizioSuccessivoAperto && isRibaltato() && isSupervisore());
                 } catch (Throwable t) {
                     handleException(t);
                 }

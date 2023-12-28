@@ -17,27 +17,15 @@
 
 package it.cnr.contab.doccont00.bp;
 
-import java.rmi.RemoteException;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import it.cnr.contab.chiusura00.ejb.RicercaDocContComponentSession;
 import it.cnr.contab.config00.esercizio.bulk.EsercizioBulk;
 import it.cnr.contab.config00.sto.bulk.Unita_organizzativaBulk;
 import it.cnr.contab.doccont00.comp.DocumentoContabileComponentSession;
-import it.cnr.contab.doccont00.core.bulk.AllegatoObbligazioneBulk;
-import it.cnr.contab.doccont00.core.bulk.IDefferUpdateSaldi;
-import it.cnr.contab.doccont00.core.bulk.IDocumentoContabileBulk;
-import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
-import it.cnr.contab.doccont00.core.bulk.ObbligazioneResBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_modificaBulk;
+import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.contab.doccont00.ejb.ObbligazioneAbstractComponentSession;
 import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
 import it.cnr.contab.service.SpringUtil;
 import it.cnr.contab.spring.service.StorePath;
-import it.cnr.si.spring.storage.StorageDriver;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.Utility;
 import it.cnr.contab.util00.bp.AllegatiCRUDBP;
@@ -49,6 +37,13 @@ import it.cnr.jada.bulk.ValidationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.ejb.CRUDComponentSession;
 import it.cnr.jada.util.jsp.Button;
+import it.cnr.si.spring.storage.StorageDriver;
+
+import java.rmi.RemoteException;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 public abstract class CRUDVirtualObbligazioneBP 
 	extends AllegatiCRUDBP<AllegatoObbligazioneBulk, ObbligazioneBulk>
@@ -224,7 +219,8 @@ protected void init(it.cnr.jada.action.Config config,it.cnr.jada.action.ActionCo
 				EsercizioBulk esSucc = session.verificaStatoEsercizio(context.getUserContext(), cds, new Integer(esercizioScrivania.intValue()+1));
 				if ( es.getSt_apertura_chiusura().equals(es.STATO_APERTO) &&
 					  esSucc.getSt_apertura_chiusura().equals(es.STATO_APERTO) &&
-					  isRibaltato())
+					  isRibaltato() &&
+					Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()))
 					setRiportaAvantiIndietro(true);
 				else
 					setRiportaAvantiIndietro(false);				

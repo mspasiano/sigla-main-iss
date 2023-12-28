@@ -2517,8 +2517,8 @@ public class OrdineAcqComponent
                     } catch (PersistencyException e) {
                         throw new ComponentException(e);
                     }
-
-                    totale = totale.subtract(Utility.nvl(ordineDB.getImTotaleOrdine())).add(Utility.nvl(ordine.getImTotaleOrdine()));
+                    if (ordineDB != null)
+                        totale = totale.subtract(Utility.nvl(ordineDB.getImTotaleOrdine())).add(Utility.nvl(ordine.getImTotaleOrdine()));
                 }
                 if (totale != null) {
                     if (totale.compareTo(ordine.getContratto().getIm_contratto_passivo()) > 0) {

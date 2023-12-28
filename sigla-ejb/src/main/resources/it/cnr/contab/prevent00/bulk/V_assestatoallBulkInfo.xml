@@ -93,13 +93,6 @@
 		enabledOnEdit="false"
 		label="Capitolo" />
 	<fieldProperty
-		name="dett_imp_voce"
-		property="dett_imp_voce"
-		inputType="TEXTAREA"
-		maxLength="300"
-		cols="60"
-		rows="5" />
-	<fieldProperty
 		name="cd_modulo"
 		property="cd_modulo"
 		inputType="TEXTAREA"
@@ -149,6 +142,13 @@
 		enabledOnEdit="false"
 		label="Importo_utilizzato" />
 	<fieldProperty
+			name="importo_vincoli"
+			property="importo_vincoli"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo_vincoli" />
+	<fieldProperty
 		name="importo_disponibile"
 		property="importo_disponibile"
 		inputType="TEXT"
@@ -176,6 +176,7 @@
 		formatName="it.cnr.contab.util.EuroFormat"
 		enabledOnEdit="false"
 		label="Totale" />
+	<!--
 	<fieldProperty
 		name="imp_da_assegnare"
 		property="imp_da_assegnare"
@@ -190,6 +191,50 @@
 		maxLength="5"
 		formatName="it.cnr.contab.util.PercentFormat"
 		label="Percentuale da assegnare" />
+	-->
+	<fieldProperty
+			name="importo_ini_residui_propri"
+			property="importo_ini_residui_propri"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo Ini Residui Propri" />
+	<fieldProperty
+			name="importo_manrev"
+			property="importo_manrev"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Importo ManRev" />
+
+	<fieldProperty
+			name="assestato_cassa"
+			property="assestato_cassa"
+			inputType="TEXT"
+			formatName="it.cnr.contab.util.EuroFormat"
+			enabledOnEdit="false"
+			label="Assestato Cassa" />
+
+	<fieldProperty
+			name="progetto_dt_inizio"
+			property="progetto_dt_inizio"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Inizio" />
+	<fieldProperty
+			name="progetto_dt_fine"
+			property="progetto_dt_fine"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Fine" />
+	<fieldProperty
+			name="progetto_dt_proroga"
+			property="progetto_dt_proroga"
+			inputType="TEXT"
+			enabledOnEdit="false"
+			label="Data Proroga" />
+
+	<!--
 	<fieldProperty
 		name="importo_disponibile_netto"
 		property="importo_disponibile_netto"
@@ -202,7 +247,35 @@
 		name="imp_da_assegnare" />
 	<formFieldProperty
 		name="prc_da_assegnare" />
+	-->
+	<formFieldProperty
+			name="cd_elemento_voce" />
 
+	<findFieldProperty
+			name="esercizio" />
+	<findFieldProperty
+			name="esercizio_res" />
+	<findFieldProperty
+			name="cd_centro_responsabilita" />
+	<findFieldProperty
+			name="cd_linea_attivita" />
+	<findFieldProperty
+			name="cd_natura" />
+	<findFieldProperty
+			name="ti_appartenenza" />
+	<findFieldProperty
+			name="ti_gestione" />
+	<findFieldProperty
+			name="cd_elemento_voce" />
+	<findFieldProperty
+			name="cd_modulo" />
+
+	<columnFieldProperty
+			name="esercizio"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="esercizio_res"
+			enabledOnInsert="false" />
 	<columnFieldProperty
 		name="cd_centro_responsabilita"
 		enabledOnInsert="false" />
@@ -210,185 +283,73 @@
 		name="cd_linea_attivita"
 		enabledOnInsert="false" />
 	<columnFieldProperty
+			name="ds_linea_attivita"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="cd_natura"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="ti_appartenenza"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="ti_gestione"
+			enabledOnInsert="false" />
+	<columnFieldProperty
 		name="cd_elemento_voce"
 		enabledOnInsert="false" />
 	<columnFieldProperty
-		name="cd_modulo"
-		enabledOnInsert="false"
-		enabledOnEdit="false" />
-	<columnFieldProperty
-		name="importo_disponibile"
-		enabledOnInsert="false"
-		columnStyle="text-align: right" />
-	<columnFieldProperty
-		name="variazioni_provvisorie"
-		enabledOnInsert="false"
-		headerLabel="Variazioni in attesa da approvazione"
-		columnStyle="text-align: right" />
-	<columnFieldProperty
-		name="variazioni_definitive"
-		enabledOnInsert="false"
-		headerLabel="Variazioni in attesa da approvazione"
-		columnStyle="text-align: right" />
-	<columnFieldProperty
-		name="assestato_finale"
-		enabledOnInsert="false"
-		columnStyle="text-align: right" />
-	<columnFieldProperty
-		name="imp_da_assegnare"
-		columnStyle="text-align: right;" />
-	<columnFieldProperty
-		name="importo_disponibile_netto"
-		enabledOnInsert="false"
-		columnStyle="text-align: right" />
-
-	<findFieldProperty
-		name="cd_centro_responsabilita" />
-	<findFieldProperty
-		name="cd_linea_attivita" />
-	<findFieldProperty
-		name="cd_elemento_voce" />
-	<findFieldProperty
-		name="variazioni_provvisorie"
-		label="Variazioni provvisorie" />
-	<findFieldProperty
-		name="variazioni_definitive"
-		label="Variazioni definitive" />
-	<findFieldProperty
-		name="assestato_finale" />
-
-	<columnSet
-		name="modalitaInserimentoPercentuali" >
-		<columnFieldProperty
-			name="cd_centro_responsabilita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="ds_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_natura"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="importo_disponibile_netto"
-			inputType="DESCTOOL"
-			descProperty="dett_imp_voce"
-			enabledOnInsert="false"
-			columnStyle="text-align: right" />
-		<columnFieldProperty
-			name="prc_da_assegnare"
-			label="%"
-			headerLabel="Assegna"
-			headerStyle="text-align: center"
-			columnStyle="width:20%; text-align: right"
-			command="doAssegnaPercentuale"/>
-		<columnFieldProperty
-			name="imp_da_assegnare"
-			enabledOnInsert="false"
-			enabledOnEdit="false"
-			label="Importo"
-			headerLabel="Assegna"
-			columnStyle="text-align: right;" />
-	</columnSet>
-	<columnSet
-		name="modalitaInserimentoImporti" >
-		<columnFieldProperty
-			name="cd_centro_responsabilita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="ds_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_natura"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="importo_disponibile_netto"
-			inputType="DESCTOOL"
-		    descProperty="dett_imp_voce"
-			enabledOnInsert="false"
-			columnStyle="text-align: right" />
-		<columnFieldProperty
-			name="prc_da_assegnare"
-			enabledOnInsert="false"
-			enabledOnEdit="false"
-			label="%"
-			headerLabel="Assegna"
-			headerStyle="text-align: center"
-			columnStyle="text-align: right" />
-		<columnFieldProperty
-			name="imp_da_assegnare"
-			label="Importo"
-			headerLabel="Assegna"
-			columnStyle="width:20%; text-align: right;"
-			command="doAssegnaImporto"/>
-	</columnSet>
-	<columnSet
-		name="modalitaConsultazione" >
-		<columnFieldProperty
-			name="cd_centro_responsabilita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="ds_linea_attivita"
-			enabledOnInsert="false" />
-		<columnFieldProperty
-			name="cd_natura"
-			enabledOnInsert="false" />
-		<columnFieldProperty
 			name="cd_modulo"
-			enabledOnInsert="false"
-			enabledOnEdit="false" />
-		<columnFieldProperty
-			name="importo_disponibile_netto"
-			inputType="DESCTOOL"
-			descProperty="dett_imp_voce"
-			enabledOnInsert="false"
-			columnStyle="text-align: right" />
-	</columnSet>
-	<columnSet
-		name="modalitaConsultazione001" >
-		<columnFieldProperty
-			name="esercizio_res" />
-		<columnFieldProperty
-			name="cd_centro_responsabilita" />
-		<columnFieldProperty
-			name="cd_linea_attivita" />
-		<columnFieldProperty
-			name="ds_linea_attivita" />
-		<columnFieldProperty
-			name="cd_elemento_voce"
-			label="Voce di bilancio"/>
-		<columnFieldProperty
-			name="importo_disponibile_netto"
-			inputType="DESCTOOL"
-			descProperty="dett_imp_voce"
-			columnStyle="text-align: right" />
-	</columnSet>
-
-	<columnSet
-			name="modalitaAllFields" >
-		<columnFieldProperty
-				name="cd_linea_attivita" />
-	</columnSet>
-
-	<freeSearchSet name="modalitaConsultazione001">
-		<findFieldProperty
-			name="esercizio_res" />
-		<findFieldProperty
-			name="cd_centro_responsabilita"
 			enabledOnInsert="false" />
-		<findFieldProperty
-			name="cd_linea_attivita" />
-		<findFieldProperty
-			name="ds_linea_attivita" />
-		<findFieldProperty
-			name="cd_elemento_voce" />
-	</freeSearchSet>
+	<columnFieldProperty
+			name="stanziamento_iniziale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_positive"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_negative"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_residui_propri"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_iniziale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_utilizzato"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_vincoli"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_disponibile"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_provvisorie"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="variazioni_definitive"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_finale"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_ini_residui_propri"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="importo_manrev"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="assestato_cassa"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_inizio"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_fine"
+			enabledOnInsert="false" />
+	<columnFieldProperty
+			name="progetto_dt_proroga"
+			enabledOnInsert="false" />
+
 </bulkInfo>

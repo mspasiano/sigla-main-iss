@@ -1848,7 +1848,17 @@ public class FatturaPassivaComponent extends ScritturaPartitaDoppiaFromDocumento
         sql.addClause("AND", "stato_cofi", SQLBuilder.NOT_EQUALS, Fattura_passiva_IBulk.STATO_ANNULLATO);
         //Escludo le riportate
         //sql.addSQLClause("AND", "ESERCIZIO_OBBLIGAZIONE", sql.EQUALS, fatturaPassiva.getEsercizio());
-
+        //Escludo le righe legate ad ordine
+        final FatturaOrdineHome fatturaOrdineHome = Optional.ofNullable(getHome(context, FatturaOrdineBulk.class, fatturaPassiva.getCd_tipo_doc()))
+                .filter(FatturaOrdineHome.class::isInstance)
+                .map(FatturaOrdineHome.class::cast)
+                .orElseThrow(() -> new ComponentException("Home di FatturaOrdineBulk non trovata!"));
+        SQLBuilder sqlBuilder = fatturaOrdineHome.createSQLBuilder();
+        sqlBuilder.addSQLClause(FindClause.AND, "CD_CDS", SQLBuilder.EQUALS, fatturaPassiva.getCd_cds());
+        sqlBuilder.addSQLClause(FindClause.AND, "CD_UNITA_ORGANIZZATIVA", SQLBuilder.EQUALS, fatturaPassiva.getCd_unita_organizzativa());
+        sqlBuilder.addSQLClause(FindClause.AND, "ESERCIZIO", SQLBuilder.EQUALS, fatturaPassiva.getEsercizio());
+        sqlBuilder.addSQLClause(FindClause.AND, "PG_FATTURA_PASSIVA", SQLBuilder.EQUALS, fatturaPassiva.getPg_fattura_passiva());
+        sql.addSQLNotExistsClause(FindClause.AND, sqlBuilder);
         try {
             return iterator(
                     context,

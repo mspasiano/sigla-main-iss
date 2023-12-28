@@ -37,11 +37,12 @@ import it.cnr.contab.util.Utility;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
 import it.cnr.jada.action.Config;
-import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.util.action.CollapsableDetailCRUDController;
 import it.cnr.jada.util.jsp.Button;
 
-import java.util.*;
+import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Vector;
 
 /**
  * Insert the type's description here.
@@ -479,7 +480,7 @@ public class CRUDAnticipoBP extends it.cnr.jada.util.action.SimpleCRUDBP impleme
 
                     boolean esercizioScrivaniaAperto = session.verificaStatoEsercizio(context.getUserContext(), new it.cnr.contab.config00.esercizio.bulk.EsercizioBulk(cds, new Integer(anticipo.getEsercizioScrivania())));
                     boolean esercizioSuccessivoAperto = session.verificaStatoEsercizio(context.getUserContext(), new it.cnr.contab.config00.esercizio.bulk.EsercizioBulk(cds, new Integer(anticipo.getEsercizioScrivania() + 1)));
-                    setRiportaAvantiIndietro(esercizioScrivaniaAperto && esercizioSuccessivoAperto && isRibaltato() && isRibaltato());
+                    setRiportaAvantiIndietro(esercizioScrivaniaAperto && esercizioSuccessivoAperto && isRibaltato() && isSupervisore());
                 } catch (Throwable t) {
 //				handleException(t);
                     throw new BusinessProcessException(t);

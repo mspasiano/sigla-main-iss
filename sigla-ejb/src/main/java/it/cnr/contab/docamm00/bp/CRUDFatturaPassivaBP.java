@@ -588,7 +588,7 @@ public abstract class CRUDFatturaPassivaBP extends AllegatiCRUDBP<AllegatoFattur
                             .verificaStatoEsercizio(context.getUserContext(),
                                     new EsercizioBulk(cds, this.getEsercizioInScrivania() + 1));
                     setRiportaAvantiIndietro(esercizioScrivaniaAperto
-                            && esercizioSuccessivoAperto && isRibaltato());
+                            && esercizioSuccessivoAperto && isRibaltato() && isSupervisore());
                 } catch (Throwable t) {
                     throw handleException(t);
                 }

@@ -442,6 +442,19 @@ End;
   exception when NO_DATA_FOUND then
     null;
   end;
+
+  -- verifica se esiste un pluriennale creato sull'obbligazione originale(quando era di competenza)
+  begin
+  	   select 1 into aNum from dual
+	   where exists (select 1 from obbligazione_pluriennale
+	   		 		 where cd_cds = aObbNext.cd_cds
+					   and esercizio = aObbNext.esercizio_originale
+					   and esercizio_originale = aObbNext.esercizio_originale
+					   and pg_obbligazione = aObbNext.pg_obbligazione);
+	   ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull'''||cnrutil.getLabelObbligazioneMin()||' '||CNRCTB035.getDesc(aObbNext));
+  exception when NO_DATA_FOUND then
+    null;
+  end;
  end;
 
  procedure checkDeRiportaScadEsNext(aAcc accertamento%rowtype, aAccScad accertamento_scadenzario%rowtype, aAccNext accertamento%rowtype, aAccScadNext accertamento_scadenzario%rowtype) is
@@ -570,6 +583,20 @@ End;
   exception when NO_DATA_FOUND then
    null;
   end;
+
+  -- verifica se esiste un pluriennale creato sull'pg_accertamento originale(quando era di competenza)
+  begin
+	   select 1 into aNum from dual
+  	   where exists (select 1 from accertamento_pluriennale
+  	   		 		 where cd_cds = aAccNext.cd_cds
+  					   and esercizio = aAccNext.esercizio_originale
+  					   and esercizio_originale = aAccNext.esercizio_originale
+  					   and pg_accertamento = aAccNext.pg_accertamento);
+  	   ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull''accertamento '||CNRCTB035.getDesc(aAccNext));
+  exception when NO_DATA_FOUND then
+    null;
+  end;
+
   -- verifico se il documento è stato modificato nel nuovo esercizio
   -- rispetto a quanto riportato
   if CNRCTB048.isDocModificato(aAcc,aAccNext) = 'Y' then
@@ -780,13 +807,20 @@ Procedure checkNoRiporta(aObb obbligazione%rowtype) Is
 
 Begin
 
-For aDocAmm In (Select Distinct cd_tipo_documento_amm, cd_cds, esercizio, cd_unita_organizzativa, pg_documento_amm,
- 				stato_pagamento_fondo_eco, stato_coge, stato_coan
-		from   V_DOC_AMM_OBB
-        	Where  cd_cds_obbligazione    = aObb.cd_cds And
-        	       esercizio_obbligazione	= aObb.esercizio And
-        	       esercizio_ori_obbligazione  = aObb.esercizio_originale And
-        	       pg_obbligazione  = aObb.pg_obbligazione) Loop
+--Controllo solo i documenti amministrativi non pagati (os.IM_ASSOCIATO_DOC_CONTABILE = 0)
+For aDocAmm In (Select Distinct a.cd_tipo_documento_amm, a.cd_cds, a.esercizio, a.cd_unita_organizzativa, a.pg_documento_amm,
+ 				a.stato_pagamento_fondo_eco, a.stato_coge, a.stato_coan
+		from   V_DOC_AMM_OBB a
+		LEFT JOIN OBBLIGAZIONE_SCADENZARIO os ON os.ESERCIZIO = a.ESERCIZIO_OBBLIGAZIONE
+        		                  AND os.ESERCIZIO_ORIGINALE = a.ESERCIZIO_ORI_OBBLIGAZIONE
+        		                  AND os.CD_CDS = a.CD_CDS_OBBLIGAZIONE
+        		                  AND os.PG_OBBLIGAZIONE = a.PG_OBBLIGAZIONE
+        		                  AND os.PG_OBBLIGAZIONE_SCADENZARIO = a.PG_OBBLIGAZIONE_SCADENZARIO
+        	Where  a.cd_cds_obbligazione    = aObb.cd_cds And
+        	       a.esercizio_obbligazione	= aObb.esercizio And
+        	       a.esercizio_ori_obbligazione  = aObb.esercizio_originale And
+        	       a.pg_obbligazione  = aObb.pg_obbligazione And
+        	       os.IM_ASSOCIATO_DOC_CONTABILE = 0) Loop
 
     CNRCTB100.lockdocamm(aDocAmm.cd_tipo_documento_amm,aDocAmm.cd_cds,aDocAmm.esercizio,aDocAmm.cd_unita_organizzativa,aDocAmm.pg_documento_amm);
 
@@ -815,6 +849,19 @@ For aDocAmm In (Select Distinct cd_tipo_documento_amm, cd_cds, esercizio, cd_uni
     End If;
 End Loop;
 
+  -- Verifica che l'obbligazione non sia collegata ad ordini provvisori
+For aOrdine in (Select a.cd_cds, a.cd_unita_operativa, a.esercizio, a.cd_numeratore, a.numero
+                From  ordine_acq_consegna a
+                left join ordine_acq b on b.cd_cds=a.cd_cds and b.cd_unita_operativa=a.cd_unita_operativa and b.esercizio=a.esercizio and b.cd_numeratore=a.cd_numeratore and b.numero=a.numero
+                Where a.cd_cds_obbl = aObb.cd_cds And
+                      a.esercizio_obbl=aObb.esercizio And
+                      a.esercizio_orig_obbl=aObb.esercizio_originale And
+                      a.pg_obbligazione=aObb.pg_obbligazione And
+                      a.stato='INS') Loop
+    IBMERR001.RAISE_ERR_GENERICO('L''obbligazione '||CNRCTB035.GETDESC(aObb)||' risulta associata ad ordini in stato provvisorio ('||
+    aOrdine.cd_cds||'/'||aOrdine.cd_unita_operativa||'/'||aOrdine.esercizio||'/'||aOrdine.cd_numeratore||'/'||aOrdine.numero);
+End Loop;
+
   -- Verifica che l'obbligazione non sia collegata a fondo economale
 
 For aSpesa in (Select *
@@ -823,7 +870,7 @@ For aSpesa in (Select *
                      esercizio_obbligazione=aObb.esercizio And
                      esercizio_ori_obbligazione=aObb.esercizio_originale And
                      pg_obbligazione=aObb.pg_obbligazione) Loop
-    IBMERR001.RAISE_ERR_GENERICO('L''obbligazione '||CNRCTB035.GETDESC(aObb)||' risulta associato a spese non documentate del fondo economale');
+    IBMERR001.RAISE_ERR_GENERICO('L''obbligazione '||CNRCTB035.GETDESC(aObb)||' risulta associata a spese non documentate del fondo economale');
 End Loop;
 
 
