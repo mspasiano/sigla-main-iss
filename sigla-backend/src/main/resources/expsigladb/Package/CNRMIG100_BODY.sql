@@ -4137,7 +4137,7 @@ begin
     lPgExec := pg_exec;
 
     -- Aggiorna le info di testata del log
-    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_PDGP, job, 'Batch di ribaltamento inizio Anno. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
+    IBMUTL210.logStartExecutionUpd(lPgExec, TI_LOG_RIBALTAMENTO_ALTRO, job, 'Batch di ribaltamento inizio Anno. Start:'||to_char(aTSNow,'YYYY/MM/DD HH-MI-SS'));
 
     if aEs = 0 then
        ibmutl200.logErr(lPgExec,'Esercizio zero non gestito', '', '');
