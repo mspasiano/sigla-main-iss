@@ -23,6 +23,55 @@
  */
 package it.cnr.contab.util;
 
+import it.cnr.contab.anagraf00.ejb.TerzoComponentSession;
+import it.cnr.contab.bollo00.ejb.AttoBolloComponentSession;
+import it.cnr.contab.bollo00.ejb.TipoAttoBolloComponentSession;
+import it.cnr.contab.client.docamm.FatturaAttiva;
+import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
+import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaComponentSession;
+import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaFromDocumentoComponentSession;
+import it.cnr.contab.compensi00.ejb.CompensoComponentSession;
+import it.cnr.contab.config00.ejb.*;
+import it.cnr.contab.docamm00.ejb.AutoFatturaComponentSession;
+import it.cnr.contab.docamm00.ejb.DocumentoGenericoComponentSession;
+import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
+import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
+import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSessionBean;
+import it.cnr.contab.doccont00.comp.AsyncObbligazioneComponentSession;
+import it.cnr.contab.doccont00.ejb.*;
+import it.cnr.contab.gestiva00.ejb.LiquidIvaInterfComponentSession;
+import it.cnr.contab.incarichi00.ejb.IncarichiEstrazioneFpComponentSession;
+import it.cnr.contab.incarichi00.ejb.IncarichiProceduraComponentSession;
+import it.cnr.contab.incarichi00.ejb.IncarichiRepertorioComponentSession;
+import it.cnr.contab.incarichi00.ejb.RepertorioLimitiComponentSession;
+import it.cnr.contab.ordmag.ejb.NumeratoriOrdMagComponentSession;
+import it.cnr.contab.ordmag.magazzino.ejb.MovimentiMagComponentSession;
+import it.cnr.contab.ordmag.magazzino.ejb.TransitoBeniOrdiniComponentSession;
+import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
+import it.cnr.contab.pdg00.ejb.PdGVariazioniComponentSession;
+import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneGestionaleComponentSession;
+import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneRigaGestComponentSession;
+import it.cnr.contab.prevent01.ejb.PdgAggregatoModuloComponentSession;
+import it.cnr.contab.prevent01.ejb.PdgContrSpeseComponentSession;
+import it.cnr.contab.progettiric00.ejb.ProgettoRicercaComponentSession;
+import it.cnr.contab.progettiric00.ejb.RimodulaProgettoRicercaComponentSession;
+import it.cnr.contab.progettiric00.ejb.geco.ProgettoGecoComponentSession;
+import it.cnr.contab.utente00.ejb.RuoloComponentSession;
+import it.cnr.contab.utente00.ejb.UtenteComponentSession;
+import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
+import it.cnr.jada.bulk.OggettoBulk;
+import it.cnr.jada.ejb.AdminSession;
+import it.cnr.jada.ejb.CRUDComponentSession;
+import it.cnr.jada.util.ejb.EJBCommonServices;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
+
+import javax.ejb.EJBException;
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -37,62 +86,6 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.ejb.EJBException;
-import javax.servlet.ServletException;
-
-import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
-import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaComponentSession;
-import it.cnr.contab.coepcoan00.ejb.ScritturaPartitaDoppiaFromDocumentoComponentSession;
-import it.cnr.contab.compensi00.ejb.CompensoComponentSession;
-import it.cnr.contab.docamm00.ejb.AutoFatturaComponentSession;
-import it.cnr.contab.docamm00.ejb.DocumentoGenericoComponentSession;
-import it.cnr.contab.doccont00.ejb.*;
-import it.cnr.contab.incarichi00.ejb.IncarichiEstrazioneFpComponentSession;
-import it.cnr.contab.ordmag.magazzino.ejb.TransitoBeniOrdiniComponentSession;
-import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneGestionaleComponentSession;
-import it.cnr.contab.pdg01.ejb.CRUDPdgVariazioneRigaGestComponentSession;
-import it.cnr.contab.progettiric00.ejb.ProgettoRicercaComponentSession;
-import it.cnr.contab.progettiric00.ejb.RimodulaProgettoRicercaComponentSession;
-import it.cnr.contab.utente00.ejb.RuoloComponentSession;
-import it.cnr.contab.utente00.ejb.UtenteComponentSession;
-import it.cnr.contab.varstanz00.ejb.VariazioniStanziamentoResiduoComponentSession;
-
-import it.cnr.jada.ejb.CRUDComponentSession;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
-
-import it.cnr.contab.anagraf00.ejb.TerzoComponentSession;
-import it.cnr.contab.bollo00.ejb.AttoBolloComponentSession;
-import it.cnr.contab.bollo00.ejb.TipoAttoBolloComponentSession;
-import it.cnr.contab.client.docamm.FatturaAttiva;
-import it.cnr.contab.config00.ejb.CRUDConfigAssEvoldEvnewComponentSession;
-import it.cnr.contab.config00.ejb.Classificazione_vociComponentSession;
-import it.cnr.contab.config00.ejb.Configurazione_cnrComponentSession;
-import it.cnr.contab.config00.ejb.Parametri_cdsComponentSession;
-import it.cnr.contab.config00.ejb.Parametri_cnrComponentSession;
-import it.cnr.contab.config00.ejb.Parametri_enteComponentSession;
-import it.cnr.contab.config00.ejb.Unita_organizzativaComponentSession;
-import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
-import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
-import it.cnr.contab.gestiva00.ejb.LiquidIvaInterfComponentSession;
-import it.cnr.contab.incarichi00.ejb.IncarichiProceduraComponentSession;
-import it.cnr.contab.incarichi00.ejb.IncarichiRepertorioComponentSession;
-import it.cnr.contab.incarichi00.ejb.RepertorioLimitiComponentSession;
-import it.cnr.contab.ordmag.ejb.NumeratoriOrdMagComponentSession;
-import it.cnr.contab.ordmag.magazzino.ejb.MovimentiMagComponentSession;
-import it.cnr.contab.ordmag.ordini.ejb.OrdineAcqComponentSession;
-import it.cnr.contab.pdg00.ejb.PdGVariazioniComponentSession;
-import it.cnr.contab.prevent01.ejb.PdgAggregatoModuloComponentSession;
-import it.cnr.contab.prevent01.ejb.PdgContrSpeseComponentSession;
-import it.cnr.contab.progettiric00.ejb.geco.ProgettoGecoComponentSession;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.ejb.AdminSession;
-import it.cnr.jada.util.ejb.EJBCommonServices;
 
 /**
  * @author mspasiano
@@ -608,5 +601,12 @@ public final class Utility {
 	}
 	public static AutoFatturaComponentSession createAutoFatturaComponentSession() throws javax.ejb.EJBException{
 		return (AutoFatturaComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCAMM00_EJB_AutoFatturaComponentSession", AutoFatturaComponentSession.class);
+	}
+	public static AsyncObbligazioneComponentSession createAsyncObbligazioneComponentSession() throws javax.ejb.EJBException{
+		return (AsyncObbligazioneComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncObbligazioneComponentSession", AsyncObbligazioneComponentSession.class);
+	}
+
+	public static AsyncAccertamentoComponentSessionBean createAsyncAccertamentoComponentSessionBean() throws javax.ejb.EJBException{
+		return (AsyncAccertamentoComponentSessionBean)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncAccertamentoComponentSession", AsyncAccertamentoComponentSessionBean.class);
 	}
 }

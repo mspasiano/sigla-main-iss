@@ -18,6 +18,9 @@
 package it.cnr.contab.logs.bp;
 
 import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
+import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
+import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSessionBean;
+import it.cnr.contab.doccont00.comp.AsyncObbligazioneComponentSession;
 import it.cnr.contab.logs.bulk.Batch_controlBulk;
 import it.cnr.contab.logs.bulk.Batch_procedura_parametroBulk;
 import it.cnr.contab.util.Utility;
@@ -94,20 +97,30 @@ public class CRUDBatchControlBP extends SimpleCRUDBP
             }
 
             if (batch_controlbulk.getProcedura().isProceduraJava() && "RIBPLURIENNALIJAVA".equals(batch_controlbulk.getProcedura().getCd_procedura())) {
-                AsyncScritturaPartitaDoppiaFromDocumentoComponentSession component = Utility.createAsyncScritturaPartitaDoppiaFromDocumentoComponentSession();
+
                 BigDecimal esercizio = batch_controlbulk.getParametri().stream()
                         .filter(el->el.getNome_parametro().equals("AES"))
                         .findAny()
                         .map(Batch_procedura_parametroBulk::getValore_number)
                         .orElseThrow(()->new ValidationException("Valorizzare il parametro Esercizio!"));
 
-                String cdcds = batch_controlbulk.getParametri().stream()
-                        .filter(el->el.getNome_parametro().equals("ACDCDS"))
+                String cdcentroresponsabilita = batch_controlbulk.getParametri().stream()
+                        .filter(el->el.getNome_parametro().equals("ACDCENTRORESPONSABILITA"))
                         .findAny()
                         .map(Batch_procedura_parametroBulk::getValore_varchar)
-                        .orElseThrow(()->new ValidationException("Valorizzare il parametro Centro di Spesa!"));
+                        .orElseThrow(()->new ValidationException("Valorizzare il parametro Centro di Responsabilità della Gae!"));
 
-                component.asyncLoadScritturePatrimoniali(actioncontext.getUserContext(), esercizio.intValue(), cdcds);
+                String cdlineaattivita = batch_controlbulk.getParametri().stream()
+                        .filter(el->el.getNome_parametro().equals("ACDLINEAATTIVITA"))
+                        .findAny()
+                        .map(Batch_procedura_parametroBulk::getValore_varchar)
+                        .orElseThrow(()->new ValidationException("Valorizzare il parametro della Codice Gae!"));
+                AsyncObbligazioneComponentSession obbComponent = Utility.createAsyncObbligazioneComponentSession();
+                obbComponent.asyncCreateObbligazioniPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
+
+                AsyncAccertamentoComponentSessionBean accComponent = Utility.createAsyncAccertamentoComponentSessionBean();
+                accComponent.asyncCreateAcceratmentiPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
+
             }
 
 

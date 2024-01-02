@@ -201,7 +201,7 @@ public abstract class AbstractContrattoResource {
         return attachments;
     }
 
-    private ContrattoBulk creaContrattoSigla(ContrattoDtoBulk contrattoBulk, CNRUserContext userContext) throws PersistencyException, ValidationException, ComponentException, RemoteException {
+    protected ContrattoBulk creaContrattoSigla(ContrattoDtoBulk contrattoBulk, CNRUserContext userContext) throws PersistencyException, ValidationException, ComponentException, RemoteException {
         ContrattoBulk contrattoBulkSigla = new ContrattoBulk();
         if (Optional.ofNullable(contrattoBulk.getCd_unita_organizzativa()).isPresent()){
             contrattoBulkSigla.setUnita_organizzativa(new Unita_organizzativaBulk());
