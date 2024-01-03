@@ -3,15 +3,17 @@
  * Date 20/09/2021
  */
 package it.cnr.contab.doccont00.core.bulk;
-import it.cnr.jada.action.ActionContext;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.util.action.CRUDBP;
+
+import it.cnr.jada.bulk.BulkList;
+
 public class Obbligazione_pluriennaleBulk extends Obbligazione_pluriennaleBase {
 	/**
 	 * [OBBLIGAZIONE ]
 	 **/
 	private ObbligazioneBulk obbligazione =  new ObbligazioneBulk();
 	private ObbligazioneBulk obbligazioneRif =  new ObbligazioneBulk();
+
+	protected BulkList<Obbligazione_pluriennale_voceBulk> righeVoceColl = new BulkList<Obbligazione_pluriennale_voceBulk>();
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE
@@ -179,6 +181,14 @@ public class Obbligazione_pluriennaleBulk extends Obbligazione_pluriennaleBase {
 	 **/
 	public void setPgObbligazioneRif(Long pgObbligazioneRif)  {
 		this.getObbligazioneRif().setPg_obbligazione(pgObbligazioneRif);
+	}
+
+	public BulkList<Obbligazione_pluriennale_voceBulk> getRigheVoceColl() {
+		return righeVoceColl;
+	}
+
+	public void setRigheVoceColl(BulkList<Obbligazione_pluriennale_voceBulk> righeVoceColl) {
+		this.righeVoceColl = righeVoceColl;
 	}
 
 	public Obbligazione_pluriennaleBulk clone(ObbligazioneBulk obbligazione, it.cnr.jada.action.ActionContext context){
