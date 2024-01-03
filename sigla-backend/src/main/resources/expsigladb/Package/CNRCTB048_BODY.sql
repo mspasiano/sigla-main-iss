@@ -857,8 +857,8 @@ For aOrdine in (Select a.cd_cds, a.cd_unita_operativa, a.esercizio, a.cd_numerat
                       a.esercizio_obbl=aObb.esercizio And
                       a.esercizio_orig_obbl=aObb.esercizio_originale And
                       a.pg_obbligazione=aObb.pg_obbligazione And
-                      a.stato='INS') Loop
-    IBMERR001.RAISE_ERR_GENERICO('L''obbligazione '||CNRCTB035.GETDESC(aObb)||' risulta associata ad ordini in stato provvisorio ('||
+                      b.stato='INS') Loop
+    IBMERR001.RAISE_ERR_GENERICO('L''obbligazione '||CNRCTB035.GETDESC(aObb)||' Fi ('||
     aOrdine.cd_cds||'/'||aOrdine.cd_unita_operativa||'/'||aOrdine.esercizio||'/'||aOrdine.cd_numeratore||'/'||aOrdine.numero);
 End Loop;
 
