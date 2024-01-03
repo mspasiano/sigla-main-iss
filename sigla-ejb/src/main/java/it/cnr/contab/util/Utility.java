@@ -609,4 +609,8 @@ public final class Utility {
 	public static AsyncAccertamentoComponentSessionBean createAsyncAccertamentoComponentSessionBean() throws javax.ejb.EJBException{
 		return (AsyncAccertamentoComponentSessionBean)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncAccertamentoComponentSession", AsyncAccertamentoComponentSessionBean.class);
 	}
+	public static ObbligazionePluriennaliComponentSessionBean createObbligazionePluriennaleComponentSessionBean() throws javax.ejb.EJBException{
+		return (ObbligazionePluriennaliComponentSessionBean)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession", ObbligazionePluriennaliComponentSessionBean.class);
+	}
+
 }

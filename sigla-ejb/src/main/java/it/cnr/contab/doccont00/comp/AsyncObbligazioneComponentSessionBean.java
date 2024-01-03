@@ -19,7 +19,7 @@ package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
-import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
+import it.cnr.contab.doccont00.ejb.ObbligazionePluriennaliComponentSessionBean;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
 import it.cnr.contab.logs.ejb.BatchControlComponentSession;
@@ -52,7 +52,7 @@ public class AsyncObbligazioneComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 	public void asyncCreateObbligazioniPluriennali(UserContext param0, Integer esercizio, WorkpackageKey key) throws ComponentException {
 		String subjectError = "Errore caricamento scritture patrimoniali";
 		try {
-			ObbligazioneComponentSession session = Utility.createObbligazioneComponentSession();
+			ObbligazionePluriennaliComponentSessionBean session = Utility.createObbligazionePluriennaleComponentSessionBean();
 
 			DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 			Batch_log_tstaBulk log = new Batch_log_tstaBulk();
