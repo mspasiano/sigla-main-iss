@@ -18,7 +18,6 @@
 package it.cnr.contab.doccont00.ejb;
 
 import it.cnr.contab.doccont00.comp.ObbligazionePluriennaleComponent;
-import it.cnr.contab.doccont00.comp.ObbligazioneResComponent;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
@@ -29,13 +28,13 @@ import java.rmi.RemoteException;
 import java.util.List;
 
 @Stateless(name="CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession")
-public class ObbligazionePluriennaliComponentSessionBean extends ObbligazioneComponentSessionBean implements ObbligazionePluriennaleComponentSession {
+public class ObbligazionePluriennaleComponentSessionBean extends ObbligazioneComponentSessionBean implements ObbligazionePluriennaleComponentSession {
 @PostConstruct
 	public void ejbCreate() {
-	componentObj = new ObbligazioneResComponent();
+	componentObj = new ObbligazionePluriennaleComponent();
 }
 public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
-	return new ObbligazionePluriennaliComponentSessionBean();
+	return new ObbligazionePluriennaleComponentSessionBean();
 }
 
 	@Override

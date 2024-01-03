@@ -36,7 +36,7 @@ import it.cnr.contab.docamm00.ejb.AutoFatturaComponentSession;
 import it.cnr.contab.docamm00.ejb.DocumentoGenericoComponentSession;
 import it.cnr.contab.docamm00.ejb.FatturaAttivaSingolaComponentSession;
 import it.cnr.contab.docamm00.ejb.FatturaPassivaComponentSession;
-import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSessionBean;
+import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSession;
 import it.cnr.contab.doccont00.comp.AsyncObbligazioneComponentSession;
 import it.cnr.contab.doccont00.ejb.*;
 import it.cnr.contab.gestiva00.ejb.LiquidIvaInterfComponentSession;
@@ -606,11 +606,11 @@ public final class Utility {
 		return (AsyncObbligazioneComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncObbligazioneComponentSession", AsyncObbligazioneComponentSession.class);
 	}
 
-	public static AsyncAccertamentoComponentSessionBean createAsyncAccertamentoComponentSessionBean() throws javax.ejb.EJBException{
-		return (AsyncAccertamentoComponentSessionBean)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncAccertamentoComponentSession", AsyncAccertamentoComponentSessionBean.class);
+	public static AsyncAccertamentoComponentSession createAsyncAccertamentoComponentSession() throws javax.ejb.EJBException{
+		return (AsyncAccertamentoComponentSession)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRCOEPCOAN00_EJB_AsyncAccertamentoComponentSession", AsyncAccertamentoComponentSession.class);
 	}
-	public static ObbligazionePluriennaliComponentSessionBean createObbligazionePluriennaleComponentSessionBean() throws javax.ejb.EJBException{
-		return (ObbligazionePluriennaliComponentSessionBean)it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession", ObbligazionePluriennaliComponentSessionBean.class);
+	public static ObbligazionePluriennaleComponentSession createObbligazionePluriennaleComponentSession() throws javax.ejb.EJBException{
+		return (ObbligazionePluriennaleComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession", ObbligazionePluriennaleComponentSession.class);
 	}
 
 }

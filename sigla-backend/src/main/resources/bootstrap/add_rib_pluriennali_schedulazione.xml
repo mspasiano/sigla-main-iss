@@ -50,7 +50,7 @@
             <column name="cd_procedura" type="STRING" value="RIBPLURIENNALIJAVA"/>
             <column name="nome_parametro" type="STRING" value="ACDCENTRORESPONSABILITA"/>
             <column name="pg_valore_parametro" type="NUMERIC" value="2"/>
-            <column name="valore_varchar" type="NUMERIC" value="000.000.000"/>
+            <column name="valore_varchar" type="STRING" value="000.000.000"/>
             <column name="dacr" type="${date.type}" valueDate="${now}"/>
             <column name="utcr" type="STRING" value="SYSTEM"/>
             <column name="duva" type="${date.type}" valueDate="${now}"/>
@@ -61,7 +61,7 @@
             <column name="cd_procedura" type="STRING" value="RIBPLURIENNALIJAVA"/>
             <column name="nome_parametro" type="STRING" value="ACDLINEAATTIVITA"/>
             <column name="pg_valore_parametro" type="NUMERIC" value="3"/>
-            <column name="valore_varchar" type="NUMERIC" value="P0000001"/>
+            <column name="valore_varchar" type="STRING" value="P0000001"/>
             <column name="dacr" type="${date.type}" valueDate="${now}"/>
             <column name="utcr" type="STRING" value="SYSTEM"/>
             <column name="duva" type="${date.type}" valueDate="${now}"/>

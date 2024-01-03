@@ -19,7 +19,7 @@ package it.cnr.contab.logs.bp;
 
 import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
 import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
-import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSessionBean;
+import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSession;
 import it.cnr.contab.doccont00.comp.AsyncObbligazioneComponentSession;
 import it.cnr.contab.logs.bulk.Batch_controlBulk;
 import it.cnr.contab.logs.bulk.Batch_procedura_parametroBulk;
@@ -118,7 +118,7 @@ public class CRUDBatchControlBP extends SimpleCRUDBP
                 AsyncObbligazioneComponentSession obbComponent = Utility.createAsyncObbligazioneComponentSession();
                 obbComponent.asyncCreateObbligazioniPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
 
-                AsyncAccertamentoComponentSessionBean accComponent = Utility.createAsyncAccertamentoComponentSessionBean();
+                AsyncAccertamentoComponentSession accComponent = Utility.createAsyncAccertamentoComponentSession();
                 accComponent.asyncCreateAcceratmentiPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
 
             }

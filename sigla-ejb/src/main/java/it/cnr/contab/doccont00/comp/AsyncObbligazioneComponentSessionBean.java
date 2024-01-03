@@ -17,9 +17,9 @@
 
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.coepcoan00.core.bulk.IDocumentoCogeBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
-import it.cnr.contab.doccont00.ejb.ObbligazionePluriennaliComponentSessionBean;
+import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
+import it.cnr.contab.doccont00.ejb.ObbligazionePluriennaleComponentSession;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
 import it.cnr.contab.logs.ejb.BatchControlComponentSession;
@@ -52,7 +52,7 @@ public class AsyncObbligazioneComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 	public void asyncCreateObbligazioniPluriennali(UserContext param0, Integer esercizio, WorkpackageKey key) throws ComponentException {
 		String subjectError = "Errore caricamento scritture patrimoniali";
 		try {
-			ObbligazionePluriennaliComponentSessionBean session = Utility.createObbligazionePluriennaleComponentSessionBean();
+			ObbligazionePluriennaleComponentSession session = Utility.createObbligazionePluriennaleComponentSession();
 
 			DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 			Batch_log_tstaBulk log = new Batch_log_tstaBulk();
@@ -77,17 +77,17 @@ public class AsyncObbligazioneComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 
 			try {
 				List<String> listCdCds = new ArrayList<>();
-				List<IDocumentoCogeBulk> allObbPluriennali=new ArrayList<>();
+				List<Obbligazione_pluriennaleBulk> allObbPluriennali;
 				List<String> listInsert = new ArrayList<>();
 				List<String> listError = new ArrayList<>();
-			/*
+
 				try {
-					allDocuments = session.getAllDocumentiCogeDaContabilizzare(param0, pEsercizio, pCdCds.equals("*")?null:pCdCds);
-				} catch (ComponentException | RemoteException | PersistencyException ex) {
-					SendMail.sendErrorMail(subjectError, "Errore durante la lettura dei documenti dell'esercizio " + pEsercizio + (pCdCds.equals("*")?"":" del Cds:"+pCdCds)+" - Errore: " + ex.getMessage());
+					allObbPluriennali = session.findObbligazionePluriennali(param0, esercizio);
+				} catch (ComponentException | RemoteException  ex) {
+					SendMail.sendErrorMail(subjectError, "Errore durante la lettura delle Obbligazioni Pluriennali dell'esercizio " + esercizio + " - Errore: " + ex.getMessage());
 					throw new DetailedRuntimeException(ex);
 				}
-
+				/*
 
 
 				allDocuments.stream()

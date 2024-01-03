@@ -39,9 +39,6 @@ import java.util.List;
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
 public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
-	public static final String TIPO_ERRORE_ECCEZIONE = "E"; // solleva eccezione
-	public static final String TIPO_ERRORE_CONTROLLO = "C"; // effettua solo controllo
-
 	public ObbligazionePluriennaleComponent()
 	{
 		/*Default constructor*/
