@@ -19,10 +19,11 @@ package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
-import it.cnr.contab.doccont00.ejb.AccertamentoComponentSession;
+import it.cnr.contab.doccont00.ejb.AccertamentoPluriennaleComponentSession;
 import it.cnr.contab.logs.bulk.Batch_log_rigaBulk;
 import it.cnr.contab.logs.bulk.Batch_log_tstaBulk;
 import it.cnr.contab.logs.ejb.BatchControlComponentSession;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
@@ -51,10 +52,7 @@ public class AsyncAccertamentoComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 	public void asyncCreateAcceratmentiPluriennali(UserContext param0, Integer esercizio, WorkpackageKey key) throws ComponentException {
 		String subjectError = "Errore caricamento scritture patrimoniali";
 		try {
-			AccertamentoComponentSession session = (it.cnr.contab.doccont00.ejb.AccertamentoComponentSession)
-					it.cnr.jada.util.ejb.EJBCommonServices.createEJB(
-							"CNRDOCCONT00_EJB_AccertamentoComponentSession",
-							it.cnr.contab.doccont00.ejb.AccertamentoComponentSession.class);
+			AccertamentoPluriennaleComponentSession session = Utility.createAccertamentoPluriennaleComponentSession();
 
 			DateTimeFormatter formatterTime = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss").withZone(ZoneId.systemDefault());
 			Batch_log_tstaBulk log = new Batch_log_tstaBulk();
@@ -82,14 +80,14 @@ public class AsyncAccertamentoComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 				List<Accertamento_pluriennaleBulk> allAccPluriennali=new ArrayList<>();
 				List<String> listInsert = new ArrayList<>();
 				List<String> listError = new ArrayList<>();
-				/*
+
 				try {
-					all = session.getAllDocumentiCogeDaContabilizzare(param0, pEsercizio, pCdCds.equals("*")?null:pCdCds);
-				} catch (ComponentException | RemoteException | PersistencyException ex) {
-					SendMail.sendErrorMail(subjectError, "Errore durante la lettura dei documenti dell'esercizio " + pEsercizio + (pCdCds.equals("*")?"":" del Cds:"+pCdCds)+" - Errore: " + ex.getMessage());
+					allAccPluriennali = session.findAccertamentiPluriennali(param0, esercizio);
+				} catch (ComponentException | RemoteException  ex) {
+					SendMail.sendErrorMail(subjectError, "Errore durante la lettura degli Accertamenti pluriennali dell'esercizio " + esercizio +" - Errore: " + ex.getMessage());
 					throw new DetailedRuntimeException(ex);
 				}
-
+				/*
 
 
 				all.stream()

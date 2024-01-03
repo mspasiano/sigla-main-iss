@@ -17,8 +17,8 @@
 
 package it.cnr.contab.doccont00.ejb;
 
-import it.cnr.contab.doccont00.comp.ObbligazionePluriennaleComponent;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
+import it.cnr.contab.doccont00.comp.AccertamentoPluriennaleComponent;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
@@ -27,27 +27,27 @@ import javax.ejb.Stateless;
 import java.rmi.RemoteException;
 import java.util.List;
 
-@Stateless(name="CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession")
-public class ObbligazionePluriennaleComponentSessionBean extends ObbligazioneComponentSessionBean implements ObbligazionePluriennaleComponentSession {
+@Stateless(name="CNRDOCCONT00_EJB_AccertamentoPluriennaleComponentSession")
+public class AccertamentoPluriennaleComponentSessionBean extends AccertamentoComponentSessionBean implements AccertamentoPluriennaleComponentSession {
 @PostConstruct
 	public void ejbCreate() {
-	componentObj = new ObbligazionePluriennaleComponent();
+	componentObj = new AccertamentoPluriennaleComponent();
 }
 public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws javax.ejb.EJBException {
-	return new ObbligazionePluriennaleComponentSessionBean();
+	return new AccertamentoPluriennaleComponentSessionBean();
 }
 
 	@Override
-	public List<Obbligazione_pluriennaleBulk> findObbligazioniPluriennali(UserContext uc, int esercizio) throws ComponentException, RemoteException {
+	public List<Accertamento_pluriennaleBulk> findAccertamentiPluriennali(UserContext uc, int esercizio) throws ComponentException, RemoteException {
 		pre_component_invocation(uc, componentObj);
 		try {
-			List<Obbligazione_pluriennaleBulk> result = ((ObbligazionePluriennaleComponent) componentObj).findObbligazioniPluriennali(uc, esercizio);
+			List<Accertamento_pluriennaleBulk> result = ((AccertamentoPluriennaleComponent) componentObj).findAccertamentiPluriennali(uc, esercizio);
 			component_invocation_succes(uc, componentObj);
 			return result;
 		} catch (it.cnr.jada.comp.NoRollbackException e) {
 			component_invocation_succes(uc, componentObj);
 			throw e;
-		} catch (it.cnr.jada.comp.ComponentException e) {
+		} catch (ComponentException e) {
 			component_invocation_failure(uc, componentObj);
 			throw e;
 		} catch (RuntimeException e) {

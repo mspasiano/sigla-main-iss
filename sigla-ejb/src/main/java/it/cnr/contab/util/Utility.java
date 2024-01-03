@@ -612,5 +612,8 @@ public final class Utility {
 	public static ObbligazionePluriennaleComponentSession createObbligazionePluriennaleComponentSession() throws javax.ejb.EJBException{
 		return (ObbligazionePluriennaleComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_ObbligazionePluriennaleComponentSession", ObbligazionePluriennaleComponentSession.class);
 	}
+	public static AccertamentoPluriennaleComponentSession createAccertamentoPluriennaleComponentSession() throws javax.ejb.EJBException{
+		return (AccertamentoPluriennaleComponentSession) it.cnr.jada.util.ejb.EJBCommonServices.createEJB("CNRDOCCONT00_EJB_AccertamentoPluriennaleComponentSession", AccertamentoPluriennaleComponentSession.class);
+	}
 
 }

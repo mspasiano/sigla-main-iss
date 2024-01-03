@@ -82,7 +82,7 @@ public class AsyncObbligazioneComponentSessionBean extends it.cnr.jada.ejb.CRUDC
 				List<String> listError = new ArrayList<>();
 
 				try {
-					allObbPluriennali = session.findObbligazionePluriennali(param0, esercizio);
+					allObbPluriennali = session.findObbligazioniPluriennali(param0, esercizio);
 				} catch (ComponentException | RemoteException  ex) {
 					SendMail.sendErrorMail(subjectError, "Errore durante la lettura delle Obbligazioni Pluriennali dell'esercizio " + esercizio + " - Errore: " + ex.getMessage());
 					throw new DetailedRuntimeException(ex);

@@ -797,24 +797,7 @@ public it.cnr.contab.doccont00.core.bulk.IScadenzaDocumentoContabileBulk sdoppia
 		}
 	}
 
-public String controllaDettagliScadenzaObbligazione(UserContext param0, ObbligazioneBulk param1, it.cnr.contab.doccont00.core.bulk.Obbligazione_scadenzarioBulk param2) throws RemoteException,it.cnr.jada.comp.ComponentException {
-	try {
-		return (String)invoke("controllaDettagliScadenzaObbligazione",new Object[] {
-			param0,
-			param1,
-			param2});
-	} catch(RemoteException e) {
-		throw e;
-	} catch(java.lang.reflect.InvocationTargetException e) {
-		try {
-			throw e.getTargetException();
-		} catch(it.cnr.jada.comp.ComponentException ex) {
-			throw ex;
-		} catch(Throwable ex) {
-			throw new RemoteException("Uncaugth exception",ex);
-		}
-	}
-}
+
 public PrimaryKeyHashtable getOldRipartizioneCdrVoceLinea(UserContext param0, ObbligazioneBulk param1) throws RemoteException,it.cnr.jada.comp.ComponentException {
 	try {
 		return (PrimaryKeyHashtable)invoke("getOldRipartizioneCdrVoceLinea",new Object[] {
@@ -955,9 +938,9 @@ public void callRiportaIndietroRequiresNew(UserContext param0, it.cnr.contab.doc
 	}
 
 	@Override
-	public List<Obbligazione_pluriennaleBulk> findObbligazionePluriennali(UserContext uc, int esercizio) throws ComponentException, RemoteException {
+	public List<Obbligazione_pluriennaleBulk> findObbligazioniPluriennali(UserContext uc, int esercizio) throws ComponentException, RemoteException {
 		try {
-			return (List<Obbligazione_pluriennaleBulk>)invoke("findObbligazionePluriennali",new Object[] {
+			return (List<Obbligazione_pluriennaleBulk>)invoke("findObbligazioniPluriennali",new Object[] {
 					uc,
 					esercizio });
 		} catch(RemoteException e) {

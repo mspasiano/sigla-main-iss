@@ -23,8 +23,8 @@
  */
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleHome;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
+import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleHome;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.persistency.sql.ApplicationPersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
@@ -38,21 +38,20 @@ import java.util.List;
  * To change the template for this generated type comment go to
  * Window&gt;Preferences&gt;Java&gt;Code Generation&gt;Code and Comments
  */
-public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
-	public ObbligazionePluriennaleComponent()
+public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
+	public AccertamentoPluriennaleComponent()
 	{
 		/*Default constructor*/
 	}
 
-	public List<Obbligazione_pluriennaleBulk> findObbligazioniPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException {
+	public List<Accertamento_pluriennaleBulk> findAccertamentiPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException {
 		try{
-			Obbligazione_pluriennaleHome obbligazionePluriennaleHome = ( Obbligazione_pluriennaleHome) getHome(uc, Obbligazione_pluriennaleBulk.class);
-			SQLBuilder sql = obbligazionePluriennaleHome.createSQLBuilder();
+			Accertamento_pluriennaleHome accertamento_pluriennaleHome = ( Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
+			SQLBuilder sql = accertamento_pluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
-			return obbligazionePluriennaleHome.fetchAll(sql);
+			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
 	}
-
 }
