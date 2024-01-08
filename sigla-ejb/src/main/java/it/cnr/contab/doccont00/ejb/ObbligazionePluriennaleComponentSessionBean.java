@@ -17,13 +17,17 @@
 
 package it.cnr.contab.doccont00.ejb;
 
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.doccont00.comp.ObbligazionePluriennaleComponent;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -56,5 +60,28 @@ public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws java
 			throw uncaughtError(uc, componentObj, e);
 		}
 	}
+
+	@Override
+	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+	public ObbligazioneBulk createObbligazioneNew(UserContext uc, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
+		pre_component_invocation(uc, componentObj);
+		try {
+			ObbligazioneBulk result = ((ObbligazionePluriennaleComponent) componentObj).createObbligazioneNew(uc, pluriennaleBulk,gaeIniziale);
+			component_invocation_succes(uc, componentObj);
+			return result;
+		} catch (it.cnr.jada.comp.NoRollbackException e) {
+			component_invocation_succes(uc, componentObj);
+			throw e;
+		} catch (it.cnr.jada.comp.ComponentException e) {
+			component_invocation_failure(uc, componentObj);
+			throw e;
+		} catch (RuntimeException e) {
+			throw uncaughtRuntimeException(uc, componentObj, e);
+		} catch (Error e) {
+			throw uncaughtError(uc, componentObj, e);
+		}
+	}
+
+
 }
 

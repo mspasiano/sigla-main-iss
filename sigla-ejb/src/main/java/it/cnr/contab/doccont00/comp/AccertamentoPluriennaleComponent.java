@@ -23,6 +23,7 @@
  */
 package it.cnr.contab.doccont00.comp;
 
+import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleHome;
 import it.cnr.jada.UserContext;
@@ -49,9 +50,16 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			Accertamento_pluriennaleHome accertamento_pluriennaleHome = ( Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
 			SQLBuilder sql = accertamento_pluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
+			sql.addClause(FindClause.AND, "cd_cds__rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "esercizio_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "esercizio_originale_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "pg_accertamento_rif", SQLBuilder.ISNOTNULL, null);
 			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
+	}
+	public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk accertamentoPluriennaleBulk) throws it.cnr.jada.comp.ComponentException {
+		return null;
 	}
 }

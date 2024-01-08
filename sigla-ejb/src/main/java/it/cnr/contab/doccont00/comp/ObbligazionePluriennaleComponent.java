@@ -23,6 +23,8 @@
  */
 package it.cnr.contab.doccont00.comp;
 
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleHome;
 import it.cnr.jada.UserContext;
@@ -49,10 +51,21 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			Obbligazione_pluriennaleHome obbligazionePluriennaleHome = ( Obbligazione_pluriennaleHome) getHome(uc, Obbligazione_pluriennaleBulk.class);
 			SQLBuilder sql = obbligazionePluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
+			sql.addClause(FindClause.AND, "cd_cds__rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "esercizio_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "esercizio_originale_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "pg_obbligazione_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.ISNOTNULL, null);
+
+
+
 			return obbligazionePluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
+	}
+	public ObbligazioneBulk createObbligazioneNew(UserContext uc, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws it.cnr.jada.comp.ComponentException {
+		return null;
 	}
 
 }

@@ -18,9 +18,8 @@
 package it.cnr.contab.logs.bp;
 
 import it.cnr.contab.coepcoan00.ejb.AsyncScritturaPartitaDoppiaFromDocumentoComponentSession;
-import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
-import it.cnr.contab.doccont00.comp.AsyncAccertamentoComponentSession;
-import it.cnr.contab.doccont00.comp.AsyncObbligazioneComponentSession;
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.doccont00.comp.AsyncPluriennaliComponentSession;
 import it.cnr.contab.logs.bulk.Batch_controlBulk;
 import it.cnr.contab.logs.bulk.Batch_procedura_parametroBulk;
 import it.cnr.contab.util.Utility;
@@ -115,11 +114,9 @@ public class CRUDBatchControlBP extends SimpleCRUDBP
                         .findAny()
                         .map(Batch_procedura_parametroBulk::getValore_varchar)
                         .orElseThrow(()->new ValidationException("Valorizzare il parametro della Codice Gae!"));
-                AsyncObbligazioneComponentSession obbComponent = Utility.createAsyncObbligazioneComponentSession();
-                obbComponent.asyncCreateObbligazioniPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
+                AsyncPluriennaliComponentSession obbComponent = Utility.createAsyncPluriennaliComponentSession();
 
-                AsyncAccertamentoComponentSession accComponent = Utility.createAsyncAccertamentoComponentSession();
-                accComponent.asyncCreateAcceratmentiPluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageKey(cdcentroresponsabilita,cdlineaattivita));
+                obbComponent.asyncCreatePluriennali(actioncontext.getUserContext(), esercizio.intValue(), new WorkpackageBulk(cdcentroresponsabilita,cdlineaattivita));
 
             }
 

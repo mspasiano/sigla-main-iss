@@ -17,6 +17,7 @@
 
 package it.cnr.contab.doccont00.ejb;
 
+import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
 import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
 import it.cnr.jada.UserContext;
 
@@ -27,4 +28,6 @@ import java.util.List;
 @Remote
 public interface AccertamentoPluriennaleComponentSession extends AccertamentoComponentSession {
     List<Accertamento_pluriennaleBulk> findAccertamentiPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException, RemoteException;
+
+    public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk pluriennaleBulk) throws it.cnr.jada.comp.ComponentException, RemoteException;
 }

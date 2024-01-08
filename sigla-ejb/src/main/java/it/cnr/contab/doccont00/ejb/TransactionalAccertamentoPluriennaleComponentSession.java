@@ -754,4 +754,23 @@ public class TransactionalAccertamentoPluriennaleComponentSession extends it.cnr
             }
         }
     }
+
+    @Override
+    public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk pluriennaleBulk) throws ComponentException,RemoteException {
+        try {
+            return (AccertamentoBulk) invoke("createAccertamentoNew",new Object[] {
+                    uc,
+                    pluriennaleBulk });
+        } catch(RemoteException e) {
+            throw e;
+        } catch(java.lang.reflect.InvocationTargetException e) {
+            try {
+                throw e.getTargetException();
+            } catch(it.cnr.jada.comp.ComponentException ex) {
+                throw ex;
+            } catch(Throwable ex) {
+                throw new RemoteException("Uncaugth exception",ex);
+            }
+        }
+    }
 }

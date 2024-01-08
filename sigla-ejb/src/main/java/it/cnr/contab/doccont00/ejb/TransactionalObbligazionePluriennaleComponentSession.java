@@ -17,6 +17,7 @@
 
 package it.cnr.contab.doccont00.ejb;
 
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.doccont00.core.DatiFinanziariScadenzeDTO;
 import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
@@ -943,6 +944,26 @@ public void callRiportaIndietroRequiresNew(UserContext param0, it.cnr.contab.doc
 			return (List<Obbligazione_pluriennaleBulk>)invoke("findObbligazioniPluriennali",new Object[] {
 					uc,
 					esercizio });
+		} catch(RemoteException e) {
+			throw e;
+		} catch(java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch(it.cnr.jada.comp.ComponentException ex) {
+				throw ex;
+			} catch(Throwable ex) {
+				throw new RemoteException("Uncaugth exception",ex);
+			}
+		}
+	}
+
+	@Override
+	public ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
+		try {
+			return (ObbligazioneBulk)invoke("createObbligazioneNew",new Object[] {
+					usercontext,
+					pluriennaleBulk,
+					gaeIniziale});
 		} catch(RemoteException e) {
 			throw e;
 		} catch(java.lang.reflect.InvocationTargetException e) {

@@ -17,7 +17,7 @@
 
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.config00.latt.bulk.WorkpackageKey;
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.persistency.PersistencyException;
@@ -25,6 +25,6 @@ import it.cnr.jada.persistency.PersistencyException;
 import javax.ejb.Remote;
 
 @Remote
-public interface AsyncObbligazioneComponentSession extends it.cnr.jada.ejb.CRUDComponentSession {
-    void asyncCreateObbligazioniPluriennali(UserContext param0, Integer esercizio, WorkpackageKey key) throws ComponentException, PersistencyException, java.rmi.RemoteException;
+public interface AsyncPluriennaliComponentSession extends it.cnr.jada.ejb.CRUDComponentSession {
+    void asyncCreatePluriennali(UserContext param0, Integer esercizio, WorkpackageBulk gaeDetinazione) throws ComponentException, PersistencyException, java.rmi.RemoteException;
 }

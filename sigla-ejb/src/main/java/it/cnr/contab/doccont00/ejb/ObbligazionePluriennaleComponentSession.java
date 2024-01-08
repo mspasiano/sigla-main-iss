@@ -17,8 +17,11 @@
 
 package it.cnr.contab.doccont00.ejb;
 
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
 import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
 import it.cnr.jada.UserContext;
+import it.cnr.jada.comp.ComponentException;
 
 import javax.ejb.Remote;
 import java.rmi.RemoteException;
@@ -27,4 +30,6 @@ import java.util.List;
 @Remote
 public interface ObbligazionePluriennaleComponentSession extends ObbligazioneComponentSession {
     List<Obbligazione_pluriennaleBulk> findObbligazioniPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException, RemoteException;
+
+    ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException;
 }
