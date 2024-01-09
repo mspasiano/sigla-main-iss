@@ -55,7 +55,27 @@ public abstract class CRUDVirtualObbligazioneBP
 	private boolean attivoRegolamento_2006 = false;
 	private boolean ribaltato;
 
-public CRUDVirtualObbligazioneBP() {
+	private boolean supervisore;
+
+	private boolean selectedAnnoPrec;
+
+	public boolean isSupervisore() {
+		return supervisore;
+	}
+
+	public void setSupervisore(boolean newSupervisore) {
+		supervisore = newSupervisore;
+	}
+
+	public boolean isSelectedAnnoPrec() {
+		return selectedAnnoPrec;
+	}
+
+	public void setSelectedAnnoPrec(boolean selectedAnnoPrec) {
+		this.selectedAnnoPrec = selectedAnnoPrec;
+	}
+
+	public CRUDVirtualObbligazioneBP() {
 
 	super();	
 }
@@ -208,8 +228,9 @@ protected void init(it.cnr.jada.action.Config config,it.cnr.jada.action.ActionCo
 		calendar.setTime( today );
 		Integer solaris = new Integer(calendar.get(java.util.Calendar.YEAR));
 		Integer esercizioScrivania = it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(context.getUserContext());
-		setAnnoSolareInScrivania(solaris == esercizioScrivania);
 		setRibaltato(initRibaltato(context));
+		setAnnoSolareInScrivania(solaris.compareTo(esercizioScrivania)==0);
+		setSupervisore(Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()));
 		if (!isAnnoSolareInScrivania()) {
 			String cds = it.cnr.contab.utenze00.bp.CNRUserContext.getCd_cds(context.getUserContext());
 			try 
@@ -217,10 +238,13 @@ protected void init(it.cnr.jada.action.Config config,it.cnr.jada.action.ActionCo
 				ObbligazioneComponentSession session = createObbligazioneComponentSession();
 				EsercizioBulk es = session.verificaStatoEsercizio(context.getUserContext(), cds, esercizioScrivania);
 				EsercizioBulk esSucc = session.verificaStatoEsercizio(context.getUserContext(), cds, new Integer(esercizioScrivania.intValue()+1));
+
+				setSelectedAnnoPrec(es.getSt_apertura_chiusura().equals(es.STATO_APERTO) &&
+						esSucc.getSt_apertura_chiusura().equals(es.STATO_APERTO));
 				if ( es.getSt_apertura_chiusura().equals(es.STATO_APERTO) &&
 					  esSucc.getSt_apertura_chiusura().equals(es.STATO_APERTO) &&
 					  isRibaltato() &&
-					Utility.createUtenteComponentSession().isSupervisore(context.getUserContext()))
+					isSupervisore())
 					setRiportaAvantiIndietro(true);
 				else
 					setRiportaAvantiIndietro(false);				
@@ -234,6 +258,10 @@ protected void init(it.cnr.jada.action.Config config,it.cnr.jada.action.ActionCo
 	} catch (javax.ejb.EJBException e) 
 	{
 		setAnnoSolareInScrivania(false);
+	} catch (ComponentException e) {
+		throw new RuntimeException(e);
+	} catch (RemoteException e) {
+		throw new RuntimeException(e);
 	}
 }
 /**
