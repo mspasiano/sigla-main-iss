@@ -2,7 +2,7 @@
 <bulkInfo>
 	<fieldProperty
 		name="cdCds"
-		property="cdCds"
+		property="obbligazionePluriennale.cdcds"
 		inputType="TEXT"
 		inputSize="30"
 		maxLength="30"
@@ -12,7 +12,7 @@
 		label="Cds dell'obbligazione" />
 	<fieldProperty
 		name="esercizio"
-		property="esercizio"
+		property="obbligazionePluriennale.esercizio"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
@@ -22,7 +22,7 @@
 		label="Esercizio dell'obbligazione" />
 	<fieldProperty
 		name="esercizioOriginale"
-		property="esercizioOriginale"
+		property="obbligazionePluriennale.esercizioOriginale"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
@@ -32,7 +32,7 @@
 		label="Esercizio Originale dell'obbligazione" />
 	<fieldProperty
 		name="pgObbligazione"
-		property="pgObbligazione"
+		property="obbligazionePluriennale.pgObbligazione"
 		inputType="TEXTAREA"
 		cols="60"
 		rows="5"
@@ -43,7 +43,7 @@
 		label="Numero dell'obbligazione" />
 	<fieldProperty
 		name="anno"
-		property="anno"
+		property="obbligazionePluriennale.anno"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
