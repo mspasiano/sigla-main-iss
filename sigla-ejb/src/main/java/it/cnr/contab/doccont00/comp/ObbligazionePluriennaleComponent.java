@@ -24,10 +24,9 @@
 package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
-import it.cnr.contab.doccont00.core.bulk.ObbligazioneBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleBulk;
-import it.cnr.contab.doccont00.core.bulk.Obbligazione_pluriennaleHome;
+import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.persistency.sql.ApplicationPersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
@@ -55,7 +54,8 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			sql.addClause(FindClause.AND, "esercizio_rif", SQLBuilder.ISNOTNULL, null);
 			sql.addClause(FindClause.AND, "esercizio_originale_rif", SQLBuilder.ISNOTNULL, null);
 			sql.addClause(FindClause.AND, "pg_obbligazione_rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "pg_obbligazione", SQLBuilder.EQUALS, 4320);
+
 
 
 
@@ -65,7 +65,13 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 		}
 	}
 	public ObbligazioneBulk createObbligazioneNew(UserContext uc, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws it.cnr.jada.comp.ComponentException {
-		return null;
+		try {
+			Obbligazione_pluriennaleHome pluriennaleHome = (Obbligazione_pluriennaleHome) getHome(uc, Obbligazione_pluriennaleBulk.class);
+			pluriennaleBulk.setRigheVoceColl(new BulkList(pluriennaleHome.findObbligazioniPluriennaliVoce(uc, pluriennaleBulk)));
+			return null;
+		}catch(Exception e )
+			{
+				throw handleException(e);
+		}
 	}
-
 }
