@@ -18,9 +18,20 @@
 package it.cnr.contab.config00.bulk;
 
 import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
+import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.Utility;
+import it.cnr.jada.UserContext;
+import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.comp.ComponentException;
+import it.cnr.jada.util.ejb.EJBCommonServices;
 
+import java.rmi.RemoteException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class Configurazione_cnrBulk extends Configurazione_cnrBase {
 
@@ -287,5 +298,39 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
         else if (fieldNumber==4)
             return this.getVal04();
         return null;
+    }
+
+    public static void stepFineAnno(UserContext context, StepFineAnno stepFineAnno) throws BusinessProcessException {
+        try {
+            final Configurazione_cnrBulk configurazione = Utility
+                    .createConfigurazioneCnrComponentSession()
+                    .getConfigurazione(
+                            context,
+                            CNRUserContext.getEsercizio(context),
+                            "*",
+                            Configurazione_cnrBulk.PK_STEP_FINE_ANNO,
+                            stepFineAnno.value()
+                    );
+            if (Optional.ofNullable(configurazione).isPresent()) {
+                final Optional<LocalDateTime> dataFineEvasione = Optional.ofNullable(configurazione.getDt01())
+                        .map(timestamp -> timestamp.toLocalDateTime());
+                if (dataFineEvasione
+                        .filter(localDateTime ->
+                                Optional.ofNullable(configurazione.getVal02())
+                                    .filter(s -> s.equalsIgnoreCase("Y") || s.equalsIgnoreCase("T"))
+                                        .isPresent()
+                        )
+                        .map(d -> d.isBefore(EJBCommonServices.getServerTimestamp().toLocalDateTime()))
+                        .isPresent()) {
+                    throw new ApplicationMessageFormatException(
+                            "La funzione è bloccata per l''anno {0} dal {1}",
+                            String.valueOf(CNRUserContext.getEsercizio(context)),
+                            dataFineEvasione.get().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                    );
+                }
+            }
+        } catch (ComponentException | RemoteException e) {
+            throw new BusinessProcessException(e);
+        }
     }
 }
