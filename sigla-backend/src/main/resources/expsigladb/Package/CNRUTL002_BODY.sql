@@ -906,6 +906,7 @@ If INGEST = 'S' And INES > Nvl(INESRES, INES-1) Then -- OBBLIGAZIONI/IMPEGNI RES
    If PGIRO = 'Y' Then
       TIPOLOGIA1 := 'OBB_PGIR_R';
       TIPOLOGIA2 := 'IMP_RES';
+      TIPOLOGIA3 := 'OBB_RES';
    Else
       If INCDR = cnrctb020.getCdCdrEnte Then
           TIPOLOGIA1 := 'IMP_RES';
@@ -1228,6 +1229,7 @@ If INGEST = 'S' Then
      If PGIRO = 'Y' Then
          TIPOLOGIA1 := 'OBB_PGIR_R';
          TIPOLOGIA2 := 'IMP_RES';
+         TIPOLOGIA3 := 'OBB_RES';
      Else
          If INCDR = cnrctb020.getCdCdrEnte Then
              TIPOLOGIA1 := 'IMP_RES';
