@@ -68,6 +68,13 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 		try {
 			Obbligazione_pluriennaleHome pluriennaleHome = (Obbligazione_pluriennaleHome) getHome(uc, Obbligazione_pluriennaleBulk.class);
 			pluriennaleBulk.setRigheVoceColl(new BulkList(pluriennaleHome.findObbligazioniPluriennaliVoce(uc, pluriennaleBulk)));
+			ObbligazioneHome obbligazioneHome = (ObbligazioneHome) getHome(uc, ObbligazioneBulk.class);
+			 ObbligazioneBulk obbligazioneBulk =obbligazioneHome.findObbligazione(new ObbligazioneOrdBulk(pluriennaleBulk.getCdCds(),
+																		pluriennaleBulk.getEsercizio(),
+																	pluriennaleBulk.getEsercizioOriginale(),
+																	pluriennaleBulk.getPgObbligazione()));
+			ObbligazioneBulk obbligazioneBulkNew =( ObbligazioneBulk) obbligazioneBulk.clone();
+
 			return null;
 		}catch(Exception e )
 			{
