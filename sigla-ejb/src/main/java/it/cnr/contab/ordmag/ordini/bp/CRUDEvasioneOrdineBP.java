@@ -19,9 +19,13 @@ package it.cnr.contab.ordmag.ordini.bp;
 
 import java.math.BigDecimal;
 import java.rmi.RemoteException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
+import it.cnr.contab.config00.bulk.Configurazione_cnrBulk;
 import it.cnr.contab.ordmag.anag00.MagazzinoBulk;
 import it.cnr.contab.ordmag.anag00.NumerazioneMagBulk;
 import it.cnr.contab.ordmag.anag00.TipoOperazioneOrdBulk;
@@ -32,15 +36,20 @@ import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
 import it.cnr.contab.ordmag.ordini.ejb.EvasioneOrdineComponentSession;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
+import it.cnr.contab.util.ApplicationMessageFormatException;
+import it.cnr.contab.util.Utility;
 import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
+import it.cnr.jada.action.Config;
 import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.bulk.ValidationException;
+import it.cnr.jada.comp.ApplicationException;
 import it.cnr.jada.comp.ComponentException;
 import it.cnr.jada.util.action.SimpleCRUDBP;
 import it.cnr.jada.util.action.SimpleDetailCRUDController;
+import it.cnr.jada.util.ejb.EJBCommonServices;
 
 /**
  * Gestisce le catene di elementi correlate con il documento in uso.
@@ -279,4 +288,36 @@ public class CRUDEvasioneOrdineBP extends SimpleCRUDBP {
 			});
 		});
 	}
+
+	@Override
+	protected void init(Config config, ActionContext actioncontext) throws BusinessProcessException {
+		super.init(config, actioncontext);
+        try {
+			final Configurazione_cnrBulk configurazione = Utility
+					.createConfigurazioneCnrComponentSession()
+					.getConfigurazione(
+							actioncontext.getUserContext(),
+							CNRUserContext.getEsercizio(actioncontext.getUserContext()),
+							"*",
+							Configurazione_cnrBulk.PK_STEP_FINE_ANNO,
+							Configurazione_cnrBulk.StepFineAnno.FINE_EVASIONE.value()
+					);
+			if (Optional.ofNullable(configurazione).isPresent()) {
+				final Optional<LocalDateTime> dataFineEvasione = Optional.ofNullable(configurazione.getDt01())
+						.map(timestamp -> timestamp.toLocalDateTime());
+				if (dataFineEvasione
+						.filter(localDateTime -> Optional.ofNullable(configurazione.getVal02()).filter(s -> s.equalsIgnoreCase("Y") || s.equalsIgnoreCase("T")).isPresent())
+						.map(d -> d.isBefore(EJBCommonServices.getServerTimestamp().toLocalDateTime()))
+						.isPresent()) {
+					throw new ApplicationMessageFormatException(
+							"La funzione è bloccata per l''anno {0} dal {1}",
+							String.valueOf(CNRUserContext.getEsercizio(actioncontext.getUserContext())),
+							dataFineEvasione.get().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+					);
+				}
+			}
+		} catch (ComponentException|RemoteException e) {
+            throw handleException(e);
+        }
+    }
 }
