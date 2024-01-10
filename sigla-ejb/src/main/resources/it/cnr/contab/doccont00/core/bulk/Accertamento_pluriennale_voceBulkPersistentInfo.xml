@@ -6,21 +6,30 @@
 		tableName="ACCERTAMENTO_PLURIENNALE_VOCE">
 		<columnMapping
 			columnName="CD_CDS"
-			propertyName="accertamentoPluriennale.cd_cds" />
+			propertyName="accertamentoPluriennale.accertamento.cds.cd_unita_organizzativa" />
 		<columnMapping
 			columnName="ESERCIZIO"
-			propertyName="accertamentoPluriennale.esercizio" />
+			propertyName="accertamentoPluriennale.accertamento.esercizio" />
 		<columnMapping
 			columnName="ESERCIZIO_ORIGINALE"
-			propertyName="accertamentoPluriennale.esercizio_originale" />
+			propertyName="accertamentoPluriennale.accertamento.esercizio_originale" />
 		<columnMapping
 			columnName="PG_ACCERTAMENTO"
-			propertyName="accertamentoPluriennale.pg_accertamento" />
+			propertyName="accertamentoPluriennale.accertamento.pg_accertamento" />
 		<columnMapping
 			columnName="ANNO"
 			propertyName="accertamentoPluriennale.anno" />
+		<columnMapping
+				columnName="CD_CENTRO_RESPONSABILITA"
+				propertyName="linea_attivita.centro_responsabilita.cd_centro_responsabilita"/>
+		<columnMapping
+				columnName="CD_LINEA_ATTIVITA"
+				propertyName="linea_attivita.cd_linea_attivita"/>
 	</defaultColumnMap>
 	<persistentProperty
 		name="accertamentoPluriennale"
 		partOfOid="true" />
+	<persistentProperty
+			name="linea_attivita"
+			partOfOid="true" />
 </SQLPersistentInfo>

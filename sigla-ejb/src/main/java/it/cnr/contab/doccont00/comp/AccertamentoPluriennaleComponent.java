@@ -23,10 +23,9 @@
  */
 package it.cnr.contab.doccont00.comp;
 
-import it.cnr.contab.doccont00.core.bulk.AccertamentoBulk;
-import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleBulk;
-import it.cnr.contab.doccont00.core.bulk.Accertamento_pluriennaleHome;
+import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.jada.UserContext;
+import it.cnr.jada.bulk.BulkList;
 import it.cnr.jada.persistency.sql.ApplicationPersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
@@ -50,16 +49,43 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			Accertamento_pluriennaleHome accertamento_pluriennaleHome = ( Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
 			SQLBuilder sql = accertamento_pluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
-			sql.addClause(FindClause.AND, "cd_cds__rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "esercizio_rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "esercizio_originale_rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "pg_accertamento_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "cdCdsRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "pgAccertamentoRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "pgAccertamento", SQLBuilder.EQUALS, 2086);
 			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
 	}
 	public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk accertamentoPluriennaleBulk) throws it.cnr.jada.comp.ComponentException {
-		return null;
+		try {
+			Accertamento_pluriennaleHome pluriennaleHome = (Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
+			AccertamentoHome accertamentoHome = (AccertamentoHome) getHome(uc, AccertamentoBulk.class);
+			accertamentoPluriennaleBulk.setRigheVoceColl(new BulkList(pluriennaleHome.findAccertamentiPluriennaliVoce(uc, accertamentoPluriennaleBulk)));
+
+			AccertamentoBulk accertamentoBulk =accertamentoHome.findAccertamento(new AccertamentoBulk(accertamentoPluriennaleBulk.getCdCds(),
+					accertamentoPluriennaleBulk.getEsercizio(),
+					accertamentoPluriennaleBulk.getEsercizioOriginale(),
+					accertamentoPluriennaleBulk.getPgAccertamento()));
+			AccertamentoBulk newAccertamentoBulk =( AccertamentoBulk) accertamentoBulk.clone();
+			AccertamentoBulk accertamentoRifBulk = new AccertamentoBulk(accertamentoPluriennaleBulk.getCdCds(),2023,2023,2086L);
+			accertamentoPluriennaleBulk.setAccertamentoRif(accertamentoRifBulk);
+			//accertamentoPluriennaleBulk.setAccertamentoRif(2023);
+			//accertamentoPluriennaleBulk.setCdCdsRif(accertamentoPluriennaleBulk.getCdCds());
+			//accertamentoPluriennaleBulk.setEsercizioOriginaleRif(2023);
+			//accertamentoPluriennaleBulk.setPgAccertamentoRif(2086L);
+			//aggiornamento riferimento accertamente creato
+			//pluriennaleHome.update(accertamentoPluriennaleBulk,uc);
+
+
+
+
+			return null;
+		}catch(Exception e )
+		{
+			throw handleException(e);
+		}
 	}
 }

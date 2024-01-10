@@ -50,10 +50,10 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			Obbligazione_pluriennaleHome obbligazionePluriennaleHome = ( Obbligazione_pluriennaleHome) getHome(uc, Obbligazione_pluriennaleBulk.class);
 			SQLBuilder sql = obbligazionePluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
-			sql.addClause(FindClause.AND, "cd_cds__rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "esercizio_rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "esercizio_originale_rif", SQLBuilder.ISNOTNULL, null);
-			sql.addClause(FindClause.AND, "pg_obbligazione_rif", SQLBuilder.ISNOTNULL, null);
+			sql.addClause(FindClause.AND, "cdCdsRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
+			sql.addClause(FindClause.AND, "pgObbligazioneRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgObbligazione", SQLBuilder.EQUALS, 4320);
 
 			return obbligazionePluriennaleHome.fetchAll(sql);
@@ -71,6 +71,8 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 																	pluriennaleBulk.getEsercizioOriginale(),
 																	pluriennaleBulk.getPgObbligazione()));
 			ObbligazioneBulk obbligazioneBulkNew =( ObbligazioneBulk) obbligazioneBulk.clone();
+			//aggiornamento riferimento obbligazione creata
+			//pluriennaleHome.update(pluriennaleBulk,uc);
 
 			return null;
 		}catch(Exception e )

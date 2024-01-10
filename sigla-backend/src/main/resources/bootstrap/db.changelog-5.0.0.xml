@@ -6054,6 +6054,8 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/update_albero_main_view_saldi_piano_eco_prg.xml"/>
     <!-- Autore : CIRO SALVIO - Schedulazione ribaltamento Obbligazione e Accertamenti Pluriennali-->
     <include file="bootstrap/add_rib_pluriennali_schedulazione.xml"/>
-
-
+    <!-- Autore : CIRO SALVIO - Aggiunta FK linea attivita per tab Accertamenti Obbligazione voce-->
+    <include file="bootstrap/add_fk_linea_attivita_tab_obbligazione_pluriennale_voce.xml"/>
+    <!-- Autore : CIRO SALVIO - Aggiunta FK linea attivita e Accertamento Pluriennale per tab Accertamenti Pluriennali voce-->
+    <include file="bootstrap/add_fk_linea_attivita_tab_accertamento_pluriennale_voce.xml"/>
 </databaseChangeLog>

@@ -2,7 +2,7 @@
 <bulkInfo>
 	<fieldProperty
 		name="cdCds"
-		property="cdCds"
+		property="accertamentoPluriennale.accertamento.cds.cd_unita_organizzativa"
 		inputType="TEXT"
 		inputSize="30"
 		maxLength="30"
@@ -12,7 +12,7 @@
 		label="Cds dell'accertamento" />
 	<fieldProperty
 		name="esercizio"
-		property="esercizio"
+		property="accertamentoPluriennale.accertamento.esercizio"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
@@ -22,7 +22,7 @@
 		label="Esercizio dell'accertamento" />
 	<fieldProperty
 		name="esercizioOriginale"
-		property="esercizioOriginale"
+		property="accertamentoPluriennale.accertamento.esercizioOriginale"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
@@ -32,7 +32,7 @@
 		label="Esercizio Originale dell'accertamento" />
 	<fieldProperty
 		name="pgAccertamento"
-		property="pgAccertamento"
+		property="accertamentoPluriennale.accertamento.pgAccertamento"
 		inputType="TEXTAREA"
 		cols="60"
 		rows="5"
@@ -43,7 +43,7 @@
 		label="Numero dell'accertamento" />
 	<fieldProperty
 		name="anno"
-		property="anno"
+		property="accertamentoPluriennale.anno"
 		inputType="TEXT"
 		inputSize="5"
 		maxLength="5"
@@ -53,7 +53,7 @@
 		label="Anno Accertamento Pluriennale" />
 	<fieldProperty
 		name="cdCentroResponsabilita"
-		property="cdCentroResponsabilita"
+		property="linea_attivita.centro_responsabilita.cd_centro_responsabilita"
 		inputType="TEXT"
 		inputSize="30"
 		maxLength="30"
@@ -63,7 +63,7 @@
 		label="Codice identificativo del centro di responsabilità" />
 	<fieldProperty
 		name="cdLineaAttivita"
-		property="cdLineaAttivita"
+		property="linea_attivita.cd_linea_attivita"
 		inputType="TEXT"
 		inputSize="10"
 		maxLength="10"
