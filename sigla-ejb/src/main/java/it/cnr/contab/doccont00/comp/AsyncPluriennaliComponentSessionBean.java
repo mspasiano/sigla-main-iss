@@ -105,7 +105,7 @@ public class AsyncPluriennaliComponentSessionBean extends it.cnr.jada.ejb.CRUDCo
 								concat(obbligazione.getCdCds()).concat("/").
 								concat(obbligazione.getEsercizio().toString()).concat("/").
 								concat(obbligazione.getEsercizioOriginale().toString()));
-						session.createObbligazioneNew(param0, obbligazione,gaeIniziale);
+						session.createObbligazioneNew(param0, obbligazione,esercizio,gaeIniziale);
 						listInsert.add("X");
 					} catch (Throwable e) {
 						listError.add("X");
@@ -223,7 +223,7 @@ public class AsyncPluriennaliComponentSessionBean extends it.cnr.jada.ejb.CRUDCo
 								concat(accertamento.getCdCds()).concat("/").
 								concat(accertamento.getEsercizio().toString()).concat("/").
 								concat(accertamento.getEsercizioOriginale().toString()));
-						session.createAccertamentoNew(param0, accertamento);
+						session.createAccertamentoNew(param0, esercizio,accertamento);
 						listInsert.add("X");
 					} catch (Throwable e) {
 						listError.add("X");

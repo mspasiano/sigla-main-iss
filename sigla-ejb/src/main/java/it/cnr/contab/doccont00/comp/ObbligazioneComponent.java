@@ -18,7 +18,6 @@
 package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.anagraf00.core.bulk.*;
-import it.cnr.contab.coepcoan00.comp.ScritturaPartitaDoppiaComponent;
 import it.cnr.contab.config00.bulk.*;
 import it.cnr.contab.config00.contratto.bulk.Ass_contratto_uoBulk;
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;

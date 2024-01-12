@@ -756,10 +756,11 @@ public class TransactionalAccertamentoPluriennaleComponentSession extends it.cnr
     }
 
     @Override
-    public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk pluriennaleBulk) throws ComponentException,RemoteException {
+    public AccertamentoBulk createAccertamentoNew(UserContext uc, Integer esercizio,Accertamento_pluriennaleBulk pluriennaleBulk) throws ComponentException,RemoteException {
         try {
             return (AccertamentoBulk) invoke("createAccertamentoNew",new Object[] {
                     uc,
+                    esercizio,
                     pluriennaleBulk });
         } catch(RemoteException e) {
             throw e;

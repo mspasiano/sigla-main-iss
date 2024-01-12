@@ -29,5 +29,5 @@ import java.util.List;
 public interface AccertamentoPluriennaleComponentSession extends AccertamentoComponentSession {
     List<Accertamento_pluriennaleBulk> findAccertamentiPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException, RemoteException;
 
-    public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk pluriennaleBulk) throws it.cnr.jada.comp.ComponentException, RemoteException;
+    public AccertamentoBulk createAccertamentoNew(UserContext uc, Integer esercizio,Accertamento_pluriennaleBulk pluriennaleBulk) throws it.cnr.jada.comp.ComponentException, RemoteException;
 }

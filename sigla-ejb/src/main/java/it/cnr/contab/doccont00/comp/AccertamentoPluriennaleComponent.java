@@ -59,7 +59,7 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
 	}
-	public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk accertamentoPluriennaleBulk) throws it.cnr.jada.comp.ComponentException {
+	public AccertamentoBulk createAccertamentoNew(UserContext uc, Integer esercizio,Accertamento_pluriennaleBulk accertamentoPluriennaleBulk) throws it.cnr.jada.comp.ComponentException {
 		try {
 			Accertamento_pluriennaleHome pluriennaleHome = (Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
 			AccertamentoHome accertamentoHome = (AccertamentoHome) getHome(uc, AccertamentoBulk.class);

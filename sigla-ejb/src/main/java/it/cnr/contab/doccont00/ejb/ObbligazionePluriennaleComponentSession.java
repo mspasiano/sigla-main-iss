@@ -31,5 +31,5 @@ import java.util.List;
 public interface ObbligazionePluriennaleComponentSession extends ObbligazioneComponentSession {
     List<Obbligazione_pluriennaleBulk> findObbligazioniPluriennali(UserContext uc, int esercizio) throws it.cnr.jada.comp.ComponentException, RemoteException;
 
-    ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException;
+    ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, Integer esercizio,WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException;
 }

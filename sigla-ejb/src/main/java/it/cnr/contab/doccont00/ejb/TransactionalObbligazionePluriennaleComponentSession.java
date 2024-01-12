@@ -958,11 +958,12 @@ public void callRiportaIndietroRequiresNew(UserContext param0, it.cnr.contab.doc
 	}
 
 	@Override
-	public ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
+	public ObbligazioneBulk createObbligazioneNew(UserContext usercontext, Obbligazione_pluriennaleBulk pluriennaleBulk, Integer esercizio,WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
 		try {
 			return (ObbligazioneBulk)invoke("createObbligazioneNew",new Object[] {
 					usercontext,
 					pluriennaleBulk,
+					esercizio,
 					gaeIniziale});
 		} catch(RemoteException e) {
 			throw e;

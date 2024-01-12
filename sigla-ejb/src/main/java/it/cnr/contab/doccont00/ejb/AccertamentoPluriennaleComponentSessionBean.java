@@ -62,10 +62,10 @@ public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws java
 
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public AccertamentoBulk createAccertamentoNew(UserContext uc, Accertamento_pluriennaleBulk pluriennaleBulk) throws ComponentException {
+	public AccertamentoBulk createAccertamentoNew(UserContext uc, Integer esercizio, Accertamento_pluriennaleBulk pluriennaleBulk) throws ComponentException {
 		pre_component_invocation(uc, componentObj);
 		try {
-			AccertamentoBulk result = ((AccertamentoPluriennaleComponent) componentObj).createAccertamentoNew(uc, pluriennaleBulk);
+			AccertamentoBulk result = ((AccertamentoPluriennaleComponent) componentObj).createAccertamentoNew(uc, esercizio,pluriennaleBulk);
 			component_invocation_succes(uc, componentObj);
 			return result;
 		} catch (it.cnr.jada.comp.NoRollbackException e) {

@@ -63,10 +63,10 @@ public static it.cnr.jada.ejb.CRUDComponentSessionBean newInstance() throws java
 
 	@Override
 	@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-	public ObbligazioneBulk createObbligazioneNew(UserContext uc, Obbligazione_pluriennaleBulk pluriennaleBulk, WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
+	public ObbligazioneBulk createObbligazioneNew(UserContext uc, Obbligazione_pluriennaleBulk pluriennaleBulk, Integer esercizio,WorkpackageBulk gaeIniziale) throws ComponentException, RemoteException {
 		pre_component_invocation(uc, componentObj);
 		try {
-			ObbligazioneBulk result = ((ObbligazionePluriennaleComponent) componentObj).createObbligazioneNew(uc, pluriennaleBulk,gaeIniziale);
+			ObbligazioneBulk result = ((ObbligazionePluriennaleComponent) componentObj).createObbligazioneNew(uc, pluriennaleBulk,esercizio,gaeIniziale);
 			component_invocation_succes(uc, componentObj);
 			return result;
 		} catch (it.cnr.jada.comp.NoRollbackException e) {
