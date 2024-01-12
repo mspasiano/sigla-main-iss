@@ -52,7 +52,7 @@ public class AsyncPluriennaliComponentSessionBean extends it.cnr.jada.ejb.CRUDCo
 	@Asynchronous
 	public void asyncCreatePluriennali(UserContext uc, Integer esercizio, WorkpackageBulk gaeIniziale) throws ComponentException {
 		logger.info("Inizio Creazioni Obbligazione da Pluriennali".concat("esercizio:").concat(esercizio.toString()));
-		createObbligazioniPluriennali( uc,esercizio,gaeIniziale);
+		//createObbligazioniPluriennali( uc,esercizio,gaeIniziale);
 		logger.info("Inizio Creazioni Accertamenti da Pluriennali".concat("esercizio:").concat(esercizio.toString()));
 		createAcceratmentiPluriennali( uc,esercizio,gaeIniziale);
 	}

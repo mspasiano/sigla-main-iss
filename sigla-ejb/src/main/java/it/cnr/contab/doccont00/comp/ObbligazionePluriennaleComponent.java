@@ -85,25 +85,26 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 																	pluriennaleBulk.getPgObbligazione()));
 			ObbligazioneBulk obbligazioneBulkNew =( ObbligazioneBulk) obbligazioneBulk.clone();
 			obbligazioneBulkNew.setCrudStatus(OggettoBulk.TO_BE_CREATED);
-			obbligazioneBulkNew.setCreditore(obbligazioneBulk.getCreditore());
+			//obbligazioneBulkNew.setCreditore(obbligazioneBulk.getCreditore());
 			obbligazioneBulkNew.setElemento_voce((Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(obbligazioneBulkNew.getElemento_voce()));
 			obbligazioneBulkNew = listaCapitoliPerCdsVoce(uc, obbligazioneBulkNew);
 			obbligazioneBulkNew.setCapitoliDiSpesaCdsSelezionatiColl(obbligazioneBulkNew.getCapitoliDiSpesaCdsColl());
-			obbligazioneBulkNew.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(obbligazioneBulkNew.getContratto())));
+			if ( obbligazioneBulkNew.getContratto()!= null  && obbligazioneBulkNew.getContratto().getPg_progetto() !=null && obbligazioneBulkNew.getContratto().getPg_progetto()>0)
+				obbligazioneBulkNew.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(obbligazioneBulkNew.getContratto())));
 			obbligazioneBulkNew.setCds((CdsBulk) getHome(uc, CdsBulk.class).findByPrimaryKey(obbligazioneBulkNew.getCds()));
 			obbligazioneBulkNew.setPg_obbligazione(null);
 			obbligazioneBulkNew.setEsercizio(esercizio);
 			obbligazioneBulkNew.setEsercizio_originale(esercizio);
 			obbligazioneBulkNew.setIm_obbligazione(pluriennaleBulk.getImporto());
-			obbligazioneBulkNew.setUtcr(uc.getUser());
-			obbligazioneBulkNew.setUtcr(uc.getUser());
+			//obbligazioneBulkNew.setUtcr(uc.getUser());
+			//obbligazioneBulkNew.setUtcr(uc.getUser());
 			obbligazioneBulkNew.setPg_ver_rec(null);
 			obbligazioneBulkNew.setStato_obbligazione(ObbligazioneBulk.STATO_OBB_DEFINITIVO);
 			obbligazioneBulkNew.setEsercizio_competenza(esercizio);
 
 			obbligazioneBulkNew.setCdrColl( listaCdrPerCapitoli( uc,  obbligazioneBulkNew));
 			obbligazioneBulkNew.setLineeAttivitaColl( listaLineeAttivitaPerCapitoliCdr( uc,  obbligazioneBulkNew));
-			obbligazioneBulkNew.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+			//obbligazioneBulkNew.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
 
 
 			//scadenza

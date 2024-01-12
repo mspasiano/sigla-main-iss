@@ -23,13 +23,17 @@
  */
 package it.cnr.contab.doccont00.comp;
 
+import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
+import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkList;
+import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.persistency.sql.ApplicationPersistencyException;
 import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -70,19 +74,50 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 					accertamentoPluriennaleBulk.getEsercizioOriginale(),
 					accertamentoPluriennaleBulk.getPgAccertamento()));
 			AccertamentoBulk newAccertamentoBulk =( AccertamentoBulk) accertamentoBulk.clone();
-			AccertamentoBulk accertamentoRifBulk = new AccertamentoBulk(accertamentoPluriennaleBulk.getCdCds(),2023,2023,2086L);
-			accertamentoPluriennaleBulk.setAccertamentoRif(accertamentoRifBulk);
-			//accertamentoPluriennaleBulk.setAccertamentoRif(2023);
-			//accertamentoPluriennaleBulk.setCdCdsRif(accertamentoPluriennaleBulk.getCdCds());
-			//accertamentoPluriennaleBulk.setEsercizioOriginaleRif(2023);
-			//accertamentoPluriennaleBulk.setPgAccertamentoRif(2086L);
+			WorkpackageBulk lineaAttivita = (WorkpackageBulk) getHome(uc, WorkpackageBulk.class).findByPrimaryKey(accertamentoPluriennaleBulk.getRigheVoceColl().get(0).getLinea_attivita());
+			newAccertamentoBulk.setCrudStatus(OggettoBulk.TO_BE_CREATED);
+			newAccertamentoBulk.setPg_accertamento(null);
+			newAccertamentoBulk.setEsercizio(esercizio);
+			newAccertamentoBulk.setEsercizio_originale(esercizio);
+			newAccertamentoBulk.setCd_tipo_documento_cont(Numerazione_doc_contBulk.TIPO_ACR);
+			//Elemento_voceBulk voce = (Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(accertamentoBulk.getCd_elemento_voce());
+			//newAccertamentoBulk.setCapitolo(new V_voce_f_partita_giroBulk(voce.getCd_voce(), voce.getEsercizio(), voce.getTi_appartenenza(), voce.getTi_gestione()));
+
+			if ( newAccertamentoBulk.getContratto()!= null && newAccertamentoBulk.getContratto().getPg_contratto()!=null && newAccertamentoBulk.getContratto().getPg_contratto()>0)
+				newAccertamentoBulk.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(newAccertamentoBulk.getContratto())));
+			else
+				newAccertamentoBulk.setContratto( null);
+			//newAccertamentoBulk.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+			newAccertamentoBulk.setIm_accertamento(accertamentoPluriennaleBulk.getImporto());
+			newAccertamentoBulk.setEsercizio_competenza(esercizio);
+			Accertamento_scadenzarioBulk acc_scadenza = new Accertamento_scadenzarioBulk();
+			acc_scadenza.setUtcr(newAccertamentoBulk.getUtcr());
+			acc_scadenza.setToBeCreated();
+
+			acc_scadenza.setAccertamento(newAccertamentoBulk);
+			acc_scadenza.setDt_scadenza_incasso(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+			acc_scadenza.setDs_scadenza(newAccertamentoBulk.getDs_accertamento());
+			newAccertamentoBulk.addToAccertamento_scadenzarioColl(acc_scadenza);
+			acc_scadenza.setIm_scadenza(newAccertamentoBulk.getIm_accertamento());
+			acc_scadenza.setIm_associato_doc_amm(newAccertamentoBulk.getIm_accertamento());
+			acc_scadenza.setIm_associato_doc_contabile(new BigDecimal(0));
+
+			Accertamento_scad_voceBulk acc_scad_voce = new Accertamento_scad_voceBulk();
+			//acc_scad_voce.setUtcr(testata.getUtcr());
+			acc_scad_voce.setToBeCreated();
+			acc_scad_voce.setAccertamento_scadenzario(acc_scadenza);
+			acc_scad_voce.setIm_voce(newAccertamentoBulk.getIm_accertamento());
+
+			acc_scad_voce.setLinea_attivita(lineaAttivita);
+
+			acc_scadenza.getAccertamento_scad_voceColl().add((acc_scad_voce));
+
+			inizializzaBulkPerInserimento(uc,newAccertamentoBulk);
+			newAccertamentoBulk = (AccertamentoBulk)creaConBulk(uc, newAccertamentoBulk);
+			accertamentoPluriennaleBulk.setAccertamentoRif(newAccertamentoBulk);
 			//aggiornamento riferimento accertamente creato
-			//pluriennaleHome.update(accertamentoPluriennaleBulk,uc);
-
-
-
-
-			return null;
+			pluriennaleHome.update(accertamentoPluriennaleBulk,uc);
+			return newAccertamentoBulk;
 		}catch(Exception e )
 		{
 			throw handleException(e);
