@@ -35,6 +35,7 @@ import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author rpagano
@@ -82,11 +83,9 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			newAccertamentoBulk.setCd_tipo_documento_cont(Numerazione_doc_contBulk.TIPO_ACR);
 			//Elemento_voceBulk voce = (Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(accertamentoBulk.getCd_elemento_voce());
 			//newAccertamentoBulk.setCapitolo(new V_voce_f_partita_giroBulk(voce.getCd_voce(), voce.getEsercizio(), voce.getTi_appartenenza(), voce.getTi_gestione()));
-
-			if ( newAccertamentoBulk.getContratto()!= null && newAccertamentoBulk.getContratto().getPg_contratto()!=null && newAccertamentoBulk.getContratto().getPg_contratto()>0)
+			if ( Optional.ofNullable(newAccertamentoBulk.getContratto()).map(ContrattoBulk::getPg_progetto).isPresent())
 				newAccertamentoBulk.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(newAccertamentoBulk.getContratto())));
-			else
-				newAccertamentoBulk.setContratto( null);
+
 			//newAccertamentoBulk.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
 			newAccertamentoBulk.setIm_accertamento(accertamentoPluriennaleBulk.getImporto());
 			newAccertamentoBulk.setEsercizio_competenza(esercizio);

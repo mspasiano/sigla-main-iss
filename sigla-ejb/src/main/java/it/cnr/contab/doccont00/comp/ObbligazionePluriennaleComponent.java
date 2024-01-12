@@ -41,6 +41,7 @@ import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author rpagano
@@ -89,7 +90,7 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			obbligazioneBulkNew.setElemento_voce((Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(obbligazioneBulkNew.getElemento_voce()));
 			obbligazioneBulkNew = listaCapitoliPerCdsVoce(uc, obbligazioneBulkNew);
 			obbligazioneBulkNew.setCapitoliDiSpesaCdsSelezionatiColl(obbligazioneBulkNew.getCapitoliDiSpesaCdsColl());
-			if ( obbligazioneBulkNew.getContratto()!= null  && obbligazioneBulkNew.getContratto().getPg_progetto() !=null && obbligazioneBulkNew.getContratto().getPg_progetto()>0)
+			if ( Optional.ofNullable(obbligazioneBulkNew.getContratto()).map(ContrattoBulk::getPg_progetto).isPresent())
 				obbligazioneBulkNew.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(obbligazioneBulkNew.getContratto())));
 			obbligazioneBulkNew.setCds((CdsBulk) getHome(uc, CdsBulk.class).findByPrimaryKey(obbligazioneBulkNew.getCds()));
 			obbligazioneBulkNew.setPg_obbligazione(null);
