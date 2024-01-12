@@ -34,8 +34,10 @@ import it.cnr.jada.persistency.sql.FindClause;
 import it.cnr.jada.persistency.sql.SQLBuilder;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * @author rpagano
@@ -54,10 +56,12 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			Accertamento_pluriennaleHome accertamento_pluriennaleHome = ( Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
 			SQLBuilder sql = accertamento_pluriennaleHome.createSQLBuilder();
 			sql.addClause(FindClause.AND, "anno", SQLBuilder.EQUALS, esercizio);
+			sql.addClause(FindClause.AND, "esercizio", SQLBuilder.EQUALS, esercizio-1);
 			sql.addClause(FindClause.AND, "cdCdsRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgAccertamentoRif", SQLBuilder.ISNULL, null);
+
 			sql.addClause(FindClause.AND, "pgAccertamento", SQLBuilder.EQUALS, 2086);
 			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
@@ -74,6 +78,8 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 					accertamentoPluriennaleBulk.getEsercizio(),
 					accertamentoPluriennaleBulk.getEsercizioOriginale(),
 					accertamentoPluriennaleBulk.getPgAccertamento()));
+
+
 			AccertamentoBulk newAccertamentoBulk =( AccertamentoBulk) accertamentoBulk.clone();
 			WorkpackageBulk lineaAttivita = (WorkpackageBulk) getHome(uc, WorkpackageBulk.class).findByPrimaryKey(accertamentoPluriennaleBulk.getRigheVoceColl().get(0).getLinea_attivita());
 			newAccertamentoBulk.setCrudStatus(OggettoBulk.TO_BE_CREATED);
@@ -83,10 +89,10 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			newAccertamentoBulk.setCd_tipo_documento_cont(Numerazione_doc_contBulk.TIPO_ACR);
 			//Elemento_voceBulk voce = (Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(accertamentoBulk.getCd_elemento_voce());
 			//newAccertamentoBulk.setCapitolo(new V_voce_f_partita_giroBulk(voce.getCd_voce(), voce.getEsercizio(), voce.getTi_appartenenza(), voce.getTi_gestione()));
-			if ( Optional.ofNullable(newAccertamentoBulk.getContratto()).map(ContrattoBulk::getPg_progetto).isPresent())
+			if ( Optional.ofNullable(newAccertamentoBulk.getContratto()).map(ContrattoBulk::getPg_contratto).isPresent())
 				newAccertamentoBulk.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(newAccertamentoBulk.getContratto())));
 
-			//newAccertamentoBulk.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
+			newAccertamentoBulk.setDt_registrazione(it.cnr.jada.util.ejb.EJBCommonServices.getServerDate());
 			newAccertamentoBulk.setIm_accertamento(accertamentoPluriennaleBulk.getImporto());
 			newAccertamentoBulk.setEsercizio_competenza(esercizio);
 			Accertamento_scadenzarioBulk acc_scadenza = new Accertamento_scadenzarioBulk();
@@ -110,8 +116,33 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			acc_scad_voce.setLinea_attivita(lineaAttivita);
 
 			acc_scadenza.getAccertamento_scad_voceColl().add((acc_scad_voce));
+			//aggiungi pluriennali anni successivi
+			List<Accertamento_pluriennaleBulk> accPluriennali =
+					(	( List<Accertamento_pluriennaleBulk>)Optional.ofNullable(accertamentoHome.findAccertamentiPluriennali(uc,accertamentoBulk)).
+							orElse(new ArrayList<Accertamento_pluriennaleBulk>())).
+							stream().filter(pl->pl.getAnno().compareTo(esercizio)>0).collect(Collectors.toList());
 
-			inizializzaBulkPerInserimento(uc,newAccertamentoBulk);
+			for ( Accertamento_pluriennaleBulk pluriennale:accPluriennali){
+				Accertamento_pluriennaleBulk newAccPluriennale= new Accertamento_pluriennaleBulk();
+					newAccPluriennale.setAnno( pluriennale.getAnno());
+				newAccPluriennale.setAccertamento( newAccertamentoBulk);
+				newAccPluriennale.setImporto( pluriennale.getImporto());
+				newAccPluriennale.setToBeCreated();
+				//aggiungi Accertamento Plurinelle voce
+				List<Accertamento_pluriennale_voceBulk> accPluriennaliVoce =
+						(	( List<Accertamento_pluriennale_voceBulk>)Optional.ofNullable(pluriennaleHome.findAccertamentiPluriennaliVoce(uc,newAccPluriennale)).
+								orElse(new ArrayList<Accertamento_pluriennale_voceBulk>()));
+				for (Accertamento_pluriennale_voceBulk pluriennaleVoceBulk : accPluriennaliVoce){
+					Accertamento_pluriennale_voceBulk newAccertamentoPluriennaleVoce = new Accertamento_pluriennale_voceBulk();
+						newAccertamentoPluriennaleVoce.setAccertamentoPluriennale( newAccPluriennale);
+						newAccertamentoPluriennaleVoce.setLinea_attivita( pluriennaleVoceBulk.getLinea_attivita());
+						newAccertamentoPluriennaleVoce.setImporto( pluriennaleVoceBulk.getImporto());
+					newAccertamentoPluriennaleVoce.setToBeCreated();
+				}
+				newAccertamentoBulk.getAccertamentiPluriennali().add( newAccPluriennale);
+			}
+
+			//inizializzaBulkPerInserimento(uc,newAccertamentoBulk);
 			newAccertamentoBulk = (AccertamentoBulk)creaConBulk(uc, newAccertamentoBulk);
 			accertamentoPluriennaleBulk.setAccertamentoRif(newAccertamentoBulk);
 			//aggiornamento riferimento accertamente creato
