@@ -4,6 +4,7 @@
  */
 package it.cnr.contab.doccont00.core.bulk;
 
+import it.cnr.jada.bulk.BulkCollection;
 import it.cnr.jada.bulk.BulkList;
 
 public class Obbligazione_pluriennaleBulk extends Obbligazione_pluriennaleBase {
@@ -14,6 +15,12 @@ public class Obbligazione_pluriennaleBulk extends Obbligazione_pluriennaleBase {
 	private ObbligazioneBulk obbligazioneRif =  new ObbligazioneBulk();
 
 	protected BulkList<Obbligazione_pluriennale_voceBulk> righeVoceColl = new BulkList<Obbligazione_pluriennale_voceBulk>();
+
+	public BulkCollection[] getBulkLists() {
+		// Metti solo le liste di oggetti che devono essere resi persistenti
+		return new it.cnr.jada.bulk.BulkCollection[] {
+				righeVoceColl };
+	}
 	/**
 	 * Created by BulkGenerator 2.0 [07/12/2009]
 	 * Table name: OBBLIGAZIONE_PLURIENNALE

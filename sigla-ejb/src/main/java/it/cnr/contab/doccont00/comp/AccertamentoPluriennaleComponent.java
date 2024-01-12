@@ -68,6 +68,8 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			throw handleException( new ApplicationPersistencyException(e));
 		}
 	}
+
+
 	public AccertamentoBulk createAccertamentoNew(UserContext uc, Integer esercizio,Accertamento_pluriennaleBulk accertamentoPluriennaleBulk) throws it.cnr.jada.comp.ComponentException {
 		try {
 			Accertamento_pluriennaleHome pluriennaleHome = (Accertamento_pluriennaleHome) getHome(uc, Accertamento_pluriennaleBulk.class);
@@ -130,14 +132,16 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 				newAccPluriennale.setToBeCreated();
 				//aggiungi Accertamento Plurinelle voce
 				List<Accertamento_pluriennale_voceBulk> accPluriennaliVoce =
-						(	( List<Accertamento_pluriennale_voceBulk>)Optional.ofNullable(pluriennaleHome.findAccertamentiPluriennaliVoce(uc,newAccPluriennale)).
+						(	( List<Accertamento_pluriennale_voceBulk>)Optional.ofNullable(pluriennaleHome.findAccertamentiPluriennaliVoce(uc,pluriennale)).
 								orElse(new ArrayList<Accertamento_pluriennale_voceBulk>()));
 				for (Accertamento_pluriennale_voceBulk pluriennaleVoceBulk : accPluriennaliVoce){
 					Accertamento_pluriennale_voceBulk newAccertamentoPluriennaleVoce = new Accertamento_pluriennale_voceBulk();
 						newAccertamentoPluriennaleVoce.setAccertamentoPluriennale( newAccPluriennale);
 						newAccertamentoPluriennaleVoce.setLinea_attivita( pluriennaleVoceBulk.getLinea_attivita());
 						newAccertamentoPluriennaleVoce.setImporto( pluriennaleVoceBulk.getImporto());
-					newAccertamentoPluriennaleVoce.setToBeCreated();
+						newAccertamentoPluriennaleVoce.setToBeCreated();
+					newAccPluriennale.getRigheVoceColl().add( newAccertamentoPluriennaleVoce);
+
 				}
 				newAccertamentoBulk.getAccertamentiPluriennali().add( newAccPluriennale);
 			}

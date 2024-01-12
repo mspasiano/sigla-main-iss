@@ -4,6 +4,7 @@
  */
 package it.cnr.contab.doccont00.core.bulk;
 
+import it.cnr.jada.bulk.BulkCollection;
 import it.cnr.jada.bulk.BulkList;
 public class Accertamento_pluriennaleBulk extends Accertamento_pluriennaleBase {
 	/**
@@ -27,6 +28,12 @@ public class Accertamento_pluriennaleBulk extends Accertamento_pluriennaleBase {
 	public Accertamento_pluriennaleBulk(String cdCds, Integer esercizio, Integer esercizioOriginale, Long pgAccertamento, Integer anno) {
 		super(cdCds, esercizio, esercizioOriginale, pgAccertamento, anno);
 		setAccertamento( new AccertamentoBulk(cdCds,esercizio,esercizioOriginale,pgAccertamento) );
+	}
+
+	public BulkCollection[] getBulkLists() {
+		// Metti solo le liste di oggetti che devono essere resi persistenti
+		return new it.cnr.jada.bulk.BulkCollection[] {
+				righeVoceColl };
 	}
 	public AccertamentoBulk getAccertamento() {
 		return accertamento;
