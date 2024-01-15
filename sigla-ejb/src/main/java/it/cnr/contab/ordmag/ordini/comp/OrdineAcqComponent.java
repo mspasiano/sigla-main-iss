@@ -42,8 +42,10 @@ import it.cnr.contab.doccont00.ejb.ObbligazioneComponentSession;
 import it.cnr.contab.doccont00.tabrif.bulk.CupBulk;
 import it.cnr.contab.ordmag.anag00.*;
 import it.cnr.contab.ordmag.ejb.NumeratoriOrdMagComponentSession;
+import it.cnr.contab.ordmag.magazzino.comp.CalcolaImportiMagComponent;
 import it.cnr.contab.ordmag.ordini.bp.ParametriSelezioneOrdiniAcqBP;
 import it.cnr.contab.ordmag.ordini.bulk.*;
+
 import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
 import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
@@ -77,7 +79,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OrdineAcqComponent
-        extends it.cnr.jada.comp.CRUDComponent
+        extends CalcolaImportiMagComponent
         implements ICRUDMgr, Cloneable, Serializable {
 
     public final static String TIPO_TOTALE_COMPLETO = "C";
@@ -206,7 +208,8 @@ public class OrdineAcqComponent
                         parametriCons.setSconto2Ret(cons.getFatturaOrdineBulk().getSconto2Rett());
                         parametriCons.setSconto3Ret(cons.getFatturaOrdineBulk().getSconto3Rett());
                     }
-                    ImportoOrdine importo = calcoloImportoOrdine(parametriCons);
+
+                    ImportoOrdine importo = calcoloImporto(parametriCons);
                     cons.setImImponibile(importo.getImponibile());
                     cons.setImImponibileDivisa(importo.getImponibile());
                     cons.setImIva(importo.getImportoIva());
@@ -296,7 +299,7 @@ public class OrdineAcqComponent
         parametri.setQtaOrd(cons.getQuantita());
         parametri.setArrAliIva(cons.getArrAliIva());
 
-        ImportoOrdine importo = magazzino ? calcoloImportoOrdinePerMagazzino(parametri) : calcoloImportoOrdine(parametri);
+        ImportoOrdine importo = magazzino ? calcoloImportoOrdinePerMagazzino(parametri) : calcoloImporto(parametri);
         fatturaOrdine.setImImponibile(importo.getImponibile());
         fatturaOrdine.setImImponibileDivisa(importo.getImponibile());
         fatturaOrdine.setImIva(importo.getImportoIva());
@@ -1425,7 +1428,7 @@ public class OrdineAcqComponent
         return sql;
     }
 
-    public ImportoOrdine calcoloImportoOrdine(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
+   /* public ImportoOrdine calcoloImportoOrdine(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
         BigDecimal imponibile = calcoloImponibile(parametri);
         Voce_ivaBulk voceIva = null;
         if (parametri.getVoceIvaRet() != null && parametri.getVoceIvaRet().getPercentuale() != null) {
@@ -1467,7 +1470,7 @@ public class OrdineAcqComponent
             importoOrdine.setArrAliIva(BigDecimal.ZERO);
         }
         return importoOrdine;
-    }
+    }*/
 
     public ImportoOrdine calcoloImportoOrdinePerMagazzino(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
         BigDecimal imponibile = calcoloImponibile(parametri);
