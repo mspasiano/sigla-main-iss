@@ -35,7 +35,9 @@ import it.cnr.contab.ordmag.magazzino.comp.MovimentiMagComponent;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
-import it.cnr.contab.ordmag.ordini.comp.EvasioneOrdineComponent;
+
+import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
+import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
@@ -301,5 +303,26 @@ public void annullaMovimento(UserContext userContext, MovimentiMagBulk movimenti
 			throw uncaughtError(userContext,componentObj,e);
 		}
 	}
+
+	@Override
+	public ImportoOrdine calcoloImporto(UserContext userContext, ParametriCalcoloImportoOrdine parametri) throws RemoteException, ComponentException {
+		pre_component_invocation(userContext,componentObj);
+		try {
+			ImportoOrdine result = ((MovimentiMagComponent)componentObj).calcoloImporto(parametri);
+			component_invocation_succes(userContext,componentObj);
+			return result;
+		} catch(it.cnr.jada.comp.NoRollbackException e) {
+			component_invocation_succes(userContext,componentObj);
+			throw e;
+		} catch(ComponentException e) {
+			component_invocation_failure(userContext,componentObj);
+			throw e;
+		} catch(RuntimeException e) {
+			throw uncaughtRuntimeException(userContext,componentObj,e);
+		} catch(Error e) {
+			throw uncaughtError(userContext,componentObj,e);
+		}
+	}
+
 
 }

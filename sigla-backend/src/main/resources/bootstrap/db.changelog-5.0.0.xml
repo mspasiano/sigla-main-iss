@@ -6052,6 +6052,12 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <include file="bootstrap/add_view_saldi_piano_economico_progetto.xml" />
     <!-- Autore : CIRO SALVIO - Spostata estrazione piano economico progetto sotto consultazione progetti-->
     <include file="bootstrap/update_albero_main_view_saldi_piano_eco_prg.xml"/>
+    <!-- Autore : VALENTINA TOMADA - aggiunte colonne cod_iva e im_iva in LOTTO_MAG  -->
+    <include file="bootstrap/add_column_voce_iva_in_lotto_mag.xml"/>
+    <!-- Autore : VALENTINA TOMADA - aggiunte colonne cod_iva e im_iva in MOVIMENTI_MAG  -->
+    <include file="bootstrap/add_column_voce_iva_in_movimenti_mag.xml"/>
+
+
     <!-- Autore : CIRO SALVIO - Schedulazione ribaltamento Obbligazione e Accertamenti Pluriennali-->
     <include file="bootstrap/add_rib_pluriennali_schedulazione.xml"/>
     <!-- Autore : CIRO SALVIO - Aggiunta FK linea attivita per tab Accertamenti Obbligazione voce-->

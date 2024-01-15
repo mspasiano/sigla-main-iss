@@ -31,6 +31,9 @@ import it.cnr.contab.ordmag.magazzino.bulk.ScaricoMagazzinoBulk;
 import it.cnr.contab.ordmag.ordini.bulk.EvasioneOrdineRigaBulk;
 import it.cnr.contab.ordmag.ordini.bulk.FatturaOrdineBulk;
 import it.cnr.contab.ordmag.ordini.bulk.OrdineAcqConsegnaBulk;
+
+import it.cnr.contab.ordmag.ordini.dto.ImportoOrdine;
+import it.cnr.contab.ordmag.ordini.dto.ParametriCalcoloImportoOrdine;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.OggettoBulk;
 import it.cnr.jada.comp.ApplicationException;
@@ -257,6 +260,24 @@ public void annullaMovimento(UserContext userContext, MovimentiMagBulk movimenti
 			return (MovimentiMagBulk) invoke("creaMovimentoRettificaValoreOrdine",new Object[] {
 					userContext,
 					fatturaOrdineBulk});
+		} catch(RemoteException e) {
+			throw e;
+		} catch(java.lang.reflect.InvocationTargetException e) {
+			try {
+				throw e.getTargetException();
+			} catch(ComponentException ex) {
+				throw ex;
+			} catch(Throwable ex) {
+				throw new RemoteException("Uncaugth exception",ex);
+			}
+		}
+	}
+
+	@Override
+	public ImportoOrdine calcoloImporto(UserContext userContext, ParametriCalcoloImportoOrdine parametri) throws RemoteException, ComponentException {
+		try {
+			return (ImportoOrdine) invoke("calcoloImporto",new Object[] {
+					parametri});
 		} catch(RemoteException e) {
 			throw e;
 		} catch(java.lang.reflect.InvocationTargetException e) {
