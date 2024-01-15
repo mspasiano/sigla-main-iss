@@ -67,7 +67,6 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgObbligazioneRif", SQLBuilder.ISNULL, null);
-			sql.addClause(FindClause.AND, "pgObbligazione", SQLBuilder.EQUALS, 2290);
 
 			return obbligazionePluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
@@ -199,10 +198,7 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			//inizializzaBulkPerInserimento(uc,obbligazioneBulkNew);
 			obbligazioneBulkNew= (ObbligazioneBulk) creaConBulk(uc, obbligazioneBulkNew);
 			//aggiornamento riferimento obbligazione creata
-			pluriennaleBulk.setCdCdsRif(obbligazioneBulkNew.getCd_cds());
-			pluriennaleBulk.setEsercizioRif(obbligazioneBulkNew.getEsercizio());
-			pluriennaleBulk.setEsercizioOriginaleRif(obbligazioneBulkNew.getEsercizio_originale());
-			pluriennaleBulk.setPgObbligazioneRif(obbligazioneBulkNew.getPg_obbligazione());
+			pluriennaleBulk.setObbligazioneRif(obbligazioneBulkNew);
 			pluriennaleHome.update(pluriennaleBulk,uc);
 
 			return obbligazioneBulkNew;

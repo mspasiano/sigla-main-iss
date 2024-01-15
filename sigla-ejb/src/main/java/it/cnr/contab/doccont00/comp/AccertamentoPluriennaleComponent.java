@@ -25,6 +25,8 @@ package it.cnr.contab.doccont00.comp;
 
 import it.cnr.contab.config00.contratto.bulk.ContrattoBulk;
 import it.cnr.contab.config00.latt.bulk.WorkpackageBulk;
+import it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk;
+import it.cnr.contab.config00.pdcfin.bulk.V_voce_f_partita_giroBulk;
 import it.cnr.contab.doccont00.core.bulk.*;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.bulk.BulkList;
@@ -62,7 +64,7 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgAccertamentoRif", SQLBuilder.ISNULL, null);
 
-			sql.addClause(FindClause.AND, "pgAccertamento", SQLBuilder.EQUALS, 2086);
+
 			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
 			throw handleException( new ApplicationPersistencyException(e));
@@ -89,8 +91,16 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			newAccertamentoBulk.setEsercizio(esercizio);
 			newAccertamentoBulk.setEsercizio_originale(esercizio);
 			newAccertamentoBulk.setCd_tipo_documento_cont(Numerazione_doc_contBulk.TIPO_ACR);
-			//Elemento_voceBulk voce = (Elemento_voceBulk)getHome(uc, Elemento_voceBulk.class).findByPrimaryKey(accertamentoBulk.getCd_elemento_voce());
-			//newAccertamentoBulk.setCapitolo(new V_voce_f_partita_giroBulk(voce.getCd_voce(), voce.getEsercizio(), voce.getTi_appartenenza(), voce.getTi_gestione()));
+
+			Elemento_voceBulk voce = new it.cnr.contab.config00.pdcfin.bulk.Elemento_voceBulk();
+			voce.setEsercizio(esercizio);
+			voce.setTi_appartenenza(newAccertamentoBulk.getTi_appartenenza());
+			voce.setTi_gestione(newAccertamentoBulk.getTi_gestione());
+			voce.setCd_elemento_voce(newAccertamentoBulk.getCd_elemento_voce());
+			V_voce_f_partita_giroBulk voceCapitolo = (V_voce_f_partita_giroBulk)getHome(uc, V_voce_f_partita_giroBulk.class).findByPrimaryKey(voce);
+
+			newAccertamentoBulk.setCapitolo(voceCapitolo);
+
 			if ( Optional.ofNullable(newAccertamentoBulk.getContratto()).map(ContrattoBulk::getPg_contratto).isPresent())
 				newAccertamentoBulk.setContratto(((ContrattoBulk) getHome(uc, ContrattoBulk.class).findByPrimaryKey(newAccertamentoBulk.getContratto())));
 
