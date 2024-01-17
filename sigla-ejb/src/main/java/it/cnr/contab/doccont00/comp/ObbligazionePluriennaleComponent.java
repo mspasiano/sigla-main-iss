@@ -67,6 +67,12 @@ public class ObbligazionePluriennaleComponent extends ObbligazioneComponent {
 			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgObbligazioneRif", SQLBuilder.ISNULL, null);
+			sql.addTableToHeader("OBBLIGAZIONE");
+			sql.addSQLJoin("OBBLIGAZIONE.CD_CDS", "OBBLIGAZIONE_PLURIENNALE.CD_CDS");
+			sql.addSQLJoin("OBBLIGAZIONE.ESERCIZIO", "OBBLIGAZIONE_PLURIENNALE.ESERCIZIO");
+			sql.addSQLJoin("OBBLIGAZIONE.ESERCIZIO_ORIGINALE", "OBBLIGAZIONE_PLURIENNALE.ESERCIZIO_ORIGINALE");
+			sql.addSQLJoin("OBBLIGAZIONE.PG_OBBLIGAZIONE", "OBBLIGAZIONE_PLURIENNALE.PG_OBBLIGAZIONE");
+			sql.addSQLClause(FindClause.AND, "OBBLIGAZIONE.DT_CANCELLAZIONE", SQLBuilder.ISNULL,null);
 
 			return obbligazionePluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
