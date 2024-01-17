@@ -63,7 +63,12 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			sql.addClause(FindClause.AND, "esercizioRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "esercizioOriginaleRif", SQLBuilder.ISNULL, null);
 			sql.addClause(FindClause.AND, "pgAccertamentoRif", SQLBuilder.ISNULL, null);
-
+			sql.addTableToHeader("ACCERTAMENTO");
+			sql.addSQLJoin("ACCERTAMENTO.CD_CDS", "ACCERTAMENTO_PLURIENNALE.CD_CDS");
+			sql.addSQLJoin("ACCERTAMENTO.ESERCIZIO", "ACCERTAMENTO_PLURIENNALE.ESERCIZIO");
+			sql.addSQLJoin("ACCERTAMENTO.ESERCIZIO_ORIGINALE", "ACCERTAMENTO_PLURIENNALE.ESERCIZIO_ORIGINALE");
+			sql.addSQLJoin("ACCERTAMENTO.PG_ACCERTAMENTO", "ACCERTAMENTO_PLURIENNALE.PG_ACCERTAMENTO");
+			sql.addSQLClause(FindClause.AND, "ACCERTAMENTO.DT_CANCELLAZIONE", SQLBuilder.ISNULL,null);
 
 			return accertamento_pluriennaleHome.fetchAll(sql);
 		} catch (it.cnr.jada.persistency.PersistencyException e) {
@@ -116,7 +121,8 @@ public class AccertamentoPluriennaleComponent extends AccertamentoComponent {
 			acc_scadenza.setDs_scadenza(newAccertamentoBulk.getDs_accertamento());
 			newAccertamentoBulk.addToAccertamento_scadenzarioColl(acc_scadenza);
 			acc_scadenza.setIm_scadenza(newAccertamentoBulk.getIm_accertamento());
-			acc_scadenza.setIm_associato_doc_amm(newAccertamentoBulk.getIm_accertamento());
+			acc_scadenza.setIm_associato_doc_amm(BigDecimal.ZERO);
+			acc_scadenza.setIm_associato_doc_contabile(BigDecimal.ZERO);
 			acc_scadenza.setIm_associato_doc_contabile(new BigDecimal(0));
 
 			Accertamento_scad_voceBulk acc_scad_voce = new Accertamento_scad_voceBulk();
