@@ -77,6 +77,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
 
     public final static String SK_LINEA_ATTIVITA_ENTRATA_ENTE = "LINEA_ATTIVITA_ENTRATA_ENTE";
     public final static String SK_LINEA_ATTIVITA_SPESA_ENTE = "LINEA_ATTIVITA_SPESA_ENTE";
+    public final static String SK_COSTO_DOC_NON_LIQUIDABILE = "COSTO_DOC_NON_LIQUIDABILE";
 
     public final static String PK_CD_DIVISA = "CD_DIVISA";
     public final static String SK_EURO = "EURO";
