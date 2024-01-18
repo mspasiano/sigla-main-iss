@@ -592,7 +592,7 @@ End;
   					   and esercizio = aAccNext.esercizio_originale
   					   and esercizio_originale = aAccNext.esercizio_originale
   					   and pg_accertamento = aAccNext.pg_accertamento);
-  	   ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull''accertamento '||CNRCTB035.getDesc(aAccNext));
+  	   --ibmerr001.RAISE_ERR_GENERICO('Esiste un pluriennale emesso sull''accertamento '||CNRCTB035.getDesc(aAccNext));
   exception when NO_DATA_FOUND then
     null;
   end;
