@@ -34,10 +34,7 @@ import it.cnr.jada.DetailedRuntimeException;
 import it.cnr.jada.UserContext;
 import it.cnr.jada.action.ActionContext;
 import it.cnr.jada.action.BusinessProcessException;
-import it.cnr.jada.bulk.BulkList;
-import it.cnr.jada.bulk.BusyResourceException;
-import it.cnr.jada.bulk.OggettoBulk;
-import it.cnr.jada.bulk.OutdatedResourceException;
+import it.cnr.jada.bulk.*;
 import it.cnr.jada.comp.*;
 import it.cnr.jada.persistency.IntrospectionException;
 import it.cnr.jada.persistency.PersistencyException;
@@ -627,8 +624,18 @@ public class MovimentiMagComponent extends CalcolaImportiMagComponent implements
 			throw new ApplicationException("Errore nel movimento di magazzino! Manca l'indicazione del Magazzino.");
 		if (movimentiMagazzino.getTipoMovimentoMag()==null || movimentiMagazzino.getTipoMovimentoMag().getCdTipoMovimento()==null)
 			throw new ApplicationException("Errore nel movimento di magazzino! Manca l'indicazione del Tipo Movimento.");
-		if (movimentiMagazzino.getDataCompetenza()==null)
+		if (movimentiMagazzino.getDataCompetenza()==null){
 			throw new ApplicationException("Errore nel movimento di magazzino! Manca l'indicazione della Data Competenza.");
+		}else {
+			java.util.Calendar gc = java.util.Calendar.getInstance();
+			gc.setTime(movimentiMagazzino.getDataCompetenza());
+			int annoCompetenza = gc.get(java.util.Calendar.YEAR);
+			int esScrivania = it.cnr.contab.utenze00.bp.CNRUserContext.getEsercizio(userContext).intValue();
+
+			if (annoCompetenza != esScrivania) {
+				throw new ApplicationException("La \"Data di competenza\" deve ricadere nell'esercizio selezionato!");
+			}
+		}
 	}
 
 	private void controlloDatiObbligatoriCaricoManualeRiga(UserContext userContext, CaricoMagazzinoRigaBulk riga) throws ApplicationException {
