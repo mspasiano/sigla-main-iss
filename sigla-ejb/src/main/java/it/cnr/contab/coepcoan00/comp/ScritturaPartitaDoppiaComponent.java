@@ -72,6 +72,7 @@ import java.math.RoundingMode;
 import java.rmi.RemoteException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -3541,21 +3542,19 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 						throw new ApplicationRuntimeException("Per il documento " + docamm.getCd_tipo_doc_amm() + "/" + docamm.getEsercizio() + "/" + docamm.getCd_uo() + "/" +
 								docamm.getPg_doc() + " e per le righe IVA esiste più di un conto che presenta un saldo positivo in segno Avere.");
 
-					saldiCoriVoceEp.keySet().forEach(aCdCori -> {
-						Map<String, Pair<String, BigDecimal>> saldiCori = saldiCoriVoceEp.get(aCdCori);
-						saldiCori.keySet().forEach(cdVoceEp -> {
-							Pair<String, BigDecimal> saldoVoce = saldiCori.get(cdVoceEp);
-							if (saldoVoce.getSecond().compareTo(BigDecimal.ZERO) != 0)
-								if (saldoVoce.getFirst().equals(Movimento_cogeBulk.SEZIONE_AVERE)) {
+					scritturaOpt.get().getAllMovimentiColl()
+							.stream()
+							.filter(Movimento_cogeBulk::isRigaTipoIva)
+							.forEach(el->{
+								if (el.isSezioneAvere()) {
 									//Chiudo il debito IVA fattura e lo giro all'ente
-									testataPrimaNota.addDettaglio(userContext, docamm.getTipoDocumentoEnum().getTipoPatrimoniale(), Movimento_cogeBulk.SEZIONE_DARE, cdVoceEp, saldoVoce.getSecond(), cdTerzoDocamm, docamm, aCdCori);
-									testataPrimaNota.addDettaglio(userContext, Movimento_cogeBulk.TipoRiga.DEBITO.value(), Movimento_cogeBulk.SEZIONE_AVERE, aVoceErarioContoIva, saldoVoce.getSecond(), terzoEnte.getCd_terzo());
+									testataPrimaNota.addDettaglio(userContext, el.getTi_riga(), Movimento_cogeBulk.SEZIONE_DARE, el.getCd_voce_ep(), el.getIm_movimento(), cdTerzoDocamm, el.getDocumentoCoge(), el.getCd_contributo_ritenuta());
+									testataPrimaNota.addDettaglio(userContext, Movimento_cogeBulk.TipoRiga.DEBITO.value(), Movimento_cogeBulk.SEZIONE_AVERE, aVoceErarioContoIva, el.getIm_movimento(), terzoEnte.getCd_terzo());
 								} else {
-									testataPrimaNota.addDettaglio(userContext, docamm.getTipoDocumentoEnum().getTipoPatrimoniale(), Movimento_cogeBulk.SEZIONE_AVERE, cdVoceEp, saldoVoce.getSecond(), cdTerzoDocamm, docamm, aCdCori);
-									testataPrimaNota.addDettaglio(userContext, Movimento_cogeBulk.TipoRiga.DEBITO.value(), Movimento_cogeBulk.SEZIONE_DARE, aVoceErarioContoIva, saldoVoce.getSecond(), terzoEnte.getCd_terzo());
+									testataPrimaNota.addDettaglio(userContext, el.getTi_riga(), Movimento_cogeBulk.SEZIONE_AVERE, el.getCd_voce_ep(), el.getIm_movimento(), cdTerzoDocamm, el.getDocumentoCoge(), el.getCd_contributo_ritenuta());
+									testataPrimaNota.addDettaglio(userContext, Movimento_cogeBulk.TipoRiga.DEBITO.value(), Movimento_cogeBulk.SEZIONE_DARE, aVoceErarioContoIva, el.getIm_movimento(), terzoEnte.getCd_terzo());
 								}
-						});
-					});
+							});
 				}
 			}
 
@@ -5154,7 +5153,7 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 							new it.cnr.contab.util.EuroFormat().format(saldoTesoreria.negate()) +
 							") non risulterebbe essere uguale all'importo netto del mandato (" +
 							new it.cnr.contab.util.EuroFormat().format(((MandatoBulk) doccoge).getIm_netto()) + ").");
-			} else if (doccoge instanceof ReversaleBulk) {
+			} else {
 				if (((ReversaleBulk)doccoge).isAnnullato()) {
 					if (saldoTesoreria.compareTo(BigDecimal.ZERO) != 0)
 						throw new ApplicationRuntimeException("Errore nella generazione scrittura prima nota della reversale " + doccoge.getEsercizio() + "/" +
@@ -5186,15 +5185,27 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 		scritturaPartitaDoppia.setCd_cds(doccoge.getCd_cds());
 		scritturaPartitaDoppia.setTi_scrittura(Scrittura_partita_doppiaBulk.TIPO_PRIMA_SCRITTURA);
 		scritturaPartitaDoppia.setStato(Scrittura_partita_doppiaBulk.STATO_DEFINITIVO);
-		scritturaPartitaDoppia.setDs_scrittura(
-				"Contabilizzazione: "
-						.concat(doccoge.getCd_tipo_doc()).concat(": ")
-						.concat(doccoge.getCd_cds()).concat("/")
-						.concat(doccoge.getCd_uo()).concat("/")
-						.concat(String.valueOf(doccoge.getEsercizio())).concat("/")
-						.concat(String.valueOf(doccoge.getPg_doc()))
-		);
-
+		if (Scrittura_partita_doppiaBulk.ORIGINE_LIQUID_IVA.equals(doccoge.getCd_tipo_doc())) {
+			Calendar cal = Calendar.getInstance();
+			cal.setTimeInMillis(doccoge.getDtInizioLiquid().getTime());
+			scritturaPartitaDoppia.setDs_scrittura(
+					"Contabilizzazione "
+							.concat(doccoge.getCd_tipo_doc()).concat(" ")
+							.concat(new SimpleDateFormat("MM/yyyy").format(cal.getTime())).concat(": ")
+							.concat(doccoge.getCd_cds()).concat("/")
+							.concat(doccoge.getCd_uo()).concat("/")
+							.concat(String.valueOf(doccoge.getEsercizio()))
+			);
+		} else {
+			scritturaPartitaDoppia.setDs_scrittura(
+					"Contabilizzazione "
+							.concat(doccoge.getCd_tipo_doc()).concat(": ")
+							.concat(doccoge.getCd_cds()).concat("/")
+							.concat(doccoge.getCd_uo()).concat("/")
+							.concat(String.valueOf(doccoge.getEsercizio())).concat("/")
+							.concat(String.valueOf(doccoge.getPg_doc()))
+			);
+		}
 		scritturaPartitaDoppia.setEsercizio(doccoge.getEsercizio());
 		scritturaPartitaDoppia.setEsercizio_documento_amm(doccoge.getEsercizio());
 		scritturaPartitaDoppia.setCd_cds_documento(doccoge.getCd_cds());
@@ -5962,8 +5973,12 @@ public class ScritturaPartitaDoppiaComponent extends it.cnr.jada.comp.CRUDCompon
 			}
 
 			//Se viene richiesto di generare la proposta provvedo
-			if (isAttivaEconomicaDocamm && scritturaOpt.isPresent())
+			if (isAttivaEconomicaDocamm && scritturaOpt.isPresent()) {
 				creaConBulk(userContext, scritturaOpt.get());
+				docamm.setStato_coge(Fattura_passivaBulk.REGISTRATO_IN_COGE);
+				((OggettoBulk) docamm).setToBeUpdated();
+				updateBulk(userContext, (OggettoBulk) docamm);
+			}
 		}
 
 		return scritturaOpt;
