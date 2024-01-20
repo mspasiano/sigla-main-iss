@@ -531,6 +531,9 @@ public class CRUDDocumentoGenericoPassivoBP
 
     public boolean isInputReadonly() {
         Documento_genericoBulk doc = (Documento_genericoBulk) getModel();
+        if ("tabAllegati".equalsIgnoreCase(getTab("tab"))) {
+            return super.isInputReadonly();
+        }
         return (
                 super.isInputReadonly()
                         || isDeleting()
@@ -997,7 +1000,7 @@ public class CRUDDocumentoGenericoPassivoBP
     private static final String[] TAB_DETTAGLIO = new String[]{ "tabDocumentoPassivoDettaglio","Dettaglio","/docamm00/tab_documento_passivo_dettaglio.jsp" };
     private static final String[] TAB_OBBLIGAZIONE = new String[]{ "tabDocumentoGenericoObbligazioni","Impegni","/docamm00/tab_documento_generico_obbligazioni.jsp" };
     private static final String[] TAB_LETTERA_PAGAMENTO_ESTERO = new String[]{ "tabLetteraPagamentoEstero","Documento 1210","/docamm00/tab_generico_lettera_pagam_estero.jsp"};
-    private static final String[] TAB_ALLEGATI = new String[]{ "tabAllegat","Allegati","/util00/tab_allegati.jsp"};
+    private static final String[] TAB_ALLEGATI = new String[]{ "tabAllegati","Allegati","/util00/tab_allegati.jsp"};
 
 
     public String[][] getTabs() {

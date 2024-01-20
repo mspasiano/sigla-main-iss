@@ -1140,7 +1140,7 @@ public class CRUDDocumentoGenericoAttivoBP
     private static final String[] TAB_TESTATA = new String[]{ "tabDocumentoAttivo","Documento Generico","/docamm00/tab_documento_attivo.jsp" };
     private static final String[] TAB_DETTAGLIO = new String[]{ "tabDocumentoAttivoDettaglio","Dettaglio","/docamm00/tab_documento_attivo_dettaglio.jsp" };
     private static final String[] TAB_ACCERTAMENTI = new String[]{ "tabDocumentoGenericoAccertamenti","Accertamenti","/docamm00/tab_documento_generico_accertamenti.jsp" };
-    private static final String[] TAB_ALLEGATI = new String[]{ "tabAllegat","Allegati","/util00/tab_allegati.jsp"};
+    private static final String[] TAB_ALLEGATI = new String[]{ "tabAllegati","Allegati","/util00/tab_allegati.jsp"};
 
     public String[][] getTabs() {
         TreeMap<Integer, String[]> pages = new TreeMap<Integer, String[]>();
