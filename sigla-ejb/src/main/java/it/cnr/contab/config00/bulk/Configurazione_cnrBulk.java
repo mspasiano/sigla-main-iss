@@ -314,7 +314,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
             if (Optional.ofNullable(configurazione).isPresent()) {
                 final Optional<LocalDateTime> dataFineEvasione = Optional.ofNullable(configurazione.getDt01())
                         .map(timestamp -> timestamp.toLocalDateTime());
-                if (dataFineEvasione
+                if (dataFineEvasione.isPresent() && dataFineEvasione
                         .filter(localDateTime ->
                                 Optional.ofNullable(configurazione.getVal02())
                                     .filter(s -> s.equalsIgnoreCase("Y") || s.equalsIgnoreCase("T"))
