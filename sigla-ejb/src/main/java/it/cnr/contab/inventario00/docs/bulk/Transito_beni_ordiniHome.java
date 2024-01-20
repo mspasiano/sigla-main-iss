@@ -137,7 +137,9 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 			}
 		}
 		if(ricercaAnnullati){
-			sql.addSQLClause("AND", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_ANNULLATO);
+			sql.openParenthesis("AND");
+			sql.addClause("AND", "stato", SQLBuilder.EQUALS, Transito_beni_ordiniBulk.STATO_ANNULLATO);
+			sql.closeParenthesis();
 		}else {
 			sql.openParenthesis("AND");
 
@@ -151,7 +153,7 @@ public Transito_beni_ordiniHome(java.sql.Connection conn, PersistentCache persis
 			sql.addClause("AND", "pg_inventario", SQLBuilder.EQUALS, inventario.getPg_inventario());
 		} catch (IntrospectionException e) {
 			throw new PersistencyException(e);
-		}
+			}
 		sql.addOrderBy("id");
 		return sql;
 
