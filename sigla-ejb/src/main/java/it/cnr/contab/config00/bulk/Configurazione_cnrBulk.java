@@ -17,7 +17,6 @@
 
 package it.cnr.contab.config00.bulk;
 
-import it.cnr.contab.anagraf00.core.bulk.BancaBulk;
 import it.cnr.contab.utenze00.bp.CNRUserContext;
 import it.cnr.contab.util.ApplicationMessageFormatException;
 import it.cnr.contab.util.Utility;
@@ -321,8 +320,7 @@ public class Configurazione_cnrBulk extends Configurazione_cnrBase {
                                     .filter(s -> s.equalsIgnoreCase("Y") || s.equalsIgnoreCase("T"))
                                         .isPresent()
                         )
-                        .map(d -> d.isBefore(EJBCommonServices.getServerTimestamp().toLocalDateTime()))
-                        .isPresent()) {
+                        .map(d -> d.isBefore(EJBCommonServices.getServerTimestamp().toLocalDateTime())).get()) {
                     throw new ApplicationMessageFormatException(
                             "La funzione è bloccata per l''anno {0} dal {1}",
                             String.valueOf(CNRUserContext.getEsercizio(context)),
