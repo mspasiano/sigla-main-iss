@@ -126,17 +126,17 @@ public class LottoMagHome extends BulkHome {
 				case TipoMovimentoMagBulk.AZIONE_SOMMA:
 					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).add(movimentoMag.getPrezzoUnitarioEffettivo()));
 					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).add(movimentoMag.getPrezzoUnitarioEffettivo()));
-					lotto.setImIva(Utility.nvl(lotto.getImIva()).add(movimentoMag.getImIva()));
+					lotto.setImIva(Utility.nvl(lotto.getImIva()).add(Utility.nvl(movimentoMag.getImIva())));
 					break;
 				case TipoMovimentoMagBulk.AZIONE_SOTTRAE:
 					lotto.setValoreUnitario(Utility.nvl(lotto.getValoreUnitario()).subtract(movimentoMag.getPrezzoUnitarioEffettivo()));
 					lotto.setCostoUnitario(Utility.nvl(lotto.getCostoUnitario()).subtract(movimentoMag.getPrezzoUnitarioEffettivo()));
-					lotto.setImIva(Utility.nvl(lotto.getImIva()).subtract(movimentoMag.getImIva()));
+					lotto.setImIva(Utility.nvl(lotto.getImIva()).subtract(Utility.nvl(movimentoMag.getImIva())));
 					break;
 				case TipoMovimentoMagBulk.AZIONE_SOSTITUISCE:
 					lotto.setValoreUnitario(movimentoMag.getPrezzoUnitarioEffettivo());
 					lotto.setCostoUnitario(movimentoMag.getPrezzoUnitarioEffettivo());
-					lotto.setImIva(movimentoMag.getImIva());
+					lotto.setImIva(Utility.nvl(movimentoMag.getImIva()));
 					break;
 				default: break;
 			}
