@@ -16,6 +16,42 @@ import java.rmi.RemoteException;
 public class CalcolaImportiMagComponent extends CRUDComponent {
 
 
+    public ImportoOrdine calcoloImportoPerMagazzino(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
+        BigDecimal imponibile = calcoloImponibile(parametri);
+        imponibile = imponibile.divide(parametri.getQtaOrd());
+        BigDecimal arrotondamento = Utility.nvl(parametri.getArrAliIva()).divide(parametri.getQtaOrd());
+        BigDecimal arrAliIva = arrotondamento;
+
+        Voce_ivaBulk voceIva = null;
+        if (parametri.getVoceIvaRet() != null && parametri.getVoceIvaRet().getPercentuale() != null) {
+            voceIva = parametri.getVoceIvaRet();
+        } else {
+            voceIva = parametri.getVoceIva();
+        }
+
+        BigDecimal importoIva = Utility.divide(imponibile.multiply(voceIva.getPercentuale()), Utility.CENTO, 6);
+        BigDecimal ivaNonDetraibile = importoIva.multiply((Utility.CENTO.subtract(voceIva.getPercentuale_detraibilita())));
+
+        BigDecimal ivaPerCalcoloProrata = importoIva.subtract(ivaNonDetraibile);
+
+        BigDecimal ivaDetraibile = ivaPerCalcoloProrata.multiply(Utility.nvl(parametri.getPercProrata()));
+
+        ivaNonDetraibile = ivaNonDetraibile.add((ivaPerCalcoloProrata.subtract(ivaDetraibile)));
+
+        if (ivaDetraibile.compareTo(BigDecimal.ZERO) == 0 || ivaNonDetraibile.compareTo(BigDecimal.ZERO) > 0) {
+            ivaNonDetraibile = ivaNonDetraibile.add(Utility.nvl(parametri.getArrAliIva()));
+        } else {
+            ivaDetraibile = ivaDetraibile.add(Utility.nvl(parametri.getArrAliIva()));
+        }
+        importoIva = importoIva.add(ivaDetraibile);
+        ImportoOrdine importoOrdine = new ImportoOrdine();
+        importoOrdine.setImponibile(Utility.round6Decimali(imponibile));
+        importoOrdine.setImportoIva(Utility.round6Decimali(importoIva));
+        importoOrdine.setImportoIvaInd(Utility.round6Decimali(ivaNonDetraibile));
+        importoOrdine.setImportoIvaDetraibile(Utility.round6Decimali(ivaDetraibile));
+        importoOrdine.setArrAliIva(arrAliIva);
+        return importoOrdine;
+    }
     public ImportoOrdine calcoloImporto(ParametriCalcoloImportoOrdine parametri) throws ComponentException{
         BigDecimal imponibile = calcoloImponibile(parametri);
         Voce_ivaBulk voceIva = null;
@@ -31,7 +67,7 @@ public class CalcolaImportiMagComponent extends CRUDComponent {
         }
         return importo;
     }
-    private BigDecimal calcoloImponibile(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
+    public BigDecimal calcoloImponibile(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
         BigDecimal prezzo = Utility.nvl(parametri.getPrezzoRet(), parametri.getPrezzo());
         BigDecimal cambio = Utility.nvl(parametri.getCambioRet(), parametri.getCambio());
         if (parametri.getDivisa() == null || parametri.getDivisaRisultato() == null ||

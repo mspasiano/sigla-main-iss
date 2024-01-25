@@ -139,8 +139,8 @@ public class MovimentiMagComponent extends CalcolaImportiMagComponent implements
 
 		try {
 			ImportoOrdine importo =  recuperoPrezzoUnitario(userContext, consegna);
-			BigDecimal prezzoUnitario = importo.getPrezzoUnitario();
-			BigDecimal prezzoIvaUnitario = importo.getIvaPrezzoUnitario();
+			BigDecimal prezzoUnitario = importo.getPrezzoCompIva();
+			BigDecimal prezzoIvaUnitario = importo.getTotaleIva();
 
 			//Rapporto il prezzo unitario al Coefficiente di Conversione usato nell'evasione se diverso da quello indicato sulla riga
 			if (!movimentoMag.getCoeffConv().equals(consegna.getOrdineAcqRiga().getCoefConv())) {
@@ -316,12 +316,12 @@ public class MovimentiMagComponent extends CalcolaImportiMagComponent implements
 
 		try {
 			ImportoOrdine importo = recuperoPrezzoUnitario(userContext, consegna);
-			BigDecimal prezzoUnitarioOrdine = importo.getPrezzoUnitario();
-			BigDecimal prezzoIvaUnitarioOrdine = importo.getIvaPrezzoUnitario();
+			BigDecimal prezzoUnitarioOrdine = importo.getPrezzoCompIva();
+			BigDecimal prezzoIvaUnitarioOrdine = importo.getTotaleIva();
 
 			ImportoOrdine importoRet=  recuperoPrezzoUnitarioRettificato(userContext, fatturaOrdineBulk);
-			BigDecimal prezzoUnitarioOrdineRettificato =importoRet.getPrezzoUnitario();
-			BigDecimal prezzoUnitarioIvaOrdineRettificato =importoRet.getIvaPrezzoUnitario();
+			BigDecimal prezzoUnitarioOrdineRettificato =importoRet.getPrezzoCompIva();
+			BigDecimal prezzoUnitarioIvaOrdineRettificato =importoRet.getTotaleIva();
 
 			BigDecimal diffOrdineRettificato = prezzoUnitarioOrdineRettificato.subtract(prezzoUnitarioOrdine);
 			BigDecimal diffIvaOrdineRettificato = prezzoUnitarioIvaOrdineRettificato.subtract(prezzoIvaUnitarioOrdine);
@@ -363,10 +363,10 @@ public class MovimentiMagComponent extends CalcolaImportiMagComponent implements
 			parametri.setDivisa(divisaDefault);
 			parametri.setDivisaRisultato(divisaDefault);
 
-			ImportoOrdine importi = calcoloImporto(parametri);
+			ImportoOrdine importi = calcoloImportoPerMagazzino(parametri);
 
-			riga.setPrezzoUnitario(importi.getPrezzoUnitario());
-			riga.setImpIva(importi.getImportoIva());
+			riga.setPrezzoUnitario(importi.getPrezzoCompIva());
+			riga.setImpIva(importi.getTotaleIva());
 
 		}
 	}

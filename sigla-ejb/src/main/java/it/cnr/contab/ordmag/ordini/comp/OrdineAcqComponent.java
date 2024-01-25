@@ -299,7 +299,7 @@ public class OrdineAcqComponent
         parametri.setQtaOrd(cons.getQuantita());
         parametri.setArrAliIva(cons.getArrAliIva());
 
-        ImportoOrdine importo = magazzino ? calcoloImportoOrdinePerMagazzino(parametri) : calcoloImporto(parametri);
+        ImportoOrdine importo = magazzino ? calcoloImportoPerMagazzino(parametri) : calcoloImporto(parametri);
         fatturaOrdine.setImImponibile(importo.getImponibile());
         fatturaOrdine.setImImponibileDivisa(importo.getImponibile());
         fatturaOrdine.setImIva(importo.getImportoIva());
@@ -1471,7 +1471,7 @@ public class OrdineAcqComponent
         }
         return importoOrdine;
     }*/
-
+/*
     public ImportoOrdine calcoloImportoOrdinePerMagazzino(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
         BigDecimal imponibile = calcoloImponibile(parametri);
         imponibile = imponibile.divide(parametri.getQtaOrd());
@@ -1508,7 +1508,9 @@ public class OrdineAcqComponent
         importoOrdine.setArrAliIva(arrAliIva);
         return importoOrdine;
     }
+    */
 
+/*
     private BigDecimal calcoloImponibile(ParametriCalcoloImportoOrdine parametri) throws ApplicationException {
         BigDecimal prezzo = Utility.nvl(parametri.getPrezzoRet(), parametri.getPrezzo());
         BigDecimal cambio = Utility.nvl(parametri.getCambioRet(), parametri.getCambio());
@@ -1533,7 +1535,7 @@ public class OrdineAcqComponent
         BigDecimal imponibile = prezzoScontato.multiply(parametri.getQtaOrd());
         return imponibile;
     }
-
+*/
     public RemoteIterator cercaObbligazioni(UserContext context, Filtro_ricerca_obbligazioniVBulk filtro)
             throws ComponentException {
 

@@ -102,11 +102,11 @@ public class ImportoOrdine implements Serializable {
 		this.importoIvaDetraibile = importoIvaDetraibile;
 	}
 
-	public BigDecimal getPrezzoUnitario() {
+	public BigDecimal getPrezzoCompIva() {
 		return this.getImponibile().add(Utility.nvl(this.getImportoIvaInd()).add(Utility.nvl(this.getArrAliIva())));
 	}
 
-	public BigDecimal getIvaPrezzoUnitario() {
+	public BigDecimal getTotaleIva() {
 		return (Utility.nvl(this.getImportoIvaInd()).add(Utility.nvl(this.getArrAliIva())));
 	}
 
