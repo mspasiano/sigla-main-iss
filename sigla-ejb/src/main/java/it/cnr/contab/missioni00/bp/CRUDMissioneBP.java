@@ -2954,4 +2954,8 @@ public class CRUDMissioneBP extends AllegatiCRUDBP<AllegatoMissioneBulk, Mission
     public boolean isButtonGeneraScritturaVisible() {
         return this.isSupervisore();
     }
+    @Override
+    public OggettoBulk getEconomicaModel() {
+        return getModel();
+    }
 }
