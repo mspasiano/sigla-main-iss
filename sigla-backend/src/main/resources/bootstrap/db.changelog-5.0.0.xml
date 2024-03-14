@@ -6076,6 +6076,6 @@ IVAS = IVA ACQUISTO SPLIT; GEN = GENERICO; RIC = RICAVO; IVAA = IVA ACQUISTO; CR
     <!-- Autore : CIRO SALVIO - Modifiche configurazione funzionalità Riaccertamento Residui -->
     <include file="bootstrap/mod_ds_priority_riaccertamento_residui.xml"/>
     <include file="bootstrap/mod_conf_menu_riaccertamento_residui.xml"/>
-
-
+    <!-- Autore : MARCO SPASIANO - Aggiunge voce di menu per Associazione Conto Gruppo -->
+    <include file="bootstrap/add_accessi_associazione_conto_gruppo.xml"/>
 </databaseChangeLog>
