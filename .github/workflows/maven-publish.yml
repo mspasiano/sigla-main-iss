@@ -15,7 +15,7 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Publish package
-        run: mvn --batch-mode deploy -DskipTests -Dgithub.organization=$ORGANIZATION_VAR
+        run: mvn --batch-mode deploy -DskipTests -s .m2/settings.xml -Pprod,AZURE,maven-central,release-version,docs -Dnexus.url=https://maven.pkg.github.com/mspasiano/sigla --batch-mode --errors --fail-at-end --show-version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ORGANIZATION_VAR: ${{ vars.ORGANIZATION_VAR }}
