@@ -260,6 +260,13 @@
 			</roles>
 		</developer>
 	</developers>
+	<distributionManagement>
+    <repository>
+      <id>remorte-repository</id>
+      <name>GitHub Packages</name>
+      <url>https://maven.pkg.github.com/${github.organization}/sigla</url>
+    </repository>
+  </distributionManagement>	
 	<scm>
 		<connection>scm:git:ssh://git@git.si.cnr.it/dev/sigla-main.git</connection>
 		<developerConnection>scm:git:ssh://git@git.si.cnr.it/dev/sigla-main.git</developerConnection>
