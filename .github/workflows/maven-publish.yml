@@ -18,3 +18,4 @@ jobs:
         run: mvn --batch-mode deploy -DskipTests -Dgithub.organization=$ORGANIZATION_VAR
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ORGANIZATION_VAR: ${{ vars.ORGANIZATION_VAR }}
